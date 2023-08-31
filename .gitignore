@@ -1,0 +1,7 @@
+# pixi environments
+.pixi
+.ipynb_checkpoints
+.yarn
+*.wasm
+__pycache__
+static

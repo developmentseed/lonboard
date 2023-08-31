@@ -1,0 +1,17 @@
+[tool.poetry]
+name = "deck-widget"
+version = "0.1.0"
+description = ""
+authors = ["Kyle Barron <kyle@developmentseed.org>"]
+readme = "README.md"
+packages = [{include = "deck_widget"}]
+
+[tool.poetry.dependencies]
+python = "^3.11"
+jupyterlab = "^4.0.5"
+anywidget = {version = "^0.6.3", extras = ["dev"]}
+
+
+[build-system]
+requires = ["poetry-core"]
+build-backend = "poetry.core.masonry.api"
