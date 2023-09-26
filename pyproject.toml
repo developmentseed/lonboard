@@ -10,6 +10,8 @@ packages = [{include = "deck_widget"}]
 python = "^3.11"
 jupyterlab = "^4.0.5"
 anywidget = {version = "^0.6.3", extras = ["dev"]}
+pyarrow = "^13.0.0"
+geopandas = "^0.14.0"
 
 
 [build-system]
