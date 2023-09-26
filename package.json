@@ -21,6 +21,13 @@
     "react-dom": "^18.2.0",
     "react-map-gl": "^7.1.5"
   },
+  "resolutions": {
+    "@luma.gl/core": "8.5.20",
+    "@luma.gl/engine": "8.5.20",
+    "@luma.gl/gltools": "8.5.20",
+    "@luma.gl/shadertools": "8.5.20",
+    "@luma.gl/webgl": "8.5.20"
+  },
   "devDependencies": {
     "esbuild": "^0.19.2",
     "esbuild-plugin-wasm": "^1.1.0"
