@@ -172,6 +172,7 @@ class PointType(BaseGeometryType):
     def __arrow_ext_deserialize__(cls, storage_type: pa.DataType, serialized: bytes):
         return cls(interleaved=True, dims=CoordinateDimension.XY)
 
+
 class LineStringType(BaseGeometryType):
     extension_name = "geoarrow.linestring"
 
@@ -191,6 +192,7 @@ class LineStringType(BaseGeometryType):
     @classmethod
     def __arrow_ext_deserialize__(cls, storage_type: pa.DataType, serialized: bytes):
         return cls(interleaved=True, dims=CoordinateDimension.XY)
+
 
 class PolygonType(BaseGeometryType):
     extension_name = "geoarrow.polygon"
@@ -212,6 +214,7 @@ class PolygonType(BaseGeometryType):
     def __arrow_ext_deserialize__(cls, storage_type: pa.DataType, serialized: bytes):
         return cls(interleaved=True, dims=CoordinateDimension.XY)
 
+
 class MultiPointType(BaseGeometryType):
     extension_name = "geoarrow.multipoint"
 
@@ -231,6 +234,7 @@ class MultiPointType(BaseGeometryType):
     @classmethod
     def __arrow_ext_deserialize__(cls, storage_type: pa.DataType, serialized: bytes):
         return cls(interleaved=True, dims=CoordinateDimension.XY)
+
 
 class MultiLineStringType(BaseGeometryType):
     extension_name = "geoarrow.multilinestring"
@@ -252,6 +256,7 @@ class MultiLineStringType(BaseGeometryType):
     def __arrow_ext_deserialize__(cls, storage_type: pa.DataType, serialized: bytes):
         return cls(interleaved=True, dims=CoordinateDimension.XY)
 
+
 class MultiPolygonType(BaseGeometryType):
     extension_name = "geoarrow.multipolygon"
 
@@ -272,6 +277,7 @@ class MultiPolygonType(BaseGeometryType):
     def __arrow_ext_deserialize__(cls, storage_type: pa.DataType, serialized: bytes):
         return cls(interleaved=True, dims=CoordinateDimension.XY)
 
+
 def construct_geometry_array(
     shapely_arr: NDArray[np.object_], include_z: Optional[bool] = None
 ):
@@ -291,9 +297,12 @@ def construct_geometry_array(
 
     if geom_type == GeometryType.POINT:
         parr = pa.FixedSizeListArray.from_arrays(coords.flatten(), len(dims))
-        field = pa.field("geometry", parr.type, nullable=True, metadata={
-            "ARROW:extension:name": "geoarrow.point"
-        })
+        field = pa.field(
+            "geometry",
+            parr.type,
+            nullable=True,
+            metadata={"ARROW:extension:name": "geoarrow.point"},
+        )
         return field, parr
 
     elif geom_type == GeometryType.LINESTRING:
@@ -301,9 +310,12 @@ def construct_geometry_array(
         (geom_offsets,) = offsets
         _parr = pa.FixedSizeListArray.from_arrays(coords.flatten(), 2)
         parr = pa.ListArray.from_arrays(pa.array(geom_offsets), _parr)
-        field = pa.field("geometry", parr.type, nullable=True, metadata={
-            "ARROW:extension:name": "geoarrow.linestring"
-        })
+        field = pa.field(
+            "geometry",
+            parr.type,
+            nullable=True,
+            metadata={"ARROW:extension:name": "geoarrow.linestring"},
+        )
         return field, parr
 
     elif geom_type == GeometryType.POLYGON:
@@ -312,9 +324,12 @@ def construct_geometry_array(
         _parr = pa.FixedSizeListArray.from_arrays(coords.flatten(), 2)
         _parr1 = pa.ListArray.from_arrays(pa.array(ring_offsets), _parr)
         parr = pa.ListArray.from_arrays(pa.array(geom_offsets), _parr1)
-        field = pa.field("geometry", parr.type, nullable=True, metadata={
-            "ARROW:extension:name": "geoarrow.polygon"
-        })
+        field = pa.field(
+            "geometry",
+            parr.type,
+            nullable=True,
+            metadata={"ARROW:extension:name": "geoarrow.polygon"},
+        )
         return field, parr
 
     elif geom_type == GeometryType.MULTIPOINT:
@@ -322,9 +337,12 @@ def construct_geometry_array(
         (geom_offsets,) = offsets
         _parr = pa.FixedSizeListArray.from_arrays(coords.flatten(), 2)
         parr = pa.ListArray.from_arrays(pa.array(geom_offsets), _parr)
-        field = pa.field("geometry", parr.type, nullable=True, metadata={
-            "ARROW:extension:name": "geoarrow.multipoint"
-        })
+        field = pa.field(
+            "geometry",
+            parr.type,
+            nullable=True,
+            metadata={"ARROW:extension:name": "geoarrow.multipoint"},
+        )
         return field, parr
 
     elif geom_type == GeometryType.MULTILINESTRING:
@@ -333,9 +351,12 @@ def construct_geometry_array(
         _parr = pa.FixedSizeListArray.from_arrays(coords.flatten(), 2)
         _parr1 = pa.ListArray.from_arrays(pa.array(ring_offsets), _parr)
         parr = pa.ListArray.from_arrays(pa.array(geom_offsets), _parr1)
-        field = pa.field("geometry", parr.type, nullable=True, metadata={
-            "ARROW:extension:name": "geoarrow.multilinestring"
-        })
+        field = pa.field(
+            "geometry",
+            parr.type,
+            nullable=True,
+            metadata={"ARROW:extension:name": "geoarrow.multilinestring"},
+        )
         return field, parr
 
     elif geom_type == GeometryType.MULTIPOLYGON:
@@ -345,9 +366,12 @@ def construct_geometry_array(
         _parr1 = pa.ListArray.from_arrays(pa.array(ring_offsets), _parr)
         _parr2 = pa.ListArray.from_arrays(pa.array(polygon_offsets), _parr1)
         parr = pa.ListArray.from_arrays(pa.array(geom_offsets), _parr2)
-        field = pa.field("geometry", parr.type, nullable=True, metadata={
-            "ARROW:extension:name": "geoarrow.multipolygon"
-        })
+        field = pa.field(
+            "geometry",
+            parr.type,
+            nullable=True,
+            metadata={"ARROW:extension:name": "geoarrow.multipolygon"},
+        )
         return field, parr
 
     else:

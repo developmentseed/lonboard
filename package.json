@@ -35,6 +35,7 @@
     "esbuild-plugin-wasm": "^1.1.0"
   },
   "scripts": {
-    "build": "node ./build.mjs"
+    "build": "node ./build.mjs",
+    "build:watch": "fswatch -o src | xargs -n1 -I{} yarn build"
   }
 }
