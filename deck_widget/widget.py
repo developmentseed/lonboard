@@ -13,13 +13,12 @@ from deck_widget.geoarrow.geopandas_interop import geopandas_to_geoarrow
 
 # bundler yields deck_widget/static/{index.js,styles.css}
 bundler_output_dir = pathlib.Path(__file__).parent / "static"
-_esm = bundler_output_dir / "index.js"
 _css = bundler_output_dir / "styles.css"
 
 
 class PointLayer(anywidget.AnyWidget):
-    _esm = _esm
-    _css = _css
+    _esm = bundler_output_dir / "point.js"
+
     table_buffer = traitlets.Bytes().tag(sync=True)
     radius_units = traitlets.Unicode("meters", allow_none=True).tag(sync=True)
     radius_scale = traitlets.Float(allow_none=True).tag(sync=True)
@@ -55,5 +54,74 @@ class PointLayer(anywidget.AnyWidget):
 
     @classmethod
     def from_geopandas(cls, gdf: gpd.GeoDataFrame, **kwargs) -> PointLayer:
+        table = geopandas_to_geoarrow(gdf)
+        return cls.from_pyarrow(table, **kwargs)
+
+
+class LineStringLayer(anywidget.AnyWidget):
+    _esm = bundler_output_dir / "linestring.js"
+
+    table_buffer = traitlets.Bytes().tag(sync=True)
+
+    width_units = traitlets.Unicode(allow_none=True).tag(sync=True)
+    width_scale = traitlets.Float(allow_none=True).tag(sync=True)
+    width_min_pixels = traitlets.Float(allow_none=True).tag(sync=True)
+    width_max_pixels = traitlets.Float(allow_none=True).tag(sync=True)
+    joint_rounded = traitlets.Bool(allow_none=True).tag(sync=True)
+    cap_rounded = traitlets.Bool(allow_none=True).tag(sync=True)
+    miter_limit = traitlets.Int(allow_none=True).tag(sync=True)
+    billboard = traitlets.Bool(allow_none=True).tag(sync=True)
+    get_color = traitlets.List(
+        traitlets.Int(), None, minlen=3, maxlen=4, allow_none=True
+    ).tag(sync=True)
+    get_width = traitlets.Float(allow_none=True).tag(sync=True)
+
+    @classmethod
+    def from_pyarrow(cls, table: pa.Table, **kwargs) -> LineStringLayer:
+        assert (
+            table.schema.field("geometry").metadata.get(b"ARROW:extension:name")
+            == b"geoarrow.linestring"
+        ), "Only LineString geometries are currently supported by this layer."
+
+        with BytesIO() as bio:
+            feather.write_feather(table, bio, compression="uncompressed")
+            return cls(table_buffer=bio.getvalue(), **kwargs)
+
+    @classmethod
+    def from_geopandas(cls, gdf: gpd.GeoDataFrame, **kwargs) -> LineStringLayer:
+        table = geopandas_to_geoarrow(gdf)
+        return cls.from_pyarrow(table, **kwargs)
+
+
+class PolygonLayer(anywidget.AnyWidget):
+    _esm = bundler_output_dir / "polygon.js"
+
+    table_buffer = traitlets.Bytes().tag(sync=True)
+
+    filled = traitlets.Bool(allow_none=True).tag(sync=True)
+    extruded = traitlets.Bool(allow_none=True).tag(sync=True)
+    wireframe = traitlets.Bool(allow_none=True).tag(sync=True)
+    elevation_scale = traitlets.Float(allow_none=True).tag(sync=True)
+    get_elevation = traitlets.Float(allow_none=True).tag(sync=True)
+    get_fill_color = traitlets.List(
+        traitlets.Int(), None, minlen=3, maxlen=4, allow_none=True
+    ).tag(sync=True)
+    get_line_color = traitlets.List(
+        traitlets.Int(), None, minlen=3, maxlen=4, allow_none=True
+    ).tag(sync=True)
+
+    @classmethod
+    def from_pyarrow(cls, table: pa.Table, **kwargs) -> PolygonLayer:
+        assert (
+            table.schema.field("geometry").metadata.get(b"ARROW:extension:name")
+            == b"geoarrow.polygon"
+        ), "Only Polygon geometries are currently supported by this layer."
+
+        with BytesIO() as bio:
+            feather.write_feather(table, bio, compression="uncompressed")
+            return cls(table_buffer=bio.getvalue(), **kwargs)
+
+    @classmethod
+    def from_geopandas(cls, gdf: gpd.GeoDataFrame, **kwargs) -> PolygonLayer:
         table = geopandas_to_geoarrow(gdf)
         return cls.from_pyarrow(table, **kwargs)
