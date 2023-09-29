@@ -429,6 +429,18 @@ __metadata:
   languageName: node
   linkType: hard
 
+"@geoarrow/deck.gl-layers@npm:0.1.0-beta.1":
+  version: 0.1.0-beta.1
+  resolution: "@geoarrow/deck.gl-layers@npm:0.1.0-beta.1"
+  dependencies:
+    apache-arrow: ^13.0.0
+  peerDependencies:
+    "@deck.gl/core": ^8.9.23
+    "@deck.gl/layers": ^8.9.23
+  checksum: fc6cb0c1ff00cf0b012989c9d1763155e9f99960931c4108bc47edbd376feb91e5b05ccab76d4907778279d1ac950e55784846ca3114f59a92f629c08c01696f
+  languageName: node
+  linkType: hard
+
 "@loaders.gl/3d-tiles@npm:^3.4.13":
   version: 3.4.14
   resolution: "@loaders.gl/3d-tiles@npm:3.4.14"
@@ -1139,6 +1151,31 @@ __metadata:
   languageName: node
   linkType: hard
 
+"@types/prop-types@npm:*":
+  version: 15.7.7
+  resolution: "@types/prop-types@npm:15.7.7"
+  checksum: 023b95f7dd82e1c594f51dcb93ec4c382600cef6eeee29a2ac7b782b92c0882eab8da16d4cbd6e18b39e85ac8d94ebf4ca02c6e248ce5b5fb4b16dbab5d82861
+  languageName: node
+  linkType: hard
+
+"@types/react@npm:^18.2.23":
+  version: 18.2.23
+  resolution: "@types/react@npm:18.2.23"
+  dependencies:
+    "@types/prop-types": "*"
+    "@types/scheduler": "*"
+    csstype: ^3.0.2
+  checksum: efb9d1ed1940c0e7ba08a21ffba5e266d8dbbb8fe618cfb97bc902dfc96385fdd8189e3f7f64b4aa13134f8e61947d60560deb23be151253c3a97b0d070897ca
+  languageName: node
+  linkType: hard
+
+"@types/scheduler@npm:*":
+  version: 0.16.4
+  resolution: "@types/scheduler@npm:0.16.4"
+  checksum: a57b0f10da1b021e6bd5eeef8a1917dd3b08a8715bd8029e2ded2096d8f091bb1bb1fef2d66e139588a983c4bfbad29b59e48011141725fa83c76e986e1257d7
+  languageName: node
+  linkType: hard
+
 "@types/supercluster@npm:^7.1.0":
   version: 7.1.0
   resolution: "@types/supercluster@npm:7.1.0"
@@ -1154,6 +1191,26 @@ __metadata:
   dependencies:
     color-convert: ^2.0.1
   checksum: 513b44c3b2105dd14cc42a19271e80f386466c4be574bccf60b627432f9198571ebf4ab1e4c3ba17347658f4ee1711c163d574248c0c1cdc2d5917a0ad582ec4
+  languageName: node
+  linkType: hard
+
+"apache-arrow@npm:^13.0.0":
+  version: 13.0.0
+  resolution: "apache-arrow@npm:13.0.0"
+  dependencies:
+    "@types/command-line-args": 5.2.0
+    "@types/command-line-usage": 5.0.2
+    "@types/node": 20.3.0
+    "@types/pad-left": 2.1.1
+    command-line-args: 5.2.1
+    command-line-usage: 7.0.1
+    flatbuffers: 23.5.26
+    json-bignum: ^0.0.3
+    pad-left: ^2.1.0
+    tslib: ^2.5.3
+  bin:
+    arrow2csv: bin/arrow2csv.js
+  checksum: 34aeb3e179e5d068490ad9d4ab1e0113f1c1ed684415c1069c72b59a0b99db746bdd26040c817bfc305e9dd644751255410d7adb5688bdb3625dcf68dc714103
   languageName: node
   linkType: hard
 
@@ -1309,6 +1366,13 @@ __metadata:
     buf-compare: ^1.0.0
     is-error: ^2.2.0
   checksum: 20593bd6d7f7d7d634a16be787e4f4728d25e754f96827a54966a6aaa37ce3115a5436b7323198d2c418f426e072266e882f681ef86cfc0f96ee2f092f344337
+  languageName: node
+  linkType: hard
+
+"csstype@npm:^3.0.2":
+  version: 3.1.2
+  resolution: "csstype@npm:3.1.2"
+  checksum: e1a52e6c25c1314d6beef5168da704ab29c5186b877c07d822bd0806717d9a265e8493a2e35ca7e68d0f5d472d43fac1cdce70fd79fd0853dff81f3028d857b5
   languageName: node
   linkType: hard
 
@@ -2036,6 +2100,7 @@ __metadata:
     "@anywidget/react": ^0.0.2
     "@apache-arrow/es2015-esm": ^13.0.0
     "@babel/runtime": ^7.22.11
+    "@geoarrow/deck.gl-layers": 0.1.0-beta.1
     "@loaders.gl/core": ^3.4.13
     "@loaders.gl/images": ^3.4.13
     "@loaders.gl/schema": ^3.4.13
@@ -2046,6 +2111,7 @@ __metadata:
     "@luma.gl/webgl": ^8.5.20
     "@math.gl/core": ^3.6.3
     "@math.gl/culling": ^3.6.3
+    "@types/react": ^18.2.23
     deck.gl: ^8.9.27
     esbuild: ^0.19.2
     esbuild-plugin-wasm: ^1.1.0
