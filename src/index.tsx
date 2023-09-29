@@ -5,10 +5,6 @@ import DeckGL from "deck.gl/typed";
 import * as arrow from "@apache-arrow/es2015-esm";
 import { GeoArrowPointLayer } from "@geoarrow/deck.gl-layers";
 
-// source: Natural Earth http://www.naturalearthdata.com/ via geojson.xyz
-const AIR_PORTS =
-  "https://d2ad6b4ur7yvpq.cloudfront.net/naturalearth-3.3.0/ne_10m_airports.geojson";
-
 const INITIAL_VIEW_STATE = {
   latitude: 10,
   longitude: 0,
@@ -19,18 +15,29 @@ const INITIAL_VIEW_STATE = {
 
 const MAP_STYLE =
   "https://basemaps.cartocdn.com/gl/positron-nolabels-gl-style/style.json";
-const NAV_CONTROL_STYLE = {
-  position: "absolute",
-  top: 10,
-  left: 10,
-};
 
 function App() {
-  let [dataView, setDataView] = useModelState<DataView>("buffer");
+  let [dataView] = useModelState<DataView>("table_buffer");
+  let [radiusUnits] = useModelState("radius_units");
+  let [radiusScale] = useModelState("radius_scale");
+  let [radiusMinPixels] = useModelState("radius_min_pixels");
+  let [radiusMaxPixels] = useModelState("radius_max_pixels");
+  let [lineWidthUnits] = useModelState("line_width_units");
+  let [lineWidthScale] = useModelState("line_width_scale");
+  let [lineWidthMinPixels] = useModelState("line_width_min_pixels");
+  let [lineWidthMaxPixels] = useModelState("line_width_max_pixels");
+  let [stroked] = useModelState("stroked");
+  let [filled] = useModelState("filled");
+  let [billboard] = useModelState("billboard");
+  let [antialiasing] = useModelState("antialiasing");
+  let [getRadius] = useModelState("get_radius");
+  let [getFillColor] = useModelState("get_fill_color");
+  let [getLineColor] = useModelState("get_line_color");
+  let [getLineWidth] = useModelState("get_line_width");
 
   const layers = [];
 
-  if (dataView.byteLength > 0) {
+  if (dataView && dataView.byteLength > 0) {
     const arrowTable = arrow.tableFromIPC(dataView.buffer);
     // TODO: allow other names
     const geometryColumnIndex = arrowTable.schema.fields.findIndex(
@@ -45,12 +52,22 @@ function App() {
           const layer = new GeoArrowPointLayer({
             id: "geoarrow-points",
             data: arrowTable,
-            getFillColor: [0, 255, 0],
-            getLineColor: [0, 0, 255],
-            stroked: true,
-            radiusMinPixels: 1,
-            getPointRadius: 10,
-            pointRadiusMinPixels: 0.8,
+            ...(radiusUnits && { radiusUnits }),
+            ...(radiusScale && { radiusScale }),
+            ...(radiusMinPixels && { radiusMinPixels }),
+            ...(radiusMaxPixels && { radiusMaxPixels }),
+            ...(lineWidthUnits && { lineWidthUnits }),
+            ...(lineWidthScale && { lineWidthScale }),
+            ...(lineWidthMinPixels && { lineWidthMinPixels }),
+            ...(lineWidthMaxPixels && { lineWidthMaxPixels }),
+            ...(stroked && { stroked }),
+            ...(filled && { filled }),
+            ...(billboard && { billboard }),
+            ...(antialiasing && { antialiasing }),
+            ...(getRadius && { getRadius }),
+            ...(getFillColor && { getFillColor }),
+            ...(getLineColor && { getLineColor }),
+            ...(getLineWidth && { getLineWidth }),
           });
           layers.push(layer);
         }
@@ -71,7 +88,6 @@ function App() {
         // ContextProvider={MapContext.Provider}
       >
         <Map mapStyle={MAP_STYLE} />
-        {/* <NavigationControl style={NAV_CONTROL_STYLE} /> */}
       </DeckGL>
     </div>
   );
