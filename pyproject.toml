@@ -8,10 +8,19 @@ packages = [{include = "lonboard"}]
 
 [tool.poetry.dependencies]
 python = "^3.8"
-jupyterlab = "^4.0.5"
-anywidget = {version = "^0.6.3", extras = ["dev"]}
+anywidget = "^0.6.3"
 pyarrow = "^13.0.0"
 geopandas = ">=0.13"
+# This is a dependency of anywidget[dev], and used in anywidget.experimental but
+# we declare it here so that we don't need to pull in watchfiles in
+# anywidget[dev] as a non-dev dependency
+comm = "^0.1.4"
+
+
+[tool.poetry.group.dev.dependencies]
+anywidget = {version = "^0.6.3", extras = ["dev"]}
+jupyterlab = "^4.0.5"
+watchfiles = "^0.20.0"
 
 
 [build-system]
