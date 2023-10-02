@@ -19,5 +19,3 @@ class Map(anywidget.AnyWidget):
     layers = traitlets.List(trait=traitlets.Instance(BaseLayer)).tag(
         sync=True, **ipywidgets.widget_serialization
     )
-
-

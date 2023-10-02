@@ -23,6 +23,7 @@ class BaseLayer(ipywidgets.Widget):
 
             yield key
 
+
 class PointLayer(BaseLayer):
     _layer_type = traitlets.Unicode("scatterplot").tag(sync=True)
 
