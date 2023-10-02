@@ -4,7 +4,7 @@ import geopandas as gpd
 import numpy as np
 import pyarrow as pa
 
-from deck_widget.geoarrow.extension_types import construct_geometry_array
+from lonboard.geoarrow.extension_types import construct_geometry_array
 
 
 def geopandas_to_geoarrow(
