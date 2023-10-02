@@ -1,34 +1,17 @@
 {
   "dependencies": {
     "@anywidget/react": "^0.0.2",
-    "@apache-arrow/es2015-esm": "^13.0.0",
     "@babel/runtime": "^7.22.11",
+    "@deck.gl/core": "^8.9.30",
+    "@deck.gl/layers": "^8.9.30",
+    "@deck.gl/react": "^8.9.30",
     "@geoarrow/deck.gl-layers": "0.1.0-beta.4",
-    "@loaders.gl/core": "^3.4.13",
-    "@loaders.gl/images": "^3.4.13",
-    "@loaders.gl/schema": "^3.4.13",
-    "@luma.gl/core": "^8.5.20",
-    "@luma.gl/engine": "^8.5.20",
-    "@luma.gl/gltools": "^8.5.20",
-    "@luma.gl/shadertools": "^8.5.20",
-    "@luma.gl/webgl": "^8.5.20",
-    "@math.gl/core": "^3.6.3",
-    "@math.gl/culling": "^3.6.3",
     "apache-arrow": "^13.0.0",
-    "deck.gl": "^8.9.27",
-    "gl-matrix": "^3.4.3",
     "maplibre-gl": "^3.3.1",
     "parquet-wasm": "^0.4.0",
     "react": "^18.2.0",
     "react-dom": "^18.2.0",
     "react-map-gl": "^7.1.5"
-  },
-  "resolutions": {
-    "@luma.gl/core": "8.5.20",
-    "@luma.gl/engine": "8.5.20",
-    "@luma.gl/gltools": "8.5.20",
-    "@luma.gl/shadertools": "8.5.20",
-    "@luma.gl/webgl": "8.5.20"
   },
   "devDependencies": {
     "@types/react": "^18.2.23",
