@@ -9,7 +9,7 @@
     "@loaders.gl/schema": "^3.4.13",
     "@luma.gl/core": "^8.5.20",
     "@luma.gl/engine": "^8.5.20",
-    "@luma.gl/gltools": "^8.5.20",
+    "@luma.gl/gltools": "^8.5.21",
     "@luma.gl/shadertools": "^8.5.20",
     "@luma.gl/webgl": "^8.5.20",
     "@math.gl/core": "^3.6.3",
@@ -26,7 +26,7 @@
   "resolutions": {
     "@luma.gl/core": "8.5.20",
     "@luma.gl/engine": "8.5.20",
-    "@luma.gl/gltools": "8.5.20",
+    "@luma.gl/gltools": "8.5.21",
     "@luma.gl/shadertools": "8.5.20",
     "@luma.gl/webgl": "8.5.20"
   },
