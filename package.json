@@ -1,7 +1,7 @@
 {
   "dependencies": {
     "@anywidget/react": "^0.0.2",
-    "@babel/runtime": "^7.22.11",
+    "@babel/runtime": "^7.23.1",
     "@deck.gl/core": "^8.9.30",
     "@deck.gl/layers": "^8.9.30",
     "@deck.gl/react": "^8.9.30",
