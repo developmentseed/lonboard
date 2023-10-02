@@ -1,3 +1,9 @@
+*.geojson
+*.geojson.zip
+*.arrow
+*.parquet
+*.feather
+
 # pixi environments
 .pixi
 .ipynb_checkpoints

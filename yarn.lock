@@ -429,15 +429,14 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@geoarrow/deck.gl-layers@npm:0.1.0-beta.1":
-  version: 0.1.0-beta.1
-  resolution: "@geoarrow/deck.gl-layers@npm:0.1.0-beta.1"
-  dependencies:
-    apache-arrow: ^13.0.0
+"@geoarrow/deck.gl-layers@npm:0.1.0-beta.4":
+  version: 0.1.0-beta.4
+  resolution: "@geoarrow/deck.gl-layers@npm:0.1.0-beta.4"
   peerDependencies:
     "@deck.gl/core": ^8.9.23
     "@deck.gl/layers": ^8.9.23
-  checksum: fc6cb0c1ff00cf0b012989c9d1763155e9f99960931c4108bc47edbd376feb91e5b05ccab76d4907778279d1ac950e55784846ca3114f59a92f629c08c01696f
+    apache-arrow: ^13.0.0
+  checksum: 40521a0cd27f12f3f9f8acb033c2c2f6a88ceaa42c82bdad21fc3e640b1b349a695c8a7c60451470a390be7c2005c29fc8953e311a910526b73cf6e77d5aa74f
   languageName: node
   linkType: hard
 
@@ -2100,7 +2099,7 @@ __metadata:
     "@anywidget/react": ^0.0.2
     "@apache-arrow/es2015-esm": ^13.0.0
     "@babel/runtime": ^7.22.11
-    "@geoarrow/deck.gl-layers": 0.1.0-beta.1
+    "@geoarrow/deck.gl-layers": 0.1.0-beta.4
     "@loaders.gl/core": ^3.4.13
     "@loaders.gl/images": ^3.4.13
     "@loaders.gl/schema": ^3.4.13
@@ -2112,6 +2111,7 @@ __metadata:
     "@math.gl/core": ^3.6.3
     "@math.gl/culling": ^3.6.3
     "@types/react": ^18.2.23
+    apache-arrow: ^13.0.0
     deck.gl: ^8.9.27
     esbuild: ^0.19.2
     esbuild-plugin-wasm: ^1.1.0
