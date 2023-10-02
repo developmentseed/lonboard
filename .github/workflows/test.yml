@@ -30,6 +30,13 @@ jobs:
       # - name: Run tests
       #   run: pytest
 
+      - name: Cache pre-commit virtualenvs
+        uses: actions/cache@v3
+        if: matrix.python-version == 3.9
+        with:
+          path: ~/.cache/pre-commit
+          key: pre-commit-3|${{ hashFiles('.pre-commit-config.yaml') }}
+
       # TODO: switch this to run on e.g. 3.11 (how to get the if statement to
       # work?)
       # Run pre-commit (only for python-3.9)
