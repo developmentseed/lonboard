@@ -4,7 +4,7 @@ version = "0.1.0"
 description = "Extremely fast geospatial data visualization in Python."
 authors = ["Kyle Barron <kyle@developmentseed.org>"]
 readme = "README.md"
-packages = [{include = "lonboard"}]
+packages = [{ include = "lonboard" }]
 
 [tool.poetry.dependencies]
 python = "^3.8"
@@ -18,11 +18,22 @@ comm = "^0.1.4"
 
 
 [tool.poetry.group.dev.dependencies]
-anywidget = {version = "^0.6.3", extras = ["dev"]}
+anywidget = { version = "^0.6.3", extras = ["dev"] }
 jupyterlab = "^4.0.5"
 watchfiles = "^0.20.0"
+pre-commit = "^3.4.0"
 
 
 [build-system]
 requires = ["poetry-core"]
 build-backend = "poetry.core.masonry.api"
+
+[tool.isort]
+profile = "black"
+
+[tool.ruff]
+
+[tool.ruff.extend-per-file-ignores]
+"__init__.py" = [
+    "F401", # Allow unused imports in __init__.py files
+]
