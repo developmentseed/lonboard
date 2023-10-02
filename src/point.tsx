@@ -3,7 +3,7 @@ import { createRender, useModelState } from "@anywidget/react";
 import Map from "react-map-gl/maplibre";
 import DeckGL from "deck.gl/typed";
 import * as arrow from "@apache-arrow/es2015-esm";
-import { GeoArrowPointLayer } from "@geoarrow/deck.gl-layers";
+import { GeoArrowScatterplotLayer } from "@geoarrow/deck.gl-layers";
 
 const INITIAL_VIEW_STATE = {
   latitude: 10,
@@ -49,7 +49,7 @@ function App() {
     switch (geoarrowTypeName) {
       case "geoarrow.point":
         {
-          const layer = new GeoArrowPointLayer({
+          const layer = new GeoArrowScatterplotLayer({
             id: "geoarrow-points",
             data: arrowTable,
             ...(radiusUnits && { radiusUnits }),
