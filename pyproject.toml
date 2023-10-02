@@ -21,6 +21,7 @@ comm = "^0.1.4"
 anywidget = { version = "^0.6.3", extras = ["dev"] }
 jupyterlab = "^4.0.5"
 watchfiles = "^0.20.0"
+pre-commit = "^3.4.0"
 
 
 [build-system]
