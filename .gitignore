@@ -3,6 +3,9 @@
 *.arrow
 *.parquet
 *.feather
+.ruff_cache
+dist
+.DS_Store
 
 # pixi environments
 .pixi
