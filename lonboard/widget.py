@@ -5,12 +5,10 @@ from io import BytesIO
 
 import anywidget
 import geopandas as gpd
-import psygnal
+import ipywidgets
 import pyarrow as pa
 import pyarrow.feather as feather
 import traitlets
-from anywidget.experimental import widget
-from pydantic import BaseModel
 
 from lonboard.geoarrow.geopandas_interop import geopandas_to_geoarrow
 
@@ -18,56 +16,27 @@ from lonboard.geoarrow.geopandas_interop import geopandas_to_geoarrow
 bundler_output_dir = pathlib.Path(__file__).parent / "static"
 _css = bundler_output_dir / "styles.css"
 
-import ipywidgets
+class BaseLayer(ipywidgets.Widget):
+    def _repr_keys(self):
+        # Exclude the table_buffer from the repr
 
-# ipywidgets.link
-# ipywidgets.dlink?
+        # TODO: also exclude keys when numpy array?
+        exclude_keys = {"table_buffer"}
+        for key in super()._repr_keys():
+            if key in exclude_keys:
+                continue
 
-
-import anywidget
+            yield key
 
 class Map(anywidget.AnyWidget):
     _esm = bundler_output_dir / "index.js"
 
-    # TODO: make this an instance of BaseLayer
-    value = traitlets.Int(0)
-    layers = traitlets.List(
-        trait=traitlets.Instance(ipywidgets.DOMWidget)
-    ).tag(sync=True, **ipywidgets.widget_serialization)
-
-def _widget_to_json(x, obj):
-    print(x)
-    print(obj)
-
-class Test(anywidget.AnyWidget):
-    value = traitlets.Int(0).tag(sync=True, to_json=_widget_to_json)
+    layers = traitlets.List(trait=traitlets.Instance(BaseLayer)).tag(
+        sync=True, **ipywidgets.widget_serialization
+    )
 
 
-# class Map(anywidget.AnyWidget):
-#     _esm = """
-#     async function unpack_models(model_ids, manager) {
-#         return Promise.all(
-#             model_ids.map(id => manager.get_model(id.slice("IPY_MODEL_".length)))
-#         );
-#     }
-#     export async function render({ model, el }) {
-#        let model_ids = model.get("layers");
-#         let children_models = await unpack_models(model_ids, model.widget_manager);
-#         for (let model of children_models) {
-#             let child_view = await model.widget_manager.create_view(model);
-#             el.appendChild(child_view.el);
-#         }
-#     }
-#     """
-#     value = traitlets.Int(0)
-#     layers = traitlets.List(
-#         trait=traitlets.Instance(ipywidgets.DOMWidget)
-#     ).tag(sync=True, **ipywidgets.widget_serialization)
-
-
-class PointLayer(anywidget.AnyWidget):
-    _esm = bundler_output_dir / "point.js"
-
+class PointLayer(BaseLayer):
     _layer_type = traitlets.Unicode("scatterplot").tag(sync=True)
 
     table_buffer = traitlets.Bytes().tag(sync=True)
@@ -109,9 +78,7 @@ class PointLayer(anywidget.AnyWidget):
         return cls.from_pyarrow(table, **kwargs)
 
 
-class LineStringLayer(anywidget.AnyWidget):
-    _esm = bundler_output_dir / "linestring.js"
-
+class LineStringLayer(BaseLayer):
     _layer_type = traitlets.Unicode("path").tag(sync=True)
 
     table_buffer = traitlets.Bytes().tag(sync=True)
@@ -146,9 +113,7 @@ class LineStringLayer(anywidget.AnyWidget):
         return cls.from_pyarrow(table, **kwargs)
 
 
-class PolygonLayer(anywidget.AnyWidget):
-    _esm = bundler_output_dir / "polygon.js"
-
+class PolygonLayer(BaseLayer):
     _layer_type = traitlets.Unicode("solid-polygon").tag(sync=True)
 
     table_buffer = traitlets.Bytes().tag(sync=True)

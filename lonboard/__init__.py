@@ -1,1 +1,1 @@
-from .widget import LineStringLayer, PointLayer, PolygonLayer
+from .widget import LineStringLayer, Map, PointLayer, PolygonLayer

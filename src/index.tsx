@@ -1,6 +1,4 @@
 import * as React from "react";
-import { useEffect, useState } from "react";
-// import {} from "";
 import { createRender, useModelState, useModel } from "@anywidget/react";
 import Map from "react-map-gl/maplibre";
 import DeckGL from "@deck.gl/react/typed";
@@ -10,8 +8,7 @@ import {
   GeoArrowScatterplotLayer,
   GeoArrowSolidPolygonLayer,
 } from "@geoarrow/deck.gl-layers";
-import { Layer } from "@deck.gl/core/typed";
-// import { useModel } from "./anywidget";
+import type { Layer } from "@deck.gl/core/typed";
 
 const INITIAL_VIEW_STATE = {
   latitude: 10,
@@ -23,66 +20,6 @@ const INITIAL_VIEW_STATE = {
 
 const MAP_STYLE =
   "https://basemaps.cartocdn.com/gl/positron-nolabels-gl-style/style.json";
-
-function createLayer() {}
-
-async function unpack_models(model_ids: string[], manager) {
-  return Promise.all(
-    model_ids.map((id) => manager.get_model(id.slice("IPY_MODEL_".length)))
-  );
-}
-
-// /**
-//  * @template T
-//  *
-//  * @param {string} key
-//  * @returns {[T, (value: T) => void]}
-//  */
-// function useLocalModelState(model, key) {
-//   let [value, setValue] = React.useState(model.get(key));
-//   React.useEffect(() => {
-//     let callback = () => setValue(model.get(key));
-//     model.on(`change:${key}`, callback);
-//     return () => model.off(`change:${key}`, callback);
-//   }, [model, key]);
-//   return [
-//     value,
-//     (value) => {
-//       model.set(key, value);
-//       model.save_changes();
-//     },
-//   ];
-// }
-
-async function _getChildLayers(model): any[] {
-  const modelLayerIds = model.get("layers");
-  const models = await unpack_models(modelLayerIds, model.widget_manager);
-}
-
-async function _createLayers(model): Promise<Layer[]> {
-  const modelLayerIds = model.get("layers");
-  const models = await unpack_models(modelLayerIds, model.widget_manager);
-  const layers = [];
-  for (const model of models) {
-    const layerType = model.get("_layer_type");
-    switch (layerType) {
-      case "scatterplot":
-        layers.push(createScatterplotLayer(model));
-        break;
-      case "path":
-        layers.push(createPathLayer(model));
-        break;
-      case "solid-polygon":
-        layers.push(createSolidPolygonLayer(model));
-        break;
-      default:
-        console.warn(`no layer supported for ${layerType}`);
-        break;
-    }
-  }
-
-  return layers;
-}
 
 function createScatterplotLayer(model): GeoArrowScatterplotLayer {
   let [dataView] = useLocalModelState(model, "table_buffer");
@@ -180,68 +117,53 @@ function createSolidPolygonLayer(model): GeoArrowSolidPolygonLayer {
     ...(getLineColor && { getLineColor }),
   });
 }
+
 /**
  * @template T
  *
- * @param {string} key
  * @returns {[T, (value: T) => void]}
  */
 function useLocalModelState(model, key: string) {
-	let [value, setValue] = React.useState(model.get(key));
-	React.useEffect(() => {
-		let callback = () => setValue(model.get(key));
-		model.on(`change:${key}`, callback);
-		return () => model.off(`change:${key}`, callback);
-	}, [model, key]);
-	return [
-		value,
-		(value) => {
-			model.set(key, value);
-			model.save_changes();
-		},
-	];
+  let [value, setValue] = React.useState(model.get(key));
+  React.useEffect(() => {
+    let callback = () => setValue(model.get(key));
+    model.on(`change:${key}`, callback);
+    return () => model.off(`change:${key}`, callback);
+  }, [model, key]);
+  return [
+    value,
+    (value) => {
+      model.set(key, value);
+      model.save_changes();
+    },
+  ];
 }
+
 function App() {
   let model = useModel();
-  console.log("top level model");
-  console.log(model);
-
-  // let childLayerIds = model.get("layers");
   let [childLayerIds] = useModelState<string[]>("layers");
-  console.log("childLayerIds", childLayerIds);
 
-  const layers = [];
+  const deckLayers: Layer[] = [];
   for (const childLayerId of childLayerIds) {
-    console.log(childLayerId);
-    // model_ids.map((id) => manager.get_model());
+    // NOTE: The public way to access these models is via
+    // `model.widget_manager.get_model()` but that's async, so I'm hacking and
+    // using `_modelsSync` for now. Should probably use the public function in
+    // the future?
+
     const childLayerModel = model.widget_manager._modelsSync.get(
       childLayerId.slice("IPY_MODEL_".length)
     );
 
-    // const [getFillColor] = useLocalModelState(childLayerModel, "get_fill_color");
-    // console.log("getFillColor", getFillColor);
-
-    // const key = "get_fill_color";
-    // let [value, setValue] = React.useState(childLayerModel.get(key));
-    // React.useEffect(() => {
-    //   let callback = () => setValue(model.get(key));
-    //   model.on(`change:${key}`, callback);
-    //   return () => model.off(`change:${key}`, callback);
-    // }, [model, key]);
-    // console.log("value", value);
-
-    console.log(childLayerModel);
-
     const layerType = childLayerModel.get("_layer_type");
     switch (layerType) {
       case "scatterplot":
-        layers.push(createScatterplotLayer(childLayerModel));
+        deckLayers.push(createScatterplotLayer(childLayerModel));
         break;
       case "path":
-        layers.push(createPathLayer(childLayerModel));
+        deckLayers.push(createPathLayer(childLayerModel));
         break;
       case "solid-polygon":
-        layers.push(createSolidPolygonLayer(childLayerModel));
+        deckLayers.push(createSolidPolygonLayer(childLayerModel));
         break;
       default:
         console.warn(`no layer supported for ${layerType}`);
@@ -249,73 +171,12 @@ function App() {
     }
   }
 
-  console.log(layers);
-
-  // console.log(model);
-
-  // const [layerModels, layerModelsSet] = useState<any[]>([]);
-
-  // useEffect(() => {
-  //   async function setLayerModels() {
-  //     const layers = await _createLayers(model);
-  //     layersSet(layers);
-  //   }
-
-  //   setLayers();
-  // }, [...childLayerIds]);
-
-  // const manager = model.widget_manager;
-  // console.log(layers);
-  // const layers = [];
-
-  // if (dataView && dataView.byteLength > 0) {
-  //   const arrowTable = arrow.tableFromIPC(dataView.buffer);
-  //   // TODO: allow other names
-  //   const geometryColumnIndex = arrowTable.schema.fields.findIndex(
-  //     (field) => field.name == "geometry"
-  //   );
-
-  //   const geometryField = arrowTable.schema.fields[geometryColumnIndex];
-  //   const geoarrowTypeName = geometryField.metadata.get("ARROW:extension:name");
-  //   switch (geoarrowTypeName) {
-  //     case "geoarrow.point":
-  //       {
-  //         const layer = new GeoArrowScatterplotLayer({
-  //           id: "geoarrow-points",
-  //           data: arrowTable,
-  //           ...(radiusUnits && { radiusUnits }),
-  //           ...(radiusScale && { radiusScale }),
-  //           ...(radiusMinPixels && { radiusMinPixels }),
-  //           ...(radiusMaxPixels && { radiusMaxPixels }),
-  //           ...(lineWidthUnits && { lineWidthUnits }),
-  //           ...(lineWidthScale && { lineWidthScale }),
-  //           ...(lineWidthMinPixels && { lineWidthMinPixels }),
-  //           ...(lineWidthMaxPixels && { lineWidthMaxPixels }),
-  //           ...(stroked && { stroked }),
-  //           ...(filled && { filled }),
-  //           ...(billboard && { billboard }),
-  //           ...(antialiasing && { antialiasing }),
-  //           ...(getRadius && { getRadius }),
-  //           ...(getFillColor && { getFillColor }),
-  //           ...(getLineColor && { getLineColor }),
-  //           ...(getLineWidth && { getLineWidth }),
-  //         });
-  //         layers.push(layer);
-  //       }
-  //       break;
-
-  //     default:
-  //       console.warn(`no layer supported for ${geoarrowTypeName}`);
-  //       break;
-  //   }
-  // }
-
   return (
     <div style={{ height: 500 }}>
       <DeckGL
         initialViewState={INITIAL_VIEW_STATE}
         controller={true}
-        layers={layers}
+        layers={deckLayers}
         // ContextProvider={MapContext.Provider}
       >
         <Map mapStyle={MAP_STYLE} />
