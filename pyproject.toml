@@ -5,6 +5,7 @@ description = "Extremely fast geospatial data visualization in Python."
 authors = ["Kyle Barron <kyle@developmentseed.org>"]
 readme = "README.md"
 packages = [{ include = "lonboard" }]
+include = ["lonboard/static/*.js"]
 
 [tool.poetry.dependencies]
 python = "^3.8"

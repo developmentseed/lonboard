@@ -1,8 +1,8 @@
 import * as React from "react";
 import { createRender, useModelState } from "@anywidget/react";
 import Map from "react-map-gl/maplibre";
-import DeckGL from "deck.gl/typed";
-import * as arrow from "@apache-arrow/es2015-esm";
+import DeckGL from "@deck.gl/react/typed";
+import * as arrow from "apache-arrow";
 import { GeoArrowPathLayer } from "@geoarrow/deck.gl-layers";
 
 const INITIAL_VIEW_STATE = {
