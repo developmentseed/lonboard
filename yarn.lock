@@ -757,13 +757,13 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@luma.gl/shadertools@npm:8.5.20":
-  version: 8.5.20
-  resolution: "@luma.gl/shadertools@npm:8.5.20"
+"@luma.gl/shadertools@npm:8.5.21":
+  version: 8.5.21
+  resolution: "@luma.gl/shadertools@npm:8.5.21"
   dependencies:
     "@babel/runtime": ^7.0.0
     "@math.gl/core": ^3.5.0
-  checksum: 6b5cf16dcca99eed275e85bcc3a02b48f6c3cfd8f7568745313eb817b7b5c00ccbc4429ee97f390749894fff32d32766982733ab50881f255cc9aa7b9dfaeca3
+  checksum: ef641f152177a2ba0942ac8e79875dedfd1779211bf507d20ab82413a43181ab162092c66d67041e029b70b1d210ddaa3d6d5839de62324c8442540ecf413fd1
   languageName: node
   linkType: hard
 
@@ -2106,7 +2106,7 @@ __metadata:
     "@luma.gl/core": ^8.5.20
     "@luma.gl/engine": ^8.5.20
     "@luma.gl/gltools": ^8.5.20
-    "@luma.gl/shadertools": ^8.5.20
+    "@luma.gl/shadertools": ^8.5.21
     "@luma.gl/webgl": ^8.5.20
     "@math.gl/core": ^3.6.3
     "@math.gl/culling": ^3.6.3
