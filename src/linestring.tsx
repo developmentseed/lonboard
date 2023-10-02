@@ -3,7 +3,7 @@ import { createRender, useModelState } from "@anywidget/react";
 import Map from "react-map-gl/maplibre";
 import DeckGL from "deck.gl/typed";
 import * as arrow from "@apache-arrow/es2015-esm";
-import { GeoArrowLineStringLayer } from "@geoarrow/deck.gl-layers";
+import { GeoArrowPathLayer } from "@geoarrow/deck.gl-layers";
 
 const INITIAL_VIEW_STATE = {
   latitude: 10,
@@ -43,20 +43,20 @@ function App() {
     switch (geoarrowTypeName) {
       case "geoarrow.linestring":
         {
-          const layer = new GeoArrowLineStringLayer({
-            id: "geoarrow-linestring",
+          const layer = new GeoArrowPathLayer({
+            id: "geoarrow-path",
             data: arrowTable,
 
-            ...(widthUnits && {widthUnits}),
-            ...(widthScale && {widthScale}),
-            ...(widthMinPixels && {widthMinPixels}),
-            ...(widthMaxPixels && {widthMaxPixels}),
-            ...(jointRounded && {jointRounded}),
-            ...(capRounded && {capRounded}),
-            ...(miterLimit && {miterLimit}),
-            ...(billboard && {billboard}),
-            ...(getColor && {getColor}),
-            ...(getWidth && {getWidth}),
+            ...(widthUnits && { widthUnits }),
+            ...(widthScale && { widthScale }),
+            ...(widthMinPixels && { widthMinPixels }),
+            ...(widthMaxPixels && { widthMaxPixels }),
+            ...(jointRounded && { jointRounded }),
+            ...(capRounded && { capRounded }),
+            ...(miterLimit && { miterLimit }),
+            ...(billboard && { billboard }),
+            ...(getColor && { getColor }),
+            ...(getWidth && { getWidth }),
           });
           layers.push(layer);
         }
