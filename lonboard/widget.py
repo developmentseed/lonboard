@@ -11,7 +11,7 @@ import traitlets
 
 from lonboard.geoarrow.geopandas_interop import geopandas_to_geoarrow
 
-# bundler yields deck_widget/static/{index.js,styles.css}
+# bundler yields lonboard/static/{index.js,styles.css}
 bundler_output_dir = pathlib.Path(__file__).parent / "static"
 _css = bundler_output_dir / "styles.css"
 
