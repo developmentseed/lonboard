@@ -13,7 +13,8 @@ from lonboard.geoarrow.geopandas_interop import geopandas_to_geoarrow
 
 class BaseLayer(ipywidgets.Widget):
     def _repr_keys(self):
-        # Exclude the table_buffer from the repr
+        # Exclude the table_buffer from the repr; otherwise printing the buffer will
+        # often crash the kernel.
 
         # TODO: also exclude keys when numpy array?
         exclude_keys = {"table_buffer"}
