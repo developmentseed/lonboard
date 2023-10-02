@@ -695,17 +695,17 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@luma.gl/core@npm:8.5.20":
-  version: 8.5.20
-  resolution: "@luma.gl/core@npm:8.5.20"
+"@luma.gl/core@npm:8.5.21":
+  version: 8.5.21
+  resolution: "@luma.gl/core@npm:8.5.21"
   dependencies:
     "@babel/runtime": ^7.0.0
-    "@luma.gl/constants": 8.5.20
-    "@luma.gl/engine": 8.5.20
-    "@luma.gl/gltools": 8.5.20
-    "@luma.gl/shadertools": 8.5.20
-    "@luma.gl/webgl": 8.5.20
-  checksum: 76385087c94ab2e8a3fc0d1dbe252f133921bb4b960030594cbf495cdcf777018de4c8bfc9ef1e445959b2697872a77f77f74c48e10f60d27665cca3515b1ce6
+    "@luma.gl/constants": 8.5.21
+    "@luma.gl/engine": 8.5.21
+    "@luma.gl/gltools": 8.5.21
+    "@luma.gl/shadertools": 8.5.21
+    "@luma.gl/webgl": 8.5.21
+  checksum: f45e3d825868a54fc3cf06e0f61d6618b45b1862c402b4c46aa4e8f00b79515fcea6c2d36f5b0b5c8d8bb684849bfcae735e36c54a3720aa6a80d6a81f3f2331
   languageName: node
   linkType: hard
 
@@ -2103,7 +2103,7 @@ __metadata:
     "@loaders.gl/core": ^3.4.13
     "@loaders.gl/images": ^3.4.13
     "@loaders.gl/schema": ^3.4.13
-    "@luma.gl/core": ^8.5.20
+    "@luma.gl/core": ^8.5.21
     "@luma.gl/engine": ^8.5.20
     "@luma.gl/gltools": ^8.5.20
     "@luma.gl/shadertools": ^8.5.20
