@@ -1,17 +1,17 @@
 [tool.poetry]
-name = "deck-widget"
+name = "lonboard"
 version = "0.1.0"
-description = ""
+description = "Extremely fast geospatial data visualization in Python."
 authors = ["Kyle Barron <kyle@developmentseed.org>"]
 readme = "README.md"
-packages = [{include = "deck_widget"}]
+packages = [{include = "lonboard"}]
 
 [tool.poetry.dependencies]
-python = "^3.11"
+python = "^3.8"
 jupyterlab = "^4.0.5"
 anywidget = {version = "^0.6.3", extras = ["dev"]}
 pyarrow = "^13.0.0"
-geopandas = "^0.14.0"
+geopandas = ">=0.13"
 
 
 [build-system]

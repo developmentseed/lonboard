@@ -9,7 +9,7 @@ import pyarrow as pa
 import pyarrow.feather as feather
 import traitlets
 
-from deck_widget.geoarrow.geopandas_interop import geopandas_to_geoarrow
+from lonboard.geoarrow.geopandas_interop import geopandas_to_geoarrow
 
 # bundler yields deck_widget/static/{index.js,styles.css}
 bundler_output_dir = pathlib.Path(__file__).parent / "static"
