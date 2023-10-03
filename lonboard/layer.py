@@ -7,6 +7,7 @@ import geopandas as gpd
 import ipywidgets
 import pyarrow as pa
 import pyarrow.feather as feather
+import pyarrow.parquet as pq
 import traitlets
 from anywidget import AnyWidget
 
@@ -65,8 +66,10 @@ class PointLayer(AnyWidget):
         ), "Only Point geometries are currently supported by this layer."
 
         with BytesIO() as bio:
-            feather.write_feather(table, bio, compression="uncompressed")
-            return cls(table_buffer=bio.getvalue(), **kwargs)
+            pq.write_table(table, bio, compression="ZSTD", compression_level=7)
+            table_buffer = bio.getvalue()
+
+        return cls(table_buffer=table_buffer, **kwargs)
 
     @classmethod
     def from_geopandas(cls, gdf: gpd.GeoDataFrame, **kwargs) -> PointLayer:
