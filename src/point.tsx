@@ -42,6 +42,9 @@ function parseParquet(dataView: DataView): arrow.Table {
 // NOTE: this was an attempt to only parse Parquet for the initial data and
 // whenever the data buffer changed. But I had issues where the wasm wasn't
 // ready yet when the original data needed to be instantiated
+//
+// NOTE2: I worked around this by adding a useEffect in the main App().. so this
+// function can probably be deleted
 function useModelParquetState(
   key: string,
   ...deps
@@ -86,13 +89,23 @@ function App() {
     callback();
   }, []);
 
-  // TODO: useModelParquetState seems like a preferable solution because it will
-  // only re-parse the parquet buffer when the data has changed, but it needs to
-  // be run _after_ the wasm has been asynchronously instantiated... and I ran
-  // into issues with it being run before the wasm had loaded
-  // let [mainTable] = useModelParquetState("parquet_table_buffer", wasmReady);
-
   let [dataView] = useModelState<DataView>("table_buffer");
+
+  const [dataTable, setDataTable] = useState<arrow.Table | null>(null);
+
+  // Only parse the table's parquet buffer when the buffer itself or wasmReady
+  // has changed
+  useEffect(() => {
+    const callback = () => {
+      if (wasmReady && dataView && dataView.byteLength > 0) {
+        const arrowTable = parseParquet(dataView);
+        setDataTable(arrowTable);
+      }
+    };
+
+    callback();
+  }, [wasmReady, dataView]);
+
   let [radiusUnits] = useModelState("radius_units");
   let [radiusScale] = useModelState("radius_scale");
   let [radiusMinPixels] = useModelState("radius_min_pixels");
@@ -111,48 +124,28 @@ function App() {
   let [getLineWidth] = useModelState("get_line_width");
 
   const layers = [];
-  if (wasmReady && dataView && dataView.byteLength > 0) {
-    // TODO: it would be nice to re-parse this only when the data has changed,
-    // and not when any other attribute has changed!
-    const arrowTable = parseParquet(dataView);
-    // TODO: allow other names
-    const geometryColumnIndex = arrowTable.schema.fields.findIndex(
-      (field) => field.name == "geometry"
-    );
-
-    const geometryField = arrowTable.schema.fields[geometryColumnIndex];
-    const geoarrowTypeName = geometryField.metadata.get("ARROW:extension:name");
-    switch (geoarrowTypeName) {
-      case "geoarrow.point":
-        {
-          const layer = new GeoArrowScatterplotLayer({
-            id: "geoarrow-points",
-            data: arrowTable,
-            ...(radiusUnits && { radiusUnits }),
-            ...(radiusScale && { radiusScale }),
-            ...(radiusMinPixels && { radiusMinPixels }),
-            ...(radiusMaxPixels && { radiusMaxPixels }),
-            ...(lineWidthUnits && { lineWidthUnits }),
-            ...(lineWidthScale && { lineWidthScale }),
-            ...(lineWidthMinPixels && { lineWidthMinPixels }),
-            ...(lineWidthMaxPixels && { lineWidthMaxPixels }),
-            ...(stroked && { stroked }),
-            ...(filled && { filled }),
-            ...(billboard && { billboard }),
-            ...(antialiasing && { antialiasing }),
-            ...(getRadius && { getRadius }),
-            ...(getFillColor && { getFillColor }),
-            ...(getLineColor && { getLineColor }),
-            ...(getLineWidth && { getLineWidth }),
-          });
-          layers.push(layer);
-        }
-        break;
-
-      default:
-        console.warn(`no layer supported for ${geoarrowTypeName}`);
-        break;
-    }
+  if (wasmReady && dataTable) {
+    const layer = new GeoArrowScatterplotLayer({
+      id: "geoarrow-points",
+      data: dataTable,
+      ...(radiusUnits && { radiusUnits }),
+      ...(radiusScale && { radiusScale }),
+      ...(radiusMinPixels && { radiusMinPixels }),
+      ...(radiusMaxPixels && { radiusMaxPixels }),
+      ...(lineWidthUnits && { lineWidthUnits }),
+      ...(lineWidthScale && { lineWidthScale }),
+      ...(lineWidthMinPixels && { lineWidthMinPixels }),
+      ...(lineWidthMaxPixels && { lineWidthMaxPixels }),
+      ...(stroked && { stroked }),
+      ...(filled && { filled }),
+      ...(billboard && { billboard }),
+      ...(antialiasing && { antialiasing }),
+      ...(getRadius && { getRadius }),
+      ...(getFillColor && { getFillColor }),
+      ...(getLineColor && { getLineColor }),
+      ...(getLineWidth && { getLineWidth }),
+    });
+    layers.push(layer);
   }
 
   return (
