@@ -3,7 +3,12 @@ import esbuild from "esbuild";
 // import { wasmLoader } from "esbuild-plugin-wasm";
 
 esbuild.build({
-  entryPoints: ["./src/index.tsx"],
+  entryPoints: [
+    "./src/index.tsx",
+    "./src/point.tsx",
+    "./src/linestring.tsx",
+    "./src/polygon.tsx",
+  ],
   bundle: true,
   minify: true,
   target: ["es2020"],

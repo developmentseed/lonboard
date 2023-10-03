@@ -1,14 +1,19 @@
 from __future__ import annotations
 
 from io import BytesIO
+from pathlib import Path
 
 import geopandas as gpd
 import ipywidgets
 import pyarrow as pa
 import pyarrow.feather as feather
 import traitlets
+from anywidget import AnyWidget
 
 from lonboard.geoarrow.geopandas_interop import geopandas_to_geoarrow
+
+# bundler yields lonboard/static/{index.js,styles.css}
+bundler_output_dir = Path(__file__).parent / "static"
 
 
 class BaseLayer(ipywidgets.Widget):
@@ -25,7 +30,9 @@ class BaseLayer(ipywidgets.Widget):
             yield key
 
 
-class PointLayer(BaseLayer):
+class PointLayer(AnyWidget):
+    _esm = bundler_output_dir / "point.js"
+
     _layer_type = traitlets.Unicode("scatterplot").tag(sync=True)
 
     table_buffer = traitlets.Bytes().tag(sync=True)
@@ -67,7 +74,8 @@ class PointLayer(BaseLayer):
         return cls.from_pyarrow(table, **kwargs)
 
 
-class LineStringLayer(BaseLayer):
+class LineStringLayer(AnyWidget):
+    _esm = bundler_output_dir / "linestring.js"
     _layer_type = traitlets.Unicode("path").tag(sync=True)
 
     table_buffer = traitlets.Bytes().tag(sync=True)
@@ -102,7 +110,8 @@ class LineStringLayer(BaseLayer):
         return cls.from_pyarrow(table, **kwargs)
 
 
-class PolygonLayer(BaseLayer):
+class PolygonLayer(AnyWidget):
+    _esm = bundler_output_dir / "polygon.js"
     _layer_type = traitlets.Unicode("solid-polygon").tag(sync=True)
 
     table_buffer = traitlets.Bytes().tag(sync=True)
