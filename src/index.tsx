@@ -139,21 +139,35 @@ function useLocalModelState(model, key: string) {
   ];
 }
 
+// Ref https://github.com/manzt/anywidget/pull/194
+async function unpack_models(model_ids, manager) {
+  console.log("unpack");
+  return Promise.all(
+    model_ids.map((id) => manager.get_model(id.slice("IPY_MODEL_".length)))
+  );
+}
+
 function App() {
   let model = useModel();
   let [childLayerIds] = useModelState<string[]>("layers");
+  let [childModels, childModelsSet] = React.useState<any[]>([]);
+
+  React.useEffect(() => {
+    async function accessChildModels() {
+      let children_models = await unpack_models(
+        childLayerIds,
+        model.widget_manager
+      );
+
+      console.log("child_models", children_models);
+      childModelsSet(children_models);
+    }
+
+    accessChildModels();
+  }, [childLayerIds]);
 
   const deckLayers: Layer[] = [];
-  for (const childLayerId of childLayerIds) {
-    // NOTE: The public way to access these models is via
-    // `model.widget_manager.get_model()` but that's async, so I'm hacking and
-    // using `_modelsSync` for now. Should probably use the public function in
-    // the future?
-
-    const childLayerModel = model.widget_manager._modelsSync.get(
-      childLayerId.slice("IPY_MODEL_".length)
-    );
-
+  for (const childLayerModel of childModels) {
     const layerType = childLayerModel.get("_layer_type");
     switch (layerType) {
       case "scatterplot":

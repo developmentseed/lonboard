@@ -5,7 +5,7 @@ import esbuild from "esbuild";
 esbuild.build({
   entryPoints: ["./src/index.tsx"],
   bundle: true,
-  minify: true,
+  minify: false,
   target: ["es2020"],
   outdir: "lonboard/static/",
   // plugins: [wasmLoader()],
