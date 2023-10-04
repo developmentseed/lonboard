@@ -1194,7 +1194,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"parquet-wasm@npm:^0.5.0-alpha.1":
+"parquet-wasm@npm:0.5.0-alpha.1":
   version: 0.5.0-alpha.1
   resolution: "parquet-wasm@npm:0.5.0-alpha.1"
   checksum: a0852c0e156d3862c8a93954aaf6a4aaf4ce670501f6871bae5e54ffe1e62286bf8dc70c7a1383c4ba5df210d6c2a3ccdc378e934745ca99497ed6fdde711e26
@@ -1313,7 +1313,7 @@ __metadata:
     esbuild: ^0.19.2
     esbuild-plugin-wasm: ^1.1.0
     maplibre-gl: ^3.3.1
-    parquet-wasm: ^0.5.0-alpha.1
+    parquet-wasm: 0.5.0-alpha.1
     react: ^18.2.0
     react-dom: ^18.2.0
     react-map-gl: ^7.1.5
