@@ -3,7 +3,6 @@ from __future__ import annotations
 from pathlib import Path
 
 import geopandas as gpd
-import ipywidgets
 import pyarrow as pa
 import traitlets
 from anywidget import AnyWidget
@@ -19,18 +18,21 @@ from lonboard.serialization import (
 bundler_output_dir = Path(__file__).parent / "static"
 
 
-class BaseLayer(ipywidgets.Widget):
-    def _repr_keys(self):
-        # Exclude the table_buffer from the repr; otherwise printing the buffer will
-        # often crash the kernel.
+class BaseLayer(AnyWidget):
+    pass
+    # Note: this _repr_keys is useful if subclassing directly from ipywidgets.Widget, as
+    # that will try to print all the included keys by default
+    # def _repr_keys(self):
+    #     # Exclude the table_buffer from the repr; otherwise printing the buffer will
+    #     # often crash the kernel.
 
-        # TODO: also exclude keys when numpy array?
-        exclude_keys = {"table_buffer"}
-        for key in super()._repr_keys():
-            if key in exclude_keys:
-                continue
+    #     # TODO: also exclude keys when numpy array?
+    #     exclude_keys = {"table_buffer"}
+    #     for key in super()._repr_keys():
+    #         if key in exclude_keys:
+    #             continue
 
-            yield key
+    #         yield key
 
 
 # NOTE: I found that traitlets.Union was **extremely** slow to validate a numpy ndarray.
@@ -46,8 +48,8 @@ COLOR_ACCESSOR = traitlets.Any().tag(sync=True, **COLOR_SERIALIZATION)
 FLOAT_ACCESSOR = traitlets.Any().tag(sync=True, **FLOAT_SERIALIZATION)
 
 
-class PointLayer(AnyWidget):
-    _esm = bundler_output_dir / "point.js"
+class ScatterplotLayer(BaseLayer):
+    _esm = bundler_output_dir / "scatterplot-layer.js"
 
     _layer_type = traitlets.Unicode("scatterplot").tag(sync=True)
 
@@ -70,7 +72,7 @@ class PointLayer(AnyWidget):
     get_line_width = FLOAT_ACCESSOR
 
     @classmethod
-    def from_pyarrow(cls, table: pa.Table, **kwargs) -> PointLayer:
+    def from_pyarrow(cls, table: pa.Table, **kwargs) -> ScatterplotLayer:
         assert (
             table.schema.field("geometry").metadata.get(b"ARROW:extension:name")
             == b"geoarrow.point"
@@ -80,13 +82,13 @@ class PointLayer(AnyWidget):
         return cls(table_buffer=table_buffer, **kwargs)
 
     @classmethod
-    def from_geopandas(cls, gdf: gpd.GeoDataFrame, **kwargs) -> PointLayer:
+    def from_geopandas(cls, gdf: gpd.GeoDataFrame, **kwargs) -> ScatterplotLayer:
         table = geopandas_to_geoarrow(gdf)
         return cls.from_pyarrow(table, **kwargs)
 
 
-class LineStringLayer(AnyWidget):
-    _esm = bundler_output_dir / "linestring.js"
+class PathLayer(BaseLayer):
+    _esm = bundler_output_dir / "path-layer.js"
     _layer_type = traitlets.Unicode("path").tag(sync=True)
 
     table_buffer = traitlets.Bytes().tag(sync=True)
@@ -103,7 +105,7 @@ class LineStringLayer(AnyWidget):
     get_width = FLOAT_ACCESSOR
 
     @classmethod
-    def from_pyarrow(cls, table: pa.Table, **kwargs) -> LineStringLayer:
+    def from_pyarrow(cls, table: pa.Table, **kwargs) -> PathLayer:
         assert (
             table.schema.field("geometry").metadata.get(b"ARROW:extension:name")
             == b"geoarrow.linestring"
@@ -113,13 +115,13 @@ class LineStringLayer(AnyWidget):
         return cls(table_buffer=table_buffer, **kwargs)
 
     @classmethod
-    def from_geopandas(cls, gdf: gpd.GeoDataFrame, **kwargs) -> LineStringLayer:
+    def from_geopandas(cls, gdf: gpd.GeoDataFrame, **kwargs) -> PathLayer:
         table = geopandas_to_geoarrow(gdf)
         return cls.from_pyarrow(table, **kwargs)
 
 
-class PolygonLayer(AnyWidget):
-    _esm = bundler_output_dir / "polygon.js"
+class SolidPolygonLayer(BaseLayer):
+    _esm = bundler_output_dir / "solid-polygon-layer.js"
     _layer_type = traitlets.Unicode("solid-polygon").tag(sync=True)
 
     table_buffer = traitlets.Bytes().tag(sync=True)
@@ -133,7 +135,7 @@ class PolygonLayer(AnyWidget):
     get_line_color = COLOR_ACCESSOR
 
     @classmethod
-    def from_pyarrow(cls, table: pa.Table, **kwargs) -> PolygonLayer:
+    def from_pyarrow(cls, table: pa.Table, **kwargs) -> SolidPolygonLayer:
         assert (
             table.schema.field("geometry").metadata.get(b"ARROW:extension:name")
             == b"geoarrow.polygon"
@@ -143,6 +145,6 @@ class PolygonLayer(AnyWidget):
         return cls(table_buffer=table_buffer, **kwargs)
 
     @classmethod
-    def from_geopandas(cls, gdf: gpd.GeoDataFrame, **kwargs) -> PolygonLayer:
+    def from_geopandas(cls, gdf: gpd.GeoDataFrame, **kwargs) -> SolidPolygonLayer:
         table = geopandas_to_geoarrow(gdf)
         return cls.from_pyarrow(table, **kwargs)
