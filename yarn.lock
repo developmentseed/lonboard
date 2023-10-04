@@ -1246,9 +1246,9 @@ __metadata:
   languageName: node
   linkType: hard
 
-"react-map-gl@npm:^7.1.5":
-  version: 7.1.5
-  resolution: "react-map-gl@npm:7.1.5"
+"react-map-gl@npm:^7.1.6":
+  version: 7.1.6
+  resolution: "react-map-gl@npm:7.1.6"
   dependencies:
     "@maplibre/maplibre-gl-style-spec": ^19.2.1
     "@types/mapbox-gl": ">=1.0.0"
@@ -1262,7 +1262,7 @@ __metadata:
       optional: true
     maplibre-gl:
       optional: true
-  checksum: a792ff693a071b9b4dead4d5a07957854887ca0af5d7de6e345d138b8a5a1908c64d20606a29b1f15375d892d870cfc9cef547d81ff61788436efca415755361
+  checksum: 6c85996198fd781c6c08c6e3c191b133dc99f4bc35849a4e1cc35dd52e7d798183a8f6d976fed331728164e99e039478ba19cb39a33d3f3d9fc53747ae03e681
   languageName: node
   linkType: hard
 
@@ -1316,7 +1316,7 @@ __metadata:
     parquet-wasm: 0.5.0-alpha.1
     react: ^18.2.0
     react-dom: ^18.2.0
-    react-map-gl: ^7.1.5
+    react-map-gl: ^7.1.6
   languageName: unknown
   linkType: soft
 
