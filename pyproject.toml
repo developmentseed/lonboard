@@ -24,6 +24,9 @@ jupyterlab = "^4.0.5"
 watchfiles = "^0.20.0"
 pre-commit = "^3.4.0"
 
+[tool.poetry.group.docs.dependencies]
+mkdocs = "^1.4.3"
+mkdocs-material = { version = "^9.1.16", extras = ["imaging"] }
 
 [build-system]
 requires = ["poetry-core"]
