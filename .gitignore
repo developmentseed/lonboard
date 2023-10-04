@@ -9,6 +9,7 @@ dist
 # So that notebooks are only included _intentionally_
 *.ipynb
 .cache
+site
 
 # pixi environments
 .pixi

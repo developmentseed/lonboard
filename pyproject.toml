@@ -16,6 +16,10 @@ geopandas = ">=0.13"
 # we declare it here so that we don't need to pull in watchfiles in
 # anywidget[dev] as a non-dev dependency
 comm = "^0.1.4"
+palettable = "^3.3.3"
+# We use the colormap module from matplotlib. This module may be vendored in the
+# future to remove the matplotlib dependency.
+matplotlib = "^3.7"
 
 
 [tool.poetry.group.dev.dependencies]
