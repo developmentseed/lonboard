@@ -1,0 +1,82 @@
+site_name: lonboard
+repo_url: https://github.com/developmentseed/lonboard
+site_description: Extremely fast geospatial data visualization in Jupyter Notebooks
+site_author: Development Seed
+site_url: https://developmentseed.org/lonboard
+docs_dir: docs
+
+extra:
+  social:
+    - icon: "fontawesome/brands/github"
+      link: "https://github.com/developmentseed"
+    - icon: "fontawesome/brands/twitter"
+      link: "https://twitter.com/developmentseed"
+    - icon: "fontawesome/brands/medium"
+      link: "https://medium.com/devseed"
+
+nav:
+  - "index.md"
+  - "How it works?": how-it-works.md
+
+theme:
+  name: material
+  palette:
+    # Palette toggle for light mode
+    - scheme: default
+      primary: teal
+      accent: indigo
+      toggle:
+        icon: material/lightbulb
+        name: Switch to dark mode
+
+    # Palette toggle for dark mode
+    - scheme: slate
+      primary: teal
+      accent: indigo
+      toggle:
+        icon: material/lightbulb-outline
+        name: Switch to light mode
+
+  font:
+    text: Roboto
+    code: Roboto Mono
+
+  # logo: img/geopolars_logo.svg
+
+  features:
+    - navigation.instant
+    - navigation.tracking
+    - search.suggest
+    - search.share
+
+plugins:
+  - search
+  - social
+
+# https://github.com/developmentseed/titiler/blob/50934c929cca2fa8d3c408d239015f8da429c6a8/docs/mkdocs.yml#L115-L140
+markdown_extensions:
+  - admonition
+  - attr_list
+  - codehilite:
+      guess_lang: false
+  - def_list
+  - footnotes
+  - pymdownx.arithmatex
+  - pymdownx.betterem
+  - pymdownx.caret:
+      insert: false
+  - pymdownx.details
+  - pymdownx.emoji
+  - pymdownx.escapeall:
+      hardbreak: true
+      nbsp: true
+  - pymdownx.magiclink:
+      hide_protocol: true
+      repo_url_shortener: true
+  - pymdownx.smartsymbols
+  - pymdownx.superfences
+  - pymdownx.tasklist:
+      custom_checkbox: true
+  - pymdownx.tilde
+  - toc:
+      permalink: true
