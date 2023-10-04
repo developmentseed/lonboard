@@ -3,16 +3,12 @@ from __future__ import annotations
 from pathlib import Path
 
 import geopandas as gpd
-import pyarrow as pa
 import traitlets
 from anywidget import AnyWidget
+# from traitlets import validate
 
 from lonboard.geoarrow.geopandas_interop import geopandas_to_geoarrow
-from lonboard.serialization import (
-    COLOR_SERIALIZATION,
-    FLOAT_SERIALIZATION,
-    serialize_table_to_parquet,
-)
+from lonboard.traits import ColorAccessor, FloatAccessor, PyarrowTableTrait
 
 # bundler yields lonboard/static/{index.js,styles.css}
 bundler_output_dir = Path(__file__).parent / "static"
@@ -51,7 +47,8 @@ class ScatterplotLayer(BaseLayer):
 
     _layer_type = traitlets.Unicode("scatterplot").tag(sync=True)
 
-    table_buffer = traitlets.Bytes().tag(sync=True)
+    table = PyarrowTableTrait(allowed_geometry_types={"geoarrow.point"})
+
     radius_units = traitlets.Unicode("meters", allow_none=True).tag(sync=True)
     radius_scale = traitlets.Float(allow_none=True).tag(sync=True)
     radius_min_pixels = traitlets.Float(allow_none=True).tag(sync=True)
@@ -64,32 +61,27 @@ class ScatterplotLayer(BaseLayer):
     filled = traitlets.Bool(allow_none=True).tag(sync=True)
     billboard = traitlets.Bool(allow_none=True).tag(sync=True)
     antialiasing = traitlets.Bool(allow_none=True).tag(sync=True)
-    get_radius = traitlets.Any().tag(sync=True, **FLOAT_SERIALIZATION)
-    get_fill_color = traitlets.Any().tag(sync=True, **COLOR_SERIALIZATION)
-    get_line_color = traitlets.Any().tag(sync=True, **COLOR_SERIALIZATION)
-    get_line_width = traitlets.Any().tag(sync=True, **FLOAT_SERIALIZATION)
-
-    @classmethod
-    def from_pyarrow(cls, table: pa.Table, **kwargs) -> ScatterplotLayer:
-        assert (
-            table.schema.field("geometry").metadata.get(b"ARROW:extension:name")
-            == b"geoarrow.point"
-        ), "Only Point geometries are currently supported by this layer."
-
-        table_buffer = serialize_table_to_parquet(table)
-        return cls(table_buffer=table_buffer, **kwargs)
+    get_radius = FloatAccessor()
+    get_fill_color = ColorAccessor()
+    get_line_color = ColorAccessor()
+    get_line_width = FloatAccessor()
 
     @classmethod
     def from_geopandas(cls, gdf: gpd.GeoDataFrame, **kwargs) -> ScatterplotLayer:
         table = geopandas_to_geoarrow(gdf)
-        return cls.from_pyarrow(table, **kwargs)
+        return cls(table=table, **kwargs)
+
+    # TODO: validate that arrays have alignable-dimensions (e.g. length) with main table
+    # @validate("get_radius")
+    # def _validate_get_radius_length(self, proposal):
+    #     if proposal["value"]
 
 
 class PathLayer(BaseLayer):
     _esm = bundler_output_dir / "path-layer.js"
     _layer_type = traitlets.Unicode("path").tag(sync=True)
 
-    table_buffer = traitlets.Bytes().tag(sync=True)
+    table = PyarrowTableTrait(allowed_geometry_types={"geoarrow.linestring"})
 
     width_units = traitlets.Unicode(allow_none=True).tag(sync=True)
     width_scale = traitlets.Float(allow_none=True).tag(sync=True)
@@ -99,50 +91,30 @@ class PathLayer(BaseLayer):
     cap_rounded = traitlets.Bool(allow_none=True).tag(sync=True)
     miter_limit = traitlets.Int(allow_none=True).tag(sync=True)
     billboard = traitlets.Bool(allow_none=True).tag(sync=True)
-    get_color = traitlets.Any().tag(sync=True, **COLOR_SERIALIZATION)
-    get_width = traitlets.Any().tag(sync=True, **FLOAT_SERIALIZATION)
-
-    @classmethod
-    def from_pyarrow(cls, table: pa.Table, **kwargs) -> PathLayer:
-        assert (
-            table.schema.field("geometry").metadata.get(b"ARROW:extension:name")
-            == b"geoarrow.linestring"
-        ), "Only LineString geometries are currently supported by this layer."
-
-        table_buffer = serialize_table_to_parquet(table)
-        return cls(table_buffer=table_buffer, **kwargs)
+    get_color = ColorAccessor()
+    get_width = FloatAccessor()
 
     @classmethod
     def from_geopandas(cls, gdf: gpd.GeoDataFrame, **kwargs) -> PathLayer:
         table = geopandas_to_geoarrow(gdf)
-        return cls.from_pyarrow(table, **kwargs)
+        return cls(table=table, **kwargs)
 
 
 class SolidPolygonLayer(BaseLayer):
     _esm = bundler_output_dir / "solid-polygon-layer.js"
     _layer_type = traitlets.Unicode("solid-polygon").tag(sync=True)
 
-    table_buffer = traitlets.Bytes().tag(sync=True)
+    table = PyarrowTableTrait(allowed_geometry_types={"geoarrow.polygon"})
 
     filled = traitlets.Bool(allow_none=True).tag(sync=True)
     extruded = traitlets.Bool(allow_none=True).tag(sync=True)
     wireframe = traitlets.Bool(allow_none=True).tag(sync=True)
     elevation_scale = traitlets.Float(allow_none=True).tag(sync=True)
-    get_elevation = traitlets.Any().tag(sync=True, **FLOAT_SERIALIZATION)
-    get_fill_color = traitlets.Any().tag(sync=True, **COLOR_SERIALIZATION)
-    get_line_color = traitlets.Any().tag(sync=True, **COLOR_SERIALIZATION)
-
-    @classmethod
-    def from_pyarrow(cls, table: pa.Table, **kwargs) -> SolidPolygonLayer:
-        assert (
-            table.schema.field("geometry").metadata.get(b"ARROW:extension:name")
-            == b"geoarrow.polygon"
-        ), "Only Polygon geometries are currently supported by this layer."
-
-        table_buffer = serialize_table_to_parquet(table)
-        return cls(table_buffer=table_buffer, **kwargs)
+    get_elevation = FloatAccessor()
+    get_fill_color = ColorAccessor()
+    get_line_color = ColorAccessor()
 
     @classmethod
     def from_geopandas(cls, gdf: gpd.GeoDataFrame, **kwargs) -> SolidPolygonLayer:
         table = geopandas_to_geoarrow(gdf)
-        return cls.from_pyarrow(table, **kwargs)
+        return cls(table=table, **kwargs)

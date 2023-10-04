@@ -1,14 +1,12 @@
 from __future__ import annotations
 
-import typing as t
-from typing import Any, List, Literal, Set, Tuple, Union
+from typing import Any, List, Set, Tuple, Union
 
-import ipywidgets
 import numpy as np
 import pyarrow as pa
 import traitlets
 from numpy.typing import NDArray
-from traitlets.traitlets import TraitType, Undefined
+from traitlets.traitlets import TraitType
 from typing_extensions import Self
 
 from lonboard.serialization import (
@@ -88,9 +86,10 @@ class ColorAccessor(traitlets.TraitType):
         super().__init__(default_value, allow_none, read_only, help, config, **kwargs)
         self.tag(sync=True, **COLOR_SERIALIZATION)
 
+    # TODO: subclass self.error so that `info` is actually printed?
     def validate(
         self, obj, value
-    ) -> Union[Tuple[int, ...], List[int], NDArray[np.uint8]]:
+    ) -> Union[Tuple[int, ...], List[int], pa.FixedSizeListArray]:
         if isinstance(value, (tuple, list)):
             if len(value) < 3 or len(value) > 4:
                 self.error(
@@ -147,91 +146,49 @@ class ColorAccessor(traitlets.TraitType):
         assert False
 
 
-# class MyWidget1(ipywidgets.Widget):
-#     c = ColorAccessor()
+class FloatAccessor(traitlets.TraitType):
+    """A representation of a deck.gl float accessor
 
+    Represents either a single, scalar float value or an array of float values
+    """
 
-# w = MyWidget1(c=("127.0.0.1", 0))
-# MyWidget1.__mro__
+    default_value = float(0)
+    info_text = "a float value or numpy ndarray or pyarrow array representing an array of floats"
 
+    def __init__(
+        self: TraitType,
+        default_value: Any = ...,
+        allow_none: bool = False,
+        read_only: bool | None = None,
+        help: str | None = None,
+        config: Any = None,
+        **kwargs: Any,
+    ) -> None:
+        super().__init__(default_value, allow_none, read_only, help, config, **kwargs)
+        self.tag(sync=True, **FLOAT_SERIALIZATION)
 
-# def float_accessor():
-#     return traitlets.Any().tag(sync=True, **FLOAT_SERIALIZATION)
+    # TODO: subclass self.error so that `info` is actually printed?
+    def validate(self, obj, value) -> Union[float, NDArray[np.float32]]:
+        if isinstance(value, (int, float)):
+            return float(value)
 
+        if isinstance(value, np.ndarray):
+            if not np.issubdtype(value.dtype, np.number):
+                self.error(obj, value, info="Expected numeric dtype")
 
-# G = t.TypeVar("G")
-# S = t.TypeVar("S")
+            # TODO: should we always be casting to float32? Should it be
+            # possible/allowed to pass in ~int8 or a data type smaller than float32?
+            return pa.array(value.astype(np.float32))
 
+        if isinstance(value, (pa.ChunkedArray, pa.Array)):
+            if not pa.types.is_floating(value.type):
+                self.error(
+                    obj,
+                    value,
+                    info="Float pyarrow array must be a floating point type.",
+                )
 
-# # Refer to https://traitlets.readthedocs.io/en/stable/defining_traits.html
-# class TCPAddress(TraitType[G, S]):
-#     """A trait for an (ip, port) tuple.
+            return value.cast(pa.float32())
 
-#     This allows for both IPv4 IP addresses as well as hostnames.
-#     """
-
-#     default_value = ("127.0.0.1", 0)
-#     info_text = "an (ip, port) tuple"
-
-#     if t.TYPE_CHECKING:
-
-#         @t.overload
-#         def __init__(
-#             self: TCPAddress[tuple[str, int], tuple[str, int]],
-#             default_value: bool | traitlets.Sentinel = ...,
-#             allow_none: Literal[False] = ...,
-#             read_only: bool | None = ...,
-#             help: str | None = ...,
-#             config: t.Any = ...,
-#             **kwargs: t.Any,
-#         ) -> None:
-#             ...
-
-#         @t.overload
-#         def __init__(
-#             self: TCPAddress[tuple[str, int] | None, tuple[str, int] | None],
-#             default_value: bool | None | traitlets.Sentinel = ...,
-#             allow_none: Literal[True] = ...,
-#             read_only: bool | None = ...,
-#             help: str | None = ...,
-#             config: t.Any = ...,
-#             **kwargs: t.Any,
-#         ) -> None:
-#             ...
-
-#         def __init__(
-#             self: TCPAddress[tuple[str, int] | None, tuple[str, int] | None]
-#             | TCPAddress[tuple[str, int], tuple[str, int]],
-#             default_value: bool | None | traitlets.Sentinel = Undefined,
-#             allow_none: Literal[True, False] = False,
-#             read_only: bool | None = None,
-#             help: str | None = None,
-#             config: t.Any = None,
-#             **kwargs: t.Any,
-#         ) -> None:
-#             ...
-
-#     def validate(self, obj, value):
-#         if isinstance(value, tuple):
-#             if len(value) == 2:
-#                 if isinstance(value[0], str) and isinstance(value[1], int):
-#                     port = value[1]
-#                     if port >= 0 and port <= 65535:
-#                         return value
-#         self.error(obj, value)
-
-#     def from_string(self, s):
-#         if self.allow_none and s == "None":
-#             return None
-#         if ":" not in s:
-#             raise ValueError("Require `ip:port`, got %r" % s)
-#         ip, port = s.split(":", 1)
-#         port = int(port)
-#         return (ip, port)
-
-
-# class MyWidget(ipywidgets.Widget):
-#     c = TCPAddress()
-
-
-# w = MyWidget()
+        self.error(obj, value)
+        assert False
