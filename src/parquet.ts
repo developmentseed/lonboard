@@ -51,39 +51,3 @@ export function useParquetWasm(): [boolean] {
 
   return [wasmReady];
 }
-
-// // NOTE: this was an attempt to only parse Parquet for the initial data and
-// // whenever the data buffer changed. But I had issues where the wasm wasn't
-// // ready yet when the original data needed to be instantiated
-// //
-// // NOTE2: I worked around this by adding a useEffect in the main App().. so this
-// // function can probably be deleted
-// function useModelParquetState(
-//   key: string,
-//   ...deps
-// ): [arrow.Table | undefined, (value: DataView) => void] {
-//   let model = useModel();
-
-//   console.log("WASM_READY", WASM_READY);
-//   let [table, setTable] = useState<arrow.Table | undefined>(
-//     WASM_READY ? parseParquet(model.get(key)) : undefined
-//   );
-//   console.log(deps);
-//   useEffect(() => {
-//     let parquetCallback = () => {
-//       console.log("inside parquetCallback");
-//       setTable(WASM_READY ? parseParquet(model.get(key)) : undefined);
-//     };
-//     model.on(`change:${key}`, parquetCallback);
-//     return () => model.off(`change:${key}`, parquetCallback);
-//   }, [model, key, deps]);
-
-//   console.log("useModelParquetState table", table);
-//   return [
-//     table,
-//     (value) => {
-//       model.set(key, value);
-//       model.save_changes();
-//     },
-//   ];
-// }
