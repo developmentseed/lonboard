@@ -23,6 +23,9 @@ const PARQUET_WASM_CDN_URL = `https://cdn.jsdelivr.net/npm/parquet-wasm@${PARQUE
 
 let WASM_READY: boolean = false;
 
+/**
+ * Parse a Parquet buffer to an Arrow JS table
+ */
 function parseParquet(dataView: DataView): arrow.Table {
   if (!WASM_READY) {
     throw new Error("wasm not ready");
@@ -30,7 +33,7 @@ function parseParquet(dataView: DataView): arrow.Table {
 
   console.time("readParquet");
 
-  // TODO: use FFI for wasm --> js transfer
+  // TODO: use arrow-js-ffi for more memory-efficient wasm --> js transfer
   const arrowIPCBuffer = readParquet(new Uint8Array(dataView.buffer)).intoIPC();
   const arrowTable = arrow.tableFromIPC(arrowIPCBuffer);
 
@@ -141,15 +144,30 @@ function App() {
       ...(filled && { filled }),
       ...(billboard && { billboard }),
       ...(antialiasing && { antialiasing }),
-      ...(getRadius && { getRadius }),
+      ...(getRadius && {
+        getRadius:
+          getRadius instanceof DataView
+            ? parseParquet(getRadius).getChildAt(0)
+            : getRadius,
+      }),
       ...(getFillColor && {
         getFillColor:
           getFillColor instanceof DataView
             ? parseParquet(getFillColor).getChildAt(0)
             : getFillColor,
       }),
-      ...(getLineColor && { getLineColor }),
-      ...(getLineWidth && { getLineWidth }),
+      ...(getLineColor && {
+        getLineColor:
+          getLineColor instanceof DataView
+            ? parseParquet(getLineColor).getChildAt(0)
+            : getLineColor,
+      }),
+      ...(getLineWidth && {
+        getLineWidth:
+          getLineWidth instanceof DataView
+            ? parseParquet(getLineWidth).getChildAt(0)
+            : getLineWidth,
+      }),
     });
     layers.push(layer);
   }
