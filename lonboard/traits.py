@@ -1,3 +1,9 @@
+"""New traits for our custom serialization.
+
+Refer to https://traitlets.readthedocs.io/en/stable/defining_traits.html for
+documentation on how to define new traitlet types.
+"""
+
 from __future__ import annotations
 
 from typing import Any, List, Set, Tuple, Union
