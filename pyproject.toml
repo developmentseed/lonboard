@@ -27,6 +27,7 @@ anywidget = { version = "^0.6.3", extras = ["dev"] }
 jupyterlab = "^4.0.5"
 watchfiles = "^0.20.0"
 pre-commit = "^3.4.0"
+black = "^23.9.1"
 
 [tool.poetry.group.docs.dependencies]
 mkdocs = "^1.4.3"

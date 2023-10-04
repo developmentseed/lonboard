@@ -80,5 +80,11 @@ def serialize_float_accessor(data: Union[int, float, NDArray[np.floating]], obj=
     return data
 
 
+def serialize_table(data, obj=None):
+    assert isinstance(data, pa.Table), "expected pyarrow table"
+    return serialize_table_to_parquet(data)
+
+
 COLOR_SERIALIZATION = {"to_json": serialize_color_accessor}
 FLOAT_SERIALIZATION = {"to_json": serialize_float_accessor}
+TABLE_SERIALIZATION = {"to_json": serialize_table}
