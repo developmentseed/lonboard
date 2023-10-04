@@ -14,7 +14,7 @@
     "react-map-gl": "^7.1.5"
   },
   "devDependencies": {
-    "@types/react": "^18.2.23",
+    "@types/react": "^18.2.24",
     "esbuild": "^0.19.2"
   },
   "scripts": {
