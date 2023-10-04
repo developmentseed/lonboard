@@ -125,6 +125,7 @@ function App() {
 
   const layers = [];
   if (wasmReady && dataTable) {
+    // @ts-ignore
     const layer = new GeoArrowScatterplotLayer({
       id: "geoarrow-points",
       data: dataTable,
@@ -141,7 +142,12 @@ function App() {
       ...(billboard && { billboard }),
       ...(antialiasing && { antialiasing }),
       ...(getRadius && { getRadius }),
-      ...(getFillColor && { getFillColor }),
+      ...(getFillColor && {
+        getFillColor:
+          getFillColor instanceof DataView
+            ? parseParquet(getFillColor).getChildAt(0)
+            : getFillColor,
+      }),
       ...(getLineColor && { getLineColor }),
       ...(getLineWidth && { getLineWidth }),
     });

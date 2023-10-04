@@ -12,6 +12,7 @@ import traitlets
 from anywidget import AnyWidget
 
 from lonboard.geoarrow.geopandas_interop import geopandas_to_geoarrow
+from lonboard.serialization import COLOR_SERIALIZATION
 
 # bundler yields lonboard/static/{index.js,styles.css}
 bundler_output_dir = Path(__file__).parent / "static"
@@ -29,6 +30,18 @@ class BaseLayer(ipywidgets.Widget):
                 continue
 
             yield key
+
+
+# NOTE: I found that traitlets.Union was **extremely** slow to validate a numpy ndarray.
+# Like 6 seconds just for an isinstance check.
+#
+# SCALAR_COLOR_TRAIT = traitlets.List(
+#         traitlets.Int(), None, minlen=3, maxlen=4, allow_none=True
+# )
+# VECTORIZED_COLOR_TRAIT = traitlets.Any()
+# COLOR_TRAIT = traitlets.Union([VECTORIZED_COLOR_TRAIT,
+#     SCALAR_COLOR_TRAIT]).tag(sync=True)
+COLOR_TRAIT = traitlets.Any().tag(sync=True, **COLOR_SERIALIZATION)
 
 
 class PointLayer(AnyWidget):
@@ -50,9 +63,7 @@ class PointLayer(AnyWidget):
     billboard = traitlets.Bool(allow_none=True).tag(sync=True)
     antialiasing = traitlets.Bool(allow_none=True).tag(sync=True)
     get_radius = traitlets.Float(allow_none=True).tag(sync=True)
-    get_fill_color = traitlets.List(
-        traitlets.Int(), None, minlen=3, maxlen=4, allow_none=True
-    ).tag(sync=True)
+    get_fill_color = COLOR_TRAIT
     get_line_color = traitlets.List(
         traitlets.Int(), None, minlen=3, maxlen=4, allow_none=True
     ).tag(sync=True)
