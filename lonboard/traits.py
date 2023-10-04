@@ -24,16 +24,11 @@ class PyarrowTableTrait(traitlets.TraitType[pa.Table, pa.Table]):
 
     def __init__(
         self: TraitType,
-        default_value: Any = ...,
-        allow_none: bool = False,
-        read_only: bool | None = None,
-        help: str | None = None,
-        config: Any = None,
-        *,
-        allowed_geometry_types: Set[str] | None = None,
+        *args,
+        allowed_geometry_types: Set[bytes] | None = None,
         **kwargs: Any,
     ) -> None:
-        super().__init__(default_value, allow_none, read_only, help, config, **kwargs)
+        super().__init__(*args, **kwargs)
         self.tag(
             sync=True,
             allowed_geometry_types=allowed_geometry_types,
@@ -53,10 +48,13 @@ class PyarrowTableTrait(traitlets.TraitType[pa.Table, pa.Table]):
             and geometry_extension_type not in allowed_geometry_types
         ):
             allowed_types_str = "\n".join(allowed_geometry_types)
-            msg = f"Expected one of {allowed_types_str} geometry types, got {geometry_extension_type}."
+            msg = (
+                f"Expected one of {allowed_types_str} geometry types, "
+                "got {geometry_extension_type}."
+            )
             self.error(obj, value, info=msg)
 
-        self.error(obj, value)
+        return value
 
 
 class ColorAccessor(traitlets.TraitType):
@@ -72,18 +70,17 @@ class ColorAccessor(traitlets.TraitType):
     """
 
     default_value = (255, 255, 255)
-    info_text = "a tuple or list representing an RGB(A) color or numpy ndarray or pyarrow FixedSizeList representing an array of RGB(A) colors"
+    info_text = (
+        "a tuple or list representing an RGB(A) color or numpy ndarray or "
+        "pyarrow FixedSizeList representing an array of RGB(A) colors"
+    )
 
     def __init__(
         self: TraitType,
-        default_value: Any = ...,
-        allow_none: bool = False,
-        read_only: bool | None = None,
-        help: str | None = None,
-        config: Any = None,
+        *args,
         **kwargs: Any,
     ) -> None:
-        super().__init__(default_value, allow_none, read_only, help, config, **kwargs)
+        super().__init__(*args, **kwargs)
         self.tag(sync=True, **COLOR_SERIALIZATION)
 
     # TODO: subclass self.error so that `info` is actually printed?
@@ -132,7 +129,10 @@ class ColorAccessor(traitlets.TraitType):
                 self.error(
                     obj,
                     value,
-                    info="Color pyarrow array must have a FixedSizeList inner size of 3 or 4.",
+                    info=(
+                        "Color pyarrow array must have a FixedSizeList inner size of "
+                        "3 or 4."
+                    ),
                 )
 
             if not pa.types.is_uint8(value.type.value_type):
@@ -153,18 +153,17 @@ class FloatAccessor(traitlets.TraitType):
     """
 
     default_value = float(0)
-    info_text = "a float value or numpy ndarray or pyarrow array representing an array of floats"
+    info_text = (
+        "a float value or numpy ndarray or pyarrow array representing an array"
+        " of floats"
+    )
 
     def __init__(
         self: TraitType,
-        default_value: Any = ...,
-        allow_none: bool = False,
-        read_only: bool | None = None,
-        help: str | None = None,
-        config: Any = None,
+        *args,
         **kwargs: Any,
     ) -> None:
-        super().__init__(default_value, allow_none, read_only, help, config, **kwargs)
+        super().__init__(*args, **kwargs)
         self.tag(sync=True, **FLOAT_SERIALIZATION)
 
     # TODO: subclass self.error so that `info` is actually printed?

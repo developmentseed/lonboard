@@ -5,7 +5,6 @@ from pathlib import Path
 import geopandas as gpd
 import traitlets
 from anywidget import AnyWidget
-# from traitlets import validate
 
 from lonboard.geoarrow.geopandas_interop import geopandas_to_geoarrow
 from lonboard.traits import ColorAccessor, FloatAccessor, PyarrowTableTrait
@@ -47,7 +46,7 @@ class ScatterplotLayer(BaseLayer):
 
     _layer_type = traitlets.Unicode("scatterplot").tag(sync=True)
 
-    table = PyarrowTableTrait(allowed_geometry_types={"geoarrow.point"})
+    table = PyarrowTableTrait(allowed_geometry_types={b"geoarrow.point"})
 
     radius_units = traitlets.Unicode("meters", allow_none=True).tag(sync=True)
     radius_scale = traitlets.Float(allow_none=True).tag(sync=True)
@@ -81,7 +80,7 @@ class PathLayer(BaseLayer):
     _esm = bundler_output_dir / "path-layer.js"
     _layer_type = traitlets.Unicode("path").tag(sync=True)
 
-    table = PyarrowTableTrait(allowed_geometry_types={"geoarrow.linestring"})
+    table = PyarrowTableTrait(allowed_geometry_types={b"geoarrow.linestring"})
 
     width_units = traitlets.Unicode(allow_none=True).tag(sync=True)
     width_scale = traitlets.Float(allow_none=True).tag(sync=True)
@@ -104,7 +103,7 @@ class SolidPolygonLayer(BaseLayer):
     _esm = bundler_output_dir / "solid-polygon-layer.js"
     _layer_type = traitlets.Unicode("solid-polygon").tag(sync=True)
 
-    table = PyarrowTableTrait(allowed_geometry_types={"geoarrow.polygon"})
+    table = PyarrowTableTrait(allowed_geometry_types={b"geoarrow.polygon"})
 
     filled = traitlets.Bool(allow_none=True).tag(sync=True)
     extruded = traitlets.Bool(allow_none=True).tag(sync=True)

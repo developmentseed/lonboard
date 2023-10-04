@@ -20,7 +20,7 @@ const MAP_STYLE =
 function App() {
   const [wasmReady] = useParquetWasm();
 
-  let [dataRaw] = useModelState<DataView>("table_buffer");
+  let [dataRaw] = useModelState<DataView>("table");
   let [widthUnits] = useModelState("width_units");
   let [widthScale] = useModelState("width_scale");
   let [widthMinPixels] = useModelState("width_min_pixels");
