@@ -45,7 +45,7 @@ function App() {
   const [getLineWidth] = useAccessorState(wasmReady, getLineWidthRaw);
 
   const layers = [];
-  if (wasmReady && dataTable) {
+  if (dataTable) {
     // @ts-ignore
     const layer = new GeoArrowScatterplotLayer({
       id: "geoarrow-points",
