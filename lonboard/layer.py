@@ -44,8 +44,6 @@ class BaseLayer(AnyWidget):
 # VECTORIZED_COLOR_TRAIT = traitlets.Any()
 # COLOR_TRAIT = traitlets.Union([VECTORIZED_COLOR_TRAIT,
 #     SCALAR_COLOR_TRAIT]).tag(sync=True)
-COLOR_ACCESSOR = traitlets.Any().tag(sync=True, **COLOR_SERIALIZATION)
-FLOAT_ACCESSOR = traitlets.Any().tag(sync=True, **FLOAT_SERIALIZATION)
 
 
 class ScatterplotLayer(BaseLayer):
@@ -66,10 +64,10 @@ class ScatterplotLayer(BaseLayer):
     filled = traitlets.Bool(allow_none=True).tag(sync=True)
     billboard = traitlets.Bool(allow_none=True).tag(sync=True)
     antialiasing = traitlets.Bool(allow_none=True).tag(sync=True)
-    get_radius = FLOAT_ACCESSOR
-    get_fill_color = COLOR_ACCESSOR
-    get_line_color = COLOR_ACCESSOR
-    get_line_width = FLOAT_ACCESSOR
+    get_radius = traitlets.Any().tag(sync=True, **FLOAT_SERIALIZATION)
+    get_fill_color = traitlets.Any().tag(sync=True, **COLOR_SERIALIZATION)
+    get_line_color = traitlets.Any().tag(sync=True, **COLOR_SERIALIZATION)
+    get_line_width = traitlets.Any().tag(sync=True, **FLOAT_SERIALIZATION)
 
     @classmethod
     def from_pyarrow(cls, table: pa.Table, **kwargs) -> ScatterplotLayer:
@@ -101,8 +99,8 @@ class PathLayer(BaseLayer):
     cap_rounded = traitlets.Bool(allow_none=True).tag(sync=True)
     miter_limit = traitlets.Int(allow_none=True).tag(sync=True)
     billboard = traitlets.Bool(allow_none=True).tag(sync=True)
-    get_color = COLOR_ACCESSOR
-    get_width = FLOAT_ACCESSOR
+    get_color = traitlets.Any().tag(sync=True, **COLOR_SERIALIZATION)
+    get_width = traitlets.Any().tag(sync=True, **FLOAT_SERIALIZATION)
 
     @classmethod
     def from_pyarrow(cls, table: pa.Table, **kwargs) -> PathLayer:
@@ -130,9 +128,9 @@ class SolidPolygonLayer(BaseLayer):
     extruded = traitlets.Bool(allow_none=True).tag(sync=True)
     wireframe = traitlets.Bool(allow_none=True).tag(sync=True)
     elevation_scale = traitlets.Float(allow_none=True).tag(sync=True)
-    get_elevation = FLOAT_ACCESSOR
-    get_fill_color = COLOR_ACCESSOR
-    get_line_color = COLOR_ACCESSOR
+    get_elevation = traitlets.Any().tag(sync=True, **FLOAT_SERIALIZATION)
+    get_fill_color = traitlets.Any().tag(sync=True, **COLOR_SERIALIZATION)
+    get_line_color = traitlets.Any().tag(sync=True, **COLOR_SERIALIZATION)
 
     @classmethod
     def from_pyarrow(cls, table: pa.Table, **kwargs) -> SolidPolygonLayer:
