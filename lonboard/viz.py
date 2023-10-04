@@ -5,7 +5,7 @@
 import geopandas as gpd
 
 from lonboard.geoarrow.geopandas_interop import geopandas_to_geoarrow
-from lonboard.layer import BaseLayer, LineStringLayer, PointLayer, PolygonLayer
+from lonboard.layer import BaseLayer, PathLayer, ScatterplotLayer, SolidPolygonLayer
 
 
 def viz(data: gpd.GeoDataFrame, **kwargs) -> BaseLayer:
@@ -15,13 +15,13 @@ def viz(data: gpd.GeoDataFrame, **kwargs) -> BaseLayer:
     )
 
     if geometry_ext_type == "geoarrow.point":
-        return PointLayer.from_pyarrow(table, **kwargs)
+        return ScatterplotLayer.from_pyarrow(table, **kwargs)
 
     elif geometry_ext_type == "geoarrow.linestring":
-        return LineStringLayer.from_pyarrow(table, **kwargs)
+        return PathLayer.from_pyarrow(table, **kwargs)
 
     elif geometry_ext_type == "geoarrow.point":
-        return PolygonLayer.from_pyarrow(table, **kwargs)
+        return SolidPolygonLayer.from_pyarrow(table, **kwargs)
 
     raise ValueError(
         "Only point, linestring, and polygon geometry types currently supported."
