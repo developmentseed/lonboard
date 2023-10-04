@@ -15,8 +15,7 @@
   },
   "devDependencies": {
     "@types/react": "^18.2.23",
-    "esbuild": "^0.19.2",
-    "esbuild-plugin-wasm": "^1.1.0"
+    "esbuild": "^0.19.2"
   },
   "scripts": {
     "build": "node ./build.mjs",

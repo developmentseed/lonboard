@@ -834,13 +834,6 @@ __metadata:
   languageName: node
   linkType: hard
 
-"esbuild-plugin-wasm@npm:^1.1.0":
-  version: 1.1.0
-  resolution: "esbuild-plugin-wasm@npm:1.1.0"
-  checksum: 382df12ecb92634d0f526cad4792b0ac5dc8016cdf63e23d9ee099f0f2c530855463cc45045c4a6ec10a6a1bd2ff59b5c4b24e6314a361fa70cc57645caf602b
-  languageName: node
-  linkType: hard
-
 "esbuild@npm:^0.19.2":
   version: 0.19.2
   resolution: "esbuild@npm:0.19.2"
@@ -1311,7 +1304,6 @@ __metadata:
     "@types/react": ^18.2.23
     apache-arrow: ^13.0.0
     esbuild: ^0.19.2
-    esbuild-plugin-wasm: ^1.1.0
     maplibre-gl: ^3.3.1
     parquet-wasm: 0.5.0-alpha.1
     react: ^18.2.0

@@ -48,6 +48,7 @@ function App() {
   if (dataTable) {
     // @ts-ignore
     const layer = new GeoArrowScatterplotLayer({
+      // todo: use model.model_id?
       id: "geoarrow-points",
       data: dataTable,
       ...(radiusUnits && { radiusUnits }),
