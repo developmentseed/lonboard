@@ -16,6 +16,11 @@ extra:
 
 nav:
   - "index.md"
+  - Layers:
+    - Intro: layers/index.md
+    - ScatterplotLayer: layers/scatterplot-layer.md
+    - PathLayer: layers/path-layer.md
+    - SolidPolygonLayer: layers/solid-polygon-layer.md
   - "How it works?": how-it-works.md
 
 theme:
