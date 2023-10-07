@@ -21,6 +21,7 @@ nav:
     - ScatterplotLayer: layers/scatterplot-layer.md
     - PathLayer: layers/path-layer.md
     - SolidPolygonLayer: layers/solid-polygon-layer.md
+  - Performance: performance.md
   - "How it works?": how-it-works.md
 
 theme:
