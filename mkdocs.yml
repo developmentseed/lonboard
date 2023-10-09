@@ -22,6 +22,7 @@ nav:
     - PathLayer: layers/path-layer.md
     - SolidPolygonLayer: layers/solid-polygon-layer.md
   - Performance: performance.md
+  - Alternatives: alternatives.md
   - "How it works?": how-it-works.md
 
 theme:
