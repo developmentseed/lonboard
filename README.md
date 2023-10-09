@@ -1,5 +1,7 @@
 # lonboard
 
+Python library for extremely fast geospatial data visualization in Jupyter.
+
 ![](docs/img/scatterplot-layer-network-speeds.jpg)
 
 ## Install
