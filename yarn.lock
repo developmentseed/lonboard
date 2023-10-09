@@ -690,14 +690,14 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@types/react@npm:^18.2.23":
-  version: 18.2.23
-  resolution: "@types/react@npm:18.2.23"
+"@types/react@npm:^18.2.26":
+  version: 18.2.26
+  resolution: "@types/react@npm:18.2.26"
   dependencies:
     "@types/prop-types": "*"
     "@types/scheduler": "*"
     csstype: ^3.0.2
-  checksum: efb9d1ed1940c0e7ba08a21ffba5e266d8dbbb8fe618cfb97bc902dfc96385fdd8189e3f7f64b4aa13134f8e61947d60560deb23be151253c3a97b0d070897ca
+  checksum: 5789256cd6238d34c1fa2c23cff90174f050531aff2bf3f7791adb80ec603d56c68492f86c824e96e69c6a9589bffd3569035f16866bf722e1bbc80080f0a2ce
   languageName: node
   linkType: hard
 
@@ -1333,7 +1333,7 @@ __metadata:
     "@deck.gl/layers": ^8.9.30
     "@deck.gl/react": ^8.9.30
     "@geoarrow/deck.gl-layers": 0.1.0-beta.4
-    "@types/react": ^18.2.23
+    "@types/react": ^18.2.26
     apache-arrow: ^13.0.0
     esbuild: ^0.19.2
     maplibre-gl: ^3.4.0
