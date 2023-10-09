@@ -301,11 +301,11 @@ __metadata:
   linkType: hard
 
 "@loaders.gl/schema@npm:^3.4.13":
-  version: 3.4.13
-  resolution: "@loaders.gl/schema@npm:3.4.13"
+  version: 3.4.14
+  resolution: "@loaders.gl/schema@npm:3.4.14"
   dependencies:
     "@types/geojson": ^7946.0.7
-  checksum: d705e30a26d3f70aa416dd2fc9f13658ec81d612516843ea2af52950066de0b54b86de6471a453fd578f382fca45f12792d5b9aa9fa90f6a229decd951f3e738
+  checksum: 63a88cb26aa68b7401ddd5d51f1f9ffa15c1a99857990a4fd46d486974009d050afb5965bd9abfdd7beba3863d1055fee44ca03ee0231370ea3043c8ba2de867
   languageName: node
   linkType: hard
 
