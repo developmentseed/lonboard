@@ -10,6 +10,7 @@ The `ScatterplotLayer` renders circles at given coordinates.
 import geopandas as gpd
 from lonboard import ScatterplotLayer
 
+# A GeoDataFrame with Point geometries
 gdf = gpd.GeoDataFrame()
 layer = ScatterplotLayer.from_geopandas(
     gdf,
