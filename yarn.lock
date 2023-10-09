@@ -269,14 +269,14 @@ __metadata:
   linkType: hard
 
 "@loaders.gl/core@npm:^3.4.13":
-  version: 3.4.13
-  resolution: "@loaders.gl/core@npm:3.4.13"
+  version: 3.4.14
+  resolution: "@loaders.gl/core@npm:3.4.14"
   dependencies:
     "@babel/runtime": ^7.3.1
-    "@loaders.gl/loader-utils": 3.4.13
-    "@loaders.gl/worker-utils": 3.4.13
+    "@loaders.gl/loader-utils": 3.4.14
+    "@loaders.gl/worker-utils": 3.4.14
     "@probe.gl/log": ^4.0.1
-  checksum: 47235b598de5ddcc3675d78790c2f07d1c36be7b33d4151d3e80d80d1d3b2fece7ac389659a2f7ab817406e6859051cf67ebd72c2cfd100b1f57f57b8aaa122d
+  checksum: 4769017434a387e1c5da1ab934d26837b14a166237e61dfea19633c83cbe3fd42c9bcf0c3108cda60f32c680fb767cd3c8d8a91d2ee811d49b40b22494c1a223
   languageName: node
   linkType: hard
 
@@ -300,6 +300,17 @@ __metadata:
   languageName: node
   linkType: hard
 
+"@loaders.gl/loader-utils@npm:3.4.14":
+  version: 3.4.14
+  resolution: "@loaders.gl/loader-utils@npm:3.4.14"
+  dependencies:
+    "@babel/runtime": ^7.3.1
+    "@loaders.gl/worker-utils": 3.4.14
+    "@probe.gl/stats": ^4.0.1
+  checksum: fde4e3a6626678bede49afc3feba92d8766975b7e3c6f9af1b23d5b6e638fbfee19cb231c500c7ed67f07a854ed9a8984dd9cb4f41a5409ace4ee3e990d6b699
+  languageName: node
+  linkType: hard
+
 "@loaders.gl/schema@npm:^3.4.13":
   version: 3.4.13
   resolution: "@loaders.gl/schema@npm:3.4.13"
@@ -315,6 +326,15 @@ __metadata:
   dependencies:
     "@babel/runtime": ^7.3.1
   checksum: f0ccfc264a5e6cd0265917be93d4db029e0785d96258ba7135e002248b006665da74f3d0b486056f21f6487a8a4b191716d0153771f7e1c470a3a46a0c768114
+  languageName: node
+  linkType: hard
+
+"@loaders.gl/worker-utils@npm:3.4.14":
+  version: 3.4.14
+  resolution: "@loaders.gl/worker-utils@npm:3.4.14"
+  dependencies:
+    "@babel/runtime": ^7.3.1
+  checksum: 18b874f9c0eaa1f5a37cd5ef6be183cb758c6e953caac9ac6666be3f09eeb5ce0c59ba7f2c5c0f21278883b7be6ee336889fec7cc31e64ea6cf37767a949e394
   languageName: node
   linkType: hard
 
