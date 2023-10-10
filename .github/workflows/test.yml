@@ -45,8 +45,8 @@ jobs:
       - name: Install root project
         run: poetry install --no-interaction
 
-      # - name: Run tests
-      #   run: pytest
+      - name: Run tests
+        run: poetry run pytest
 
       - name: Cache pre-commit virtualenvs
         uses: actions/cache@v3
