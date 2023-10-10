@@ -3,6 +3,7 @@ from __future__ import annotations
 from pathlib import Path
 
 import geopandas as gpd
+import pyarrow as pa
 import traitlets
 from anywidget import AnyWidget
 
@@ -70,10 +71,45 @@ class ScatterplotLayer(BaseLayer):
         table = geopandas_to_geoarrow(gdf)
         return cls(table=table, **kwargs)
 
-    # TODO: validate that arrays have alignable-dimensions (e.g. length) with main table
-    # @validate("get_radius")
-    # def _validate_get_radius_length(self, proposal):
-    #     if proposal["value"]
+    @traitlets.validate("get_radius")
+    def _validate_get_radius_length(self, proposal):
+        if isinstance(proposal["value"], (pa.ChunkedArray, pa.Array)):
+            if len(proposal["value"]) != len(self.table):
+                raise traitlets.TraitError(
+                    "`get_radius` must have same length as table"
+                )
+
+        return proposal["value"]
+
+    @traitlets.validate("get_fill_color")
+    def _validate_get_fill_color_length(self, proposal):
+        if isinstance(proposal["value"], (pa.ChunkedArray, pa.Array)):
+            if len(proposal["value"]) != len(self.table):
+                raise traitlets.TraitError(
+                    "`get_fill_color` must have same length as table"
+                )
+
+        return proposal["value"]
+
+    @traitlets.validate("get_line_color")
+    def _validate_get_line_color_length(self, proposal):
+        if isinstance(proposal["value"], (pa.ChunkedArray, pa.Array)):
+            if len(proposal["value"]) != len(self.table):
+                raise traitlets.TraitError(
+                    "`get_line_color` must have same length as table"
+                )
+
+        return proposal["value"]
+
+    @traitlets.validate("get_line_width")
+    def _validate_get_line_width_length(self, proposal):
+        if isinstance(proposal["value"], (pa.ChunkedArray, pa.Array)):
+            if len(proposal["value"]) != len(self.table):
+                raise traitlets.TraitError(
+                    "`get_line_width` must have same length as table"
+                )
+
+        return proposal["value"]
 
 
 class PathLayer(BaseLayer):
@@ -98,6 +134,18 @@ class PathLayer(BaseLayer):
         table = geopandas_to_geoarrow(gdf)
         return cls(table=table, **kwargs)
 
+    @traitlets.validate("get_color")
+    def _validate_get_color_length(self, proposal):
+        if isinstance(proposal["value"], (pa.ChunkedArray, pa.Array)):
+            if len(proposal["value"]) != len(self.table):
+                raise traitlets.TraitError("`get_color` must have same length as table")
+
+    @traitlets.validate("get_width")
+    def _validate_get_width_length(self, proposal):
+        if isinstance(proposal["value"], (pa.ChunkedArray, pa.Array)):
+            if len(proposal["value"]) != len(self.table):
+                raise traitlets.TraitError("`get_width` must have same length as table")
+
 
 class SolidPolygonLayer(BaseLayer):
     _esm = bundler_output_dir / "solid-polygon-layer.js"
@@ -117,3 +165,27 @@ class SolidPolygonLayer(BaseLayer):
     def from_geopandas(cls, gdf: gpd.GeoDataFrame, **kwargs) -> SolidPolygonLayer:
         table = geopandas_to_geoarrow(gdf)
         return cls(table=table, **kwargs)
+
+    @traitlets.validate("get_elevation")
+    def _validate_get_elevation_length(self, proposal):
+        if isinstance(proposal["value"], (pa.ChunkedArray, pa.Array)):
+            if len(proposal["value"]) != len(self.table):
+                raise traitlets.TraitError(
+                    "`get_elevation` must have same length as table"
+                )
+
+    @traitlets.validate("get_fill_color")
+    def _validate_get_fill_color_length(self, proposal):
+        if isinstance(proposal["value"], (pa.ChunkedArray, pa.Array)):
+            if len(proposal["value"]) != len(self.table):
+                raise traitlets.TraitError(
+                    "`get_fill_color` must have same length as table"
+                )
+
+    @traitlets.validate("get_line_color")
+    def _validate_get_line_color_length(self, proposal):
+        if isinstance(proposal["value"], (pa.ChunkedArray, pa.Array)):
+            if len(proposal["value"]) != len(self.table):
+                raise traitlets.TraitError(
+                    "`get_line_color` must have same length as table"
+                )
