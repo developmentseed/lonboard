@@ -106,6 +106,13 @@ class ColorAccessor(traitlets.TraitType):
                     info="expected all values to be integers if passed a tuple or list",
                 )
 
+            if any(v < 0 or v > 255 for v in value):
+                self.error(
+                    obj,
+                    value,
+                    info="expected values between 0 and 255",
+                )
+
             return value
 
         if isinstance(value, np.ndarray):
