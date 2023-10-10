@@ -11,7 +11,6 @@ from typing import Any, List, Set, Tuple, Union
 import numpy as np
 import pyarrow as pa
 import traitlets
-from numpy.typing import NDArray
 from traitlets.traitlets import TraitType
 from typing_extensions import Self
 
@@ -92,7 +91,7 @@ class ColorAccessor(traitlets.TraitType):
     # TODO: subclass self.error so that `info` is actually printed?
     def validate(
         self, obj, value
-    ) -> Union[Tuple[int, ...], List[int], pa.FixedSizeListArray]:
+    ) -> Union[Tuple[int, ...], List[int], pa.ChunkedArray, pa.FixedSizeListArray]:
         if isinstance(value, (tuple, list)):
             if len(value) < 3 or len(value) > 4:
                 self.error(
@@ -180,7 +179,7 @@ class FloatAccessor(traitlets.TraitType):
         self.tag(sync=True, **FLOAT_SERIALIZATION)
 
     # TODO: subclass self.error so that `info` is actually printed?
-    def validate(self, obj, value) -> Union[float, NDArray[np.float32]]:
+    def validate(self, obj, value) -> Union[float, pa.ChunkedArray, pa.DoubleArray]:
         if isinstance(value, (int, float)):
             return float(value)
 
