@@ -5,18 +5,15 @@ from pathlib import Path
 
 import geopandas as gpd
 import pyarrow as pa
-import pyproj
 import traitlets
 from anywidget import AnyWidget
 
+from lonboard.constants import EPSG_4326, OGC_84
 from lonboard.geoarrow.geopandas_interop import geopandas_to_geoarrow
 from lonboard.traits import ColorAccessor, FloatAccessor, PyarrowTableTrait
 
 # bundler yields lonboard/static/{index.js,styles.css}
 bundler_output_dir = Path(__file__).parent / "static"
-
-EPSG_4326 = pyproj.CRS("epsg:4326")
-OGC_84 = pyproj.CRS("ogc:84")
 
 
 class BaseLayer(AnyWidget):
