@@ -6,7 +6,7 @@ import { GeoArrowScatterplotLayer } from "@geoarrow/deck.gl-layers";
 import { useParquetWasm } from "./parquet";
 import { useAccessorState, useTableBufferState } from "./accessor";
 
-const INITIAL_VIEW_STATE = {
+const DEFAULT_INITIAL_VIEW_STATE = {
   latitude: 10,
   longitude: 0,
   zoom: 0.5,
@@ -20,6 +20,7 @@ const MAP_STYLE =
 function App() {
   const [wasmReady] = useParquetWasm();
 
+  let [viewState] = useModelState<DataView>("_initial_view_state");
   let [dataRaw] = useModelState<DataView>("table");
   let [radiusUnits] = useModelState("radius_units");
   let [radiusScale] = useModelState("radius_scale");
@@ -74,7 +75,13 @@ function App() {
   return (
     <div style={{ height: 500 }}>
       <DeckGL
-        initialViewState={INITIAL_VIEW_STATE}
+        initialViewState={
+          ["longitude", "latitude", "zoom"].every((key) =>
+            Object.keys(viewState).includes(key)
+          )
+            ? viewState
+            : DEFAULT_INITIAL_VIEW_STATE
+        }
         controller={true}
         layers={layers}
         // ContextProvider={MapContext.Provider}

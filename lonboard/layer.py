@@ -11,6 +11,7 @@ from anywidget import AnyWidget
 from lonboard.constants import EPSG_4326, OGC_84
 from lonboard.geoarrow.geopandas_interop import geopandas_to_geoarrow
 from lonboard.traits import ColorAccessor, FloatAccessor, PyarrowTableTrait
+from lonboard.viewport import compute_view
 
 # bundler yields lonboard/static/{index.js,styles.css}
 bundler_output_dir = Path(__file__).parent / "static"
@@ -46,8 +47,8 @@ class BaseLayer(AnyWidget):
 
 class ScatterplotLayer(BaseLayer):
     _esm = bundler_output_dir / "scatterplot-layer.js"
-
     _layer_type = traitlets.Unicode("scatterplot").tag(sync=True)
+    _initial_view_state = traitlets.Dict().tag(sync=True)
 
     table = PyarrowTableTrait(allowed_geometry_types={b"geoarrow.point"})
 
@@ -76,6 +77,10 @@ class ScatterplotLayer(BaseLayer):
 
         table = geopandas_to_geoarrow(gdf)
         return cls(table=table, **kwargs)
+
+    @traitlets.default("_initial_view_state")
+    def _default_initial_view_state(self):
+        return compute_view(self.table)
 
     @traitlets.validate("get_radius")
     def _validate_get_radius_length(self, proposal):
@@ -121,6 +126,7 @@ class ScatterplotLayer(BaseLayer):
 class PathLayer(BaseLayer):
     _esm = bundler_output_dir / "path-layer.js"
     _layer_type = traitlets.Unicode("path").tag(sync=True)
+    _initial_view_state = traitlets.Dict().tag(sync=True)
 
     table = PyarrowTableTrait(allowed_geometry_types={b"geoarrow.linestring"})
 
@@ -144,6 +150,10 @@ class PathLayer(BaseLayer):
         table = geopandas_to_geoarrow(gdf)
         return cls(table=table, **kwargs)
 
+    @traitlets.default("_initial_view_state")
+    def _default_initial_view_state(self):
+        return compute_view(self.table)
+
     @traitlets.validate("get_color")
     def _validate_get_color_length(self, proposal):
         if isinstance(proposal["value"], (pa.ChunkedArray, pa.Array)):
@@ -160,6 +170,7 @@ class PathLayer(BaseLayer):
 class SolidPolygonLayer(BaseLayer):
     _esm = bundler_output_dir / "solid-polygon-layer.js"
     _layer_type = traitlets.Unicode("solid-polygon").tag(sync=True)
+    _initial_view_state = traitlets.Dict().tag(sync=True)
 
     table = PyarrowTableTrait(allowed_geometry_types={b"geoarrow.polygon"})
 
@@ -179,6 +190,10 @@ class SolidPolygonLayer(BaseLayer):
 
         table = geopandas_to_geoarrow(gdf)
         return cls(table=table, **kwargs)
+
+    @traitlets.default("_initial_view_state")
+    def _default_initial_view_state(self):
+        return compute_view(self.table)
 
     @traitlets.validate("get_elevation")
     def _validate_get_elevation_length(self, proposal):
