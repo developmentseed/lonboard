@@ -1,9 +1,11 @@
 from __future__ import annotations
 
+import warnings
 from pathlib import Path
 
 import geopandas as gpd
 import pyarrow as pa
+import pyproj
 import traitlets
 from anywidget import AnyWidget
 
@@ -12,6 +14,9 @@ from lonboard.traits import ColorAccessor, FloatAccessor, PyarrowTableTrait
 
 # bundler yields lonboard/static/{index.js,styles.css}
 bundler_output_dir = Path(__file__).parent / "static"
+
+EPSG_4326 = pyproj.CRS("epsg:4326")
+OGC_84 = pyproj.CRS("ogc:84")
 
 
 class BaseLayer(AnyWidget):
@@ -68,6 +73,10 @@ class ScatterplotLayer(BaseLayer):
 
     @classmethod
     def from_geopandas(cls, gdf: gpd.GeoDataFrame, **kwargs) -> ScatterplotLayer:
+        if gdf.crs and gdf.crs not in [EPSG_4326, OGC_84]:
+            warnings.warn("GeoDataFrame being reprojected to EPSG:4326")
+            gdf = gdf.to_crs(OGC_84)
+
         table = geopandas_to_geoarrow(gdf)
         return cls(table=table, **kwargs)
 
@@ -131,6 +140,10 @@ class PathLayer(BaseLayer):
 
     @classmethod
     def from_geopandas(cls, gdf: gpd.GeoDataFrame, **kwargs) -> PathLayer:
+        if gdf.crs and gdf.crs not in [EPSG_4326, OGC_84]:
+            warnings.warn("GeoDataFrame being reprojected to EPSG:4326")
+            gdf = gdf.to_crs(OGC_84)
+
         table = geopandas_to_geoarrow(gdf)
         return cls(table=table, **kwargs)
 
@@ -163,6 +176,10 @@ class SolidPolygonLayer(BaseLayer):
 
     @classmethod
     def from_geopandas(cls, gdf: gpd.GeoDataFrame, **kwargs) -> SolidPolygonLayer:
+        if gdf.crs and gdf.crs not in [EPSG_4326, OGC_84]:
+            warnings.warn("GeoDataFrame being reprojected to EPSG:4326")
+            gdf = gdf.to_crs(OGC_84)
+
         table = geopandas_to_geoarrow(gdf)
         return cls(table=table, **kwargs)
 
