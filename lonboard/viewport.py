@@ -38,15 +38,6 @@ class Bbox:
         return (self.minx, self.miny, self.maxx, self.maxy)
 
 
-def geo_mean_overflow(iterable):
-    return np.exp(np.log(iterable).mean())
-
-
-def geo_mean(iterable):
-    a = np.array(iterable)
-    return a.prod() ** (1.0 / len(a))
-
-
 @dataclass
 class WeightedCentroid:
     # Existing average for x and y
