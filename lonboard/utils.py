@@ -1,13 +1,8 @@
 import pyarrow as pa
 
-GEOARROW_EXTENSION_TYPE_NAMES = {
-    b"geoarrow.point",
-    b"geoarrow.linestring",
-    b"geoarrow.polygon",
-    b"geoarrow.multipoint",
-    b"geoarrow.multilinestring",
-    b"geoarrow.multipolygon",
-}
+from lonboard.constants import EXTENSION_NAME
+
+GEOARROW_EXTENSION_TYPE_NAMES = {e.value for e in EXTENSION_NAME}
 
 
 def get_geometry_column_index(schema: pa.Schema) -> int:

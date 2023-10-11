@@ -8,7 +8,7 @@ import pyarrow as pa
 import traitlets
 from anywidget import AnyWidget
 
-from lonboard.constants import EPSG_4326, OGC_84
+from lonboard.constants import EPSG_4326, EXTENSION_NAME, OGC_84
 from lonboard.geoarrow.geopandas_interop import geopandas_to_geoarrow
 from lonboard.traits import ColorAccessor, FloatAccessor, PyarrowTableTrait
 from lonboard.viewport import compute_view
@@ -50,7 +50,9 @@ class ScatterplotLayer(BaseLayer):
     _layer_type = traitlets.Unicode("scatterplot").tag(sync=True)
     _initial_view_state = traitlets.Dict().tag(sync=True)
 
-    table = PyarrowTableTrait(allowed_geometry_types={b"geoarrow.point"})
+    table = PyarrowTableTrait(
+        allowed_geometry_types={EXTENSION_NAME.POINT, EXTENSION_NAME.MULTIPOINT}
+    )
 
     radius_units = traitlets.Unicode("meters", allow_none=True).tag(sync=True)
     radius_scale = traitlets.Float(allow_none=True).tag(sync=True)
@@ -128,7 +130,12 @@ class PathLayer(BaseLayer):
     _layer_type = traitlets.Unicode("path").tag(sync=True)
     _initial_view_state = traitlets.Dict().tag(sync=True)
 
-    table = PyarrowTableTrait(allowed_geometry_types={b"geoarrow.linestring"})
+    table = PyarrowTableTrait(
+        allowed_geometry_types={
+            EXTENSION_NAME.LINESTRING,
+            EXTENSION_NAME.MULTILINESTRING,
+        }
+    )
 
     width_units = traitlets.Unicode(allow_none=True).tag(sync=True)
     width_scale = traitlets.Float(allow_none=True).tag(sync=True)
@@ -172,7 +179,9 @@ class SolidPolygonLayer(BaseLayer):
     _layer_type = traitlets.Unicode("solid-polygon").tag(sync=True)
     _initial_view_state = traitlets.Dict().tag(sync=True)
 
-    table = PyarrowTableTrait(allowed_geometry_types={b"geoarrow.polygon"})
+    table = PyarrowTableTrait(
+        allowed_geometry_types={EXTENSION_NAME.POLYGON, EXTENSION_NAME.MULTIPOLYGON}
+    )
 
     filled = traitlets.Bool(allow_none=True).tag(sync=True)
     extruded = traitlets.Bool(allow_none=True).tag(sync=True)

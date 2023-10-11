@@ -12,7 +12,7 @@ import pyarrow.compute as pc
 import shapely.geometry
 from numpy.typing import NDArray
 
-from lonboard.constants import EPSG_4326, OGC_84
+from lonboard.constants import EPSG_4326, EXTENSION_NAME, OGC_84
 from lonboard.geoarrow.extension_types import construct_geometry_array
 from lonboard.geoarrow.geopandas_interop import geopandas_to_geoarrow
 from lonboard.layer import BaseLayer, PathLayer, ScatterplotLayer, SolidPolygonLayer
@@ -198,15 +198,16 @@ def _viz_geoarrow_table(table: pa.Table, **kwargs) -> BaseLayer:
         b"ARROW:extension:name"
     )
 
-    if geometry_ext_type == "geoarrow.point":
+    if geometry_ext_type in [EXTENSION_NAME.POINT, EXTENSION_NAME.MULTIPOINT]:
         return ScatterplotLayer(table, **kwargs)
 
-    elif geometry_ext_type == "geoarrow.linestring":
+    elif geometry_ext_type in [
+        EXTENSION_NAME.LINESTRING,
+        EXTENSION_NAME.MULTILINESTRING,
+    ]:
         return PathLayer(table, **kwargs)
 
-    elif geometry_ext_type == "geoarrow.point":
+    elif geometry_ext_type in [EXTENSION_NAME.POLYGON, EXTENSION_NAME.MULTIPOLYGON]:
         return SolidPolygonLayer(table, **kwargs)
 
-    raise ValueError(
-        "Only point, linestring, and polygon geometry types currently supported."
-    )
+    raise ValueError(f"Unsupported extension type: '{geometry_ext_type}'.")
