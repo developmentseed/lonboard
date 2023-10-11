@@ -20,6 +20,7 @@ palettable = "^3.3.3"
 # We use the colormap module from matplotlib. This module may be vendored in the
 # future to remove the matplotlib dependency.
 matplotlib = "^3.7"
+shapely = "^2"
 
 
 [tool.poetry.group.dev.dependencies]
