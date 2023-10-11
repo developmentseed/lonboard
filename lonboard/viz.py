@@ -1,5 +1,6 @@
 """High-level, super-simple API for visualizing GeoDataFrames
 """
+from __future__ import annotations
 
 import json
 import warnings
