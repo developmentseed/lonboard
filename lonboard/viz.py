@@ -3,7 +3,7 @@
 
 import json
 import warnings
-from typing import TYPE_CHECKING, Union
+from typing import TYPE_CHECKING, Any, Dict, Protocol, Union, cast
 
 import numpy as np
 import pyarrow as pa
@@ -20,10 +20,47 @@ if TYPE_CHECKING:
     import geopandas as gpd
 
 
+class GeoInterfaceProtocol(Protocol):
+    @property
+    def __geo_interface__(self) -> dict:
+        ...
+
+
 def viz(
-    data: Union[gpd.GeoDataFrame, gpd.GeoSeries, pa.Table, NDArray[np.object_]],
+    data: Union[
+        gpd.GeoDataFrame,
+        gpd.GeoSeries,
+        pa.Table,
+        NDArray[np.object_],
+        shapely.geometry.base.BaseGeometry,
+        GeoInterfaceProtocol,
+        Dict[str, Any],
+    ],
     **kwargs,
 ) -> BaseLayer:
+    """A high-level function to plot your data easily.
+
+    This function accepts a variety of geospatial inputs:
+
+    - geopandas `GeoDataFrame`
+    - geopandas `GeoSeries`
+    - numpy array of Shapely objects
+    - Single Shapely object
+    - Any Python class with a `__geo_interface__` property conforming to the
+        [Geo Interface protocol](https://gist.github.com/sgillies/2217756).
+    - `dict` holding GeoJSON-like data.
+    - pyarrow `Table` with a geometry column marked with a GeoArrow extension type
+
+    Args:
+        data: a data object of any supported type.
+
+    Keyword args:
+        - Any other keyword arguments will be passed onto the relevant layer, either a
+          `ScatterplotLayer`, `PathLayer`, or `SolidPolygonLayer`.
+
+    Returns:
+        widget visualizing the provided data.
+    """
     # geopandas GeoDataFrame
     if (
         data.__class__.__module__.startswith("geopandas")
@@ -52,7 +89,8 @@ def viz(
 
     # Anything with __geo_interface__
     if hasattr(data, "__geo_interface__"):
-        return _viz_geo_interface(data.__geo_interface__, **kwargs)  # type: ignore
+        data = cast(GeoInterfaceProtocol, data)
+        return _viz_geo_interface(data.__geo_interface__, **kwargs)
 
     # GeoJSON dict
     if isinstance(data, dict):
