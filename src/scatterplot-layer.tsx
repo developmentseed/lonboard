@@ -1,6 +1,6 @@
 import * as React from "react";
 import { createRender, useModelState } from "@anywidget/react";
-import Map from "react-map-gl/maplibre";
+import Map, { AttributionControl } from "react-map-gl/maplibre";
 import DeckGL from "@deck.gl/react/typed";
 import { GeoArrowScatterplotLayer } from "@geoarrow/deck.gl-layers";
 import { useParquetWasm } from "./parquet";
@@ -79,7 +79,12 @@ function App() {
         layers={layers}
         // ContextProvider={MapContext.Provider}
       >
-        <Map mapStyle={MAP_STYLE} />
+        <Map mapStyle={MAP_STYLE}>
+          <AttributionControl
+            customAttribution="Hello world!"
+            position="top-left"
+          />
+        </Map>
       </DeckGL>
     </div>
   );
