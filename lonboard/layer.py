@@ -64,7 +64,7 @@ class ScatterplotLayer(BaseLayer):
     def from_geopandas(cls, gdf: gpd.GeoDataFrame, **kwargs) -> ScatterplotLayer:
         if gdf.crs and gdf.crs not in [EPSG_4326, OGC_84]:
             warnings.warn("GeoDataFrame being reprojected to EPSG:4326")
-            gdf = gdf.to_crs(OGC_84)
+            gdf = gdf.to_crs(OGC_84)  # type: ignore
 
         table = geopandas_to_geoarrow(gdf)
         return cls(table=table, **kwargs)
@@ -141,7 +141,7 @@ class PathLayer(BaseLayer):
     def from_geopandas(cls, gdf: gpd.GeoDataFrame, **kwargs) -> PathLayer:
         if gdf.crs and gdf.crs not in [EPSG_4326, OGC_84]:
             warnings.warn("GeoDataFrame being reprojected to EPSG:4326")
-            gdf = gdf.to_crs(OGC_84)
+            gdf = gdf.to_crs(OGC_84)  # type: ignore
 
         table = geopandas_to_geoarrow(gdf)
         return cls(table=table, **kwargs)
@@ -188,7 +188,7 @@ class SolidPolygonLayer(BaseLayer):
     def from_geopandas(cls, gdf: gpd.GeoDataFrame, **kwargs) -> SolidPolygonLayer:
         if gdf.crs and gdf.crs not in [EPSG_4326, OGC_84]:
             warnings.warn("GeoDataFrame being reprojected to EPSG:4326")
-            gdf = gdf.to_crs(OGC_84)
+            gdf = gdf.to_crs(OGC_84)  # type: ignore
 
         table = geopandas_to_geoarrow(gdf)
         return cls(table=table, **kwargs)
