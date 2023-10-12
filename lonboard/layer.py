@@ -34,17 +34,6 @@ class BaseLayer(AnyWidget):
     #         yield key
 
 
-# NOTE: I found that traitlets.Union was **extremely** slow to validate a numpy ndarray.
-# Like 6 seconds just for an isinstance check.
-#
-# SCALAR_COLOR_TRAIT = traitlets.List(
-#         traitlets.Int(), None, minlen=3, maxlen=4, allow_none=True
-# )
-# VECTORIZED_COLOR_TRAIT = traitlets.Any()
-# COLOR_TRAIT = traitlets.Union([VECTORIZED_COLOR_TRAIT,
-#     SCALAR_COLOR_TRAIT]).tag(sync=True)
-
-
 class ScatterplotLayer(BaseLayer):
     _esm = bundler_output_dir / "scatterplot-layer.js"
     _layer_type = traitlets.Unicode("scatterplot").tag(sync=True)
