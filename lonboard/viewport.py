@@ -14,6 +14,7 @@ from typing import Optional, Tuple
 import numpy as np
 import pyarrow as pa
 
+from lonboard.constants import EXTENSION_NAME
 from lonboard.utils import get_geometry_column_index
 
 
@@ -92,16 +93,16 @@ def get_bbox_center(table: pa.Table) -> Tuple[Bbox, WeightedCentroid]:
         b"ARROW:extension:name"
     ]
 
-    if extension_type_name == b"geoarrow.point":
+    if extension_type_name == EXTENSION_NAME.POINT:
         return _get_bbox_center_nest_0(geom_col)
 
-    if extension_type_name in [b"geoarrow.linestring", b"geoarrow.multipoint"]:
+    if extension_type_name in [EXTENSION_NAME.LINESTRING, EXTENSION_NAME.MULTIPOINT]:
         return _get_bbox_center_nest_1(geom_col)
 
-    if extension_type_name in [b"geoarrow.polygon", b"geoarrow.multilinestring"]:
+    if extension_type_name in [EXTENSION_NAME.POLYGON, EXTENSION_NAME.MULTILINESTRING]:
         return _get_bbox_center_nest_2(geom_col)
 
-    if extension_type_name == b"geoarrow.multipolygon":
+    if extension_type_name == EXTENSION_NAME.MULTIPOLYGON:
         return _get_bbox_center_nest_3(geom_col)
 
     assert False
