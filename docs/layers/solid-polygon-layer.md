@@ -34,7 +34,7 @@ Whether to fill the polygons (based on the color provided by the
 - Default: `False`
 
 Whether to extrude the polygons (based on the elevations provided by the
-`get_elevation` accessor'). If set to false, all polygons will be flat, this
+`get_elevation` accessor'). If set to `False`, all polygons will be flat, this
 generates less geometry and is faster than simply returning `0` from `get_elevation`.
 
 #### `wireframe`
@@ -48,14 +48,14 @@ Whether to generate a line wireframe of the polygon. The outline will have
 
 #### `elevation_scale`
 
-- (Number, optional)
+- Type: `float`, optional
 - Default: `1`
 
 Elevation multiplier. The final elevation is calculated by
   `elevation_scale * get_elevation(d)`. `elevation_scale` is a handy property to scale
 all elevation without updating the data.
 
--*Remarks:**
+**Remarks:**
 
 - These lines are rendered with `GL.LINE` and will thus always be 1 pixel wide.
 - Wireframe and solid extrusions are exclusive, you'll need to create two layers
@@ -79,7 +79,7 @@ The rgba color is in the format of `[r, g, b, [a]]`. Each channel is a number be
 - Default: `[0, 0, 0, 255]`
 
 The rgba color is in the format of `[r, g, b, [a]]`. Each channel is a number between 0-255 and `a` is 255 if not supplied.
-Only applies if `extruded: true`.
+Only applies if `extruded=True`.
 
 - If an array is provided, it is used as the stroke color for all polygons.
 - If a function is provided, it is called on each object to retrieve its stroke color.
@@ -92,7 +92,7 @@ Only applies if `extruded: true`.
 The elevation to extrude each polygon with.
 If a cartographic projection mode is used, height will be interpreted as meters,
 otherwise will be in unit coordinates.
-Only applies if `extruded: true`.
+Only applies if `extruded=True`.
 
 - If a number is provided, it is used as the elevation for all polygons.
 - If a function is provided, it is called on each object to retrieve its elevation.
