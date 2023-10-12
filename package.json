@@ -5,7 +5,7 @@
     "@deck.gl/core": "^8.9.30",
     "@deck.gl/layers": "^8.9.30",
     "@deck.gl/react": "^8.9.30",
-    "@geoarrow/deck.gl-layers": "0.1.0-beta.5",
+    "@geoarrow/deck.gl-layers": "^0.1.0-beta.5",
     "apache-arrow": "^13.0.0",
     "maplibre-gl": "^3.4.0",
     "parquet-wasm": "0.5.0-alpha.1",
@@ -20,5 +20,10 @@
   "scripts": {
     "build": "node ./build.mjs",
     "build:watch": "fswatch -o src | xargs -n1 -I{} yarn build"
+  },
+  "resolutions": {
+    "@deck.gl/core": "8.9.30",
+    "@deck.gl/layers": "8.9.30",
+    "@deck.gl/react": "8.9.30"
   }
 }

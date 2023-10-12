@@ -167,11 +167,15 @@ class PathLayer(BaseLayer):
             if len(proposal["value"]) != len(self.table):
                 raise traitlets.TraitError("`get_color` must have same length as table")
 
+        return proposal["value"]
+
     @traitlets.validate("get_width")
     def _validate_get_width_length(self, proposal):
         if isinstance(proposal["value"], (pa.ChunkedArray, pa.Array)):
             if len(proposal["value"]) != len(self.table):
                 raise traitlets.TraitError("`get_width` must have same length as table")
+
+        return proposal["value"]
 
 
 class SolidPolygonLayer(BaseLayer):
@@ -212,6 +216,8 @@ class SolidPolygonLayer(BaseLayer):
                     "`get_elevation` must have same length as table"
                 )
 
+        return proposal["value"]
+
     @traitlets.validate("get_fill_color")
     def _validate_get_fill_color_length(self, proposal):
         if isinstance(proposal["value"], (pa.ChunkedArray, pa.Array)):
@@ -220,6 +226,8 @@ class SolidPolygonLayer(BaseLayer):
                     "`get_fill_color` must have same length as table"
                 )
 
+        return proposal["value"]
+
     @traitlets.validate("get_line_color")
     def _validate_get_line_color_length(self, proposal):
         if isinstance(proposal["value"], (pa.ChunkedArray, pa.Array)):
@@ -227,3 +235,5 @@ class SolidPolygonLayer(BaseLayer):
                 raise traitlets.TraitError(
                     "`get_line_color` must have same length as table"
                 )
+
+        return proposal["value"]
