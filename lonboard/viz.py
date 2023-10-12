@@ -55,9 +55,9 @@ def viz(
     Args:
         data: a data object of any supported type.
 
-    Keyword args:
-        - Any other keyword arguments will be passed onto the relevant layer, either a
-          `ScatterplotLayer`, `PathLayer`, or `SolidPolygonLayer`.
+    Named args:
+        Any other keyword arguments will be passed onto the relevant layer, either a
+        `ScatterplotLayer`, `PathLayer`, or `SolidPolygonLayer`.
 
     Returns:
         widget visualizing the provided data.
