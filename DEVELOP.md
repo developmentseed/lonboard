@@ -48,6 +48,17 @@ Currently, each Python model (the `ScatterplotLayer`, `PathLayer`, and `SolidPol
 
 Anywidget and its dependency ipywidgets handles the serialization from Python into JS, automatically keeping each side in sync.
 
+## Publishing
+
+This will be automated in the future
+
+```
+rm -rf dist
+pip install -U build
+python -m build
+twine upload dist/*
+```
+
 ## Documentation website
 
 The documentation website is generated with `mkdocs` and [`mkdocs-material`](https://squidfunk.github.io/mkdocs-material). After `poetry install`, you can serve the docs website locally with
