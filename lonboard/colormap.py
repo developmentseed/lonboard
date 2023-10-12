@@ -15,10 +15,16 @@ def apply_continuous_cmap(
 
     This is described as "continuous" because it uses matplotlib's
     [LinearSegmentedColormap][matplotlib.colors.LinearSegmentedColormap] under the hood.
-    As described in Matplotlib's referenced docstring,
+    As described in Matplotlib's referenced docstring:
 
     > The lookup table is generated using linear interpolation for each primary color,
     > with the 0-1 domain divided into any number of segments.
+
+    This means that input values are linearly combined from the two nearest colormap
+    colors.
+
+    If you want to snap to the "nearest" colormap value, you should use another function
+    (not yet implemented) to snap to the strictly nearest color value.
 
     Args:
         values: A numpy array of floating point values ranging from 0 to 1.
