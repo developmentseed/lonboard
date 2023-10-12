@@ -38,7 +38,7 @@ def viz(
         Dict[str, Any],
     ],
     **kwargs,
-) -> BaseLayer:
+) -> Union[ScatterplotLayer, PathLayer, SolidPolygonLayer]:
     """A high-level function to plot your data easily.
 
     This function accepts a variety of geospatial inputs:

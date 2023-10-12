@@ -34,6 +34,7 @@ pytest = "^7.4.2"
 [tool.poetry.group.docs.dependencies]
 mkdocs = "^1.4.3"
 mkdocs-material = { version = "^9.1.16", extras = ["imaging"] }
+mkdocstrings = {version = "^0.23.0", extras = ["python"]}
 
 [build-system]
 requires = ["poetry-core"]
