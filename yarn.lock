@@ -37,15 +37,15 @@ __metadata:
   linkType: hard
 
 "@babel/runtime@npm:^7.0.0, @babel/runtime@npm:^7.12.0, @babel/runtime@npm:^7.22.11, @babel/runtime@npm:^7.3.1":
-  version: 7.22.11
-  resolution: "@babel/runtime@npm:7.22.11"
+  version: 7.23.2
+  resolution: "@babel/runtime@npm:7.23.2"
   dependencies:
     regenerator-runtime: ^0.14.0
-  checksum: a5cd6683a8fcdb8065cb1677f221e22f6c67ec8f15ad1d273b180b93ab3bd86c66da2c48f500d4e72d8d2cfa85ff4872a3f350e5aa3855630036af5da765c001
+  checksum: 6c4df4839ec75ca10175f636d6362f91df8a3137f86b38f6cd3a4c90668a0fe8e9281d320958f4fbd43b394988958585a17c3aab2a4ea6bf7316b22916a371fb
   languageName: node
   linkType: hard
 
-"@deck.gl/core@npm:^8.9.30":
+"@deck.gl/core@npm:8.9.30":
   version: 8.9.30
   resolution: "@deck.gl/core@npm:8.9.30"
   dependencies:
@@ -68,7 +68,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@deck.gl/layers@npm:^8.9.30":
+"@deck.gl/layers@npm:8.9.30":
   version: 8.9.30
   resolution: "@deck.gl/layers@npm:8.9.30"
   dependencies:
@@ -89,7 +89,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@deck.gl/react@npm:^8.9.30":
+"@deck.gl/react@npm:8.9.30":
   version: 8.9.30
   resolution: "@deck.gl/react@npm:8.9.30"
   dependencies:
@@ -103,218 +103,218 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@esbuild/android-arm64@npm:0.19.2":
-  version: 0.19.2
-  resolution: "@esbuild/android-arm64@npm:0.19.2"
+"@esbuild/android-arm64@npm:0.19.4":
+  version: 0.19.4
+  resolution: "@esbuild/android-arm64@npm:0.19.4"
   conditions: os=android & cpu=arm64
   languageName: node
   linkType: hard
 
-"@esbuild/android-arm@npm:0.19.2":
-  version: 0.19.2
-  resolution: "@esbuild/android-arm@npm:0.19.2"
+"@esbuild/android-arm@npm:0.19.4":
+  version: 0.19.4
+  resolution: "@esbuild/android-arm@npm:0.19.4"
   conditions: os=android & cpu=arm
   languageName: node
   linkType: hard
 
-"@esbuild/android-x64@npm:0.19.2":
-  version: 0.19.2
-  resolution: "@esbuild/android-x64@npm:0.19.2"
+"@esbuild/android-x64@npm:0.19.4":
+  version: 0.19.4
+  resolution: "@esbuild/android-x64@npm:0.19.4"
   conditions: os=android & cpu=x64
   languageName: node
   linkType: hard
 
-"@esbuild/darwin-arm64@npm:0.19.2":
-  version: 0.19.2
-  resolution: "@esbuild/darwin-arm64@npm:0.19.2"
+"@esbuild/darwin-arm64@npm:0.19.4":
+  version: 0.19.4
+  resolution: "@esbuild/darwin-arm64@npm:0.19.4"
   conditions: os=darwin & cpu=arm64
   languageName: node
   linkType: hard
 
-"@esbuild/darwin-x64@npm:0.19.2":
-  version: 0.19.2
-  resolution: "@esbuild/darwin-x64@npm:0.19.2"
+"@esbuild/darwin-x64@npm:0.19.4":
+  version: 0.19.4
+  resolution: "@esbuild/darwin-x64@npm:0.19.4"
   conditions: os=darwin & cpu=x64
   languageName: node
   linkType: hard
 
-"@esbuild/freebsd-arm64@npm:0.19.2":
-  version: 0.19.2
-  resolution: "@esbuild/freebsd-arm64@npm:0.19.2"
+"@esbuild/freebsd-arm64@npm:0.19.4":
+  version: 0.19.4
+  resolution: "@esbuild/freebsd-arm64@npm:0.19.4"
   conditions: os=freebsd & cpu=arm64
   languageName: node
   linkType: hard
 
-"@esbuild/freebsd-x64@npm:0.19.2":
-  version: 0.19.2
-  resolution: "@esbuild/freebsd-x64@npm:0.19.2"
+"@esbuild/freebsd-x64@npm:0.19.4":
+  version: 0.19.4
+  resolution: "@esbuild/freebsd-x64@npm:0.19.4"
   conditions: os=freebsd & cpu=x64
   languageName: node
   linkType: hard
 
-"@esbuild/linux-arm64@npm:0.19.2":
-  version: 0.19.2
-  resolution: "@esbuild/linux-arm64@npm:0.19.2"
+"@esbuild/linux-arm64@npm:0.19.4":
+  version: 0.19.4
+  resolution: "@esbuild/linux-arm64@npm:0.19.4"
   conditions: os=linux & cpu=arm64
   languageName: node
   linkType: hard
 
-"@esbuild/linux-arm@npm:0.19.2":
-  version: 0.19.2
-  resolution: "@esbuild/linux-arm@npm:0.19.2"
+"@esbuild/linux-arm@npm:0.19.4":
+  version: 0.19.4
+  resolution: "@esbuild/linux-arm@npm:0.19.4"
   conditions: os=linux & cpu=arm
   languageName: node
   linkType: hard
 
-"@esbuild/linux-ia32@npm:0.19.2":
-  version: 0.19.2
-  resolution: "@esbuild/linux-ia32@npm:0.19.2"
+"@esbuild/linux-ia32@npm:0.19.4":
+  version: 0.19.4
+  resolution: "@esbuild/linux-ia32@npm:0.19.4"
   conditions: os=linux & cpu=ia32
   languageName: node
   linkType: hard
 
-"@esbuild/linux-loong64@npm:0.19.2":
-  version: 0.19.2
-  resolution: "@esbuild/linux-loong64@npm:0.19.2"
+"@esbuild/linux-loong64@npm:0.19.4":
+  version: 0.19.4
+  resolution: "@esbuild/linux-loong64@npm:0.19.4"
   conditions: os=linux & cpu=loong64
   languageName: node
   linkType: hard
 
-"@esbuild/linux-mips64el@npm:0.19.2":
-  version: 0.19.2
-  resolution: "@esbuild/linux-mips64el@npm:0.19.2"
+"@esbuild/linux-mips64el@npm:0.19.4":
+  version: 0.19.4
+  resolution: "@esbuild/linux-mips64el@npm:0.19.4"
   conditions: os=linux & cpu=mips64el
   languageName: node
   linkType: hard
 
-"@esbuild/linux-ppc64@npm:0.19.2":
-  version: 0.19.2
-  resolution: "@esbuild/linux-ppc64@npm:0.19.2"
+"@esbuild/linux-ppc64@npm:0.19.4":
+  version: 0.19.4
+  resolution: "@esbuild/linux-ppc64@npm:0.19.4"
   conditions: os=linux & cpu=ppc64
   languageName: node
   linkType: hard
 
-"@esbuild/linux-riscv64@npm:0.19.2":
-  version: 0.19.2
-  resolution: "@esbuild/linux-riscv64@npm:0.19.2"
+"@esbuild/linux-riscv64@npm:0.19.4":
+  version: 0.19.4
+  resolution: "@esbuild/linux-riscv64@npm:0.19.4"
   conditions: os=linux & cpu=riscv64
   languageName: node
   linkType: hard
 
-"@esbuild/linux-s390x@npm:0.19.2":
-  version: 0.19.2
-  resolution: "@esbuild/linux-s390x@npm:0.19.2"
+"@esbuild/linux-s390x@npm:0.19.4":
+  version: 0.19.4
+  resolution: "@esbuild/linux-s390x@npm:0.19.4"
   conditions: os=linux & cpu=s390x
   languageName: node
   linkType: hard
 
-"@esbuild/linux-x64@npm:0.19.2":
-  version: 0.19.2
-  resolution: "@esbuild/linux-x64@npm:0.19.2"
+"@esbuild/linux-x64@npm:0.19.4":
+  version: 0.19.4
+  resolution: "@esbuild/linux-x64@npm:0.19.4"
   conditions: os=linux & cpu=x64
   languageName: node
   linkType: hard
 
-"@esbuild/netbsd-x64@npm:0.19.2":
-  version: 0.19.2
-  resolution: "@esbuild/netbsd-x64@npm:0.19.2"
+"@esbuild/netbsd-x64@npm:0.19.4":
+  version: 0.19.4
+  resolution: "@esbuild/netbsd-x64@npm:0.19.4"
   conditions: os=netbsd & cpu=x64
   languageName: node
   linkType: hard
 
-"@esbuild/openbsd-x64@npm:0.19.2":
-  version: 0.19.2
-  resolution: "@esbuild/openbsd-x64@npm:0.19.2"
+"@esbuild/openbsd-x64@npm:0.19.4":
+  version: 0.19.4
+  resolution: "@esbuild/openbsd-x64@npm:0.19.4"
   conditions: os=openbsd & cpu=x64
   languageName: node
   linkType: hard
 
-"@esbuild/sunos-x64@npm:0.19.2":
-  version: 0.19.2
-  resolution: "@esbuild/sunos-x64@npm:0.19.2"
+"@esbuild/sunos-x64@npm:0.19.4":
+  version: 0.19.4
+  resolution: "@esbuild/sunos-x64@npm:0.19.4"
   conditions: os=sunos & cpu=x64
   languageName: node
   linkType: hard
 
-"@esbuild/win32-arm64@npm:0.19.2":
-  version: 0.19.2
-  resolution: "@esbuild/win32-arm64@npm:0.19.2"
+"@esbuild/win32-arm64@npm:0.19.4":
+  version: 0.19.4
+  resolution: "@esbuild/win32-arm64@npm:0.19.4"
   conditions: os=win32 & cpu=arm64
   languageName: node
   linkType: hard
 
-"@esbuild/win32-ia32@npm:0.19.2":
-  version: 0.19.2
-  resolution: "@esbuild/win32-ia32@npm:0.19.2"
+"@esbuild/win32-ia32@npm:0.19.4":
+  version: 0.19.4
+  resolution: "@esbuild/win32-ia32@npm:0.19.4"
   conditions: os=win32 & cpu=ia32
   languageName: node
   linkType: hard
 
-"@esbuild/win32-x64@npm:0.19.2":
-  version: 0.19.2
-  resolution: "@esbuild/win32-x64@npm:0.19.2"
+"@esbuild/win32-x64@npm:0.19.4":
+  version: 0.19.4
+  resolution: "@esbuild/win32-x64@npm:0.19.4"
   conditions: os=win32 & cpu=x64
   languageName: node
   linkType: hard
 
-"@geoarrow/deck.gl-layers@npm:0.1.0-beta.4":
-  version: 0.1.0-beta.4
-  resolution: "@geoarrow/deck.gl-layers@npm:0.1.0-beta.4"
+"@geoarrow/deck.gl-layers@npm:^0.1.0-beta.5":
+  version: 0.1.0-beta.5
+  resolution: "@geoarrow/deck.gl-layers@npm:0.1.0-beta.5"
   peerDependencies:
     "@deck.gl/core": ^8.9.23
     "@deck.gl/layers": ^8.9.23
     apache-arrow: ^13.0.0
-  checksum: 40521a0cd27f12f3f9f8acb033c2c2f6a88ceaa42c82bdad21fc3e640b1b349a695c8a7c60451470a390be7c2005c29fc8953e311a910526b73cf6e77d5aa74f
+  checksum: 825f66b4d914c8caa48edceaee1ab207a528982a17f1706678b110fcca231fba94164148994e7015e244de7ee7ab61e6147f92824c00d500a3d3c063c2d13477
   languageName: node
   linkType: hard
 
 "@loaders.gl/core@npm:^3.4.13":
-  version: 3.4.13
-  resolution: "@loaders.gl/core@npm:3.4.13"
+  version: 3.4.14
+  resolution: "@loaders.gl/core@npm:3.4.14"
   dependencies:
     "@babel/runtime": ^7.3.1
-    "@loaders.gl/loader-utils": 3.4.13
-    "@loaders.gl/worker-utils": 3.4.13
+    "@loaders.gl/loader-utils": 3.4.14
+    "@loaders.gl/worker-utils": 3.4.14
     "@probe.gl/log": ^4.0.1
-  checksum: 47235b598de5ddcc3675d78790c2f07d1c36be7b33d4151d3e80d80d1d3b2fece7ac389659a2f7ab817406e6859051cf67ebd72c2cfd100b1f57f57b8aaa122d
+  checksum: 4769017434a387e1c5da1ab934d26837b14a166237e61dfea19633c83cbe3fd42c9bcf0c3108cda60f32c680fb767cd3c8d8a91d2ee811d49b40b22494c1a223
   languageName: node
   linkType: hard
 
 "@loaders.gl/images@npm:^3.4.13":
-  version: 3.4.13
-  resolution: "@loaders.gl/images@npm:3.4.13"
+  version: 3.4.14
+  resolution: "@loaders.gl/images@npm:3.4.14"
   dependencies:
-    "@loaders.gl/loader-utils": 3.4.13
-  checksum: 8acff5c206df05b9538ac4280d42b9dcbbf12ccd1207e1c473aa16bee338134cef52852c5f487e96e98b9d1dac83a212bb46cc2a705b4ed6fa1646a8978ca0e7
+    "@loaders.gl/loader-utils": 3.4.14
+  checksum: bb4049fa6a0739079597bc6d52e389440703fcf61c6e1c8f797dfa5c7404a24e04dc744e08d22c1d8333e4da040451572a3df9b980766beadb9bfa17a5f47234
   languageName: node
   linkType: hard
 
-"@loaders.gl/loader-utils@npm:3.4.13":
-  version: 3.4.13
-  resolution: "@loaders.gl/loader-utils@npm:3.4.13"
+"@loaders.gl/loader-utils@npm:3.4.14":
+  version: 3.4.14
+  resolution: "@loaders.gl/loader-utils@npm:3.4.14"
   dependencies:
     "@babel/runtime": ^7.3.1
-    "@loaders.gl/worker-utils": 3.4.13
+    "@loaders.gl/worker-utils": 3.4.14
     "@probe.gl/stats": ^4.0.1
-  checksum: 4cb3b1b81ccc86307136389b1cf290421131378bce5a69910380e002aff6c48e9105dbb88041420f32e9f1189c1c30feabb39ea577f76a1fa8417b9e803c32d9
+  checksum: fde4e3a6626678bede49afc3feba92d8766975b7e3c6f9af1b23d5b6e638fbfee19cb231c500c7ed67f07a854ed9a8984dd9cb4f41a5409ace4ee3e990d6b699
   languageName: node
   linkType: hard
 
 "@loaders.gl/schema@npm:^3.4.13":
-  version: 3.4.13
-  resolution: "@loaders.gl/schema@npm:3.4.13"
+  version: 3.4.14
+  resolution: "@loaders.gl/schema@npm:3.4.14"
   dependencies:
     "@types/geojson": ^7946.0.7
-  checksum: d705e30a26d3f70aa416dd2fc9f13658ec81d612516843ea2af52950066de0b54b86de6471a453fd578f382fca45f12792d5b9aa9fa90f6a229decd951f3e738
+  checksum: 63a88cb26aa68b7401ddd5d51f1f9ffa15c1a99857990a4fd46d486974009d050afb5965bd9abfdd7beba3863d1055fee44ca03ee0231370ea3043c8ba2de867
   languageName: node
   linkType: hard
 
-"@loaders.gl/worker-utils@npm:3.4.13":
-  version: 3.4.13
-  resolution: "@loaders.gl/worker-utils@npm:3.4.13"
+"@loaders.gl/worker-utils@npm:3.4.14":
+  version: 3.4.14
+  resolution: "@loaders.gl/worker-utils@npm:3.4.14"
   dependencies:
     "@babel/runtime": ^7.3.1
-  checksum: f0ccfc264a5e6cd0265917be93d4db029e0785d96258ba7135e002248b006665da74f3d0b486056f21f6487a8a4b191716d0153771f7e1c470a3a46a0c768114
+  checksum: 18b874f9c0eaa1f5a37cd5ef6be183cb758c6e953caac9ac6666be3f09eeb5ce0c59ba7f2c5c0f21278883b7be6ee336889fec7cc31e64ea6cf37767a949e394
   languageName: node
   linkType: hard
 
@@ -448,25 +448,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@maplibre/maplibre-gl-style-spec@npm:^19.2.1":
-  version: 19.3.0
-  resolution: "@maplibre/maplibre-gl-style-spec@npm:19.3.0"
-  dependencies:
-    "@mapbox/jsonlint-lines-primitives": ~2.0.2
-    "@mapbox/unitbezier": ^0.0.1
-    json-stringify-pretty-compact: ^3.0.0
-    minimist: ^1.2.8
-    rw: ^1.3.3
-    sort-object: ^3.0.3
-  bin:
-    gl-style-format: dist/gl-style-format.mjs
-    gl-style-migrate: dist/gl-style-migrate.mjs
-    gl-style-validate: dist/gl-style-validate.mjs
-  checksum: bec1e2da07cace76fe82f2377765655a734d9c1e165d67c65ab6a4bb06251db4920115efb224f6a6606e78a33975542b2c7055b99bc9bb40bfcb9b2cf283493d
-  languageName: node
-  linkType: hard
-
-"@maplibre/maplibre-gl-style-spec@npm:^19.3.2":
+"@maplibre/maplibre-gl-style-spec@npm:^19.2.1, @maplibre/maplibre-gl-style-spec@npm:^19.3.2":
   version: 19.3.2
   resolution: "@maplibre/maplibre-gl-style-spec@npm:19.3.2"
   dependencies:
@@ -600,14 +582,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@types/geojson@npm:*, @types/geojson@npm:^7946.0.7":
-  version: 7946.0.10
-  resolution: "@types/geojson@npm:7946.0.10"
-  checksum: 12c407c2dc93ecb26c08af533ee732f1506a9b29456616ba7ba1d525df96206c28ddf44a528f6a5415d7d22893e9d967420940a9c095ee5e539c1eba5fefc1f4
-  languageName: node
-  linkType: hard
-
-"@types/geojson@npm:^7946.0.11":
+"@types/geojson@npm:*, @types/geojson@npm:^7946.0.11, @types/geojson@npm:^7946.0.7":
   version: 7946.0.11
   resolution: "@types/geojson@npm:7946.0.11"
   checksum: 93fe7e9c5d16b0a836058ee4b87f8b022d53893d5a8e7ab52c8bf64d12039d076df99f3764c1c4da13abaa1001115fd899330edba4d8d8fa4a4feb162650b22c
@@ -615,18 +590,18 @@ __metadata:
   linkType: hard
 
 "@types/hammerjs@npm:^2.0.41":
-  version: 2.0.41
-  resolution: "@types/hammerjs@npm:2.0.41"
-  checksum: d16fbd688fc9b18cc270abe8dea8d4c50ef7bd8375e593d92c233d299387933a6b003c8db69819344833052458bc5f9ef1b472001277a49f095928d184356006
+  version: 2.0.42
+  resolution: "@types/hammerjs@npm:2.0.42"
+  checksum: 25dbaafbfb39e20dece86e60a1319697d518bd3b780b3ad5154766cc1dce39a33b95d338bff9dda631bbc43c8692967be91fad8f19e178e4095eb558b2a7ffa3
   languageName: node
   linkType: hard
 
 "@types/mapbox-gl@npm:>=1.0.0":
-  version: 2.7.13
-  resolution: "@types/mapbox-gl@npm:2.7.13"
+  version: 2.7.15
+  resolution: "@types/mapbox-gl@npm:2.7.15"
   dependencies:
     "@types/geojson": "*"
-  checksum: b584222588a3e0fdd9fde3fe6563b7c7b5c274f892e3de00754fe18bca3fa2e2ba80c82cfdf00431fb6409bddc1567e7acd9553a41ce031bddb6992771072fc9
+  checksum: 39d5ef3341d2cbc6bf254c08e14ac2a09c7e6192cf18c838a0b7ce7ca6db195376f5c0357edd1b7f2afe132a0ba5bd262842b8274c4cd091a413057221e4322b
   languageName: node
   linkType: hard
 
@@ -656,9 +631,9 @@ __metadata:
   linkType: hard
 
 "@types/offscreencanvas@npm:^2019.7.0":
-  version: 2019.7.0
-  resolution: "@types/offscreencanvas@npm:2019.7.0"
-  checksum: 018cfcd19e0c59c44d14ba61caaca7246f77fbb512839c7881654b7f2b6591dbdd5857362eccbf49f29cdc93724e71a4b37c8b6cf203388f9c04e913a53ea390
+  version: 2019.7.1
+  resolution: "@types/offscreencanvas@npm:2019.7.1"
+  checksum: 6835c06310ec6f39bdd10f66207c74e6dc522848bd4e4168e08590db4830b7a9c42f3151cb30dd75fda27acf6de80f44f45918d873caa67b74b71cf25477e309
   languageName: node
   linkType: hard
 
@@ -669,14 +644,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@types/pbf@npm:*":
-  version: 3.0.2
-  resolution: "@types/pbf@npm:3.0.2"
-  checksum: f71ba1facd44a43bd32d4391177099cab69b2ae8381a260382287a4f7f255565d39fa0cf5da27fd2820fc923ead245d50a668824aaa423f908838813802d47f5
-  languageName: node
-  linkType: hard
-
-"@types/pbf@npm:^3.0.3":
+"@types/pbf@npm:*, @types/pbf@npm:^3.0.3":
   version: 3.0.3
   resolution: "@types/pbf@npm:3.0.3"
   checksum: db2007e40fecd6c6fb69f2f2bbcb635279333405aaf4fc94e31cb811ebe238bdccdb0ba567b4d31a9c509f7280b64497e4c4e8f9d977805e3997a6228b31e8bc
@@ -684,20 +652,20 @@ __metadata:
   linkType: hard
 
 "@types/prop-types@npm:*":
-  version: 15.7.7
-  resolution: "@types/prop-types@npm:15.7.7"
-  checksum: 023b95f7dd82e1c594f51dcb93ec4c382600cef6eeee29a2ac7b782b92c0882eab8da16d4cbd6e18b39e85ac8d94ebf4ca02c6e248ce5b5fb4b16dbab5d82861
+  version: 15.7.8
+  resolution: "@types/prop-types@npm:15.7.8"
+  checksum: 61dfad79da8b1081c450bab83b77935df487ae1cdd4660ec7df6be8e74725c15fa45cf486ce057addc956ca4ae78300b97091e2a25061133d1b9a1440bc896ae
   languageName: node
   linkType: hard
 
 "@types/react@npm:^18.2.23":
-  version: 18.2.23
-  resolution: "@types/react@npm:18.2.23"
+  version: 18.2.28
+  resolution: "@types/react@npm:18.2.28"
   dependencies:
     "@types/prop-types": "*"
     "@types/scheduler": "*"
     csstype: ^3.0.2
-  checksum: efb9d1ed1940c0e7ba08a21ffba5e266d8dbbb8fe618cfb97bc902dfc96385fdd8189e3f7f64b4aa13134f8e61947d60560deb23be151253c3a97b0d070897ca
+  checksum: 81381bedeba83278f4c9febb0b83e0bd3f42a25897a50b9cb36ef53651d34b3d50f87ebf11211ea57ea575131f85d31e93e496ce46478a00b0f9bf7b26b5917a
   languageName: node
   linkType: hard
 
@@ -867,31 +835,31 @@ __metadata:
   linkType: hard
 
 "esbuild@npm:^0.19.2":
-  version: 0.19.2
-  resolution: "esbuild@npm:0.19.2"
+  version: 0.19.4
+  resolution: "esbuild@npm:0.19.4"
   dependencies:
-    "@esbuild/android-arm": 0.19.2
-    "@esbuild/android-arm64": 0.19.2
-    "@esbuild/android-x64": 0.19.2
-    "@esbuild/darwin-arm64": 0.19.2
-    "@esbuild/darwin-x64": 0.19.2
-    "@esbuild/freebsd-arm64": 0.19.2
-    "@esbuild/freebsd-x64": 0.19.2
-    "@esbuild/linux-arm": 0.19.2
-    "@esbuild/linux-arm64": 0.19.2
-    "@esbuild/linux-ia32": 0.19.2
-    "@esbuild/linux-loong64": 0.19.2
-    "@esbuild/linux-mips64el": 0.19.2
-    "@esbuild/linux-ppc64": 0.19.2
-    "@esbuild/linux-riscv64": 0.19.2
-    "@esbuild/linux-s390x": 0.19.2
-    "@esbuild/linux-x64": 0.19.2
-    "@esbuild/netbsd-x64": 0.19.2
-    "@esbuild/openbsd-x64": 0.19.2
-    "@esbuild/sunos-x64": 0.19.2
-    "@esbuild/win32-arm64": 0.19.2
-    "@esbuild/win32-ia32": 0.19.2
-    "@esbuild/win32-x64": 0.19.2
+    "@esbuild/android-arm": 0.19.4
+    "@esbuild/android-arm64": 0.19.4
+    "@esbuild/android-x64": 0.19.4
+    "@esbuild/darwin-arm64": 0.19.4
+    "@esbuild/darwin-x64": 0.19.4
+    "@esbuild/freebsd-arm64": 0.19.4
+    "@esbuild/freebsd-x64": 0.19.4
+    "@esbuild/linux-arm": 0.19.4
+    "@esbuild/linux-arm64": 0.19.4
+    "@esbuild/linux-ia32": 0.19.4
+    "@esbuild/linux-loong64": 0.19.4
+    "@esbuild/linux-mips64el": 0.19.4
+    "@esbuild/linux-ppc64": 0.19.4
+    "@esbuild/linux-riscv64": 0.19.4
+    "@esbuild/linux-s390x": 0.19.4
+    "@esbuild/linux-x64": 0.19.4
+    "@esbuild/netbsd-x64": 0.19.4
+    "@esbuild/openbsd-x64": 0.19.4
+    "@esbuild/sunos-x64": 0.19.4
+    "@esbuild/win32-arm64": 0.19.4
+    "@esbuild/win32-ia32": 0.19.4
+    "@esbuild/win32-x64": 0.19.4
   dependenciesMeta:
     "@esbuild/android-arm":
       optional: true
@@ -939,7 +907,7 @@ __metadata:
       optional: true
   bin:
     esbuild: bin/esbuild
-  checksum: f9ad8ad4f0cbcc675c059f2676c4458d75307af20f9168859de8642accd7f2b7d6bbe8286a23633790dcba07d1d66a8f63c204ea933a0d51300c1b69d4f25d8f
+  checksum: 024309a16365b020815a30e9a3a9354894a391cf1adbfad7f44a975cf161ab5e961619b30e1ec8ea02994631d71e6b38831119be69f8ccb610c32bbe21addc79
   languageName: node
   linkType: hard
 
@@ -1145,8 +1113,8 @@ __metadata:
   linkType: hard
 
 "maplibre-gl@npm:^3.4.0":
-  version: 3.4.0
-  resolution: "maplibre-gl@npm:3.4.0"
+  version: 3.4.1
+  resolution: "maplibre-gl@npm:3.4.1"
   dependencies:
     "@mapbox/geojson-rewind": ^0.5.2
     "@mapbox/jsonlint-lines-primitives": ^2.0.2
@@ -1173,7 +1141,7 @@ __metadata:
     supercluster: ^8.0.1
     tinyqueue: ^2.0.3
     vt-pbf: ^3.1.3
-  checksum: bf5ae11669404c203dc60e5467f39f2abbec21234e6014bbdf963ddebe282d8e16eeea97832b450e9b1cb542fe5a74dacd6cd716c6514dd81fbac9a7f72a8dcc
+  checksum: f20ddccc910d6b2a8d16a4a14c63a8bce7805429219a2023635f30f9aae92cae15d1062723d92903393a5b2c0bf6778206c42320536a5956510c3f899f26d123
   languageName: node
   linkType: hard
 
@@ -1272,8 +1240,8 @@ __metadata:
   linkType: hard
 
 "react-map-gl@npm:^7.1.5":
-  version: 7.1.5
-  resolution: "react-map-gl@npm:7.1.5"
+  version: 7.1.6
+  resolution: "react-map-gl@npm:7.1.6"
   dependencies:
     "@maplibre/maplibre-gl-style-spec": ^19.2.1
     "@types/mapbox-gl": ">=1.0.0"
@@ -1287,7 +1255,7 @@ __metadata:
       optional: true
     maplibre-gl:
       optional: true
-  checksum: a792ff693a071b9b4dead4d5a07957854887ca0af5d7de6e345d138b8a5a1908c64d20606a29b1f15375d892d870cfc9cef547d81ff61788436efca415755361
+  checksum: 6c85996198fd781c6c08c6e3c191b133dc99f4bc35849a4e1cc35dd52e7d798183a8f6d976fed331728164e99e039478ba19cb39a33d3f3d9fc53747ae03e681
   languageName: node
   linkType: hard
 
@@ -1332,7 +1300,7 @@ __metadata:
     "@deck.gl/core": ^8.9.30
     "@deck.gl/layers": ^8.9.30
     "@deck.gl/react": ^8.9.30
-    "@geoarrow/deck.gl-layers": 0.1.0-beta.4
+    "@geoarrow/deck.gl-layers": ^0.1.0-beta.5
     "@types/react": ^18.2.23
     apache-arrow: ^13.0.0
     esbuild: ^0.19.2
