@@ -2,6 +2,10 @@
 
 The `PathLayer` renders lists of coordinate points as extruded polylines with mitering.
 
+![](../assets/path-layer-roads.jpg)
+
+> Screenshot from North America roads example
+
 ## Properties
 
 <!-- Inherits from all [Base Layer](https://deck.gl/docs/api-reference/core/layer) properties. -->

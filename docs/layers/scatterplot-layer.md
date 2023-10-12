@@ -2,7 +2,7 @@
 
 The `ScatterplotLayer` renders circles at given coordinates.
 
-![](../img/scatterplot-layer-network-speeds.jpg)
+![](../assets/scatterplot-layer-network-speeds.jpg)
 
 > Screenshot from Ookla example.
 
