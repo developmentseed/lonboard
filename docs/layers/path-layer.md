@@ -43,24 +43,24 @@ The maximum path width in pixels. This prop can be used to prevent the path from
 #### `cap_rounded`
 
 - Type: `bool`, optional
-- Default: `false`
+- Default: `False`
 
-Type of caps. If `true`, draw round caps. Otherwise draw square caps.
+Type of caps. If `True`, draw round caps. Otherwise draw square caps.
 
 #### `joint_rounded`
 
 - Type: `bool`, optional
-- Default: `false`
+- Default: `False`
 
-Type of joint. If `true`, draw round joints. Otherwise draw miter joints.
+Type of joint. If `True`, draw round joints. Otherwise draw miter joints.
 
 #### `billboard`
 
 - Type: `bool`, optional
-- Default: `false`
+- Default: `False`
 
-If `true`, extrude the path in screen space (width always faces the camera).
-If `false`, the width always faces up.
+If `True`, extrude the path in screen space (width always faces the camera).
+If `False`, the width always faces up.
 
 #### `miter_limit`
 
@@ -68,7 +68,7 @@ If `false`, the width always faces up.
 - Default: `4`
 
 The maximum extent of a joint in ratio to the stroke width.
-Only works if `jointRounded` is `false`.
+Only works if `jointRounded` is `False`.
 
 ### Data Accessors
 

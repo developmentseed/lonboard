@@ -11,16 +11,32 @@ def apply_continuous_cmap(
     *,
     alpha: Union[float, int, NDArray[np.floating], None] = None
 ) -> NDArray[np.uint8]:
-    """_summary_
+    """Apply a colormap to a set of values.
+
+    This is described as "continuous" because it uses matplotlib's
+    [LinearSegmentedColormap][matplotlib.colors.LinearSegmentedColormap] under the hood.
+    As described in Matplotlib's referenced docstring:
+
+    > The lookup table is generated using linear interpolation for each primary color,
+    > with the 0-1 domain divided into any number of segments.
+
+    This means that input values are linearly combined from the two nearest colormap
+    colors.
+
+    If you want to snap to the "nearest" colormap value, you should use another function
+    (not yet implemented) to snap to the strictly nearest color value.
 
     Args:
-        values: _description_
-        cmap: _description_
+        values: A numpy array of floating point values ranging from 0 to 1.
+        cmap: Any `Palette` object from the
+            [`palettable`](https://github.com/jiffyclub/palettable) package.
         alpha: Alpha must be a scalar between 0 and 1, a sequence of such floats with
             shape matching `values`, or None.
 
     Returns:
-        _description_
+        A two dimensional numpy array with data type [np.uint8][numpy.uint8]. The second
+            dimension will have a length of either `3` if `alpha` is `None`, or `4` is
+            each color has an alpha value.
     """
     assert isinstance(cmap, Palette), "Expected cmap to be a palettable colormap."
 
