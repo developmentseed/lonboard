@@ -21,7 +21,7 @@ function App() {
   const [wasmReady] = useParquetWasm();
 
   let [viewState] = useModelState<DataView>("_initial_view_state");
-  let [dataRaw] = useModelState<DataView>("table");
+  let [dataRaw] = useModelState<DataView[]>("table");
   let [filled] = useModelState("filled");
   let [extruded] = useModelState("extruded");
   let [wireframe] = useModelState("wireframe");

@@ -8,6 +8,8 @@ from lonboard.traits import ColorAccessor, FloatAccessor
 
 
 class ColorAccessorWidget(Widget):
+    _rows_per_chunk = 2
+
     color = ColorAccessor()
 
 
@@ -88,6 +90,8 @@ def test_color_accessor_validation_pyarrow_array_type():
 
 
 class FloatAccessorWidget(Widget):
+    _rows_per_chunk = 2
+
     value = FloatAccessor()
 
 
