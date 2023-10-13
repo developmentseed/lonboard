@@ -1,7 +1,17 @@
 # lonboard
 
-[![PyPI version](https://badge.fury.io/py/lonboard.svg)](https://pypi.org/project/lonboard/)
-[![Binder](https://mybinder.org/badge_logo.svg)](https://mybinder.org/v2/gh/developmentseed/lonboard/HEAD)
+[![PyPI][pypi_badge]][pypi_link]
+[![Binder][binder_badge]][binder_jupyterlab_url]
+[![open_in_colab][colab_badge]][colab_notebook_link]
+
+[pypi_badge]: https://badge.fury.io/py/lonboard.svg
+[pypi_link]: https://pypi.org/project/lonboard/
+
+[binder_badge]: https://mybinder.org/badge_logo.svg
+[binder_jupyterlab_url]: https://mybinder.org/v2/gh/developmentseed/lonboard/HEAD?urlpath=lab/tree/examples/
+
+[colab_badge]: https://colab.research.google.com/assets/colab-badge.svg
+[colab_notebook_link]: https://colab.research.google.com/github/developmentseed/lonboard/blob/main
 
 Python library for extremely fast geospatial vector data visualization in Jupyter.
 
