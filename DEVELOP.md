@@ -2,6 +2,18 @@
 
 ## Python
 
+To install Python, I recommend [pyenv](https://github.com/pyenv/pyenv). After installing pyenv, install a Python version with e.g.:
+
+```
+pyenv install 3.11.4
+```
+
+then set that as your global Python version with
+
+```
+pyenv global 3.11.4
+```
+
 This project uses [Poetry](https://python-poetry.org/) to manage Python dependencies.
 
 After installing Poetry, run
@@ -50,14 +62,7 @@ Anywidget and its dependency ipywidgets handles the serialization from Python in
 
 ## Publishing
 
-This will be automated in the future
-
-```
-rm -rf dist
-pip install -U build
-python -m build
-twine upload dist/*
-```
+Push a new tag to the main branch of the format `v*`. A new version will be published to PyPI automatically.
 
 ## Documentation website
 
