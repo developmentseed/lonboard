@@ -17,7 +17,6 @@ DEFAULT_ARROW_CHUNK_BYTES_SIZE = 10 * 1024 * 1024  # 10MB
 def serialize_table_to_parquet(
     table: pa.Table, *, max_chunksize: int = DEFAULT_PARQUET_CHUNK_SIZE
 ) -> List[bytes]:
-    print(max_chunksize)
     buffers: List[bytes] = []
     for record_batch in table.to_batches(max_chunksize=max_chunksize):
         with BytesIO() as bio:
