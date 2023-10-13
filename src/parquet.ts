@@ -36,6 +36,27 @@ export function parseParquet(dataView: DataView): arrow.Table {
   return arrowTable;
 }
 
+/**
+ * Parse a list of buffers containing Parquet chunks into an Arrow JS table
+ *
+ * Each buffer in the list is expected to be a fully self-contained Parquet file
+ * that can parse on its own and consists of one arrow Record Batch
+ *
+ * @var {[type]}
+ */
+export function parseParquetBuffers(dataViews: DataView[]): arrow.Table {
+  const batches: arrow.RecordBatch[] = [];
+  for (const chunkBuffer of dataViews) {
+    const table = parseParquet(chunkBuffer);
+    if (table.batches.length !== 1) {
+      console.warn("Expected one batch");
+    }
+    batches.push(...table.batches);
+  }
+
+  return new arrow.Table(batches);
+}
+
 export function useParquetWasm(): [boolean] {
   const [wasmReady, setWasmReady] = useState<boolean>(false);
 
