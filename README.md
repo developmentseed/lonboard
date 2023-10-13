@@ -1,5 +1,6 @@
 # lonboard
 
+[![PyPI version](https://badge.fury.io/py/lonboard.svg)](https://pypi.org/project/lonboard/)
 [![Binder](https://mybinder.org/badge_logo.svg)](https://mybinder.org/v2/gh/developmentseed/lonboard/HEAD)
 
 Python library for extremely fast geospatial vector data visualization in Jupyter.
