@@ -3,8 +3,8 @@ name: Release
 # Only run on new tags starting with `v`
 on:
   push:
-    tags:
-      - 'v*'
+    # tags:
+    #   - 'v*'
 
 jobs:
   build:
@@ -12,9 +12,9 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
-    - uses: actions/checkout@v2
+    - uses: actions/checkout@v4
 
-    - uses: actions/setup-python@v2
+    - uses: actions/setup-python@v4
       name: Install Python
       with:
         python-version: '3.11'
@@ -24,7 +24,7 @@ jobs:
         python -m pip install -U build
         python -m build
 
-    - uses: actions/upload-artifact@v2
+    - uses: actions/upload-artifact@v3
       with:
         path: ./dist/
 
@@ -32,7 +32,7 @@ jobs:
   #   needs: [build]
   #   runs-on: ubuntu-latest
   #   steps:
-  #     - uses: actions/download-artifact@v2
+  #     - uses: actions/download-artifact@v3
   #       with:
   #         name: artifact
   #         path: dist
