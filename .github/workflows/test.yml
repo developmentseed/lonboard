@@ -48,6 +48,11 @@ jobs:
       - name: Run tests
         run: poetry run pytest
 
+      - name: Check binder requirements.txt up to date
+        run: |
+          poetry export -f requirements.txt -o .binder/requirements.txt --without-hashes
+          git diff --exit-code .binder/requirements.txt || exit 1
+
       - name: Cache pre-commit virtualenvs
         uses: actions/cache@v3
         if: matrix.python-version == 3.9
