@@ -10,6 +10,7 @@ from anywidget import AnyWidget
 
 from lonboard.constants import EPSG_4326, EXTENSION_NAME, OGC_84
 from lonboard.geoarrow.geopandas_interop import geopandas_to_geoarrow
+from lonboard.serialization import infer_rows_per_chunk
 from lonboard.traits import ColorAccessor, FloatAccessor, PyarrowTableTrait
 from lonboard.viewport import compute_view
 
@@ -40,6 +41,9 @@ class ScatterplotLayer(BaseLayer):
     _esm = bundler_output_dir / "scatterplot-layer.js"
     _layer_type = traitlets.Unicode("scatterplot").tag(sync=True)
     _initial_view_state = traitlets.Dict().tag(sync=True)
+
+    # Number of rows per chunk for serializing table and accessor columns
+    _rows_per_chunk = traitlets.Int()
 
     table = PyarrowTableTrait(
         allowed_geometry_types={EXTENSION_NAME.POINT, EXTENSION_NAME.MULTIPOINT}
@@ -180,6 +184,10 @@ class ScatterplotLayer(BaseLayer):
     def _default_initial_view_state(self):
         return compute_view(self.table)
 
+    @traitlets.default("_rows_per_chunk")
+    def _default_rows_per_chunk(self):
+        return infer_rows_per_chunk(self.table)
+
     @traitlets.validate("get_radius")
     def _validate_get_radius_length(self, proposal):
         if isinstance(proposal["value"], (pa.ChunkedArray, pa.Array)):
@@ -225,6 +233,9 @@ class PathLayer(BaseLayer):
     _esm = bundler_output_dir / "path-layer.js"
     _layer_type = traitlets.Unicode("path").tag(sync=True)
     _initial_view_state = traitlets.Dict().tag(sync=True)
+
+    # Number of rows per chunk for serializing table and accessor columns
+    _rows_per_chunk = traitlets.Int()
 
     table = PyarrowTableTrait(
         allowed_geometry_types={
@@ -331,6 +342,10 @@ class PathLayer(BaseLayer):
     def _default_initial_view_state(self):
         return compute_view(self.table)
 
+    @traitlets.default("_rows_per_chunk")
+    def _default_rows_per_chunk(self):
+        return infer_rows_per_chunk(self.table)
+
     @traitlets.validate("get_color")
     def _validate_get_color_length(self, proposal):
         if isinstance(proposal["value"], (pa.ChunkedArray, pa.Array)):
@@ -352,6 +367,9 @@ class SolidPolygonLayer(BaseLayer):
     _esm = bundler_output_dir / "solid-polygon-layer.js"
     _layer_type = traitlets.Unicode("solid-polygon").tag(sync=True)
     _initial_view_state = traitlets.Dict().tag(sync=True)
+
+    # Number of rows per chunk for serializing table and accessor columns
+    _rows_per_chunk = traitlets.Int()
 
     table = PyarrowTableTrait(
         allowed_geometry_types={EXTENSION_NAME.POLYGON, EXTENSION_NAME.MULTIPOLYGON}
@@ -430,6 +448,10 @@ class SolidPolygonLayer(BaseLayer):
     @traitlets.default("_initial_view_state")
     def _default_initial_view_state(self):
         return compute_view(self.table)
+
+    @traitlets.default("_rows_per_chunk")
+    def _default_rows_per_chunk(self):
+        return infer_rows_per_chunk(self.table)
 
     @traitlets.validate("get_elevation")
     def _validate_get_elevation_length(self, proposal):

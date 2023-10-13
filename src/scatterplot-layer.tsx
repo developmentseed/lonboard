@@ -21,7 +21,7 @@ function App() {
   const [wasmReady] = useParquetWasm();
 
   let [viewState] = useModelState<DataView>("_initial_view_state");
-  let [dataRaw] = useModelState<DataView>("table");
+  let [dataRaw] = useModelState<DataView[]>("table");
   let [radiusUnits] = useModelState("radius_units");
   let [radiusScale] = useModelState("radius_scale");
   let [radiusMinPixels] = useModelState("radius_min_pixels");
