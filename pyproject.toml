@@ -3,6 +3,7 @@ name = "lonboard"
 version = "0.1.0-beta.4"
 description = "Extremely fast geospatial data visualization in Python."
 authors = ["Kyle Barron <kyle@developmentseed.org>"]
+license = "MIT"
 readme = "README.md"
 packages = [{ include = "lonboard" }]
 include = ["lonboard/static/*.js"]
