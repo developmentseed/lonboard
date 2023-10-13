@@ -1,5 +1,7 @@
 # lonboard
 
+[![Binder](https://mybinder.org/badge_logo.svg)](https://mybinder.org/v2/gh/developmentseed/lonboard/HEAD)
+
 Python library for extremely fast geospatial vector data visualization in Jupyter.
 
 ![](assets/scatterplot-layer-network-speeds.jpg)
