@@ -27,7 +27,7 @@ nav:
   - API Reference:
     - api/top-level.md
     - api/colormap.md
-  - Caveats: caveats.md
+  # - Caveats: caveats.md
   - Performance: performance.md
   - Alternatives: alternatives.md
   - "How it works?": how-it-works.md
