@@ -11,6 +11,8 @@ updates:
           - "*deck*"
           - "*loaders*"
           - "*luma*"
+        exclude-patterns:
+          - "@geoarrow/deck.gl-layers"
       other:
         patterns:
           - "*"
