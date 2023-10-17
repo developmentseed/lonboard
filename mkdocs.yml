@@ -1,4 +1,5 @@
 site_name: lonboard
+repo_name: developmentseed/lonboard
 repo_url: https://github.com/developmentseed/lonboard
 site_description: Extremely fast geospatial data visualization in Jupyter Notebooks
 site_author: Development Seed
