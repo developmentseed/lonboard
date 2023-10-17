@@ -3,7 +3,7 @@
     "@anywidget/react": "^0.0.2",
     "@babel/runtime": "^7.22.11",
     "@deck.gl/core": "^8.9.30",
-    "@deck.gl/layers": "^8.9.30",
+    "@deck.gl/layers": "^8.9.31",
     "@deck.gl/react": "^8.9.30",
     "@geoarrow/deck.gl-layers": "^0.1.0-beta.5",
     "apache-arrow": "^13.0.0",
@@ -24,7 +24,7 @@
   },
   "resolutions": {
     "@deck.gl/core": "8.9.30",
-    "@deck.gl/layers": "8.9.30",
+    "@deck.gl/layers": "8.9.31",
     "@deck.gl/react": "8.9.30"
   },
   "volta": {
