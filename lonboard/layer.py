@@ -36,7 +36,22 @@ class BaseLayer(AnyWidget):
 
 
 class ScatterplotLayer(BaseLayer):
-    """The `ScatterplotLayer` renders circles at given coordinates."""
+    """The `ScatterplotLayer` renders circles at given coordinates.
+
+    **Example:**
+
+    ```py
+    import geopandas as gpd
+    from lonboard import ScatterplotLayer
+
+    # A GeoDataFrame with Point geometries
+    gdf = gpd.GeoDataFrame()
+    layer = ScatterplotLayer.from_geopandas(
+        gdf,
+        get_fill_color=[255, 0, 0],
+    )
+    ```
+    """
 
     _esm = bundler_output_dir / "scatterplot-layer.js"
     _layer_type = traitlets.Unicode("scatterplot").tag(sync=True)
@@ -156,9 +171,54 @@ class ScatterplotLayer(BaseLayer):
     """
 
     get_radius = FloatAccessor()
+    """
+    The radius of each object, in units specified by `radius_units` (default
+    `'meters'`).
+
+    - Type: [FloatAccessor][lonboard.traits.FloatAccessor], optional
+        - If a number is provided, it is used as the radius for all objects.
+        - If an array is provided, each value in the array will be used as the radius
+          for the object at the same row index.
+    - Default: `1`.
+    """
+
     get_fill_color = ColorAccessor()
+    """
+    The filled color of each object in the format of `[r, g, b, [a]]`. Each channel is a
+    number between 0-255 and `a` is 255 if not supplied.
+
+    - Type: [ColorAccessor][lonboard.traits.ColorAccessor], optional
+        - If a single `list` or `tuple` is provided, it is used as the filled color for
+          all objects.
+        - If a numpy or pyarrow array is provided, each value in the array will be used
+          as the filled color for the object at the same row index.
+    - Default: `[0, 0, 0, 255]`.
+    """
+
     get_line_color = ColorAccessor()
+    """
+    The outline color of each object in the format of `[r, g, b, [a]]`. Each channel is
+    a number between 0-255 and `a` is 255 if not supplied.
+
+    - Type: [ColorAccessor][lonboard.traits.ColorAccessor], optional
+        - If a single `list` or `tuple` is provided, it is used as the outline color
+          for all objects.
+        - If a numpy or pyarrow array is provided, each value in the array will be used
+          as the outline color for the object at the same row index.
+    - Default: `[0, 0, 0, 255]`.
+    """
+
     get_line_width = FloatAccessor()
+    """
+    The width of the outline of each object, in units specified by `line_width_units`
+    (default `'meters'`).
+
+    - Type: [FloatAccessor][lonboard.traits.FloatAccessor], optional
+        - If a number is provided, it is used as the outline width for all objects.
+        - If an array is provided, each value in the array will be used as the outline
+          width for the object at the same row index.
+    - Default: `1`.
+    """
 
     @classmethod
     def from_geopandas(cls, gdf: gpd.GeoDataFrame, **kwargs) -> ScatterplotLayer:
@@ -230,6 +290,11 @@ class ScatterplotLayer(BaseLayer):
 
 
 class PathLayer(BaseLayer):
+    """
+    The `PathLayer` renders lists of coordinate points as extruded polylines with
+    mitering.
+    """
+
     _esm = bundler_output_dir / "path-layer.js"
     _layer_type = traitlets.Unicode("path").tag(sync=True)
     _initial_view_state = traitlets.Dict().tag(sync=True)
@@ -301,7 +366,6 @@ class PathLayer(BaseLayer):
     The maximum extent of a joint in ratio to the stroke width.
     Only works if `jointRounded` is `False`.
 
-
     - Type: `float`, optional
     - Default: `4`
     """
@@ -316,7 +380,28 @@ class PathLayer(BaseLayer):
     """
 
     get_color = ColorAccessor()
+    """
+    The color of each path in the format of `[r, g, b, [a]]`. Each channel is a number
+    between 0-255 and `a` is 255 if not supplied.
+
+    - Type: [ColorAccessor][lonboard.traits.ColorAccessor], optional
+        - If a single `list` or `tuple` is provided, it is used as the color for all
+          paths.
+        - If a numpy or pyarrow array is provided, each value in the array will be used
+          as the color for the path at the same row index.
+    - Default: `[0, 0, 0, 255]`.
+    """
+
     get_width = FloatAccessor()
+    """
+    The width of each path, in units specified by `width_units` (default `'meters'`).
+
+    - Type: [FloatAccessor][lonboard.traits.FloatAccessor], optional
+        - If a number is provided, it is used as the width for all paths.
+        - If an array is provided, each value in the array will be used as the width for
+          the path at the same row index.
+    - Default: `1`.
+    """
 
     @classmethod
     def from_geopandas(cls, gdf: gpd.GeoDataFrame, **kwargs) -> PathLayer:
@@ -364,6 +449,10 @@ class PathLayer(BaseLayer):
 
 
 class SolidPolygonLayer(BaseLayer):
+    """
+    The `SolidPolygonLayer` renders filled and/or extruded polygons.
+    """
+
     _esm = bundler_output_dir / "solid-polygon-layer.js"
     _layer_type = traitlets.Unicode("solid-polygon").tag(sync=True)
     _initial_view_state = traitlets.Dict().tag(sync=True)
@@ -418,12 +507,49 @@ class SolidPolygonLayer(BaseLayer):
 
     - These lines are rendered with `GL.LINE` and will thus always be 1 pixel wide.
     - Wireframe and solid extrusions are exclusive, you'll need to create two layers
-    with the same data if you want a combined rendering effect.
+      with the same data if you want a combined rendering effect.
     """
 
     get_elevation = FloatAccessor()
+    """
+    The elevation to extrude each polygon with, in meters.
+
+    Only applies if `extruded=True`.
+
+    - Type: [FloatAccessor][lonboard.traits.FloatAccessor], optional
+        - If a number is provided, it is used as the width for all polygons.
+        - If an array is provided, each value in the array will be used as the width for
+          the polygon at the same row index.
+    - Default: `1000`.
+    """
+
     get_fill_color = ColorAccessor()
+    """
+    The fill color of each polygon in the format of `[r, g, b, [a]]`. Each channel is a
+    number between 0-255 and `a` is 255 if not supplied.
+
+    - Type: [ColorAccessor][lonboard.traits.ColorAccessor], optional
+        - If a single `list` or `tuple` is provided, it is used as the fill color for
+          all polygons.
+        - If a numpy or pyarrow array is provided, each value in the array will be used
+          as the fill color for the polygon at the same row index.
+    - Default: `[0, 0, 0, 255]`.
+    """
+
     get_line_color = ColorAccessor()
+    """
+    The line color of each polygon in the format of `[r, g, b, [a]]`. Each channel is a
+    number between 0-255 and `a` is 255 if not supplied.
+
+    Only applies if `extruded=True`.
+
+    - Type: [ColorAccessor][lonboard.traits.ColorAccessor], optional
+        - If a single `list` or `tuple` is provided, it is used as the line color for
+          all polygons.
+        - If a numpy or pyarrow array is provided, each value in the array will be used
+          as the line color for the polygon at the same row index.
+    - Default: `[0, 0, 0, 255]`.
+    """
 
     @classmethod
     def from_geopandas(cls, gdf: gpd.GeoDataFrame, **kwargs) -> SolidPolygonLayer:
