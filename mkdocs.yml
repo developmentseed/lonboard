@@ -20,13 +20,14 @@ nav:
   - Example Notebooks:
     - examples/internet-speeds.ipynb
     - examples/north-america-roads.ipynb
-  - Layers:
-    - ScatterplotLayer: layers/scatterplot-layer.md
-    - PathLayer: layers/path-layer.md
-    - SolidPolygonLayer: layers/solid-polygon-layer.md
   - API Reference:
-    - api/top-level.md
+    - api/viz.md
+    - Layers:
+      - api/layers/scatterplot-layer.md
+      - api/layers/path-layer.md
+      - api/layers/solid-polygon-layer.md
     - api/colormap.md
+    - api/traits.md
   # - Caveats: caveats.md
   - Performance: performance.md
   - Alternatives: alternatives.md
@@ -73,6 +74,7 @@ plugins:
   - social
   - mkdocs-jupyter:
       include_source: True
+      ignore: ["**/.ipynb_checkpoints/*.ipynb"]
   - mkdocstrings:
       enable_inventory: true
       handlers:
@@ -85,30 +87,32 @@ plugins:
             docstring_section_style: list
             separate_signature: true
             show_signature_annotations: true
+            line_length: 80
 
           import:
-            - https://scitools.org.uk/cartopy/docs/latest/objects.inv
+            - https://arrow.apache.org/docs/objects.inv
             - https://contextily.readthedocs.io/en/stable/objects.inv
+            - https://docs.python.org/3/objects.inv
             - https://fiona.readthedocs.io/en/stable/objects.inv
-            - https://python-visualization.github.io/folium/latest/objects.inv
             - https://geopandas.org/en/stable/objects.inv
-            - https://residentmario.github.io/geoplot/objects.inv
             - https://geopy.readthedocs.io/en/stable/objects.inv
-            - https://pysal.org/libpysal/objects.inv
-            - https://pysal.org/mapclassify/objects.inv
             - https://matplotlib.org/stable/objects.inv
             - https://numpy.org/doc/stable/objects.inv
             - https://pandas.pydata.org/pandas-docs/stable/objects.inv
             - https://pola-rs.github.io/polars/py-polars/html/objects.inv
-            - https://arrow.apache.org/docs/objects.inv
             - https://pyepsg.readthedocs.io/en/stable/objects.inv
             - https://pygeos.readthedocs.io/en/latest/objects.inv
             - https://pyogrio.readthedocs.io/en/stable/objects.inv
             - https://pyproj4.github.io/pyproj/stable/objects.inv
-            - https://docs.python.org/3/objects.inv
-            - https://rtree.readthedocs.io/en/stable/objects.inv
+            - https://pysal.org/libpysal/objects.inv
+            - https://pysal.org/mapclassify/objects.inv
+            - https://python-visualization.github.io/folium/latest/objects.inv
             - https://rasterio.readthedocs.io/en/stable/objects.inv
+            - https://residentmario.github.io/geoplot/objects.inv
+            - https://rtree.readthedocs.io/en/stable/objects.inv
+            - https://scitools.org.uk/cartopy/docs/latest/objects.inv
             - https://shapely.readthedocs.io/en/stable/objects.inv
+            - https://traitlets.readthedocs.io/en/stable/objects.inv
             - https://xyzservices.readthedocs.io/en/stable/objects.inv
 
 
