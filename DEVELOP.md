@@ -40,21 +40,21 @@ Then you should see a tile on the home screen that lets you open a Jupyter Noteb
 
 ## JavaScript
 
-The JavaScript dependencies are managed in `package.json` and tracked with Yarn or NPM (I haven't been consistent at using one or the other :sweat_smile:).
+Requirements:
 
-ESBuild is used for bundling into an ES Module that the Jupyter Widget loads at runtime. The ESBuild configuration is in `build.mjs`. You can run the script with
+- [Node](http://nodejs.org/) (see version in [.nvmrc](./.nvmrc)) or use [nvm](https://github.com/creationix/nvm)
 
-```
-yarn build
-```
+Install module dependencies:
 
-I often run
-
-```
-fswatch -o src | xargs -n1 -I{} yarn build
+```sh
+npm install
 ```
 
-to watch the `src` directory and run `yarn build` anytime it changes.
+Start watching changes in `/src` folder:
+
+```sh
+npm run build:watch
+```
 
 Currently, each Python model (the `ScatterplotLayer`, `PathLayer`, and `SolidPolygonLayer` classes) use _their own individual JS entry points_. You can inspect this with the `_esm` key on each class, which is used by anywidget to load in the widget. The ESBuild script converts `scatterplot-layer.tsx`, `path-layer.tsx`, and `solid-polygon-layer.tsx` into bundles used by each class, respectively.
 
