@@ -50,7 +50,7 @@ Install module dependencies:
 npm install
 ```
 
-Start watching changes in `/src` folder:
+We use ESBuild to bundle into an ES Module, which the Jupyter Widget will then load at runtime. The configuration for ESBuild can be found in build.mjs. To start watching for changes in the /src folder and automatically generate a new build, use:
 
 ```sh
 npm run build:watch
