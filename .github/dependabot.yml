@@ -12,6 +12,8 @@ updates:
           - "*loaders*"
           - "*luma*"
       other:
+        patterns:
+          - "*"
         exclude-patterns:
           - "*deck*"
           - "*loaders*"
