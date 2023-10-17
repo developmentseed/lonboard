@@ -10,7 +10,7 @@ from lonboard.geoarrow.extension_types import construct_geometry_array
 def geopandas_to_geoarrow(
     gdf: gpd.GeoDataFrame,
     columns: Optional[List[str]] = None,
-    preserve_index: Optional[bool] = None,
+    preserve_index: Optional[bool] = False,
 ):
     df_attr = gdf.drop(columns=[gdf._geometry_column_name])
 
