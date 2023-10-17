@@ -63,15 +63,23 @@ class PyarrowTableTrait(traitlets.TraitType):
 
 
 class ColorAccessor(traitlets.TraitType):
-    """A representation of a deck.gl color accessor
+    """A representation of a deck.gl color accessor.
 
-    Represents either a single, scalar color with three or four values or an array
+    Various input is allowed:
 
-    Args:
-        traitlets: _description_
+    - A `list` or `tuple` with three or four integers, ranging between 0 and 255
+      (inclusive). This will be used as the color for all objects.
+    - A numpy `ndarray` with two dimensions and data type [`np.uint8`][numpy.uint8]. The
+      size of the second dimension must be `3` or `4`, and will correspond to either RGB
+      or RGBA colors.
+    - A pyarrow [`FixedSizeListArray`][pyarrow.FixedSizeListArray] or
+      [`ChunkedArray`][pyarrow.ChunkedArray] containing `FixedSizeListArray`s. The inner
+      size of the fixed size list must be `3` or `4` and its child must have type
+      `uint8`.
 
-    Returns:
-        _description_
+    You can use helpers in the `lonboard.colormap` module (i.e.
+    [`apply_continuous_cmap`][lonboard.colormap.apply_continuous_cmap]) to simplify
+    constructing numpy arrays for color values.
     """
 
     default_value = (0, 0, 0)
@@ -159,9 +167,18 @@ class ColorAccessor(traitlets.TraitType):
 
 
 class FloatAccessor(traitlets.TraitType):
-    """A representation of a deck.gl float accessor
+    """A representation of a deck.gl float accessor.
 
-    Represents either a single, scalar float value or an array of float values
+    Various input is allowed:
+
+    - An `int` or `float`. This will be used as the value for all objects.
+    - A numpy `ndarray` with a numeric data type. This will be casted to an array of
+      data type [`np.float32`][numpy.float32]. Each value in the array will be used as
+      the value for the object at the same row index.
+    - A pyarrow [`FloatArray`][pyarrow.FloatArray], [`DoubleArray`][pyarrow.DoubleArray]
+      or [`ChunkedArray`][pyarrow.ChunkedArray] containing either a `FloatArray` or
+      `DoubleArray`. Each value in the array will be used as the value for the object at
+      the same row index.
     """
 
     default_value = float(0)
