@@ -72,8 +72,4 @@ The documentation website is generated with `mkdocs` and [`mkdocs-material`](htt
 poetry run mkdocs serve
 ```
 
-and you can publish the docs to Github Pages with
-
-```
-poetry run mkdocs gh-deploy
-```
+Publishing documentation happens automatically via CI when a PR is merged.

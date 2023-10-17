@@ -11,7 +11,7 @@ DEFAULT_PARQUET_COMPRESSION = "ZSTD"
 DEFAULT_PARQUET_COMPRESSION_LEVEL = 7
 DEFAULT_PARQUET_CHUNK_SIZE = 2**16
 # Target chunk size for Arrow (uncompressed) per Parquet chunk
-DEFAULT_ARROW_CHUNK_BYTES_SIZE = 10 * 1024 * 1024  # 10MB
+DEFAULT_ARROW_CHUNK_BYTES_SIZE = 5 * 1024 * 1024  # 5MB
 
 
 def serialize_table_to_parquet(
