@@ -41,4 +41,4 @@ jobs:
         run: poetry install --no-interaction
 
       - name: Deploy docs
-        run: mkdocs gh-deploy --force
+        run: poetry run mkdocs gh-deploy --force
