@@ -26,5 +26,8 @@
     "@deck.gl/core": "8.9.30",
     "@deck.gl/layers": "8.9.30",
     "@deck.gl/react": "8.9.30"
+  },
+  "volta": {
+    "node": "18.18.2"
   }
 }

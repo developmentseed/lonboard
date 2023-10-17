@@ -42,7 +42,7 @@ Then you should see a tile on the home screen that lets you open a Jupyter Noteb
 
 Requirements:
 
-- [Node](http://nodejs.org/) (see version in [.nvmrc](./.nvmrc)) or use [nvm](https://github.com/creationix/nvm)
+- [Node](http://nodejs.org/) (see version in [.nvmrc](./.nvmrc) or `"volta"` section of `package.json`) or use [nvm](https://github.com/creationix/nvm) or [Volta](https://volta.sh).
 
 Install module dependencies:
 
