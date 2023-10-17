@@ -1,8 +1,9 @@
 [tool.poetry]
 name = "lonboard"
-version = "0.1.0-beta.3"
+version = "0.1.0-beta.7"
 description = "Extremely fast geospatial data visualization in Python."
 authors = ["Kyle Barron <kyle@developmentseed.org>"]
+license = "MIT"
 readme = "README.md"
 packages = [{ include = "lonboard" }]
 include = ["lonboard/static/*.js"]
@@ -34,6 +35,9 @@ pytest = "^7.4.2"
 [tool.poetry.group.docs.dependencies]
 mkdocs = "^1.4.3"
 mkdocs-material = { version = "^9.1.16", extras = ["imaging"] }
+mkdocstrings = {version = "^0.23.0", extras = ["python"]}
+# This version only on 3.9+. Ok because it's a dev dependency
+mkdocs-jupyter = {version = "^0.24.5", python = "^3.9"}
 
 [build-system]
 requires = ["poetry-core"]

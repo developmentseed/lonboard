@@ -21,7 +21,7 @@ from lonboard.serialization import (
 )
 
 
-class PyarrowTableTrait(traitlets.TraitType[pa.Table, pa.Table]):
+class PyarrowTableTrait(traitlets.TraitType):
     """A traitlets trait for a geospatial pyarrow table"""
 
     default_value = None

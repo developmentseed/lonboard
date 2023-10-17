@@ -11,6 +11,7 @@
     "noEmitOnError": false,
     "esModuleInterop": true,
     "forceConsistentCasingInFileNames": true,
+    "jsx": "react",
     // "strict": true,
     // "strictNullChecks": true,
     // "lib": [
