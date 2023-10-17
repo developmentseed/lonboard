@@ -5,6 +5,17 @@ updates:
     schedule:
       interval: weekly
     open-pull-requests-limit: 10
+    groups:
+      deck-loaders-luma:
+        patterns:
+          - "*deck*"
+          - "*loaders*"
+          - "*luma*"
+      other:
+        exclude-patterns:
+          - "*deck*"
+          - "*loaders*"
+          - "*luma*"
   - package-ecosystem: github-actions
     directory: "/"
     schedule:
