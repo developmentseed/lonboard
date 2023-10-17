@@ -31,6 +31,4 @@ Refer to the documentation at [developmentseed.org/lonboard](https://development
 
 This is a new binding to the [deck.gl](https://deck.gl) geospatial data visualization library. A "deck" is the part of a skateboard you ride on. What's a fast, geospatial skateboard? A <em>lon</em>board.
 
-<img src="https://upload.wikimedia.org/wikipedia/commons/a/aa/Longboard.JPG" height="300" />
-
-[CC-BY from Wikipedia](https://commons.wikimedia.org/wiki/File:Longboard.JPG)
+![](assets/dalle-lonboard.jpg)
