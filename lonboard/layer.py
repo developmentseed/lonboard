@@ -233,6 +233,7 @@ class PathLayer(BaseLayer):
     _esm = bundler_output_dir / "path-layer.js"
     _layer_type = traitlets.Unicode("path").tag(sync=True)
     _initial_view_state = traitlets.Dict().tag(sync=True)
+    _view_state = traitlets.Any(allow_none=True).tag(sync=True)
 
     # Number of rows per chunk for serializing table and accessor columns
     _rows_per_chunk = traitlets.Int()
@@ -338,7 +339,7 @@ class PathLayer(BaseLayer):
         table = geopandas_to_geoarrow(gdf)
         return cls(table=table, **kwargs)
 
-    @traitlets.default("_initial_view_state")
+    @traitlets.default("_view_state")
     def _default_initial_view_state(self):
         return compute_view(self.table)
 

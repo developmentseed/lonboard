@@ -5,6 +5,8 @@ import DeckGL from "@deck.gl/react/typed";
 import { GeoArrowPathLayer } from "@geoarrow/deck.gl-layers";
 import { useParquetWasm } from "./parquet";
 import { useAccessorState, useTableBufferState } from "./accessor";
+import { useModelStateDebounced } from "./state";
+import { MapViewState } from "@deck.gl/core/typed";
 
 const DEFAULT_INITIAL_VIEW_STATE = {
   latitude: 10,
@@ -19,8 +21,12 @@ const MAP_STYLE =
 
 function App() {
   const [wasmReady] = useParquetWasm();
+  let [viewState, setViewState] = useModelStateDebounced<MapViewState>(
+    "_view_state",
+    300
+  );
+  console.log(viewState);
 
-  let [viewState] = useModelState<DataView>("_initial_view_state");
   let [dataRaw] = useModelState<DataView[]>("table");
   let [widthUnits] = useModelState("width_units");
   let [widthScale] = useModelState("width_scale");
@@ -61,15 +67,17 @@ function App() {
   return (
     <div style={{ height: 500 }}>
       <DeckGL
-        initialViewState={
-          ["longitude", "latitude", "zoom"].every((key) =>
-            Object.keys(viewState).includes(key)
-          )
-            ? viewState
-            : DEFAULT_INITIAL_VIEW_STATE
-        }
         controller={true}
         layers={layers}
+        viewState={
+          Object.keys(viewState).length === 0
+            ? DEFAULT_INITIAL_VIEW_STATE
+            : viewState
+        }
+        onViewStateChange={(event) => {
+          // @ts-expect-error here viewState is typed as Record<string, any>
+          setViewState(event.viewState);
+        }}
         // ContextProvider={MapContext.Provider}
       >
         <Map mapStyle={MAP_STYLE} />
