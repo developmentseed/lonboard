@@ -74,7 +74,7 @@ class ColorAccessor(traitlets.TraitType):
         _description_
     """
 
-    default_value = (255, 255, 255)
+    default_value = (0, 0, 0)
     info_text = (
         "a tuple or list representing an RGB(A) color or numpy ndarray or "
         "pyarrow FixedSizeList representing an array of RGB(A) colors"
