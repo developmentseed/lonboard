@@ -6,7 +6,7 @@ authors = ["Kyle Barron <kyle@developmentseed.org>"]
 license = "MIT"
 readme = "README.md"
 packages = [{ include = "lonboard" }]
-include = ["lonboard/static/*.js"]
+include = ["lonboard/static/*.js", "lonboard/static/*.css"]
 
 [tool.poetry.dependencies]
 python = "^3.8"
