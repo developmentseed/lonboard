@@ -6,6 +6,8 @@ import { GeoArrowSolidPolygonLayer } from "@geoarrow/deck.gl-layers";
 import { useParquetWasm } from "./parquet";
 import { useAccessorState, useTableBufferState } from "./accessor";
 
+import "maplibre-gl/dist/maplibre-gl.css";
+
 const DEFAULT_INITIAL_VIEW_STATE = {
   latitude: 10,
   longitude: 0,
