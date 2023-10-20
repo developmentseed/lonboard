@@ -6,6 +6,8 @@ import { GeoArrowScatterplotLayer } from "@geoarrow/deck.gl-layers";
 import { useParquetWasm } from "./parquet";
 import { useAccessorState, useTableBufferState } from "./accessor";
 
+import "maplibre-gl/dist/maplibre-gl.css";
+
 const DEFAULT_INITIAL_VIEW_STATE = {
   latitude: 10,
   longitude: 0,
@@ -84,14 +86,8 @@ function App() {
         }
         controller={true}
         layers={layers}
-        // ContextProvider={MapContext.Provider}
       >
-        <Map mapStyle={MAP_STYLE}>
-          <AttributionControl
-            customAttribution="Hello world!"
-            position="top-left"
-          />
-        </Map>
+        <Map mapStyle={MAP_STYLE} />
       </DeckGL>
     </div>
   );
