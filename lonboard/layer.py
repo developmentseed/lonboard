@@ -39,6 +39,7 @@ class ScatterplotLayer(BaseLayer):
     """The `ScatterplotLayer` renders circles at given coordinates."""
 
     _esm = bundler_output_dir / "scatterplot-layer.js"
+    _css = bundler_output_dir / "scatterplot-layer.css"
     _layer_type = traitlets.Unicode("scatterplot").tag(sync=True)
     _initial_view_state = traitlets.Dict().tag(sync=True)
 
@@ -231,6 +232,7 @@ class ScatterplotLayer(BaseLayer):
 
 class PathLayer(BaseLayer):
     _esm = bundler_output_dir / "path-layer.js"
+    _css = bundler_output_dir / "path-layer.css"
     _layer_type = traitlets.Unicode("path").tag(sync=True)
     _initial_view_state = traitlets.Dict().tag(sync=True)
 
@@ -365,6 +367,7 @@ class PathLayer(BaseLayer):
 
 class SolidPolygonLayer(BaseLayer):
     _esm = bundler_output_dir / "solid-polygon-layer.js"
+    _css = bundler_output_dir / "solid-polygon-layer.css"
     _layer_type = traitlets.Unicode("solid-polygon").tag(sync=True)
     _initial_view_state = traitlets.Dict().tag(sync=True)
 
