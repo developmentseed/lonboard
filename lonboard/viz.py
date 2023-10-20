@@ -10,12 +10,13 @@ import numpy as np
 import pyarrow as pa
 import pyarrow.compute as pc
 import shapely.geometry
+import shapely.geometry.base
 from numpy.typing import NDArray
 
 from lonboard.constants import EPSG_4326, EXTENSION_NAME, OGC_84
 from lonboard.geoarrow.extension_types import construct_geometry_array
 from lonboard.geoarrow.geopandas_interop import geopandas_to_geoarrow
-from lonboard.layer import BaseLayer, PathLayer, ScatterplotLayer, SolidPolygonLayer
+from lonboard.layer import PathLayer, ScatterplotLayer, SolidPolygonLayer
 
 if TYPE_CHECKING:
     import geopandas as gpd
@@ -116,8 +117,9 @@ def viz(
     raise ValueError
 
 
-# TODO: check CRS in geopandas methods
-def _viz_geopandas_geodataframe(data: gpd.GeoDataFrame, **kwargs) -> BaseLayer:
+def _viz_geopandas_geodataframe(
+    data: gpd.GeoDataFrame, **kwargs
+) -> Union[ScatterplotLayer, PathLayer, SolidPolygonLayer]:
     if data.crs and data.crs not in [EPSG_4326, OGC_84]:
         warnings.warn("GeoDataFrame being reprojected to EPSG:4326")
         data = data.to_crs(OGC_84)
@@ -126,7 +128,9 @@ def _viz_geopandas_geodataframe(data: gpd.GeoDataFrame, **kwargs) -> BaseLayer:
     return _viz_geoarrow_table(table, **kwargs)
 
 
-def _viz_geopandas_geoseries(data: gpd.GeoSeries, **kwargs) -> BaseLayer:
+def _viz_geopandas_geoseries(
+    data: gpd.GeoSeries, **kwargs
+) -> Union[ScatterplotLayer, PathLayer, SolidPolygonLayer]:
     import geopandas as gpd
 
     if data.crs and data.crs not in [EPSG_4326, OGC_84]:
@@ -140,11 +144,13 @@ def _viz_geopandas_geoseries(data: gpd.GeoSeries, **kwargs) -> BaseLayer:
 
 def _viz_shapely_scalar(
     data: shapely.geometry.base.BaseGeometry, **kwargs
-) -> BaseLayer:
+) -> Union[ScatterplotLayer, PathLayer, SolidPolygonLayer]:
     return _viz_shapely_array(np.array([data]), **kwargs)
 
 
-def _viz_shapely_array(data: NDArray[np.object_], **kwargs) -> BaseLayer:
+def _viz_shapely_array(
+    data: NDArray[np.object_], **kwargs
+) -> Union[ScatterplotLayer, PathLayer, SolidPolygonLayer]:
     # TODO: pass include_z?
     field, geom_arr = construct_geometry_array(data)
     schema = pa.schema([field])
@@ -152,7 +158,9 @@ def _viz_shapely_array(data: NDArray[np.object_], **kwargs) -> BaseLayer:
     return _viz_geoarrow_table(table, **kwargs)
 
 
-def _viz_geo_interface(data: dict, **kwargs) -> BaseLayer:
+def _viz_geo_interface(
+    data: dict, **kwargs
+) -> Union[ScatterplotLayer, PathLayer, SolidPolygonLayer]:
     if data["type"] in [
         "Point",
         "LineString",
@@ -193,21 +201,23 @@ def _viz_geo_interface(data: dict, **kwargs) -> BaseLayer:
     raise ValueError(f"type '{geo_interface_type}' not supported.")
 
 
-def _viz_geoarrow_table(table: pa.Table, **kwargs) -> BaseLayer:
+def _viz_geoarrow_table(
+    table: pa.Table, **kwargs
+) -> Union[ScatterplotLayer, PathLayer, SolidPolygonLayer]:
     geometry_ext_type = table.schema.field("geometry").metadata.get(
         b"ARROW:extension:name"
     )
 
     if geometry_ext_type in [EXTENSION_NAME.POINT, EXTENSION_NAME.MULTIPOINT]:
-        return ScatterplotLayer(table, **kwargs)
+        return ScatterplotLayer(table=table, **kwargs)
 
     elif geometry_ext_type in [
         EXTENSION_NAME.LINESTRING,
         EXTENSION_NAME.MULTILINESTRING,
     ]:
-        return PathLayer(table, **kwargs)
+        return PathLayer(table=table, **kwargs)
 
     elif geometry_ext_type in [EXTENSION_NAME.POLYGON, EXTENSION_NAME.MULTIPOLYGON]:
-        return SolidPolygonLayer(table, **kwargs)
+        return SolidPolygonLayer(table=table, **kwargs)
 
     raise ValueError(f"Unsupported extension type: '{geometry_ext_type}'.")
