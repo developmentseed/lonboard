@@ -8,6 +8,8 @@ dist
 .DS_Store
 # So that notebooks are only included _intentionally_
 *.ipynb
+.cache
+site
 
 # pixi environments
 .pixi

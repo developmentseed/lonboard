@@ -1,3 +1,3 @@
-from .layer import LineStringLayer, PointLayer, PolygonLayer
+from ._version import __version__
+from .layer import PathLayer, ScatterplotLayer, SolidPolygonLayer
 from .viz import viz
-from .widget import Map

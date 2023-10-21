@@ -1,6 +1,6 @@
 from __future__ import annotations
 
-import pathlib
+from pathlib import Path
 
 import anywidget
 import ipywidgets
@@ -9,7 +9,7 @@ import traitlets
 from lonboard.layer import BaseLayer
 
 # bundler yields lonboard/static/{index.js,styles.css}
-bundler_output_dir = pathlib.Path(__file__).parent / "static"
+bundler_output_dir = Path(__file__).parent / "static"
 _css = bundler_output_dir / "styles.css"
 
 
