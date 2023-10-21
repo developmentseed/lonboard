@@ -1,4 +1,5 @@
 import * as React from "react";
+import { useState, useEffect } from "react";
 import { createRender, useModelState, useModel } from "@anywidget/react";
 import Map from "react-map-gl/maplibre";
 import DeckGL from "@deck.gl/react/typed";
@@ -166,18 +167,43 @@ function App() {
     accessChildModels();
   }, [childLayerIds]);
 
+  let [childModels, setChildModels] = useState<any[]>([]);
+
+  useEffect(() => {
+    const callback = async () => {
+      const promises: Promise<any>[] = [];
+      for (const childLayerId of childLayerIds) {
+        promises.push(
+          model.widget_manager.get_model(
+            childLayerId.slice("IPY_MODEL_".length)
+          )
+        );
+      }
+      const _childModels = await Promise.all(promises);
+      setChildModels(_childModels);
+      console.log("_childModels");
+      console.log(_childModels);
+    };
+    callback().catch(console.error);
+  }, [...childLayerIds]);
+
+
+
+  window.model = model;
+  console.log(model);
+
   const deckLayers: Layer[] = [];
-  for (const childLayerModel of childModels) {
-    const layerType = childLayerModel.get("_layer_type");
+  for (const childModel of childModels) {
+    const layerType = childModel.get("_layer_type");
     switch (layerType) {
       case "scatterplot":
-        deckLayers.push(createScatterplotLayer(childLayerModel));
+        deckLayers.push(createScatterplotLayer(childModel));
         break;
       case "path":
-        deckLayers.push(createPathLayer(childLayerModel));
+        deckLayers.push(createPathLayer(childModel));
         break;
       case "solid-polygon":
-        deckLayers.push(createSolidPolygonLayer(childLayerModel));
+        deckLayers.push(createSolidPolygonLayer(childModel));
         break;
       default:
         console.warn(`no layer supported for ${layerType}`);
