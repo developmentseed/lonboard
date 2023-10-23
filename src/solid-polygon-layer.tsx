@@ -66,7 +66,6 @@ function App() {
         }
         controller={true}
         layers={layers}
-        // ContextProvider={MapContext.Provider}
       >
         <Map mapStyle={MAP_STYLE} />
       </DeckGL>
