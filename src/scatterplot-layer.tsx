@@ -72,6 +72,10 @@ function App() {
       ...(getLineColor && { getLineColor }),
       ...(getLineWidth && { getLineWidth }),
       pickable: true,
+      onHover: (info) => {
+        console.log("onHover in GeoArrowScatterplotLayer");
+        console.log({ info });
+      },
       getTooltip: (info) => {
         console.log("getTooltip in GeoArrowScatterplotLayer");
         console.log({ info });
@@ -103,8 +107,12 @@ function App() {
         }
         controller={true}
         layers={layers}
-        getTooltip={() => {
+        getTooltip={({ object }) => {
           console.log("getTooltip in DeckGL");
+
+          if (object) {
+            console.log({ object });
+          }
           return null;
         }}
       >
