@@ -9,9 +9,9 @@ import { useAccessorState, useTableBufferState } from "./accessor";
 import "maplibre-gl/dist/maplibre-gl.css";
 
 const DEFAULT_INITIAL_VIEW_STATE = {
-  latitude: 10,
-  longitude: 0,
-  zoom: 0.5,
+  latitude: 51.4898,
+  longitude: -0.0882,
+  zoom: 10,
   bearing: 0,
   pitch: 0,
 };
@@ -54,6 +54,7 @@ function App() {
       // todo: use model.model_id?
       id: "geoarrow-points",
       data: dataTable,
+
       ...(radiusUnits && { radiusUnits }),
       ...(radiusScale && { radiusScale }),
       ...(radiusMinPixels && { radiusMinPixels }),
@@ -70,6 +71,21 @@ function App() {
       ...(getFillColor && { getFillColor }),
       ...(getLineColor && { getLineColor }),
       ...(getLineWidth && { getLineWidth }),
+      pickable: true,
+      getTooltip: (info) => {
+        console.log("getTooltip in GeoArrowScatterplotLayer");
+        console.log({ info });
+        if (info.object) {
+          return {
+            html: `<h2>ei</h2>`,
+            style: {
+              backgroundColor: "#f00",
+              fontSize: "0.8em",
+            },
+          };
+        }
+        return null;
+      },
     });
     layers.push(layer);
   }
@@ -78,16 +94,21 @@ function App() {
     <div style={{ height: 500 }}>
       <DeckGL
         initialViewState={
-          ["longitude", "latitude", "zoom"].every((key) =>
-            Object.keys(viewState).includes(key)
-          )
-            ? viewState
-            : DEFAULT_INITIAL_VIEW_STATE
+          // ["longitude", "latitude", "zoom"].every((key) =>
+          //   Object.keys(viewState).includes(key)
+          // )
+          //   ? viewState
+          //   : DEFAULT_INITIAL_VIEW_STATE
+          { longitude: 9.111034686385281, latitude: 47.8189635538252, zoom: 10 }
         }
         controller={true}
         layers={layers}
+        getTooltip={() => {
+          console.log("getTooltip in DeckGL");
+          return null;
+        }}
       >
-        <Map mapStyle={MAP_STYLE} />
+        {/* <Map mapStyle={MAP_STYLE} /> */}
       </DeckGL>
     </div>
   );
