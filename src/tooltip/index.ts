@@ -1,5 +1,5 @@
-import { PickingInfo } from "@deck.gl/core/typed";
 import { TooltipContent } from "@deck.gl/core/typed/lib/tooltip";
+import { GeoArrowPickingInfo } from "@geoarrow/deck.gl-layers/dist/types";
 
 import "./index.css";
 
@@ -19,23 +19,23 @@ function toHtmlTable(featureProperties: Record<string, any>): string {
     </table>`;
 }
 
-export function getTooltip({ object }: PickingInfo): TooltipContent {
+export function getTooltip({ object }: GeoArrowPickingInfo): TooltipContent {
   if (object) {
-    const sampleFeatureProperties = {
-      timestamp: new Date().toISOString(),
-      url: "https://github.com/developmentseed/lonboard/",
-      version: 1.2,
-      isPublished: true,
-      tags: ["open-source", "lonboard", "repo"],
-      geometryType: "Point",
-      contributors: null,
-      integer: 9007199254740991,
-    };
+    const jsonObj = object.toJSON();
+
+    if (!jsonObj) {
+      return null;
+    }
+
+    delete jsonObj["geometry"];
+
+    if (Object.keys(jsonObj).length === 0) {
+      return null;
+    }
 
     return {
-      html: `<div class="lonboard-tooltip">${toHtmlTable(
-        sampleFeatureProperties
-      )}</div>`,
+      className: "lonboard-tooltip",
+      html: toHtmlTable(jsonObj),
     };
   }
 

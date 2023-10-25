@@ -75,6 +75,7 @@ function App() {
         controller={true}
         layers={layers}
         getTooltip={getTooltip}
+        pickingRadius={10}
       >
         <Map mapStyle={MAP_STYLE} />
       </DeckGL>
