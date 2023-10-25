@@ -55,7 +55,6 @@ function App() {
       // todo: use model.model_id?
       id: "geoarrow-points",
       data: dataTable,
-
       ...(radiusUnits && { radiusUnits }),
       ...(radiusScale && { radiusScale }),
       ...(radiusMinPixels && { radiusMinPixels }),
