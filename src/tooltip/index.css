@@ -4,6 +4,7 @@
   color: black;
   background-color: white;
   padding: 10px;
+  box-shadow: 0 0 15px rgba(0, 0, 0, 0.1);
 }
 
 /* Remove spaces between table cells */
