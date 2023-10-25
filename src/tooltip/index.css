@@ -1,0 +1,32 @@
+.lonboard-tooltip {
+  z-index: 1;
+  position: absolute;
+  color: black;
+  background-color: white;
+  padding: 10px;
+}
+
+/* Remove spaces between table cells */
+.lonboard-tooltip table {
+  border-collapse: collapse;
+}
+
+/* Alternate row colors */
+.lonboard-tooltip table tr:nth-child(odd) {
+  background-color: white;
+}
+
+.lonboard-tooltip table tr:nth-child(even) {
+  background-color: rgb(241, 241, 241);
+}
+
+/* Define table cell borders and padding */
+.lonboard-tooltip td {
+  border: 1px solid;
+  padding: 5px;
+}
+
+/* Make the first column bold */
+.lonboard-tooltip td:first-child {
+  font-weight: bold;
+}

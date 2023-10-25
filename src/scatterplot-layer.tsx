@@ -5,6 +5,7 @@ import DeckGL from "@deck.gl/react/typed";
 import { GeoArrowScatterplotLayer } from "@geoarrow/deck.gl-layers";
 import { useParquetWasm } from "./parquet";
 import { useAccessorState, useTableBufferState } from "./accessor";
+import { getTooltip } from "./tooltip";
 
 import "maplibre-gl/dist/maplibre-gl.css";
 
@@ -72,24 +73,6 @@ function App() {
       ...(getLineColor && { getLineColor }),
       ...(getLineWidth && { getLineWidth }),
       pickable: true,
-      onHover: (info) => {
-        console.log("onHover in GeoArrowScatterplotLayer");
-        console.log({ info });
-      },
-      getTooltip: (info) => {
-        console.log("getTooltip in GeoArrowScatterplotLayer");
-        console.log({ info });
-        if (info.object) {
-          return {
-            html: `<h2>ei</h2>`,
-            style: {
-              backgroundColor: "#f00",
-              fontSize: "0.8em",
-            },
-          };
-        }
-        return null;
-      },
     });
     layers.push(layer);
   }
@@ -107,14 +90,7 @@ function App() {
         }
         controller={true}
         layers={layers}
-        getTooltip={({ object }) => {
-          console.log("getTooltip in DeckGL");
-
-          if (object) {
-            console.log({ object });
-          }
-          return null;
-        }}
+        getTooltip={getTooltip}
       >
         {/* <Map mapStyle={MAP_STYLE} /> */}
       </DeckGL>
