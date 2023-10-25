@@ -10,9 +10,9 @@ import { getTooltip } from "./tooltip";
 import "maplibre-gl/dist/maplibre-gl.css";
 
 const DEFAULT_INITIAL_VIEW_STATE = {
-  latitude: 51.4898,
-  longitude: -0.0882,
-  zoom: 10,
+  latitude: 10,
+  longitude: 0,
+  zoom: 0.5,
   bearing: 0,
   pitch: 0,
 };
@@ -81,18 +81,17 @@ function App() {
     <div style={{ height: 500 }}>
       <DeckGL
         initialViewState={
-          // ["longitude", "latitude", "zoom"].every((key) =>
-          //   Object.keys(viewState).includes(key)
-          // )
-          //   ? viewState
-          //   : DEFAULT_INITIAL_VIEW_STATE
-          { longitude: 9.111034686385281, latitude: 47.8189635538252, zoom: 10 }
+          ["longitude", "latitude", "zoom"].every((key) =>
+            Object.keys(viewState).includes(key)
+          )
+            ? viewState
+            : DEFAULT_INITIAL_VIEW_STATE
         }
         controller={true}
         layers={layers}
         getTooltip={getTooltip}
       >
-        {/* <Map mapStyle={MAP_STYLE} /> */}
+        <Map mapStyle={MAP_STYLE} />
       </DeckGL>
     </div>
   );
