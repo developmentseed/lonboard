@@ -20,7 +20,7 @@
   },
   "scripts": {
     "build": "node ./build.mjs",
-    "build:watch": "nodemon --watch src/ --exec \"npm run build\" --ext js,json,ts,tsx"
+    "build:watch": "nodemon --watch src/ --exec \"npm run build\" --ext js,json,ts,tsx,css"
   },
   "resolutions": {
     "@deck.gl/core": "8.9.30",

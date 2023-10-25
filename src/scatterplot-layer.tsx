@@ -5,6 +5,7 @@ import DeckGL from "@deck.gl/react/typed";
 import { GeoArrowScatterplotLayer } from "@geoarrow/deck.gl-layers";
 import { useParquetWasm } from "./parquet";
 import { useAccessorState, useTableBufferState } from "./accessor";
+import { getTooltip } from "./tooltip";
 
 import "maplibre-gl/dist/maplibre-gl.css";
 
@@ -70,6 +71,7 @@ function App() {
       ...(getFillColor && { getFillColor }),
       ...(getLineColor && { getLineColor }),
       ...(getLineWidth && { getLineWidth }),
+      pickable: true,
     });
     layers.push(layer);
   }
@@ -86,6 +88,8 @@ function App() {
         }
         controller={true}
         layers={layers}
+        getTooltip={getTooltip}
+        pickingRadius={10}
       >
         <Map mapStyle={MAP_STYLE} />
       </DeckGL>
