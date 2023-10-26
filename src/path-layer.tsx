@@ -5,6 +5,7 @@ import DeckGL from "@deck.gl/react/typed";
 import { GeoArrowPathLayer } from "@geoarrow/deck.gl-layers";
 import { useParquetWasm } from "./parquet";
 import { useAccessorState, useTableBufferState } from "./accessor";
+import { getTooltip } from "./tooltip";
 
 import "maplibre-gl/dist/maplibre-gl.css";
 
@@ -45,6 +46,7 @@ function App() {
     const layer = new GeoArrowPathLayer({
       id: "geoarrow-path",
       data: dataTable,
+      pickable: true,
 
       ...(widthUnits && { widthUnits }),
       ...(widthScale && { widthScale }),
@@ -72,8 +74,8 @@ function App() {
         }
         controller={true}
         layers={layers}
-        height={300}
-        // ContextProvider={MapContext.Provider}
+        getTooltip={getTooltip}
+        pickingRadius={10}
       >
         <Map mapStyle={MAP_STYLE} />
       </DeckGL>

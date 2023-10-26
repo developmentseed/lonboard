@@ -5,6 +5,7 @@ import DeckGL from "@deck.gl/react/typed";
 import { GeoArrowSolidPolygonLayer } from "@geoarrow/deck.gl-layers";
 import { useParquetWasm } from "./parquet";
 import { useAccessorState, useTableBufferState } from "./accessor";
+import { getTooltip } from "./tooltip";
 
 import "maplibre-gl/dist/maplibre-gl.css";
 
@@ -43,6 +44,7 @@ function App() {
     const layer = new GeoArrowSolidPolygonLayer({
       id: "geoarrow-polygons",
       data: dataTable,
+      pickable: true,
       ...(filled && { filled }),
       ...(extruded && { extruded }),
       ...(wireframe && { wireframe }),
@@ -66,7 +68,8 @@ function App() {
         }
         controller={true}
         layers={layers}
-        // ContextProvider={MapContext.Provider}
+        getTooltip={getTooltip}
+        pickingRadius={10}
       >
         <Map mapStyle={MAP_STYLE} />
       </DeckGL>
