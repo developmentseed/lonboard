@@ -8,6 +8,7 @@ from __future__ import annotations
 
 from typing import Any, List, Set, Tuple, Union
 
+import matplotlib as mpl
 import numpy as np
 import pyarrow as pa
 import traitlets
@@ -161,6 +162,22 @@ class ColorAccessor(traitlets.TraitType):
                 )
 
             return value
+
+        if isinstance(value, str):
+            try:
+                c = mpl.colors.to_rgba(value)  # type: ignore
+            except ValueError:
+                self.error(
+                    obj,
+                    value,
+                    info=(
+                        "Color string must be a hex string interpretable by "
+                        "matplotlib.colors.to_rgba."
+                    ),
+                )
+                return
+
+            return tuple(map(int, (np.array(c) * 255).astype(np.uint8)))
 
         self.error(obj, value)
         assert False
