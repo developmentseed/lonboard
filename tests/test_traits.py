@@ -89,6 +89,27 @@ def test_color_accessor_validation_pyarrow_array_type():
         ColorAccessorWidget(color=pa.FixedSizeListArray.from_arrays(np_arr, 4))
 
 
+def test_color_accessor_validation_string():
+    # Shortened RGB
+    ColorAccessorWidget(color="#fff")
+
+    # Shortened RGBA
+    ColorAccessorWidget(color="#fff0")
+
+    # Full RGB
+    ColorAccessorWidget(color="#ffffff")
+
+    c = ColorAccessorWidget(color="#ffffffa0")
+    assert c.color[3] == 0xA0, "Expected alpha to be parsed correctly"
+
+    # HTML Aliases
+    ColorAccessorWidget(color="red")
+    ColorAccessorWidget(color="blue")
+
+    with pytest.raises(TraitError):
+        ColorAccessorWidget(color="#ff")
+
+
 class FloatAccessorWidget(Widget):
     _rows_per_chunk = 2
 
