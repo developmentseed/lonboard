@@ -8,6 +8,7 @@ from __future__ import annotations
 
 from typing import Any, List, Set, Tuple, Union
 
+import matplotlib as mpl
 import numpy as np
 import pyarrow as pa
 import traitlets
@@ -69,6 +70,8 @@ class ColorAccessor(traitlets.TraitType):
 
     - A `list` or `tuple` with three or four integers, ranging between 0 and 255
       (inclusive). This will be used as the color for all objects.
+    - A `str` representing a hex color or "well known" color interpretable by
+      [matplotlib.colors.to_rgba][matplotlib.colors.to_rgba].
     - A numpy `ndarray` with two dimensions and data type [`np.uint8`][numpy.uint8]. The
       size of the second dimension must be `3` or `4`, and will correspond to either RGB
       or RGBA colors.
@@ -161,6 +164,22 @@ class ColorAccessor(traitlets.TraitType):
                 )
 
             return value
+
+        if isinstance(value, str):
+            try:
+                c = mpl.colors.to_rgba(value)  # type: ignore
+            except ValueError:
+                self.error(
+                    obj,
+                    value,
+                    info=(
+                        "Color string must be a hex string interpretable by "
+                        "matplotlib.colors.to_rgba."
+                    ),
+                )
+                return
+
+            return tuple(map(int, (np.array(c) * 255).astype(np.uint8)))
 
         self.error(obj, value)
         assert False
