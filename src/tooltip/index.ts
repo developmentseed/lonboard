@@ -36,6 +36,12 @@ export function getTooltip({ object }: GeoArrowPickingInfo): TooltipContent {
     return {
       className: "lonboard-tooltip",
       html: toHtmlTable(jsonObj),
+      style: {
+        backgroundColor: "#fff",
+        boxShadow: "0 0 15px rgba(0, 0, 0, 0.1)",
+        color: "#000",
+        padding: "10px",
+      },
     };
   }
 

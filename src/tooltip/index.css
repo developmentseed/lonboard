@@ -1,12 +1,3 @@
-.lonboard-tooltip {
-  z-index: 1;
-  position: absolute;
-  color: black;
-  background-color: white;
-  padding: 10px;
-  box-shadow: 0 0 15px rgba(0, 0, 0, 0.1);
-}
-
 /* Remove spaces between table cells */
 .lonboard-tooltip table {
   border-collapse: collapse;
@@ -23,11 +14,11 @@
 
 /* Define table cell borders and padding */
 .lonboard-tooltip td {
-  border: 1px solid;
+  border: 1px solid rgb(204, 204, 204);
   padding: 5px;
 }
 
 /* Make the first column bold */
 .lonboard-tooltip td:first-child {
-  font-weight: bold;
+  font-weight: 450;
 }
