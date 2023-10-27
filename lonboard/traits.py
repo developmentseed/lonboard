@@ -12,7 +12,9 @@ import matplotlib as mpl
 import numpy as np
 import pyarrow as pa
 import traitlets
+from traitlets import TraitError
 from traitlets.traitlets import TraitType
+from traitlets.utils.descriptions import class_of, describe
 from typing_extensions import Self
 
 from lonboard.serialization import (
@@ -22,7 +24,92 @@ from lonboard.serialization import (
 )
 
 
-class PyarrowTableTrait(traitlets.TraitType):
+# This is a custom subclass of traitlets.TraitType because its `error` method ignores
+# the `info` passed in. See https://github.com/developmentseed/lonboard/issues/71 and
+# https://github.com/ipython/traitlets/pull/884
+class FixedErrorTraitType(traitlets.TraitType):
+    def error(self, obj, value, error=None, info=None):
+        """Raise a TraitError
+
+        Parameters
+        ----------
+        obj : HasTraits or None
+            The instance which owns the trait. If not
+            object is given, then an object agnostic
+            error will be raised.
+        value : any
+            The value that caused the error.
+        error : Exception (default: None)
+            An error that was raised by a child trait.
+            The arguments of this exception should be
+            of the form ``(value, info, *traits)``.
+            Where the ``value`` and ``info`` are the
+            problem value, and string describing the
+            expected value. The ``traits`` are a series
+            of :class:`TraitType` instances that are
+            "children" of this one (the first being
+            the deepest).
+        info : str (default: None)
+            A description of the expected value. By
+            default this is infered from this trait's
+            ``info`` method.
+        """
+        if error is not None:
+            # handle nested error
+            error.args += (self,)
+            if self.name is not None:
+                # this is the root trait that must format the final message
+                chain = " of ".join(describe("a", t) for t in error.args[2:])
+                if obj is not None:
+                    error.args = (
+                        "The '{}' trait of {} instance contains {} which "
+                        "expected {}, not {}.".format(
+                            self.name,
+                            describe("an", obj),
+                            chain,
+                            error.args[1],
+                            describe("the", error.args[0]),
+                        ),
+                    )
+                else:
+                    error.args = (
+                        "The '{}' trait contains {} which "
+                        "expected {}, not {}.".format(
+                            self.name,
+                            chain,
+                            error.args[1],
+                            describe("the", error.args[0]),
+                        ),
+                    )
+            raise error
+        else:
+            # this trait caused an error
+            if self.name is None:
+                # this is not the root trait
+                raise TraitError(value, info or self.info(), self)
+            else:
+                # this is the root trait
+                if obj is not None:
+                    e = "The '{}' trait of {} instance expected {}, not {}.".format(
+                        self.name,
+                        class_of(obj),
+                        # CHANGED:
+                        # Use info if provided
+                        info or self.info(),
+                        describe("the", value),
+                    )
+                else:
+                    e = "The '{}' trait expected {}, not {}.".format(
+                        self.name,
+                        # CHANGED:
+                        # Use info if provided
+                        info or self.info(),
+                        describe("the", value),
+                    )
+                raise TraitError(e)
+
+
+class PyarrowTableTrait(FixedErrorTraitType):
     """A traitlets trait for a geospatial pyarrow table"""
 
     default_value = None
@@ -63,7 +150,7 @@ class PyarrowTableTrait(traitlets.TraitType):
         return value
 
 
-class ColorAccessor(traitlets.TraitType):
+class ColorAccessor(FixedErrorTraitType):
     """A representation of a deck.gl color accessor.
 
     Various input is allowed:
@@ -105,22 +192,20 @@ class ColorAccessor(traitlets.TraitType):
     ) -> Union[Tuple[int, ...], List[int], pa.ChunkedArray, pa.FixedSizeListArray]:
         if isinstance(value, (tuple, list)):
             if len(value) < 3 or len(value) > 4:
-                self.error(
-                    obj, value, info="expected 3 or 4 values if passed a tuple or list"
-                )
+                self.error(obj, value, info="3 or 4 values if passed a tuple or list")
 
             if any(not isinstance(v, int) for v in value):
                 self.error(
                     obj,
                     value,
-                    info="expected all values to be integers if passed a tuple or list",
+                    info="all values to be integers if passed a tuple or list",
                 )
 
             if any(v < 0 or v > 255 for v in value):
                 self.error(
                     obj,
                     value,
-                    info="expected values between 0 and 255",
+                    info="values between 0 and 255",
                 )
 
             return value
@@ -185,7 +270,7 @@ class ColorAccessor(traitlets.TraitType):
         assert False
 
 
-class FloatAccessor(traitlets.TraitType):
+class FloatAccessor(FixedErrorTraitType):
     """A representation of a deck.gl float accessor.
 
     Various input is allowed:
@@ -221,7 +306,7 @@ class FloatAccessor(traitlets.TraitType):
 
         if isinstance(value, np.ndarray):
             if not np.issubdtype(value.dtype, np.number):
-                self.error(obj, value, info="Expected numeric dtype")
+                self.error(obj, value, info="numeric dtype")
 
             # TODO: should we always be casting to float32? Should it be
             # possible/allowed to pass in ~int8 or a data type smaller than float32?
