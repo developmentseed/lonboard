@@ -45,3 +45,11 @@ export function useAccessorState(wasmReady: boolean, accessorRaw: any): any {
 
   return [accessorValue];
 }
+
+export function parseAccessor(accessorRaw: unknown): any {
+  return accessorRaw instanceof Array && accessorRaw?.[0] instanceof DataView
+    ? accessorRaw?.[0].byteLength > 0
+      ? parseParquetBuffers(accessorRaw).getChildAt(0)
+      : null
+    : accessorRaw;
+}

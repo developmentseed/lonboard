@@ -10,6 +10,9 @@ import {
   GeoArrowSolidPolygonLayer,
 } from "@geoarrow/deck.gl-layers";
 import type { Layer } from "@deck.gl/core/typed";
+import type { IWidgetManager, WidgetModel } from "@jupyter-widgets/base";
+import { ScatterplotModel } from "./model";
+import { initParquetWasm } from "./parquet";
 
 const INITIAL_VIEW_STATE = {
   latitude: 10,
@@ -23,23 +26,23 @@ const MAP_STYLE =
   "https://basemaps.cartocdn.com/gl/positron-nolabels-gl-style/style.json";
 
 function createScatterplotLayer(model): GeoArrowScatterplotLayer {
-  let [dataView] = useLocalModelState(model, "table_buffer");
-  let [radiusUnits] = useLocalModelState(model, "radius_units");
-  let [radiusScale] = useLocalModelState(model, "radius_scale");
-  let [radiusMinPixels] = useLocalModelState(model, "radius_min_pixels");
-  let [radiusMaxPixels] = useLocalModelState(model, "radius_max_pixels");
-  let [lineWidthUnits] = useLocalModelState(model, "line_width_units");
-  let [lineWidthScale] = useLocalModelState(model, "line_width_scale");
-  let [lineWidthMinPixels] = useLocalModelState(model, "line_width_min_pixels");
-  let [lineWidthMaxPixels] = useLocalModelState(model, "line_width_max_pixels");
-  let [stroked] = useLocalModelState(model, "stroked");
-  let [filled] = useLocalModelState(model, "filled");
-  let [billboard] = useLocalModelState(model, "billboard");
-  let [antialiasing] = useLocalModelState(model, "antialiasing");
-  let [getRadius] = useLocalModelState(model, "get_radius");
-  let [getFillColor] = useLocalModelState(model, "get_fill_color");
-  let [getLineColor] = useLocalModelState(model, "get_line_color");
-  let [getLineWidth] = useLocalModelState(model, "get_line_width");
+  let dataRaw = model.get("table");
+  let radiusUnits = model.get("radius_units");
+  let radiusScale = model.get("radius_scale");
+  let radiusMinPixels = model.get("radius_min_pixels");
+  let radiusMaxPixels = model.get("radius_max_pixels");
+  let lineWidthUnits = model.get("line_width_units");
+  let lineWidthScale = model.get("line_width_scale");
+  let lineWidthMinPixels = model.get("line_width_min_pixels");
+  let lineWidthMaxPixels = model.get("line_width_max_pixels");
+  let stroked = model.get("stroked");
+  let filled = model.get("filled");
+  let billboard = model.get("billboard");
+  let antialiasing = model.get("antialiasing");
+  let getRadius = model.get("get_radius");
+  let getFillColor = model.get("get_fill_color");
+  let getLineColor = model.get("get_line_color");
+  let getLineWidth = model.get("get_line_width");
 
   const arrowTable = arrow.tableFromIPC(dataView.buffer);
   return new GeoArrowScatterplotLayer({
@@ -149,29 +152,26 @@ async function unpack_models(model_ids, manager) {
 }
 
 function App() {
+  console.log("App");
+  let [subModelState, setSubModelState] = useState<
+    Record<string, ScatterplotModel>
+  >({});
   let model = useModel();
   let [childLayerIds] = useModelState<string[]>("layers");
-  let [childModels, childModelsSet] = React.useState<any[]>([]);
 
-  React.useEffect(() => {
-    async function accessChildModels() {
-      let children_models = await unpack_models(
-        childLayerIds,
-        model.widget_manager
-      );
+  // Fake state just to get react to re-render when a model callback is called
+  let [stateCounter, setStateCounter] = useState<Date>(new Date());
 
-      console.log("child_models", children_models);
-      childModelsSet(children_models);
-    }
+  // let [childModels, setChildModels] = useState<WidgetModel[]>([]);
 
-    accessChildModels();
-  }, [childLayerIds]);
-
-  let [childModels, setChildModels] = useState<any[]>([]);
-
+  console.log("childLayerIds", childLayerIds);
   useEffect(() => {
     const callback = async () => {
-      const promises: Promise<any>[] = [];
+      // TODO: don't block on this until parsing?
+      await initParquetWasm();
+      console.log("subModelState1", subModelState);
+
+      const promises: Promise<WidgetModel>[] = [];
       for (const childLayerId of childLayerIds) {
         promises.push(
           model.widget_manager.get_model(
@@ -179,36 +179,44 @@ function App() {
           )
         );
       }
-      const _childModels = await Promise.all(promises);
-      setChildModels(_childModels);
-      console.log("_childModels");
-      console.log(_childModels);
+      const childModels = await Promise.all(promises);
+
+      const newSubModelState: Record<string, ScatterplotModel> = {
+        ...subModelState,
+      };
+      for (let i = 0; i < childLayerIds.length; i++) {
+        const childLayerId = childLayerIds[i];
+        const childModel = childModels[i];
+
+        const layerType = childModel.get("_layer_type");
+        switch (layerType) {
+          case "scatterplot":
+            if (!newSubModelState[childLayerId]) {
+              newSubModelState[childLayerId] = new ScatterplotModel(
+                childModel,
+                () => setStateCounter(new Date())
+              );
+            }
+            break;
+          case "path":
+            throw new Error("todo");
+            break;
+          case "solid-polygon":
+            throw new Error("todo");
+            break;
+          default:
+            console.warn(`no layer supported for ${layerType}`);
+            break;
+        }
+      }
+      setSubModelState(newSubModelState);
     };
     callback().catch(console.error);
-  }, [...childLayerIds]);
+  }, []);
 
-
-
-  window.model = model;
-  console.log(model);
-
-  const deckLayers: Layer[] = [];
-  for (const childModel of childModels) {
-    const layerType = childModel.get("_layer_type");
-    switch (layerType) {
-      case "scatterplot":
-        deckLayers.push(createScatterplotLayer(childModel));
-        break;
-      case "path":
-        deckLayers.push(createPathLayer(childModel));
-        break;
-      case "solid-polygon":
-        deckLayers.push(createSolidPolygonLayer(childModel));
-        break;
-      default:
-        console.warn(`no layer supported for ${layerType}`);
-        break;
-    }
+  const layers: Layer[] = [];
+  for (const subModel of Object.values(subModelState)) {
+    layers.push(subModel.render());
   }
 
   return (
@@ -216,8 +224,7 @@ function App() {
       <DeckGL
         initialViewState={INITIAL_VIEW_STATE}
         controller={true}
-        layers={deckLayers}
-        // ContextProvider={MapContext.Provider}
+        layers={layers}
       >
         <Map mapStyle={MAP_STYLE} />
       </DeckGL>
