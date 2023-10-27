@@ -1,4 +1,0 @@
-
-### Color Accessor
-
-### Float Accessor
