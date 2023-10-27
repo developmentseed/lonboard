@@ -20,6 +20,8 @@ nav:
   - Example Notebooks:
     - examples/internet-speeds.ipynb
     - examples/north-america-roads.ipynb
+    - Integrations:
+      - ColorPicker: examples/integrations/color-picker.ipynb
   - API Reference:
     - api/viz.md
     - Layers:
