@@ -34,6 +34,35 @@ Lonboard is more efficient at rendering than previous libraries, but there will 
 
 Moving from a remote Python environment to a local Python environment is often impractical, but this change will make it much faster to visualize data, especially over slow internet connections.
 
+### Mutate an existing map where possible
+
+Whenever you create a new map object, all the data will be transfered from your Python environment to your browser. Whenever mutating an existing map object, **only the changed data will be sent to the browser**.
+
+Therefore, **unless changing the _content_ of the data being rendered**, do not create a new map object. If you're changing the rendering options of an existing map, prefer mutating the existing map object.
+
+**Bad**
+
+```py
+map1 = ScatterplotLayer.from_geopandas(my_geodataframe)
+
+# Next cell
+map2 = ScatterplotLayer.from_geopandas(
+    my_geodataframe,
+    get_fill_color=[255, 0, 0]
+)
+```
+
+**Good**
+
+```py
+map1 = ScatterplotLayer.from_geopandas(my_geodataframe)
+
+# Next cell
+map1.get_fill_color = [255, 0, 0]
+```
+
+In the first (bad) case, the content of `my_geodataframe` will be sent twice to the browser. In the second (good) case, the content of `my_geodataframe` will be sent **only once** to the browser, and only the tiny array `[255, 0, 0]` will be transfered on the second call.
+
 ### Remove columns before rendering
 
 All columns included in the `GeoDataFrame` will be transferred to the browser for visualization. (In the future, these other columns will be used to display a tooltip when hovering over/clicking on a geometry.)
@@ -46,7 +75,40 @@ As of Pandas 2.0, Pandas supports two backends for data types: either the origin
 
 The first thing that lonboard does when visualizing data is converting from Pandas to an Arrow representation. Any non-geometry attribute columns will be converted to Arrow, so if you're using Arrow-based data types in Pandas already, this step will be "free" as no conversion is needed.
 
-See the pandas [guide on data types](https://pandas.pydata.org/docs/user_guide/pyarrow.html) and the [`pandas.ArrowDtype` class](https://pandas.pydata.org/docs/reference/api/pandas.ArrowDtype.html).
+If you're loading data from a geospatial file format, as of [`pyogrio`](https://github.com/geopandas/pyogrio) version 0.7, you can load data to Arrow-based columns with
+
+```py
+import pyogrio
+import pandas as pd
+
+arrow_to_pandas_kwargs = {
+    'types_mapper': lambda pa_dtype: pd.ArrowDtype(pa_dtype)
+}
+gdf = pyogrio.read_dataframe(
+    "path/to/file",
+    use_arrow=True,
+    arrow_to_pandas_kwargs=arrow_to_pandas_kwargs
+)
+```
+
+or directly from GeoPandas with `geopandas.read_file` with `engine="pyogrio"`:
+
+```py
+import geopandas as gpd
+import pandas as pd
+
+arrow_to_pandas_kwargs = {
+    'types_mapper': lambda pa_dtype: pd.ArrowDtype(pa_dtype)
+}
+gdf = gpd.read_file(
+    "path/to/file",
+    engine="pyogrio",
+    use_arrow=True,
+    arrow_to_pandas_kwargs=arrow_to_pandas_kwargs
+)
+```
+
+See the pandas [guide on data types](https://pandas.pydata.org/docs/user_guide/pyarrow.html) and the [`pandas.ArrowDtype` class](https://pandas.pydata.org/docs/reference/api/pandas.ArrowDtype.html) for more information.
 
 ### Simplify geometries before rendering
 
