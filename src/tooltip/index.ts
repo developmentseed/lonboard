@@ -40,7 +40,7 @@ export function getTooltip({ object }: GeoArrowPickingInfo): TooltipContent {
         backgroundColor: "#fff",
         boxShadow: "0 0 15px rgba(0, 0, 0, 0.1)",
         color: "#000",
-        padding: "10px",
+        padding: "6px",
       },
     };
   }
