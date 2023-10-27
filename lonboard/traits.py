@@ -70,6 +70,8 @@ class ColorAccessor(traitlets.TraitType):
 
     - A `list` or `tuple` with three or four integers, ranging between 0 and 255
       (inclusive). This will be used as the color for all objects.
+    - A `str` representing a hex color or "well known" color interpretable by
+      [matplotlib.colors.to_rgba][matplotlib.colors.to_rgba].
     - A numpy `ndarray` with two dimensions and data type [`np.uint8`][numpy.uint8]. The
       size of the second dimension must be `3` or `4`, and will correspond to either RGB
       or RGBA colors.
