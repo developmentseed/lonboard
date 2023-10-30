@@ -20,7 +20,15 @@ export abstract class BaseGeoArrowModel {
     this.model.on("change", updateStateCallback);
   }
 
+  /**
+   * Generate a deck.gl layer from this model description.
+   */
   abstract render(): Layer;
+
+  /**
+   * Finalize any resources held by the model
+   */
+  abstract finalize(): void;
 
   /**
    * Initialize a Table on the model.
@@ -102,6 +110,7 @@ export class ScatterplotModel extends BaseGeoArrowModel {
 
   constructor(model: WidgetModel, updateStateCallback: () => void) {
     super(model, updateStateCallback);
+    console.log("init scatterplot model");
 
     this.initTable("table", "table");
 
@@ -151,6 +160,8 @@ export class ScatterplotModel extends BaseGeoArrowModel {
       pickable: true,
     });
   }
+
+  finalize(): void {}
 }
 
 export class PathModel extends BaseGeoArrowModel {
@@ -203,6 +214,8 @@ export class PathModel extends BaseGeoArrowModel {
       ...(this.getWidth && { getWidth: this.getWidth }),
     });
   }
+
+  finalize(): void {}
 }
 
 export class SolidPolygonModel extends BaseGeoArrowModel {
@@ -246,4 +259,6 @@ export class SolidPolygonModel extends BaseGeoArrowModel {
       ...(this.getLineColor && { getLineColor: this.getLineColor }),
     });
   }
+
+  finalize(): void {}
 }

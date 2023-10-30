@@ -3,21 +3,15 @@ import { useState, useEffect } from "react";
 import { createRender, useModelState, useModel } from "@anywidget/react";
 import Map from "react-map-gl/maplibre";
 import DeckGL from "@deck.gl/react/typed";
-import * as arrow from "apache-arrow";
-import {
-  GeoArrowPathLayer,
-  GeoArrowScatterplotLayer,
-  GeoArrowSolidPolygonLayer,
-} from "@geoarrow/deck.gl-layers";
 import type { Layer } from "@deck.gl/core/typed";
-import type { WidgetModel } from "@jupyter-widgets/base";
+import type { IWidgetManager, WidgetModel } from "@jupyter-widgets/base";
 import {
   BaseGeoArrowModel,
   PathModel,
   ScatterplotModel,
   SolidPolygonModel,
 } from "./model";
-import { initParquetWasm } from "./parquet";
+import { useParquetWasm } from "./parquet";
 
 const INITIAL_VIEW_STATE = {
   latitude: 10,
@@ -29,103 +23,6 @@ const INITIAL_VIEW_STATE = {
 
 const MAP_STYLE =
   "https://basemaps.cartocdn.com/gl/positron-nolabels-gl-style/style.json";
-
-function createScatterplotLayer(model): GeoArrowScatterplotLayer {
-  let dataRaw = model.get("table");
-  let radiusUnits = model.get("radius_units");
-  let radiusScale = model.get("radius_scale");
-  let radiusMinPixels = model.get("radius_min_pixels");
-  let radiusMaxPixels = model.get("radius_max_pixels");
-  let lineWidthUnits = model.get("line_width_units");
-  let lineWidthScale = model.get("line_width_scale");
-  let lineWidthMinPixels = model.get("line_width_min_pixels");
-  let lineWidthMaxPixels = model.get("line_width_max_pixels");
-  let stroked = model.get("stroked");
-  let filled = model.get("filled");
-  let billboard = model.get("billboard");
-  let antialiasing = model.get("antialiasing");
-  let getRadius = model.get("get_radius");
-  let getFillColor = model.get("get_fill_color");
-  let getLineColor = model.get("get_line_color");
-  let getLineWidth = model.get("get_line_width");
-
-  const arrowTable = arrow.tableFromIPC(dataView.buffer);
-  return new GeoArrowScatterplotLayer({
-    id: model.model_id,
-    data: arrowTable,
-    ...(radiusUnits && { radiusUnits }),
-    ...(radiusScale && { radiusScale }),
-    ...(radiusMinPixels && { radiusMinPixels }),
-    ...(radiusMaxPixels && { radiusMaxPixels }),
-    ...(lineWidthUnits && { lineWidthUnits }),
-    ...(lineWidthScale && { lineWidthScale }),
-    ...(lineWidthMinPixels && { lineWidthMinPixels }),
-    ...(lineWidthMaxPixels && { lineWidthMaxPixels }),
-    ...(stroked && { stroked }),
-    ...(filled && { filled }),
-    ...(billboard && { billboard }),
-    ...(antialiasing && { antialiasing }),
-    ...(getRadius && { getRadius }),
-    ...(getFillColor && { getFillColor }),
-    ...(getLineColor && { getLineColor }),
-    ...(getLineWidth && { getLineWidth }),
-  });
-}
-
-function createPathLayer(model): GeoArrowPathLayer {
-  let [dataView] = useLocalModelState(model, "table_buffer");
-  let [widthUnits] = useLocalModelState(model, "width_units");
-  let [widthScale] = useLocalModelState(model, "width_scale");
-  let [widthMinPixels] = useLocalModelState(model, "width_min_pixels");
-  let [widthMaxPixels] = useLocalModelState(model, "width_max_pixels");
-  let [jointRounded] = useLocalModelState(model, "joint_rounded");
-  let [capRounded] = useLocalModelState(model, "cap_rounded");
-  let [miterLimit] = useLocalModelState(model, "miter_limit");
-  let [billboard] = useLocalModelState(model, "billboard");
-  let [getColor] = useLocalModelState(model, "get_color");
-  let [getWidth] = useLocalModelState(model, "get_width");
-
-  const arrowTable = arrow.tableFromIPC(dataView.buffer);
-  return new GeoArrowPathLayer({
-    id: model.model_id,
-    data: arrowTable,
-
-    ...(widthUnits && { widthUnits }),
-    ...(widthScale && { widthScale }),
-    ...(widthMinPixels && { widthMinPixels }),
-    ...(widthMaxPixels && { widthMaxPixels }),
-    ...(jointRounded && { jointRounded }),
-    ...(capRounded && { capRounded }),
-    ...(miterLimit && { miterLimit }),
-    ...(billboard && { billboard }),
-    ...(getColor && { getColor }),
-    ...(getWidth && { getWidth }),
-  });
-}
-
-function createSolidPolygonLayer(model): GeoArrowSolidPolygonLayer {
-  let [dataView] = useLocalModelState(model, "table_buffer");
-  let [filled] = useLocalModelState(model, "filled");
-  let [extruded] = useLocalModelState(model, "extruded");
-  let [wireframe] = useLocalModelState(model, "wireframe");
-  let [elevationScale] = useLocalModelState(model, "elevation_scale");
-  let [getElevation] = useLocalModelState(model, "get_elevation");
-  let [getFillColor] = useLocalModelState(model, "get_fill_color");
-  let [getLineColor] = useLocalModelState(model, "get_line_color");
-
-  const arrowTable = arrow.tableFromIPC(dataView.buffer);
-  return new GeoArrowSolidPolygonLayer({
-    id: model.model_id,
-    data: arrowTable,
-    ...(filled && { filled }),
-    ...(extruded && { extruded }),
-    ...(wireframe && { wireframe }),
-    ...(elevationScale && { elevationScale }),
-    ...(getElevation && { getElevation }),
-    ...(getFillColor && { getFillColor }),
-    ...(getLineColor && { getLineColor }),
-  });
-}
 
 /**
  * @template T
@@ -148,16 +45,22 @@ function useLocalModelState(model, key: string) {
   ];
 }
 
-// Ref https://github.com/manzt/anywidget/pull/194
-async function unpack_models(model_ids, manager) {
-  console.log("unpack");
-  return Promise.all(
-    model_ids.map((id) => manager.get_model(id.slice("IPY_MODEL_".length)))
-  );
+async function loadChildModels(
+  widget_manager: IWidgetManager,
+  childLayerIds: string[]
+): Promise<WidgetModel[]> {
+  const promises: Promise<WidgetModel>[] = [];
+  for (const childLayerId of childLayerIds) {
+    promises.push(
+      widget_manager.get_model(childLayerId.slice("IPY_MODEL_".length))
+    );
+  }
+  return await Promise.all(promises);
 }
 
 function App() {
-  console.log("App");
+  let [parquetWasmReady] = useParquetWasm();
+
   let [subModelState, setSubModelState] = useState<
     Record<string, BaseGeoArrowModel>
   >({});
@@ -166,36 +69,35 @@ function App() {
 
   // Fake state just to get react to re-render when a model callback is called
   let [stateCounter, setStateCounter] = useState<Date>(new Date());
-  console.log("stateCounter", stateCounter);
 
-  // let [childModels, setChildModels] = useState<WidgetModel[]>([]);
-
-  // TODO: delete state from subModelState when layer has been deleted (i.e.
-  // when layerId is now gone.)
-
-  console.log("childLayerIds", childLayerIds);
   useEffect(() => {
+    if (!parquetWasmReady) {
+      return;
+    }
+
     const callback = async () => {
-      // TODO: don't block on this until parsing?
-      await initParquetWasm();
-      console.log("subModelState1", subModelState);
-
-      const promises: Promise<WidgetModel>[] = [];
-      for (const childLayerId of childLayerIds) {
-        promises.push(
-          model.widget_manager.get_model(
-            childLayerId.slice("IPY_MODEL_".length)
-          )
-        );
+      if (!parquetWasmReady) {
+        throw new Error("inside callback but parquetWasm not ready!");
       }
-      const childModels = await Promise.all(promises);
 
-      const newSubModelState: Record<string, BaseGeoArrowModel> = {
-        ...subModelState,
-      };
+      const newSubModelState: Record<string, BaseGeoArrowModel> = {};
+      const childModels = await loadChildModels(
+        model.widget_manager,
+        childLayerIds
+      );
+
       for (let i = 0; i < childLayerIds.length; i++) {
         const childLayerId = childLayerIds[i];
         const childModel = childModels[i];
+
+        // If the layer existed previously, copy its model without constructing
+        // a new one
+        if (childLayerId in subModelState) {
+          // pop from old state
+          newSubModelState[childLayerId] = subModelState[childLayerId];
+          delete subModelState[childLayerId];
+          continue;
+        }
 
         const layerType = childModel.get("_layer_type");
         switch (layerType) {
@@ -227,10 +129,16 @@ function App() {
             break;
         }
       }
+
+      // finalize models that were deleted
+      for (const previousChildModel of Object.values(subModelState)) {
+        previousChildModel.finalize();
+      }
+
       setSubModelState(newSubModelState);
     };
     callback().catch(console.error);
-  }, [childLayerIds]);
+  }, [parquetWasmReady, childLayerIds]);
 
   const layers: Layer[] = [];
   for (const subModel of Object.values(subModelState)) {
