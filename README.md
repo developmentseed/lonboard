@@ -25,7 +25,7 @@ pip install lonboard
 
 ## Get Started
 
-For the simplest rendering, pass geospatial data into the top-level [`viz` function](https://developmentseed.org/lonboard/api/top-level/#lonboard.viz.viz).
+For the simplest rendering, pass geospatial data into the top-level [`viz` function](https://developmentseed.org/lonboard/api/viz/#lonboard.viz.viz).
 
 ```py
 import geopandas as gpd

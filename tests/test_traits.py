@@ -18,10 +18,14 @@ def test_color_accessor_validation_list_length():
     with pytest.raises(TraitError):
         ColorAccessorWidget(color=())
 
-    with pytest.raises(TraitError):
+    with pytest.raises(
+        TraitError, match="expected 3 or 4 values if passed a tuple or list"
+    ):
         ColorAccessorWidget(color=(1, 2))
 
-    with pytest.raises(TraitError):
+    with pytest.raises(
+        TraitError, match="expected 3 or 4 values if passed a tuple or list"
+    ):
         ColorAccessorWidget(color=(1, 2, 3, 4, 5))
 
     ColorAccessorWidget(color=(1, 2, 3))
@@ -87,6 +91,27 @@ def test_color_accessor_validation_pyarrow_array_type():
     np_arr = np.array([1, 2, 3, 255], dtype=np.uint64)
     with pytest.raises(TraitError):
         ColorAccessorWidget(color=pa.FixedSizeListArray.from_arrays(np_arr, 4))
+
+
+def test_color_accessor_validation_string():
+    # Shortened RGB
+    ColorAccessorWidget(color="#fff")
+
+    # Shortened RGBA
+    ColorAccessorWidget(color="#fff0")
+
+    # Full RGB
+    ColorAccessorWidget(color="#ffffff")
+
+    c = ColorAccessorWidget(color="#ffffffa0")
+    assert c.color[3] == 0xA0, "Expected alpha to be parsed correctly"
+
+    # HTML Aliases
+    ColorAccessorWidget(color="red")
+    ColorAccessorWidget(color="blue")
+
+    with pytest.raises(TraitError):
+        ColorAccessorWidget(color="#ff")
 
 
 class FloatAccessorWidget(Widget):

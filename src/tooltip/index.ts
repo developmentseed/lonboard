@@ -3,6 +3,8 @@ import { GeoArrowPickingInfo } from "@geoarrow/deck.gl-layers/dist/types";
 
 import "./index.css";
 
+const rowIndexSymbol = Symbol.for("rowIndex");
+
 function toHtmlTable(featureProperties: Record<string, any>): string {
   return `<table>
       <tbody>
@@ -21,6 +23,14 @@ function toHtmlTable(featureProperties: Record<string, any>): string {
 
 export function getTooltip({ object }: GeoArrowPickingInfo): TooltipContent {
   if (object) {
+    // If the row index is -1, return
+    //
+    // Note that this is a private API, but this appears to be the only way to
+    // get this information
+    if (object[rowIndexSymbol] && object[rowIndexSymbol] < 0) {
+      return null;
+    }
+
     const jsonObj = object.toJSON();
 
     if (!jsonObj) {
@@ -36,6 +46,12 @@ export function getTooltip({ object }: GeoArrowPickingInfo): TooltipContent {
     return {
       className: "lonboard-tooltip",
       html: toHtmlTable(jsonObj),
+      style: {
+        backgroundColor: "#fff",
+        boxShadow: "0 0 15px rgba(0, 0, 0, 0.1)",
+        color: "#000",
+        padding: "6px",
+      },
     };
   }
 
