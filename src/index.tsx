@@ -12,8 +12,9 @@ import {
   SolidPolygonModel,
 } from "./model";
 import { useParquetWasm } from "./parquet";
+import { getTooltip } from "./tooltip";
 
-const INITIAL_VIEW_STATE = {
+const DEFAULT_INITIAL_VIEW_STATE = {
   latitude: 10,
   longitude: 0,
   zoom: 0.5,
@@ -42,6 +43,7 @@ async function loadChildModels(
 
 function App() {
   let [parquetWasmReady] = useParquetWasm();
+  let [initialViewState] = useModelState<DataView>("_initial_view_state");
 
   let [subModelState, setSubModelState] = useState<
     Record<string, BaseGeoArrowModel>
@@ -124,9 +126,17 @@ function App() {
   return (
     <div style={{ height: 500 }}>
       <DeckGL
-        initialViewState={INITIAL_VIEW_STATE}
+        initialViewState={
+          ["longitude", "latitude", "zoom"].every((key) =>
+            Object.keys(initialViewState).includes(key)
+          )
+            ? initialViewState
+            : DEFAULT_INITIAL_VIEW_STATE
+        }
         controller={true}
         layers={layers}
+        getTooltip={getTooltip}
+        pickingRadius={10}
       >
         <Map mapStyle={MAP_STYLE} />
       </DeckGL>
