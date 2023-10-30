@@ -2,9 +2,9 @@
   "dependencies": {
     "@anywidget/react": "^0.0.2",
     "@babel/runtime": "^7.23.2",
-    "@deck.gl/core": "^8.9.30",
-    "@deck.gl/layers": "^8.9.30",
-    "@deck.gl/react": "^8.9.30",
+    "@deck.gl/core": "^8.9.32",
+    "@deck.gl/layers": "^8.9.32",
+    "@deck.gl/react": "^8.9.32",
     "@geoarrow/deck.gl-layers": "^0.2.0",
     "apache-arrow": "^13.0.0",
     "maplibre-gl": "^3.5.2",
