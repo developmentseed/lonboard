@@ -25,26 +25,8 @@ const MAP_STYLE =
   "https://basemaps.cartocdn.com/gl/positron-nolabels-gl-style/style.json";
 
 /**
- * @template T
- *
- * @returns {[T, (value: T) => void]}
+ * Load the child models of this model
  */
-function useLocalModelState(model, key: string) {
-  let [value, setValue] = React.useState(model.get(key));
-  React.useEffect(() => {
-    let callback = () => setValue(model.get(key));
-    model.on(`change:${key}`, callback);
-    return () => model.off(`change:${key}`, callback);
-  }, [model, key]);
-  return [
-    value,
-    (value) => {
-      model.set(key, value);
-      model.save_changes();
-    },
-  ];
-}
-
 async function loadChildModels(
   widget_manager: IWidgetManager,
   childLayerIds: string[]
@@ -102,30 +84,24 @@ function App() {
         const layerType = childModel.get("_layer_type");
         switch (layerType) {
           case "scatterplot":
-            if (!newSubModelState[childLayerId]) {
-              newSubModelState[childLayerId] = new ScatterplotModel(
-                childModel,
-                () => setStateCounter(new Date())
-              );
-            }
+            newSubModelState[childLayerId] = new ScatterplotModel(
+              childModel,
+              () => setStateCounter(new Date())
+            );
             break;
           case "path":
-            if (!newSubModelState[childLayerId]) {
-              newSubModelState[childLayerId] = new PathModel(childModel, () =>
-                setStateCounter(new Date())
-              );
-            }
+            newSubModelState[childLayerId] = new PathModel(childModel, () =>
+              setStateCounter(new Date())
+            );
             break;
           case "solid-polygon":
-            if (!newSubModelState[childLayerId]) {
-              newSubModelState[childLayerId] = new SolidPolygonModel(
-                childModel,
-                () => setStateCounter(new Date())
-              );
-            }
+            newSubModelState[childLayerId] = new SolidPolygonModel(
+              childModel,
+              () => setStateCounter(new Date())
+            );
             break;
           default:
-            console.warn(`no layer supported for ${layerType}`);
+            console.error(`no layer supported for ${layerType}`);
             break;
         }
       }

@@ -14,10 +14,12 @@ import { parseAccessor } from "./accessor";
 
 export abstract class BaseGeoArrowModel {
   model: WidgetModel;
+  callbacks: Map<string, () => void>;
 
   constructor(model: WidgetModel, updateStateCallback: () => void) {
     this.model = model;
     this.model.on("change", updateStateCallback);
+    this.callbacks = new Map();
   }
 
   /**
@@ -28,7 +30,11 @@ export abstract class BaseGeoArrowModel {
   /**
    * Finalize any resources held by the model
    */
-  abstract finalize(): void;
+  finalize(): void {
+    for (const [pythonName, callback] of Object.entries(this.callbacks)) {
+      this.model.off(`change:${pythonName}`, callback);
+    }
+  }
 
   /**
    * Initialize a Table on the model.
@@ -41,10 +47,16 @@ export abstract class BaseGeoArrowModel {
    */
   initTable(pythonName: string, jsName: string) {
     this[jsName] = parseParquetBuffers(this.model.get(pythonName));
-    this.model.on(`change:${pythonName}`, () => {
-      console.log(`change:${pythonName}`);
+
+    // Remove all existing change callbacks for this attribute
+    this.model.off(`change:${pythonName}`);
+
+    const callback = () => {
       this[jsName] = parseParquetBuffers(this.model.get(pythonName));
-    });
+    };
+    this.model.on(`change:${pythonName}`, callback);
+
+    this.callbacks.set(pythonName, callback);
   }
 
   /**
@@ -59,9 +71,16 @@ export abstract class BaseGeoArrowModel {
    */
   initRegularAttribute(pythonName: string, jsName: string) {
     this[jsName] = this.model.get(pythonName);
-    this.model.on(`change:${pythonName}`, () => {
+
+    // Remove all existing change callbacks for this attribute
+    this.model.off(`change:${pythonName}`);
+
+    const callback = () => {
       this[jsName] = this.model.get(pythonName);
-    });
+    };
+    this.model.on(`change:${pythonName}`, callback);
+
+    this.callbacks.set(pythonName, callback);
   }
 
   /**
@@ -76,17 +95,23 @@ export abstract class BaseGeoArrowModel {
    */
   initVectorizedAccessor(pythonName: string, jsName: string) {
     this[jsName] = parseAccessor(this.model.get(pythonName));
-    this.model.on(`change:${pythonName}`, () => {
-      console.log(`change:${pythonName}`);
+
+    // Remove all existing change callbacks for this attribute
+    this.model.off(`change:${pythonName}`);
+
+    const callback = () => {
       this[jsName] = parseAccessor(this.model.get(pythonName));
-      console.log(this[jsName]);
-    });
+    };
+    this.model.on(`change:${pythonName}`, callback);
+
+    this.callbacks.set(pythonName, callback);
   }
 }
 
 // TODO: should this extend WidgetModel? Maybe not to keep the import type-only?
 export class ScatterplotModel extends BaseGeoArrowModel {
   table: arrow.Table;
+
   radiusUnits: GeoArrowScatterplotLayerProps["radiusUnits"] | null;
   radiusScale: GeoArrowScatterplotLayerProps["radiusScale"] | null;
   radiusMinPixels: GeoArrowScatterplotLayerProps["radiusMinPixels"] | null;
@@ -110,7 +135,6 @@ export class ScatterplotModel extends BaseGeoArrowModel {
 
   constructor(model: WidgetModel, updateStateCallback: () => void) {
     super(model, updateStateCallback);
-    console.log("init scatterplot model");
 
     this.initTable("table", "table");
 
@@ -160,8 +184,6 @@ export class ScatterplotModel extends BaseGeoArrowModel {
       pickable: true,
     });
   }
-
-  finalize(): void {}
 }
 
 export class PathModel extends BaseGeoArrowModel {
@@ -214,8 +236,6 @@ export class PathModel extends BaseGeoArrowModel {
       ...(this.getWidth && { getWidth: this.getWidth }),
     });
   }
-
-  finalize(): void {}
 }
 
 export class SolidPolygonModel extends BaseGeoArrowModel {
@@ -259,6 +279,4 @@ export class SolidPolygonModel extends BaseGeoArrowModel {
       ...(this.getLineColor && { getLineColor: this.getLineColor }),
     });
   }
-
-  finalize(): void {}
 }
