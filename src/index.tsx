@@ -10,8 +10,13 @@ import {
   GeoArrowSolidPolygonLayer,
 } from "@geoarrow/deck.gl-layers";
 import type { Layer } from "@deck.gl/core/typed";
-import type { IWidgetManager, WidgetModel } from "@jupyter-widgets/base";
-import { ScatterplotModel } from "./model";
+import type { WidgetModel } from "@jupyter-widgets/base";
+import {
+  BaseGeoArrowModel,
+  PathModel,
+  ScatterplotModel,
+  SolidPolygonModel,
+} from "./model";
 import { initParquetWasm } from "./parquet";
 
 const INITIAL_VIEW_STATE = {
@@ -154,7 +159,7 @@ async function unpack_models(model_ids, manager) {
 function App() {
   console.log("App");
   let [subModelState, setSubModelState] = useState<
-    Record<string, ScatterplotModel>
+    Record<string, BaseGeoArrowModel>
   >({});
   let model = useModel();
   let [childLayerIds] = useModelState<string[]>("layers");
@@ -185,7 +190,7 @@ function App() {
       }
       const childModels = await Promise.all(promises);
 
-      const newSubModelState: Record<string, ScatterplotModel> = {
+      const newSubModelState: Record<string, BaseGeoArrowModel> = {
         ...subModelState,
       };
       for (let i = 0; i < childLayerIds.length; i++) {
@@ -203,10 +208,19 @@ function App() {
             }
             break;
           case "path":
-            throw new Error("todo");
+            if (!newSubModelState[childLayerId]) {
+              newSubModelState[childLayerId] = new PathModel(childModel, () =>
+                setStateCounter(new Date())
+              );
+            }
             break;
           case "solid-polygon":
-            throw new Error("todo");
+            if (!newSubModelState[childLayerId]) {
+              newSubModelState[childLayerId] = new SolidPolygonModel(
+                childModel,
+                () => setStateCounter(new Date())
+              );
+            }
             break;
           default:
             console.warn(`no layer supported for ${layerType}`);
