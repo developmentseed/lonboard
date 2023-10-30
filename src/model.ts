@@ -7,10 +7,70 @@ import type { WidgetModel } from "@jupyter-widgets/base";
 import { parseParquetBuffers } from "./parquet";
 import { parseAccessor } from "./accessor";
 
-// TODO: should this extend WidgetModel? Maybe not to keep the import type-only?
-export class ScatterplotModel {
+class BaseGeoArrowModel {
   model: WidgetModel;
 
+  constructor(model: WidgetModel, updateStateCallback: () => void) {
+    this.model = model;
+    this.model.on("change", updateStateCallback);
+  }
+
+  /**
+   * Initialize a Table on the model.
+   *
+   * This also watches for changes on the Jupyter model and propagates those
+   * changes to this class' internal state.
+   *
+   * @param   {string}  pythonName  Name of attribute on Python model (usually snake-cased)
+   * @param   {string}  jsName      Name of attribute in deck.gl (usually camel-cased)
+   */
+  initTable(pythonName: string, jsName: string) {
+    this[jsName] = parseParquetBuffers(this.model.get(pythonName));
+    this.model.on(`change:${pythonName}`, () => {
+      console.log(`change:${pythonName}`);
+      this[jsName] = parseParquetBuffers(this.model.get(pythonName));
+    });
+  }
+
+  /**
+   * Initialize an attribute that does not need any transformation from its
+   * serialized representation to its deck.gl representation.
+   *
+   * This also watches for changes on the Jupyter model and propagates those
+   * changes to this class' internal state.
+   *
+   * @param   {string}  pythonName  Name of attribute on Python model (usually snake-cased)
+   * @param   {string}  jsName      Name of attribute in deck.gl (usually camel-cased)
+   */
+  initRegularAttribute(pythonName: string, jsName: string) {
+    this[jsName] = this.model.get(pythonName);
+    this.model.on(`change:${pythonName}`, () => {
+      this[jsName] = this.model.get(pythonName);
+    });
+  }
+
+  /**
+   * Initialize an accessor that can either be a scalar JSON value or a Parquet
+   * table with a single column, intended to be passed in as an Arrow Vector.
+   *
+   * This also watches for changes on the Jupyter model and propagates those
+   * changes to this class' internal state.
+   *
+   * @param   {string}  pythonName  Name of attribute on Python model (usually snake-cased)
+   * @param   {string}  jsName      Name of attribute in deck.gl (usually camel-cased)
+   */
+  initVectorizedAccessor(pythonName: string, jsName: string) {
+    this[jsName] = parseAccessor(this.model.get(pythonName));
+    this.model.on(`change:${pythonName}`, () => {
+      console.log(`change:${pythonName}`);
+      this[jsName] = parseAccessor(this.model.get(pythonName));
+      console.log(this[jsName]);
+    });
+  }
+}
+
+// TODO: should this extend WidgetModel? Maybe not to keep the import type-only?
+export class ScatterplotModel extends BaseGeoArrowModel {
   table: arrow.Table;
   radiusUnits: GeoArrowScatterplotLayerProps["radiusUnits"] | null;
   radiusScale: GeoArrowScatterplotLayerProps["radiusScale"] | null;
@@ -34,43 +94,27 @@ export class ScatterplotModel {
   getLineWidth: GeoArrowScatterplotLayerProps["getLineWidth"] | null;
 
   constructor(model: WidgetModel, updateStateCallback: () => void) {
-    this.model = model;
+    super(model, updateStateCallback);
 
-    this.table = parseParquetBuffers(model.get("table"));
-    model.on("change:table", () => {
-      console.log("change:table");
-      this.table = parseParquetBuffers(this.model.get("table"));
-    });
+    this.initTable("table", "table");
 
-    this.radiusUnits = model.get("radius_units");
-    model.on("change:radius_units", () => {
-      console.log("change:radius_units");
-      this.radiusUnits = model.get("radius_units");
-    });
+    this.initRegularAttribute("radius_units", "radiusUnits");
+    this.initRegularAttribute("radius_scale", "radiusScale");
+    this.initRegularAttribute("radius_min_pixels", "radiusMinPixels");
+    this.initRegularAttribute("radius_max_pixels", "radiusMaxPixels");
+    this.initRegularAttribute("line_width_units", "lineWidthUnits");
+    this.initRegularAttribute("line_width_scale", "lineWidthScale");
+    this.initRegularAttribute("line_width_min_pixels", "lineWidthMinPixels");
+    this.initRegularAttribute("line_width_max_pixels", "lineWidthMaxPixels");
+    this.initRegularAttribute("stroked", "stroked");
+    this.initRegularAttribute("filled", "filled");
+    this.initRegularAttribute("billboard", "billboard");
+    this.initRegularAttribute("antialiasing", "antialiasing");
 
-    model.
-    this.radiusScale = model.get("radius_scale");
-    model.on("change:radius_scale", () => {
-      console.log("change:radius_scale");
-      this.radiusScale = model.get("radius_scale");
-    });
-
-    // TODO: flesh out all attributes
-
-    this.getFillColor = parseAccessor(model.get("get_fill_color"));
-    model.on("change:get_fill_color", () => {
-      console.log("change:get_fill_color");
-      this.getFillColor = parseAccessor(this.model.get("get_fill_color"));
-    });
-
-    this.getLineColor = parseAccessor(model.get("get_line_color"));
-    model.on("change:get_line_color", () => {
-      console.log("change:get_line_color");
-      this.getLineColor = parseAccessor(this.model.get("get_line_color"));
-      console.log(this.getLineColor);
-    });
-
-    model.on("change", updateStateCallback);
+    this.initVectorizedAccessor("get_radius", "getRadius");
+    this.initVectorizedAccessor("get_fill_color", "getFillColor");
+    this.initVectorizedAccessor("get_line_color", "getLineColor");
+    this.initVectorizedAccessor("get_line_width", "getLineWidth");
   }
 
   render(): GeoArrowScatterplotLayer {

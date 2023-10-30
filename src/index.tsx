@@ -161,8 +161,12 @@ function App() {
 
   // Fake state just to get react to re-render when a model callback is called
   let [stateCounter, setStateCounter] = useState<Date>(new Date());
+  console.log("stateCounter", stateCounter);
 
   // let [childModels, setChildModels] = useState<WidgetModel[]>([]);
+
+  // TODO: delete state from subModelState when layer has been deleted (i.e.
+  // when layerId is now gone.)
 
   console.log("childLayerIds", childLayerIds);
   useEffect(() => {
@@ -212,7 +216,7 @@ function App() {
       setSubModelState(newSubModelState);
     };
     callback().catch(console.error);
-  }, []);
+  }, [childLayerIds]);
 
   const layers: Layer[] = [];
   for (const subModel of Object.values(subModelState)) {
