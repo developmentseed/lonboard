@@ -23,6 +23,7 @@ const MAP_STYLE =
 function App() {
   const [wasmReady] = useParquetWasm();
 
+  let [mapHeight] = useModelState<number>("_map_height");
   let [viewState] = useModelState<DataView>("_initial_view_state");
   let [dataRaw] = useModelState<DataView[]>("table");
   let [radiusUnits] = useModelState("radius_units");
@@ -77,7 +78,7 @@ function App() {
   }
 
   return (
-    <div style={{ height: 500 }}>
+    <div style={{ height: mapHeight || 500 }}>
       <DeckGL
         initialViewState={
           ["longitude", "latitude", "zoom"].every((key) =>

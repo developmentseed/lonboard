@@ -57,6 +57,7 @@ class ScatterplotLayer(BaseLayer):
     _css = bundler_output_dir / "scatterplot-layer.css"
     _layer_type = traitlets.Unicode("scatterplot").tag(sync=True)
     _initial_view_state = traitlets.Dict().tag(sync=True)
+    _map_height = traitlets.Int(500).tag(sync=True)
 
     # Number of rows per chunk for serializing table and accessor columns
     _rows_per_chunk = traitlets.Int()
@@ -300,6 +301,7 @@ class PathLayer(BaseLayer):
     _css = bundler_output_dir / "path-layer.css"
     _layer_type = traitlets.Unicode("path").tag(sync=True)
     _initial_view_state = traitlets.Dict().tag(sync=True)
+    _map_height = traitlets.Int(500).tag(sync=True)
 
     # Number of rows per chunk for serializing table and accessor columns
     _rows_per_chunk = traitlets.Int()
@@ -459,6 +461,7 @@ class SolidPolygonLayer(BaseLayer):
     _css = bundler_output_dir / "solid-polygon-layer.css"
     _layer_type = traitlets.Unicode("solid-polygon").tag(sync=True)
     _initial_view_state = traitlets.Dict().tag(sync=True)
+    _map_height = traitlets.Int(500).tag(sync=True)
 
     # Number of rows per chunk for serializing table and accessor columns
     _rows_per_chunk = traitlets.Int()
