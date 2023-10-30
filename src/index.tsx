@@ -41,6 +41,58 @@ async function loadChildModels(
   return await Promise.all(promises);
 }
 
+function getChildModelState(
+  childModels: WidgetModel[],
+  childLayerIds: string[],
+  previousSubModelState: Record<string, BaseGeoArrowModel>,
+  setStateCounter: React.Dispatch<React.SetStateAction<Date>>
+): Record<string, BaseGeoArrowModel> {
+  const newSubModelState: Record<string, BaseGeoArrowModel> = {};
+
+  for (let i = 0; i < childLayerIds.length; i++) {
+    const childLayerId = childLayerIds[i];
+    const childModel = childModels[i];
+
+    // If the layer existed previously, copy its model without constructing
+    // a new one
+    if (childLayerId in previousSubModelState) {
+      // pop from old state
+      newSubModelState[childLayerId] = previousSubModelState[childLayerId];
+      delete previousSubModelState[childLayerId];
+      continue;
+    }
+
+    const layerType = childModel.get("_layer_type");
+    switch (layerType) {
+      case "scatterplot":
+        newSubModelState[childLayerId] = new ScatterplotModel(childModel, () =>
+          setStateCounter(new Date())
+        );
+        break;
+      case "path":
+        newSubModelState[childLayerId] = new PathModel(childModel, () =>
+          setStateCounter(new Date())
+        );
+        break;
+      case "solid-polygon":
+        newSubModelState[childLayerId] = new SolidPolygonModel(childModel, () =>
+          setStateCounter(new Date())
+        );
+        break;
+      default:
+        console.error(`no layer supported for ${layerType}`);
+        break;
+    }
+  }
+
+  // finalize models that were deleted
+  for (const previousChildModel of Object.values(previousSubModelState)) {
+    previousChildModel.finalize();
+  }
+
+  return newSubModelState;
+}
+
 function App() {
   let [parquetWasmReady] = useParquetWasm();
   let [initialViewState] = useModelState<DataView>("_initial_view_state");
@@ -64,55 +116,16 @@ function App() {
         throw new Error("inside callback but parquetWasm not ready!");
       }
 
-      const newSubModelState: Record<string, BaseGeoArrowModel> = {};
       const childModels = await loadChildModels(
         model.widget_manager,
         childLayerIds
       );
-
-      for (let i = 0; i < childLayerIds.length; i++) {
-        const childLayerId = childLayerIds[i];
-        const childModel = childModels[i];
-
-        // If the layer existed previously, copy its model without constructing
-        // a new one
-        if (childLayerId in subModelState) {
-          // pop from old state
-          newSubModelState[childLayerId] = subModelState[childLayerId];
-          delete subModelState[childLayerId];
-          continue;
-        }
-
-        const layerType = childModel.get("_layer_type");
-        switch (layerType) {
-          case "scatterplot":
-            newSubModelState[childLayerId] = new ScatterplotModel(
-              childModel,
-              () => setStateCounter(new Date())
-            );
-            break;
-          case "path":
-            newSubModelState[childLayerId] = new PathModel(childModel, () =>
-              setStateCounter(new Date())
-            );
-            break;
-          case "solid-polygon":
-            newSubModelState[childLayerId] = new SolidPolygonModel(
-              childModel,
-              () => setStateCounter(new Date())
-            );
-            break;
-          default:
-            console.error(`no layer supported for ${layerType}`);
-            break;
-        }
-      }
-
-      // finalize models that were deleted
-      for (const previousChildModel of Object.values(subModelState)) {
-        previousChildModel.finalize();
-      }
-
+      const newSubModelState = getChildModelState(
+        childModels,
+        childLayerIds,
+        subModelState,
+        setStateCounter
+      );
       setSubModelState(newSubModelState);
     };
     callback().catch(console.error);

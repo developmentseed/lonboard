@@ -10,7 +10,7 @@ esbuild.build({
     "./src/solid-polygon-layer.tsx",
   ],
   bundle: true,
-  minify: false,
+  minify: true,
   target: ["es2020"],
   outdir: "lonboard/static/",
   // plugins: [wasmLoader()],
