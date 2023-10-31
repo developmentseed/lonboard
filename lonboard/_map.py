@@ -48,6 +48,9 @@ class Map(anywidget.AnyWidget):
     """
     The initial view state of the map.
 
+    - Type: `dict`, optional
+    - Default: Automatically inferred from the data passed to the map.
+
     The keys _must_ include:
 
     - `longitude`: longitude at the map center.
