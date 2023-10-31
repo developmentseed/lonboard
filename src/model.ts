@@ -8,7 +8,7 @@ import {
 } from "@geoarrow/deck.gl-layers";
 import * as arrow from "apache-arrow";
 import type { WidgetModel } from "@jupyter-widgets/base";
-import type { Layer } from "@deck.gl/core/typed";
+import type { Layer, LayerProps } from "@deck.gl/core/typed";
 import { parseParquetBuffers } from "./parquet";
 import { parseAccessor } from "./accessor";
 
@@ -16,10 +16,14 @@ export abstract class BaseGeoArrowModel {
   model: WidgetModel;
   callbacks: Map<string, () => void>;
 
+  pickable: LayerProps["pickable"] | null;
+
   constructor(model: WidgetModel, updateStateCallback: () => void) {
     this.model = model;
     this.model.on("change", updateStateCallback);
     this.callbacks = new Map();
+
+    this.initRegularAttribute("pickable", "pickable");
   }
 
   /**
@@ -161,7 +165,7 @@ export class ScatterplotModel extends BaseGeoArrowModel {
     return new GeoArrowScatterplotLayer({
       id: this.model.model_id,
       data: this.table,
-      pickable: true,
+      pickable: this.pickable,
 
       ...(this.radiusUnits && { radiusUnits: this.radiusUnits }),
       ...(this.radiusScale && { radiusScale: this.radiusScale }),
@@ -223,7 +227,7 @@ export class PathModel extends BaseGeoArrowModel {
     return new GeoArrowPathLayer({
       id: this.model.model_id,
       data: this.table,
-      pickable: true,
+      pickable: this.pickable,
 
       ...(this.widthUnits && { widthUnits: this.widthUnits }),
       ...(this.widthScale && { widthScale: this.widthScale }),
@@ -269,7 +273,7 @@ export class SolidPolygonModel extends BaseGeoArrowModel {
     return new GeoArrowSolidPolygonLayer({
       id: this.model.model_id,
       data: this.table,
-      pickable: true,
+      pickable: this.pickable,
 
       ...(this.filled && { filled: this.filled }),
       ...(this.extruded && { extruded: this.extruded }),

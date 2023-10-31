@@ -9,3 +9,4 @@ The `ScatterplotLayer` renders circles at given coordinates.
 ::: lonboard.ScatterplotLayer
     options:
       show_bases: false
+      inherited_members: true
