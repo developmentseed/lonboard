@@ -1,6 +1,8 @@
 from __future__ import annotations
 
+import sys
 import warnings
+from typing import TYPE_CHECKING
 
 import geopandas as gpd
 import pyarrow as pa
@@ -13,9 +15,58 @@ from lonboard._serialization import infer_rows_per_chunk
 from lonboard._viewport import compute_view
 from lonboard.traits import ColorAccessor, FloatAccessor, PyarrowTableTrait
 
+if TYPE_CHECKING:
+    if sys.version_info >= (3, 11):
+        from typing import Self
+    else:
+        from typing_extensions import Self
+
 
 class BaseLayer(Widget):
-    pass
+    table: traitlets.TraitType
+
+    pickable = traitlets.Bool(True).tag(sync=True)
+    """
+    Whether the layer responds to mouse pointer picking events.
+
+    This must be set to `True` for tooltips and other interactive elements to be
+    available. This can also be used to only allow picking on specific layers within a
+    map instance.
+
+    Note that picking has some performance overhead in rendering. To get the absolute
+    best rendering performance with large data (at the cost of removing interactivity),
+    set this to `False`.
+
+    - Type: `bool`
+    - Default: `True`
+    """
+
+    _rows_per_chunk = traitlets.Int()
+    """Number of rows per chunk for serializing table and accessor columns."""
+
+    @traitlets.default("_rows_per_chunk")
+    def _default_rows_per_chunk(self):
+        return infer_rows_per_chunk(self.table)
+
+    @classmethod
+    def from_geopandas(cls, gdf: gpd.GeoDataFrame, **kwargs) -> Self:
+        """Construct a Layer from a geopandas GeoDataFrame.
+
+        The GeoDataFrame will be reprojected to EPSG:4326 if it is not already in that
+        coordinate system.
+
+        Args:
+            gdf: The GeoDataFrame to set on the layer.
+
+        Returns:
+            A Layer with the initialized data.
+        """
+        if gdf.crs and gdf.crs not in [EPSG_4326, OGC_84]:
+            warnings.warn("GeoDataFrame being reprojected to EPSG:4326")
+            gdf = gdf.to_crs(OGC_84)  # type: ignore
+
+        table = geopandas_to_geoarrow(gdf)
+        return cls(table=table, **kwargs)
 
 
 class ScatterplotLayer(BaseLayer):
@@ -39,9 +90,6 @@ class ScatterplotLayer(BaseLayer):
 
     _layer_type = traitlets.Unicode("scatterplot").tag(sync=True)
     _initial_view_state = traitlets.Dict().tag(sync=True)
-
-    # Number of rows per chunk for serializing table and accessor columns
-    _rows_per_chunk = traitlets.Int()
 
     table = PyarrowTableTrait(
         allowed_geometry_types={EXTENSION_NAME.POINT, EXTENSION_NAME.MULTIPOINT}
@@ -203,33 +251,9 @@ class ScatterplotLayer(BaseLayer):
     - Default: `1`.
     """
 
-    @classmethod
-    def from_geopandas(cls, gdf: gpd.GeoDataFrame, **kwargs) -> ScatterplotLayer:
-        """Construct a ScatterplotLayer from a geopandas GeoDataFrame.
-
-        The GeoDataFrame will be reprojected to EPSG:4326 if it is not already in that
-        coordinate system.
-
-        Args:
-            gdf: The GeoDataFrame to set on the layer.
-
-        Returns:
-            A ScatterplotLayer with the initialized data.
-        """
-        if gdf.crs and gdf.crs not in [EPSG_4326, OGC_84]:
-            warnings.warn("GeoDataFrame being reprojected to EPSG:4326")
-            gdf = gdf.to_crs(OGC_84)  # type: ignore
-
-        table = geopandas_to_geoarrow(gdf)
-        return cls(table=table, **kwargs)
-
     @traitlets.default("_initial_view_state")
     def _default_initial_view_state(self):
         return compute_view(self.table)
-
-    @traitlets.default("_rows_per_chunk")
-    def _default_rows_per_chunk(self):
-        return infer_rows_per_chunk(self.table)
 
     @traitlets.validate(
         "get_radius", "get_fill_color", "get_line_color", "get_line_width"
@@ -265,9 +289,6 @@ class PathLayer(BaseLayer):
 
     _layer_type = traitlets.Unicode("path").tag(sync=True)
     _initial_view_state = traitlets.Dict().tag(sync=True)
-
-    # Number of rows per chunk for serializing table and accessor columns
-    _rows_per_chunk = traitlets.Int()
 
     table = PyarrowTableTrait(
         allowed_geometry_types={
@@ -370,33 +391,9 @@ class PathLayer(BaseLayer):
     - Default: `1`.
     """
 
-    @classmethod
-    def from_geopandas(cls, gdf: gpd.GeoDataFrame, **kwargs) -> PathLayer:
-        """Construct a PathLayer from a geopandas GeoDataFrame.
-
-        The GeoDataFrame will be reprojected to EPSG:4326 if it is not already in that
-        coordinate system.
-
-        Args:
-            gdf: The GeoDataFrame to set on the layer.
-
-        Returns:
-            A PathLayer with the initialized data.
-        """
-        if gdf.crs and gdf.crs not in [EPSG_4326, OGC_84]:
-            warnings.warn("GeoDataFrame being reprojected to EPSG:4326")
-            gdf = gdf.to_crs(OGC_84)  # type: ignore
-
-        table = geopandas_to_geoarrow(gdf)
-        return cls(table=table, **kwargs)
-
     @traitlets.default("_initial_view_state")
     def _default_initial_view_state(self):
         return compute_view(self.table)
-
-    @traitlets.default("_rows_per_chunk")
-    def _default_rows_per_chunk(self):
-        return infer_rows_per_chunk(self.table)
 
     @traitlets.validate("get_color", "get_width")
     def _validate_accessor_length(self, proposal):
@@ -429,9 +426,6 @@ class SolidPolygonLayer(BaseLayer):
 
     _layer_type = traitlets.Unicode("solid-polygon").tag(sync=True)
     _initial_view_state = traitlets.Dict().tag(sync=True)
-
-    # Number of rows per chunk for serializing table and accessor columns
-    _rows_per_chunk = traitlets.Int()
 
     table = PyarrowTableTrait(
         allowed_geometry_types={EXTENSION_NAME.POLYGON, EXTENSION_NAME.MULTIPOLYGON}
@@ -524,33 +518,9 @@ class SolidPolygonLayer(BaseLayer):
     - Default: `[0, 0, 0, 255]`.
     """
 
-    @classmethod
-    def from_geopandas(cls, gdf: gpd.GeoDataFrame, **kwargs) -> SolidPolygonLayer:
-        """Construct a SolidPolygonLayer from a geopandas GeoDataFrame.
-
-        The GeoDataFrame will be reprojected to EPSG:4326 if it is not already in that
-        coordinate system.
-
-        Args:
-            gdf: The GeoDataFrame to set on the layer.
-
-        Returns:
-            A SolidPolygonLayer with the initialized data.
-        """
-        if gdf.crs and gdf.crs not in [EPSG_4326, OGC_84]:
-            warnings.warn("GeoDataFrame being reprojected to EPSG:4326")
-            gdf = gdf.to_crs(OGC_84)  # type: ignore
-
-        table = geopandas_to_geoarrow(gdf)
-        return cls(table=table, **kwargs)
-
     @traitlets.default("_initial_view_state")
     def _default_initial_view_state(self):
         return compute_view(self.table)
-
-    @traitlets.default("_rows_per_chunk")
-    def _default_rows_per_chunk(self):
-        return infer_rows_per_chunk(self.table)
 
     @traitlets.validate("get_elevation", "get_fill_color", "get_line_color")
     def _validate_accessor_length(self, proposal):

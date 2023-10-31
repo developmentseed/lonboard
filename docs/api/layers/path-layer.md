@@ -9,3 +9,4 @@ The `PathLayer` renders lists of coordinate points as extruded polylines with mi
 ::: lonboard.PathLayer
     options:
       show_bases: false
+      inherited_members: true
