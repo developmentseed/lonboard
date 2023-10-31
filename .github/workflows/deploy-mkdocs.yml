@@ -47,4 +47,5 @@ jobs:
 
       - name: Deploy docs
         run: |
-          poetry run mike deploy ${{github.ref_name}} latest --update-aliases --push
+          VERSION=$(git describe --tags --abbrev=0)
+          poetry run mike deploy $VERSION latest --update-aliases --push
