@@ -13,10 +13,6 @@ python = "^3.8"
 anywidget = "^0.6.3"
 pyarrow = "^13.0.0"
 geopandas = ">=0.13"
-# This is a dependency of anywidget[dev], and used in anywidget.experimental but
-# we declare it here so that we don't need to pull in watchfiles in
-# anywidget[dev] as a non-dev dependency
-comm = "^0.1.4"
 palettable = "^3.3.3"
 # We use the colormap module from matplotlib. This module may be vendored in the
 # future to remove the matplotlib dependency.
