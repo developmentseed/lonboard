@@ -46,6 +46,9 @@ jobs:
         run: poetry install --no-interaction
 
       - name: Deploy docs
+        env:
+          GIT_COMMITTER_NAME: CI
+          GIT_COMMITTER_EMAIL: ci-bot@example.com
         run: |
           VERSION=$(git describe --tags --abbrev=0)
           poetry run mike deploy $VERSION latest --update-aliases --push
