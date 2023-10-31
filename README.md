@@ -25,7 +25,7 @@ pip install lonboard
 
 ## Get Started
 
-For the simplest rendering, pass geospatial data into the top-level [`viz` function](https://developmentseed.org/lonboard/api/viz/#lonboard.viz.viz).
+For the simplest rendering, pass geospatial data into the top-level [`viz` function](https://developmentseed.org/lonboard/latest/api/viz/#lonboard.viz.viz).
 
 ```py
 import geopandas as gpd
@@ -35,7 +35,7 @@ gdf = gpd.GeoDataFrame(...)
 viz(gdf)
 ```
 
-Under the hood, this delegates to a `ScatterplotLayer`, `PathLayer`, or `SolidPolygonLayer`. Refer to the [documentation](https://developmentseed.org/lonboard/) and [examples](https://developmentseed.org/lonboard/examples/internet-speeds/) for more control over rendering.
+Under the hood, this delegates to a `ScatterplotLayer`, `PathLayer`, or `SolidPolygonLayer`. Refer to the [documentation](https://developmentseed.org/lonboard/) and [examples](https://developmentseed.org/lonboard/latest/examples/internet-speeds/) for more control over rendering.
 
 ## Documentation
 
