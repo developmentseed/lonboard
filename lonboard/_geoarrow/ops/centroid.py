@@ -18,7 +18,38 @@ class WeightedCentroid:
     y: Optional[float] = None
     num_items: int = 0
 
-    def update(self, coords: pa.FixedSizeListArray):
+    def update(self, other: WeightedCentroid):
+        new_chunk_len = other.num_items
+
+        if self.x is None or self.y is None:
+            assert self.x is None and self.y is None and self.num_items == 0
+            self.x = other.x
+            self.y = other.y
+            self.num_items = new_chunk_len
+            return
+
+        if other.x is None or other.y is None or other.num_items == 0:
+            # Can't update from an uninitialized centroid
+            return
+
+        existing_modifier = self.num_items / (self.num_items + new_chunk_len)
+        new_chunk_modifier = new_chunk_len / (self.num_items + new_chunk_len)
+
+        new_chunk_avg_x = other.x
+        new_chunk_avg_y = other.y
+
+        existing_x_avg = self.x
+        existing_y_avg = self.y
+
+        self.x = (
+            existing_x_avg * existing_modifier + new_chunk_avg_x * new_chunk_modifier
+        )
+        self.y = (
+            existing_y_avg * existing_modifier + new_chunk_avg_y * new_chunk_modifier
+        )
+        self.num_items += new_chunk_len
+
+    def update_coords(self, coords: pa.FixedSizeListArray):
         """Update the average for x and y based on a new chunk of data
 
         Note that this does not keep a cumulative sum due to precision concerns. Rather
@@ -80,7 +111,7 @@ def _weighted_centroid_nest_0(column: pa.ChunkedArray) -> WeightedCentroid:
     centroid = WeightedCentroid()
     for chunk in column.chunks:
         coords = chunk
-        centroid.update(coords)
+        centroid.update_coords(coords)
 
     return centroid
 
@@ -89,7 +120,7 @@ def _weighted_centroid_nest_1(column: pa.ChunkedArray) -> WeightedCentroid:
     centroid = WeightedCentroid()
     for chunk in column.chunks:
         coords = chunk.flatten()
-        centroid.update(coords)
+        centroid.update_coords(coords)
 
     return centroid
 
@@ -98,7 +129,7 @@ def _weighted_centroid_nest_2(column: pa.ChunkedArray) -> WeightedCentroid:
     centroid = WeightedCentroid()
     for chunk in column.chunks:
         coords = chunk.flatten().flatten()
-        centroid.update(coords)
+        centroid.update_coords(coords)
 
     return centroid
 
@@ -107,6 +138,6 @@ def _weighted_centroid_nest_3(column: pa.ChunkedArray) -> WeightedCentroid:
     centroid = WeightedCentroid()
     for chunk in column.chunks:
         coords = chunk.flatten().flatten().flatten()
-        centroid.update(coords)
+        centroid.update_coords(coords)
 
     return centroid

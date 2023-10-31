@@ -12,7 +12,6 @@ from ipywidgets import Widget
 from lonboard._constants import EPSG_4326, EXTENSION_NAME, OGC_84
 from lonboard._geoarrow.geopandas_interop import geopandas_to_geoarrow
 from lonboard._serialization import infer_rows_per_chunk
-from lonboard._viewport import compute_view
 from lonboard.traits import ColorAccessor, FloatAccessor, PyarrowTableTrait
 
 if TYPE_CHECKING:
@@ -123,7 +122,6 @@ class ScatterplotLayer(BaseLayer):
     """
 
     _layer_type = traitlets.Unicode("scatterplot").tag(sync=True)
-    _initial_view_state = traitlets.Dict().tag(sync=True)
 
     table = PyarrowTableTrait(
         allowed_geometry_types={EXTENSION_NAME.POINT, EXTENSION_NAME.MULTIPOINT}
@@ -285,10 +283,6 @@ class ScatterplotLayer(BaseLayer):
     - Default: `1`.
     """
 
-    @traitlets.default("_initial_view_state")
-    def _default_initial_view_state(self):
-        return compute_view(self.table)
-
     @traitlets.validate(
         "get_radius", "get_fill_color", "get_line_color", "get_line_width"
     )
@@ -322,7 +316,6 @@ class PathLayer(BaseLayer):
     """
 
     _layer_type = traitlets.Unicode("path").tag(sync=True)
-    _initial_view_state = traitlets.Dict().tag(sync=True)
 
     table = PyarrowTableTrait(
         allowed_geometry_types={
@@ -425,10 +418,6 @@ class PathLayer(BaseLayer):
     - Default: `1`.
     """
 
-    @traitlets.default("_initial_view_state")
-    def _default_initial_view_state(self):
-        return compute_view(self.table)
-
     @traitlets.validate("get_color", "get_width")
     def _validate_accessor_length(self, proposal):
         if isinstance(proposal["value"], (pa.ChunkedArray, pa.Array)):
@@ -459,7 +448,6 @@ class SolidPolygonLayer(BaseLayer):
     """
 
     _layer_type = traitlets.Unicode("solid-polygon").tag(sync=True)
-    _initial_view_state = traitlets.Dict().tag(sync=True)
 
     table = PyarrowTableTrait(
         allowed_geometry_types={EXTENSION_NAME.POLYGON, EXTENSION_NAME.MULTIPOLYGON}
@@ -551,10 +539,6 @@ class SolidPolygonLayer(BaseLayer):
           as the line color for the polygon at the same row index.
     - Default: `[0, 0, 0, 255]`.
     """
-
-    @traitlets.default("_initial_view_state")
-    def _default_initial_view_state(self):
-        return compute_view(self.table)
 
     @traitlets.validate("get_elevation", "get_fill_color", "get_line_color")
     def _validate_accessor_length(self, proposal):
