@@ -37,6 +37,8 @@ mkdocs-material = { version = "^9.1.16", extras = ["imaging"] }
 mkdocstrings = {version = "^0.23.0", extras = ["python"]}
 # This version only on 3.9+. Ok because it's a dev dependency
 mkdocs-jupyter = {version = "^0.24.5", python = "^3.9"}
+# Mike hasn't made a release in two years...
+mike = { git = "https://github.com/jimporter/mike", rev = "b3eea1258fea864cfe7ed2dd7b583d5a63ce2209" }
 
 [build-system]
 requires = ["poetry-core"]

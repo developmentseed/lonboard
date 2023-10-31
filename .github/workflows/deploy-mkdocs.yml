@@ -43,4 +43,5 @@ jobs:
         run: poetry install --no-interaction
 
       - name: Deploy docs
-        run: poetry run mkdocs gh-deploy --force
+        run: |
+          poetry run mike deploy ${{github.ref_name}} latest --update-aliases --push
