@@ -10,7 +10,7 @@ from typing import Tuple
 import numpy as np
 import pyarrow as pa
 
-from lonboard.constants import EXTENSION_NAME
+from lonboard._constants import EXTENSION_NAME
 
 
 @dataclass

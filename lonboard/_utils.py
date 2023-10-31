@@ -1,6 +1,6 @@
 import pyarrow as pa
 
-from lonboard.constants import EXTENSION_NAME
+from lonboard._constants import EXTENSION_NAME
 
 GEOARROW_EXTENSION_TYPE_NAMES = {e.value for e in EXTENSION_NAME}
 
