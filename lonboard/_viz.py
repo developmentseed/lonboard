@@ -4,7 +4,16 @@ from __future__ import annotations
 
 import json
 import warnings
-from typing import TYPE_CHECKING, Any, Dict, Protocol, Union, cast
+from typing import (
+    TYPE_CHECKING,
+    Any,
+    Dict,
+    List,
+    Protocol,
+    Tuple,
+    Union,
+    cast,
+)
 
 import numpy as np
 import pyarrow as pa
@@ -17,19 +26,17 @@ from lonboard._constants import EPSG_4326, EXTENSION_NAME, OGC_84
 from lonboard._geoarrow.extension_types import construct_geometry_array
 from lonboard._geoarrow.geopandas_interop import geopandas_to_geoarrow
 from lonboard._layer import PathLayer, ScatterplotLayer, SolidPolygonLayer
+from lonboard._map import Map
 
 if TYPE_CHECKING:
     import geopandas as gpd
 
+    class GeoInterfaceProtocol(Protocol):
+        @property
+        def __geo_interface__(self) -> dict:
+            ...
 
-class GeoInterfaceProtocol(Protocol):
-    @property
-    def __geo_interface__(self) -> dict:
-        ...
-
-
-def viz(
-    data: Union[
+    VizDataInput = Union[
         gpd.GeoDataFrame,
         gpd.GeoSeries,
         pa.Table,
@@ -37,10 +44,18 @@ def viz(
         shapely.geometry.base.BaseGeometry,
         GeoInterfaceProtocol,
         Dict[str, Any],
-    ],
+    ]
+    """A type definition for allowed data inputs to the `viz` function."""
+
+
+def viz(
+    data: Union[VizDataInput, List[VizDataInput], Tuple[VizDataInput, ...]],
     **kwargs,
-) -> Union[ScatterplotLayer, PathLayer, SolidPolygonLayer]:
+) -> Map:
     """A high-level function to plot your data easily.
+
+    The goal of this function is to make it simple to get _something_ showing on a map.
+    For more control over rendering, construct `Map` and `Layer` objects directly.
 
     This function accepts a variety of geospatial inputs:
 
@@ -53,6 +68,8 @@ def viz(
     - `dict` holding GeoJSON-like data.
     - pyarrow `Table` with a geometry column marked with a GeoArrow extension type
 
+    Alternatively, you can pass a `list` or `tuple` of any of the above inputs.
+
     Args:
         data: a data object of any supported type.
 
@@ -60,9 +77,24 @@ def viz(
         Any other keyword arguments will be passed onto the relevant layer, either a
         `ScatterplotLayer`, `PathLayer`, or `SolidPolygonLayer`.
 
+        If you pass a `list` or `tuple` of data objects, `kwargs` will be passed to
+        _all_ layers. For more control over rendering, construct `Map` and `Layer`
+        objects directly.
+
     Returns:
         widget visualizing the provided data.
     """
+    if isinstance(data, (list, tuple)):
+        layers = [create_layer_from_data_input(item, **kwargs) for item in data]
+    else:
+        layers = [create_layer_from_data_input(data, **kwargs)]
+
+    return Map(layers=layers)
+
+
+def create_layer_from_data_input(
+    data: VizDataInput, **kwargs
+) -> Union[ScatterplotLayer, PathLayer, SolidPolygonLayer]:
     # geopandas GeoDataFrame
     if (
         data.__class__.__module__.startswith("geopandas")
