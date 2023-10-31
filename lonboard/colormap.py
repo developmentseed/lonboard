@@ -9,7 +9,7 @@ def apply_continuous_cmap(
     values: NDArray[np.floating],
     cmap: Palette,
     *,
-    alpha: Union[float, int, NDArray[np.floating], None] = None
+    alpha: Union[float, int, NDArray[np.floating], None] = None,
 ) -> NDArray[np.uint8]:
     """Apply a colormap to a set of values.
 
@@ -42,9 +42,7 @@ def apply_continuous_cmap(
 
     # Note: we can remove the matplotlib dependency in the future if we vendor
     # matplotlib.colormap
-    colors: NDArray[np.uint8] = cmap.mpl_colormap(
-        values, alpha=alpha, bytes=True
-    )  # type: ignore
+    colors: NDArray[np.uint8] = cmap.mpl_colormap(values, alpha=alpha, bytes=True)  # type: ignore
 
     # If the alpha values are all 255, don't serialize
     if (colors[:, 3] == 255).all():
