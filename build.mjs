@@ -5,9 +5,6 @@ import esbuild from "esbuild";
 esbuild.build({
   entryPoints: [
     "./src/index.tsx",
-    "./src/scatterplot-layer.tsx",
-    "./src/path-layer.tsx",
-    "./src/solid-polygon-layer.tsx",
   ],
   bundle: true,
   minify: true,

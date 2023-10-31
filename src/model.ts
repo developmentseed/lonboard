@@ -161,6 +161,8 @@ export class ScatterplotModel extends BaseGeoArrowModel {
     return new GeoArrowScatterplotLayer({
       id: this.model.model_id,
       data: this.table,
+      pickable: true,
+
       ...(this.radiusUnits && { radiusUnits: this.radiusUnits }),
       ...(this.radiusScale && { radiusScale: this.radiusScale }),
       ...(this.radiusMinPixels && { radiusMinPixels: this.radiusMinPixels }),
@@ -181,7 +183,6 @@ export class ScatterplotModel extends BaseGeoArrowModel {
       ...(this.getFillColor && { getFillColor: this.getFillColor }),
       ...(this.getLineColor && { getLineColor: this.getLineColor }),
       ...(this.getLineWidth && { getLineWidth: this.getLineWidth }),
-      pickable: true,
     });
   }
 }
