@@ -8,11 +8,11 @@ import pyarrow as pa
 import traitlets
 from anywidget import AnyWidget
 
-from lonboard.constants import EPSG_4326, EXTENSION_NAME, OGC_84
-from lonboard.geoarrow.geopandas_interop import geopandas_to_geoarrow
-from lonboard.serialization import infer_rows_per_chunk
+from lonboard._constants import EPSG_4326, EXTENSION_NAME, OGC_84
+from lonboard._geoarrow.geopandas_interop import geopandas_to_geoarrow
+from lonboard._serialization import infer_rows_per_chunk
+from lonboard._viewport import compute_view
 from lonboard.traits import ColorAccessor, FloatAccessor, PyarrowTableTrait
-from lonboard.viewport import compute_view
 
 # bundler yields lonboard/static/{index.js,styles.css}
 bundler_output_dir = Path(__file__).parent / "static"

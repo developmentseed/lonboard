@@ -17,7 +17,7 @@ from traitlets.traitlets import TraitType
 from traitlets.utils.descriptions import class_of, describe
 from typing_extensions import Self
 
-from lonboard.serialization import (
+from lonboard._serialization import (
     COLOR_SERIALIZATION,
     FLOAT_SERIALIZATION,
     TABLE_SERIALIZATION,

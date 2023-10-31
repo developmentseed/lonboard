@@ -2,7 +2,7 @@
 """
 import pyarrow.feather as feather
 
-from lonboard.layer import BaseLayer
+from lonboard._layer import BaseLayer
 
 
 def export_widget(widget: BaseLayer, path: str):

@@ -6,7 +6,7 @@ import anywidget
 import ipywidgets
 import traitlets
 
-from lonboard.layer import BaseLayer
+from lonboard._layer import BaseLayer
 
 # bundler yields lonboard/static/{index.js,styles.css}
 bundler_output_dir = Path(__file__).parent / "static"

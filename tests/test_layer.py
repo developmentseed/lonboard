@@ -4,7 +4,7 @@ import pytest
 import shapely
 from traitlets import TraitError
 
-from lonboard.layer import ScatterplotLayer
+from lonboard import ScatterplotLayer
 
 
 def test_accessor_length_validation():
