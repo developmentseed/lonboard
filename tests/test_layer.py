@@ -12,10 +12,10 @@ def test_accessor_length_validation():
     points = shapely.points([1, 2], [3, 4])
     gdf = gpd.GeoDataFrame(geometry=points)
 
-    with pytest.raises(TraitError):
+    with pytest.raises(TraitError, match="same length as table"):
         _layer = ScatterplotLayer.from_geopandas(gdf, get_radius=np.array([1]))
 
-    with pytest.raises(TraitError):
+    with pytest.raises(TraitError, match="same length as table"):
         _layer = ScatterplotLayer.from_geopandas(gdf, get_radius=np.array([1, 2, 3]))
 
     _layer = ScatterplotLayer.from_geopandas(gdf, get_radius=np.array([1, 2]))
