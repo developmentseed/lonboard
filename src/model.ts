@@ -16,14 +16,34 @@ export abstract class BaseGeoArrowModel {
   model: WidgetModel;
   callbacks: Map<string, () => void>;
 
-  pickable: LayerProps["pickable"] | null;
+  table: arrow.Table;
+
+  pickable: LayerProps["pickable"];
+  visible: LayerProps["visible"];
+  opacity: LayerProps["opacity"];
+  autoHighlight: LayerProps["autoHighlight"];
 
   constructor(model: WidgetModel, updateStateCallback: () => void) {
     this.model = model;
     this.model.on("change", updateStateCallback);
     this.callbacks = new Map();
 
+    this.initTable("table", "table");
+
     this.initRegularAttribute("pickable", "pickable");
+    this.initRegularAttribute("visible", "visible");
+    this.initRegularAttribute("opacity", "opacity");
+    this.initRegularAttribute("auto_highlight", "autoHighlight");
+  }
+
+  baseLayerProps(): LayerProps {
+    return {
+      id: this.model.model_id,
+      pickable: this.pickable,
+      visible: this.visible,
+      opacity: this.opacity,
+      autoHighlight: this.autoHighlight,
+    };
   }
 
   /**
@@ -112,10 +132,7 @@ export abstract class BaseGeoArrowModel {
   }
 }
 
-// TODO: should this extend WidgetModel? Maybe not to keep the import type-only?
 export class ScatterplotModel extends BaseGeoArrowModel {
-  table: arrow.Table;
-
   radiusUnits: GeoArrowScatterplotLayerProps["radiusUnits"] | null;
   radiusScale: GeoArrowScatterplotLayerProps["radiusScale"] | null;
   radiusMinPixels: GeoArrowScatterplotLayerProps["radiusMinPixels"] | null;
@@ -140,8 +157,6 @@ export class ScatterplotModel extends BaseGeoArrowModel {
   constructor(model: WidgetModel, updateStateCallback: () => void) {
     super(model, updateStateCallback);
 
-    this.initTable("table", "table");
-
     this.initRegularAttribute("radius_units", "radiusUnits");
     this.initRegularAttribute("radius_scale", "radiusScale");
     this.initRegularAttribute("radius_min_pixels", "radiusMinPixels");
@@ -163,9 +178,10 @@ export class ScatterplotModel extends BaseGeoArrowModel {
 
   render(): GeoArrowScatterplotLayer {
     return new GeoArrowScatterplotLayer({
-      id: this.model.model_id,
+      ...this.baseLayerProps(),
+      // Note: this is included here instead of in baseLayerProps to satisfy
+      // typing.
       data: this.table,
-      pickable: this.pickable,
 
       ...(this.radiusUnits && { radiusUnits: this.radiusUnits }),
       ...(this.radiusScale && { radiusScale: this.radiusScale }),
@@ -192,8 +208,6 @@ export class ScatterplotModel extends BaseGeoArrowModel {
 }
 
 export class PathModel extends BaseGeoArrowModel {
-  table: arrow.Table;
-
   widthUnits: GeoArrowPathLayerProps["widthUnits"] | null;
   widthScale: GeoArrowPathLayerProps["widthScale"] | null;
   widthMinPixels: GeoArrowPathLayerProps["widthMinPixels"] | null;
@@ -207,8 +221,6 @@ export class PathModel extends BaseGeoArrowModel {
 
   constructor(model: WidgetModel, updateStateCallback: () => void) {
     super(model, updateStateCallback);
-
-    this.initTable("table", "table");
 
     this.initRegularAttribute("width_units", "widthUnits");
     this.initRegularAttribute("width_scale", "widthScale");
@@ -225,9 +237,10 @@ export class PathModel extends BaseGeoArrowModel {
 
   render(): GeoArrowPathLayer {
     return new GeoArrowPathLayer({
-      id: this.model.model_id,
+      ...this.baseLayerProps(),
+      // Note: this is included here instead of in baseLayerProps to satisfy
+      // typing.
       data: this.table,
-      pickable: this.pickable,
 
       ...(this.widthUnits && { widthUnits: this.widthUnits }),
       ...(this.widthScale && { widthScale: this.widthScale }),
@@ -244,8 +257,6 @@ export class PathModel extends BaseGeoArrowModel {
 }
 
 export class SolidPolygonModel extends BaseGeoArrowModel {
-  table: arrow.Table;
-
   filled: GeoArrowSolidPolygonLayerProps["filled"] | null;
   extruded: GeoArrowSolidPolygonLayerProps["extruded"] | null;
   wireframe: GeoArrowSolidPolygonLayerProps["wireframe"] | null;
@@ -256,8 +267,6 @@ export class SolidPolygonModel extends BaseGeoArrowModel {
 
   constructor(model: WidgetModel, updateStateCallback: () => void) {
     super(model, updateStateCallback);
-
-    this.initTable("table", "table");
 
     this.initRegularAttribute("filled", "filled");
     this.initRegularAttribute("extruded", "extruded");
@@ -271,9 +280,10 @@ export class SolidPolygonModel extends BaseGeoArrowModel {
 
   render(): GeoArrowSolidPolygonLayer {
     return new GeoArrowSolidPolygonLayer({
-      id: this.model.model_id,
+      ...this.baseLayerProps(),
+      // Note: this is included here instead of in baseLayerProps to satisfy
+      // typing.
       data: this.table,
-      pickable: this.pickable,
 
       ...(this.filled && { filled: this.filled }),
       ...(this.extruded && { extruded: this.extruded }),
