@@ -50,5 +50,9 @@ jobs:
           GIT_COMMITTER_NAME: CI
           GIT_COMMITTER_EMAIL: ci-bot@example.com
         run: |
+          # Get most recent git tag
+          # https://stackoverflow.com/a/7261049
+          # We don't use {{github.ref_name}} because if triggered manually, it
+          # will be a branch name instead of a tag version.
           VERSION=$(git describe --tags --abbrev=0)
           poetry run mike deploy $VERSION latest --update-aliases --push
