@@ -3,7 +3,9 @@ repo_name: developmentseed/lonboard
 repo_url: https://github.com/developmentseed/lonboard
 site_description: Extremely fast geospatial data visualization in Jupyter Notebooks
 site_author: Development Seed
-site_url: https://developmentseed.org/lonboard
+# Note: trailing slash recommended with mike:
+# https://squidfunk.github.io/mkdocs-material/setup/setting-up-versioning/#publishing-a-new-version
+site_url: https://developmentseed.org/lonboard/
 docs_dir: docs
 
 extra:
@@ -14,6 +16,8 @@ extra:
       link: "https://twitter.com/developmentseed"
     - icon: "fontawesome/brands/medium"
       link: "https://medium.com/devseed"
+  version:
+    provider: mike
 
 nav:
   - "index.md"
@@ -75,6 +79,9 @@ theme:
 plugins:
   - search
   - social
+  - mike:
+      alias_type: 'copy'
+      canonical_version: 'latest'
   - mkdocs-jupyter:
       include_source: True
       ignore: ["**/.ipynb_checkpoints/*.ipynb"]
