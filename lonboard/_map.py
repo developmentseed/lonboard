@@ -7,6 +7,7 @@ import ipywidgets
 import traitlets
 
 from lonboard._layer import BaseLayer
+from lonboard._viewport import compute_view
 
 # bundler yields lonboard/static/{index.js,styles.css}
 bundler_output_dir = Path(__file__).parent / "static"
@@ -79,3 +80,8 @@ class Map(anywidget.AnyWidget):
     )
     """One or more `Layer` objects to display on this map.
     """
+
+    @traitlets.default("_initial_view_state")
+    def _default_initial_view_state(self):
+        tables = [layer.table for layer in self.layers]
+        return compute_view(tables)
