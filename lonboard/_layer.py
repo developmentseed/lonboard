@@ -41,6 +41,40 @@ class BaseLayer(Widget):
     - Default: `True`
     """
 
+    visible = traitlets.Bool(True).tag(sync=True)
+    """
+    Whether the layer is visible.
+
+    Under most circumstances, using the `visible` attribute to control the visibility of
+    layers is recommended over removing/adding the layer from the `Map.layers` list.
+
+    In particular, toggling the `visible` attribute will persist the layer on the
+    JavaScript side, while removing/adding the layer from the `Map.layers` list will
+    re-download and re-render from scratch.
+
+    - Type: `bool`
+    - Default: `True`
+    """
+
+    opacity = traitlets.Float(1, min=0, max=1).tag(sync=True)
+    """
+    The opacity of the layer.
+
+    - Type: `float`. Must range between 0 and 1.
+    - Default: `1`
+    """
+
+    auto_highlight = traitlets.Bool(False).tag(sync=True)
+    """
+    When true, the current object pointed to by the mouse pointer (when hovered over) is
+    highlighted with `highlightColor`.
+
+    Requires `pickable` to be `True`.
+
+    - Type: `bool`
+    - Default: `False`
+    """
+
     _rows_per_chunk = traitlets.Int()
     """Number of rows per chunk for serializing table and accessor columns."""
 
@@ -104,7 +138,7 @@ class ScatterplotLayer(BaseLayer):
     - Default: `'meters'`
     """
 
-    radius_scale = traitlets.Float(allow_none=True).tag(sync=True)
+    radius_scale = traitlets.Float(allow_none=True, min=0).tag(sync=True)
     """
     A global radius multiplier for all points.
 
@@ -112,7 +146,7 @@ class ScatterplotLayer(BaseLayer):
     - Default: `1`
     """
 
-    radius_min_pixels = traitlets.Float(allow_none=True).tag(sync=True)
+    radius_min_pixels = traitlets.Float(allow_none=True, min=0).tag(sync=True)
     """
     The minimum radius in pixels. This can be used to prevent the circle from getting
     too small when zoomed out.
@@ -121,7 +155,7 @@ class ScatterplotLayer(BaseLayer):
     - Default: `0`
     """
 
-    radius_max_pixels = traitlets.Float(allow_none=True).tag(sync=True)
+    radius_max_pixels = traitlets.Float(allow_none=True, min=0).tag(sync=True)
     """
     The maximum radius in pixels. This can be used to prevent the circle from getting
     too big when zoomed in.
@@ -130,7 +164,7 @@ class ScatterplotLayer(BaseLayer):
     - Default: `None`
     """
 
-    line_width_units = traitlets.Float(allow_none=True).tag(sync=True)
+    line_width_units = traitlets.Unicode("meters", allow_none=True).tag(sync=True)
     """
     The units of the line width, one of `'meters'`, `'common'`, and `'pixels'`. See
     [unit
@@ -140,7 +174,7 @@ class ScatterplotLayer(BaseLayer):
     - Default: `'meters'`
     """
 
-    line_width_scale = traitlets.Float(allow_none=True).tag(sync=True)
+    line_width_scale = traitlets.Float(allow_none=True, min=0).tag(sync=True)
     """
     A global line width multiplier for all points.
 
@@ -148,7 +182,7 @@ class ScatterplotLayer(BaseLayer):
     - Default: `1`
     """
 
-    line_width_min_pixels = traitlets.Float(allow_none=True).tag(sync=True)
+    line_width_min_pixels = traitlets.Float(allow_none=True, min=0).tag(sync=True)
     """
     The minimum line width in pixels. This can be used to prevent the stroke from
     getting too thin when zoomed out.
@@ -157,7 +191,7 @@ class ScatterplotLayer(BaseLayer):
     - Default: `0`
     """
 
-    line_width_max_pixels = traitlets.Float(allow_none=True).tag(sync=True)
+    line_width_max_pixels = traitlets.Float(allow_none=True, min=0).tag(sync=True)
     """
     The maximum line width in pixels. This can be used to prevent the stroke from
     getting too thick when zoomed in.
@@ -307,7 +341,7 @@ class PathLayer(BaseLayer):
     - Default: `'meters'`
     """
 
-    width_scale = traitlets.Float(allow_none=True).tag(sync=True)
+    width_scale = traitlets.Float(allow_none=True, min=0).tag(sync=True)
     """
     The path width multiplier that multiplied to all paths.
 
@@ -315,7 +349,7 @@ class PathLayer(BaseLayer):
     - Default: `1`
     """
 
-    width_min_pixels = traitlets.Float(allow_none=True).tag(sync=True)
+    width_min_pixels = traitlets.Float(allow_none=True, min=0).tag(sync=True)
     """
     The minimum path width in pixels. This prop can be used to prevent the path from
     getting too thin when zoomed out.
@@ -324,7 +358,7 @@ class PathLayer(BaseLayer):
     - Default: `0`
     """
 
-    width_max_pixels = traitlets.Float(allow_none=True).tag(sync=True)
+    width_max_pixels = traitlets.Float(allow_none=True, min=0).tag(sync=True)
     """
     The maximum path width in pixels. This prop can be used to prevent the path from
     getting too thick when zoomed in.
@@ -461,7 +495,7 @@ class SolidPolygonLayer(BaseLayer):
     - Default: `False`
     """
 
-    elevation_scale = traitlets.Float(allow_none=True).tag(sync=True)
+    elevation_scale = traitlets.Float(allow_none=True, min=0).tag(sync=True)
     """
     Elevation multiplier. The final elevation is calculated by `elevation_scale *
     get_elevation(d)`. `elevation_scale` is a handy property to scale all elevation
