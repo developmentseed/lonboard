@@ -1,12 +1,11 @@
 from __future__ import annotations
 
 import warnings
-from pathlib import Path
 
 import geopandas as gpd
 import pyarrow as pa
 import traitlets
-from anywidget import AnyWidget
+from ipywidgets import Widget
 
 from lonboard._constants import EPSG_4326, EXTENSION_NAME, OGC_84
 from lonboard._geoarrow.geopandas_interop import geopandas_to_geoarrow
@@ -14,25 +13,9 @@ from lonboard._serialization import infer_rows_per_chunk
 from lonboard._viewport import compute_view
 from lonboard.traits import ColorAccessor, FloatAccessor, PyarrowTableTrait
 
-# bundler yields lonboard/static/{index.js,styles.css}
-bundler_output_dir = Path(__file__).parent / "static"
 
-
-class BaseLayer(AnyWidget):
+class BaseLayer(Widget):
     pass
-    # Note: this _repr_keys is useful if subclassing directly from ipywidgets.Widget, as
-    # that will try to print all the included keys by default
-    # def _repr_keys(self):
-    #     # Exclude the table_buffer from the repr; otherwise printing the buffer will
-    #     # often crash the kernel.
-
-    #     # TODO: also exclude keys when numpy array?
-    #     exclude_keys = {"table_buffer"}
-    #     for key in super()._repr_keys():
-    #         if key in exclude_keys:
-    #             continue
-
-    #         yield key
 
 
 class ScatterplotLayer(BaseLayer):
@@ -42,7 +25,7 @@ class ScatterplotLayer(BaseLayer):
 
     ```py
     import geopandas as gpd
-    from lonboard import ScatterplotLayer
+    from lonboard import Map, ScatterplotLayer
 
     # A GeoDataFrame with Point geometries
     gdf = gpd.GeoDataFrame()
@@ -50,11 +33,10 @@ class ScatterplotLayer(BaseLayer):
         gdf,
         get_fill_color=[255, 0, 0],
     )
+    map_ = Map(layers=[layer])
     ```
     """
 
-    _esm = bundler_output_dir / "scatterplot-layer.js"
-    _css = bundler_output_dir / "scatterplot-layer.css"
     _layer_type = traitlets.Unicode("scatterplot").tag(sync=True)
     _initial_view_state = traitlets.Dict().tag(sync=True)
 
@@ -294,10 +276,23 @@ class PathLayer(BaseLayer):
     """
     The `PathLayer` renders lists of coordinate points as extruded polylines with
     mitering.
+
+    **Example:**
+
+    ```py
+    import geopandas as gpd
+    from lonboard import Map, PathLayer
+
+    # A GeoDataFrame with LineString geometries
+    gdf = gpd.GeoDataFrame()
+    layer = PathLayer.from_geopandas(
+        gdf,
+        get_color=[255, 0, 0],
+    )
+    map_ = Map(layers=[layer])
+    ```
     """
 
-    _esm = bundler_output_dir / "path-layer.js"
-    _css = bundler_output_dir / "path-layer.css"
     _layer_type = traitlets.Unicode("path").tag(sync=True)
     _initial_view_state = traitlets.Dict().tag(sync=True)
 
@@ -453,10 +448,23 @@ class PathLayer(BaseLayer):
 class SolidPolygonLayer(BaseLayer):
     """
     The `SolidPolygonLayer` renders filled and/or extruded polygons.
+
+    **Example:**
+
+    ```py
+    import geopandas as gpd
+    from lonboard import Map, SolidPolygonLayer
+
+    # A GeoDataFrame with Polygon geometries
+    gdf = gpd.GeoDataFrame()
+    layer = SolidPolygonLayer.from_geopandas(
+        gdf,
+        get_fill_color=[255, 0, 0],
+    )
+    map_ = Map(layers=[layer])
+    ```
     """
 
-    _esm = bundler_output_dir / "solid-polygon-layer.js"
-    _css = bundler_output_dir / "solid-polygon-layer.css"
     _layer_type = traitlets.Unicode("solid-polygon").tag(sync=True)
     _initial_view_state = traitlets.Dict().tag(sync=True)
 
