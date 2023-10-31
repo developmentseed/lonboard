@@ -96,6 +96,7 @@ function getChildModelState(
 function App() {
   let [parquetWasmReady] = useParquetWasm();
   let [initialViewState] = useModelState<DataView>("_initial_view_state");
+  let [mapHeight] = useModelState<number>("_height");
 
   let [subModelState, setSubModelState] = useState<
     Record<string, BaseGeoArrowModel>
@@ -137,7 +138,7 @@ function App() {
   }
 
   return (
-    <div style={{ height: 500 }}>
+    <div style={{ height: mapHeight || 500 }}>
       <DeckGL
         initialViewState={
           ["longitude", "latitude", "zoom"].every((key) =>

@@ -29,6 +29,7 @@ nav:
       - Sidecar: examples/integrations/sidecar.ipynb
   - API Reference:
     - api/viz.md
+    - api/map.md
     - Layers:
       - api/layers/scatterplot-layer.md
       - api/layers/path-layer.md
