@@ -55,4 +55,8 @@ jobs:
           # We don't use {{github.ref_name}} because if triggered manually, it
           # will be a branch name instead of a tag version.
           VERSION=$(git describe --tags --abbrev=0)
-          poetry run mike deploy $VERSION latest --update-aliases --push
+
+          # Only push docs if no letters in git tag
+          if ! echo $VERSION | grep -q "[A-Za-z]"; then
+            poetry run mike deploy $VERSION latest --update-aliases --push
+          fi
