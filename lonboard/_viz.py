@@ -13,10 +13,10 @@ import shapely.geometry
 import shapely.geometry.base
 from numpy.typing import NDArray
 
-from lonboard.constants import EPSG_4326, EXTENSION_NAME, OGC_84
-from lonboard.geoarrow.extension_types import construct_geometry_array
-from lonboard.geoarrow.geopandas_interop import geopandas_to_geoarrow
-from lonboard.layer import PathLayer, ScatterplotLayer, SolidPolygonLayer
+from lonboard._constants import EPSG_4326, EXTENSION_NAME, OGC_84
+from lonboard._geoarrow.extension_types import construct_geometry_array
+from lonboard._geoarrow.geopandas_interop import geopandas_to_geoarrow
+from lonboard._layer import PathLayer, ScatterplotLayer, SolidPolygonLayer
 
 if TYPE_CHECKING:
     import geopandas as gpd

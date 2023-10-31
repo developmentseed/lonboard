@@ -12,9 +12,9 @@ from typing import Tuple
 
 import pyarrow as pa
 
-from lonboard.geoarrow.ops.bbox import Bbox, total_bounds
-from lonboard.geoarrow.ops.centroid import WeightedCentroid, weighted_centroid
-from lonboard.utils import get_geometry_column_index
+from lonboard._geoarrow.ops.bbox import Bbox, total_bounds
+from lonboard._geoarrow.ops.centroid import WeightedCentroid, weighted_centroid
+from lonboard._utils import get_geometry_column_index
 
 
 def get_bbox_center(table: pa.Table) -> Tuple[Bbox, WeightedCentroid]:
