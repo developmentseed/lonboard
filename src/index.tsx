@@ -97,6 +97,7 @@ function App() {
   let [parquetWasmReady] = useParquetWasm();
   let [initialViewState] = useModelState<DataView>("_initial_view_state");
   let [mapHeight] = useModelState<number>("_height");
+  let [showTooltip] = useModelState<boolean>("show_tooltip");
 
   let [subModelState, setSubModelState] = useState<
     Record<string, BaseGeoArrowModel>
@@ -149,7 +150,7 @@ function App() {
         }
         controller={true}
         layers={layers}
-        getTooltip={getTooltip}
+        getTooltip={showTooltip && getTooltip}
         pickingRadius={10}
       >
         <Map mapStyle={MAP_STYLE} />

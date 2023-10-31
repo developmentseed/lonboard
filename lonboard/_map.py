@@ -81,6 +81,14 @@ class Map(anywidget.AnyWidget):
     """One or more `Layer` objects to display on this map.
     """
 
+    show_tooltip = traitlets.Bool(True).tag(sync=True)
+    """
+    Whether to render a tooltip on hover on the map.
+
+    - Type: `bool`
+    - Default: `True`
+    """
+
     @traitlets.default("_initial_view_state")
     def _default_initial_view_state(self):
         tables = [layer.table for layer in self.layers]
