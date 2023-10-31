@@ -30,7 +30,8 @@ class BaseLayer(Widget):
     Whether the layer responds to mouse pointer picking events.
 
     This must be set to `True` for tooltips and other interactive elements to be
-    available.
+    available. This can also be used to only allow picking on specific layers within a
+    map instance.
 
     Note that picking has some performance overhead in rendering. To get the absolute
     best rendering performance with large data (at the cost of removing interactivity),
