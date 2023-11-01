@@ -56,7 +56,8 @@ jobs:
           # will be a branch name instead of a tag version.
           VERSION=$(git describe --tags --abbrev=0)
 
-          # Only push docs if no letters in git tag
-          if ! echo $VERSION | grep -q "[A-Za-z]"; then
+          # Only push docs if no letters in git tag after the first character
+          # (usually the git tag will have v as the first character)
+          if ! echo $VERSION | sed 's/^.//' | grep -q "[A-Za-z]"; then
             poetry run mike deploy $VERSION latest --update-aliases --push
           fi
