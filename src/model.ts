@@ -12,21 +12,85 @@ import type { Layer, LayerProps } from "@deck.gl/core/typed";
 import { parseParquetBuffers } from "./parquet";
 import { parseAccessor } from "./accessor";
 
-export abstract class BaseGeoArrowModel {
-  model: WidgetModel;
-  callbacks: Map<string, () => void>;
-
-  table: arrow.Table;
-
-  pickable: LayerProps["pickable"];
-  visible: LayerProps["visible"];
-  opacity: LayerProps["opacity"];
-  autoHighlight: LayerProps["autoHighlight"];
+export abstract class BaseModel {
+  protected model: WidgetModel;
+  protected callbacks: Map<string, () => void>;
 
   constructor(model: WidgetModel, updateStateCallback: () => void) {
     this.model = model;
     this.model.on("change", updateStateCallback);
     this.callbacks = new Map();
+    this.callbacks.set("change", updateStateCallback);
+  }
+
+  /**
+   * Initialize an attribute that does not need any transformation from its
+   * serialized representation to its deck.gl representation.
+   *
+   * This also watches for changes on the Jupyter model and propagates those
+   * changes to this class' internal state.
+   *
+   * @param   {string}  pythonName  Name of attribute on Python model (usually snake-cased)
+   * @param   {string}  jsName      Name of attribute in deck.gl (usually camel-cased)
+   */
+  protected initRegularAttribute(pythonName: string, jsName: string) {
+    this[jsName] = this.model.get(pythonName);
+
+    // Remove all existing change callbacks for this attribute
+    this.model.off(`change:${pythonName}`);
+
+    const callback = () => {
+      this[jsName] = this.model.get(pythonName);
+    };
+    this.model.on(`change:${pythonName}`, callback);
+
+    this.callbacks.set(`change:${pythonName}`, callback);
+  }
+
+  /**
+   * Initialize an accessor that can either be a scalar JSON value or a Parquet
+   * table with a single column, intended to be passed in as an Arrow Vector.
+   *
+   * This also watches for changes on the Jupyter model and propagates those
+   * changes to this class' internal state.
+   *
+   * @param   {string}  pythonName  Name of attribute on Python model (usually snake-cased)
+   * @param   {string}  jsName      Name of attribute in deck.gl (usually camel-cased)
+   */
+  protected initVectorizedAccessor(pythonName: string, jsName: string) {
+    this[jsName] = parseAccessor(this.model.get(pythonName));
+
+    // Remove all existing change callbacks for this attribute
+    this.model.off(`change:${pythonName}`);
+
+    const callback = () => {
+      this[jsName] = parseAccessor(this.model.get(pythonName));
+    };
+    this.model.on(`change:${pythonName}`, callback);
+
+    this.callbacks.set(`change:${pythonName}`, callback);
+  }
+
+  /**
+   * Finalize any resources held by the model
+   */
+  finalize(): void {
+    for (const [changeKey, callback] of Object.entries(this.callbacks)) {
+      this.model.off(changeKey, callback);
+    }
+  }
+}
+
+export abstract class BaseLayerModel extends BaseModel {
+  protected table: arrow.Table;
+
+  protected pickable: LayerProps["pickable"];
+  protected visible: LayerProps["visible"];
+  protected opacity: LayerProps["opacity"];
+  protected autoHighlight: LayerProps["autoHighlight"];
+
+  constructor(model: WidgetModel, updateStateCallback: () => void) {
+    super(model, updateStateCallback);
 
     this.initTable("table", "table");
 
@@ -52,15 +116,6 @@ export abstract class BaseGeoArrowModel {
   abstract render(): Layer;
 
   /**
-   * Finalize any resources held by the model
-   */
-  finalize(): void {
-    for (const [pythonName, callback] of Object.entries(this.callbacks)) {
-      this.model.off(`change:${pythonName}`, callback);
-    }
-  }
-
-  /**
    * Initialize a Table on the model.
    *
    * This also watches for changes on the Jupyter model and propagates those
@@ -80,79 +135,39 @@ export abstract class BaseGeoArrowModel {
     };
     this.model.on(`change:${pythonName}`, callback);
 
-    this.callbacks.set(pythonName, callback);
-  }
-
-  /**
-   * Initialize an attribute that does not need any transformation from its
-   * serialized representation to its deck.gl representation.
-   *
-   * This also watches for changes on the Jupyter model and propagates those
-   * changes to this class' internal state.
-   *
-   * @param   {string}  pythonName  Name of attribute on Python model (usually snake-cased)
-   * @param   {string}  jsName      Name of attribute in deck.gl (usually camel-cased)
-   */
-  initRegularAttribute(pythonName: string, jsName: string) {
-    this[jsName] = this.model.get(pythonName);
-
-    // Remove all existing change callbacks for this attribute
-    this.model.off(`change:${pythonName}`);
-
-    const callback = () => {
-      this[jsName] = this.model.get(pythonName);
-    };
-    this.model.on(`change:${pythonName}`, callback);
-
-    this.callbacks.set(pythonName, callback);
-  }
-
-  /**
-   * Initialize an accessor that can either be a scalar JSON value or a Parquet
-   * table with a single column, intended to be passed in as an Arrow Vector.
-   *
-   * This also watches for changes on the Jupyter model and propagates those
-   * changes to this class' internal state.
-   *
-   * @param   {string}  pythonName  Name of attribute on Python model (usually snake-cased)
-   * @param   {string}  jsName      Name of attribute in deck.gl (usually camel-cased)
-   */
-  initVectorizedAccessor(pythonName: string, jsName: string) {
-    this[jsName] = parseAccessor(this.model.get(pythonName));
-
-    // Remove all existing change callbacks for this attribute
-    this.model.off(`change:${pythonName}`);
-
-    const callback = () => {
-      this[jsName] = parseAccessor(this.model.get(pythonName));
-    };
-    this.model.on(`change:${pythonName}`, callback);
-
-    this.callbacks.set(pythonName, callback);
+    this.callbacks.set(`change:${pythonName}`, callback);
   }
 }
 
-export class ScatterplotModel extends BaseGeoArrowModel {
-  radiusUnits: GeoArrowScatterplotLayerProps["radiusUnits"] | null;
-  radiusScale: GeoArrowScatterplotLayerProps["radiusScale"] | null;
-  radiusMinPixels: GeoArrowScatterplotLayerProps["radiusMinPixels"] | null;
-  radiusMaxPixels: GeoArrowScatterplotLayerProps["radiusMaxPixels"] | null;
-  lineWidthUnits: GeoArrowScatterplotLayerProps["lineWidthUnits"] | null;
-  lineWidthScale: GeoArrowScatterplotLayerProps["lineWidthScale"] | null;
-  lineWidthMinPixels:
+export class ScatterplotModel extends BaseLayerModel {
+  protected radiusUnits: GeoArrowScatterplotLayerProps["radiusUnits"] | null;
+  protected radiusScale: GeoArrowScatterplotLayerProps["radiusScale"] | null;
+  protected radiusMinPixels:
+    | GeoArrowScatterplotLayerProps["radiusMinPixels"]
+    | null;
+  protected radiusMaxPixels:
+    | GeoArrowScatterplotLayerProps["radiusMaxPixels"]
+    | null;
+  protected lineWidthUnits:
+    | GeoArrowScatterplotLayerProps["lineWidthUnits"]
+    | null;
+  protected lineWidthScale:
+    | GeoArrowScatterplotLayerProps["lineWidthScale"]
+    | null;
+  protected lineWidthMinPixels:
     | GeoArrowScatterplotLayerProps["lineWidthMinPixels"]
     | null;
-  lineWidthMaxPixels:
+  protected lineWidthMaxPixels:
     | GeoArrowScatterplotLayerProps["lineWidthMaxPixels"]
     | null;
-  stroked: GeoArrowScatterplotLayerProps["stroked"] | null;
-  filled: GeoArrowScatterplotLayerProps["filled"] | null;
-  billboard: GeoArrowScatterplotLayerProps["billboard"] | null;
-  antialiasing: GeoArrowScatterplotLayerProps["antialiasing"] | null;
-  getRadius: GeoArrowScatterplotLayerProps["getRadius"] | null;
-  getFillColor: GeoArrowScatterplotLayerProps["getFillColor"] | null;
-  getLineColor: GeoArrowScatterplotLayerProps["getLineColor"] | null;
-  getLineWidth: GeoArrowScatterplotLayerProps["getLineWidth"] | null;
+  protected stroked: GeoArrowScatterplotLayerProps["stroked"] | null;
+  protected filled: GeoArrowScatterplotLayerProps["filled"] | null;
+  protected billboard: GeoArrowScatterplotLayerProps["billboard"] | null;
+  protected antialiasing: GeoArrowScatterplotLayerProps["antialiasing"] | null;
+  protected getRadius: GeoArrowScatterplotLayerProps["getRadius"] | null;
+  protected getFillColor: GeoArrowScatterplotLayerProps["getFillColor"] | null;
+  protected getLineColor: GeoArrowScatterplotLayerProps["getLineColor"] | null;
+  protected getLineWidth: GeoArrowScatterplotLayerProps["getLineWidth"] | null;
 
   constructor(model: WidgetModel, updateStateCallback: () => void) {
     super(model, updateStateCallback);
@@ -207,17 +222,17 @@ export class ScatterplotModel extends BaseGeoArrowModel {
   }
 }
 
-export class PathModel extends BaseGeoArrowModel {
-  widthUnits: GeoArrowPathLayerProps["widthUnits"] | null;
-  widthScale: GeoArrowPathLayerProps["widthScale"] | null;
-  widthMinPixels: GeoArrowPathLayerProps["widthMinPixels"] | null;
-  widthMaxPixels: GeoArrowPathLayerProps["widthMaxPixels"] | null;
-  jointRounded: GeoArrowPathLayerProps["jointRounded"] | null;
-  capRounded: GeoArrowPathLayerProps["capRounded"] | null;
-  miterLimit: GeoArrowPathLayerProps["miterLimit"] | null;
-  billboard: GeoArrowPathLayerProps["billboard"] | null;
-  getColor: GeoArrowPathLayerProps["getColor"] | null;
-  getWidth: GeoArrowPathLayerProps["getWidth"] | null;
+export class PathModel extends BaseLayerModel {
+  protected widthUnits: GeoArrowPathLayerProps["widthUnits"] | null;
+  protected widthScale: GeoArrowPathLayerProps["widthScale"] | null;
+  protected widthMinPixels: GeoArrowPathLayerProps["widthMinPixels"] | null;
+  protected widthMaxPixels: GeoArrowPathLayerProps["widthMaxPixels"] | null;
+  protected jointRounded: GeoArrowPathLayerProps["jointRounded"] | null;
+  protected capRounded: GeoArrowPathLayerProps["capRounded"] | null;
+  protected miterLimit: GeoArrowPathLayerProps["miterLimit"] | null;
+  protected billboard: GeoArrowPathLayerProps["billboard"] | null;
+  protected getColor: GeoArrowPathLayerProps["getColor"] | null;
+  protected getWidth: GeoArrowPathLayerProps["getWidth"] | null;
 
   constructor(model: WidgetModel, updateStateCallback: () => void) {
     super(model, updateStateCallback);
@@ -256,14 +271,16 @@ export class PathModel extends BaseGeoArrowModel {
   }
 }
 
-export class SolidPolygonModel extends BaseGeoArrowModel {
-  filled: GeoArrowSolidPolygonLayerProps["filled"] | null;
-  extruded: GeoArrowSolidPolygonLayerProps["extruded"] | null;
-  wireframe: GeoArrowSolidPolygonLayerProps["wireframe"] | null;
-  elevationScale: GeoArrowSolidPolygonLayerProps["elevationScale"] | null;
-  getElevation: GeoArrowSolidPolygonLayerProps["getElevation"] | null;
-  getFillColor: GeoArrowSolidPolygonLayerProps["getFillColor"] | null;
-  getLineColor: GeoArrowSolidPolygonLayerProps["getLineColor"] | null;
+export class SolidPolygonModel extends BaseLayerModel {
+  protected filled: GeoArrowSolidPolygonLayerProps["filled"] | null;
+  protected extruded: GeoArrowSolidPolygonLayerProps["extruded"] | null;
+  protected wireframe: GeoArrowSolidPolygonLayerProps["wireframe"] | null;
+  protected elevationScale:
+    | GeoArrowSolidPolygonLayerProps["elevationScale"]
+    | null;
+  protected getElevation: GeoArrowSolidPolygonLayerProps["getElevation"] | null;
+  protected getFillColor: GeoArrowSolidPolygonLayerProps["getFillColor"] | null;
+  protected getLineColor: GeoArrowSolidPolygonLayerProps["getLineColor"] | null;
 
   constructor(model: WidgetModel, updateStateCallback: () => void) {
     super(model, updateStateCallback);
