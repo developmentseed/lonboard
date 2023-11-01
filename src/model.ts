@@ -8,19 +8,27 @@ import {
 } from "@geoarrow/deck.gl-layers";
 import * as arrow from "apache-arrow";
 import type { WidgetModel } from "@jupyter-widgets/base";
-import type { Layer, LayerProps } from "@deck.gl/core/typed";
+import type { Layer, LayerExtension, LayerProps } from "@deck.gl/core/typed";
 import { parseParquetBuffers } from "./parquet";
 import { parseAccessor } from "./accessor";
+import { BaseExtensionModel, initializeExtension } from "./extensions";
+import { loadChildModels } from "./util";
 
 export abstract class BaseModel {
   protected model: WidgetModel;
   protected callbacks: Map<string, () => void>;
+  protected updateStateCallback: () => void;
 
   constructor(model: WidgetModel, updateStateCallback: () => void) {
     this.model = model;
     this.model.on("change", updateStateCallback);
+    this.updateStateCallback = updateStateCallback;
     this.callbacks = new Map();
     this.callbacks.set("change", updateStateCallback);
+  }
+
+  async loadSubModels() {
+    return;
   }
 
   /**
@@ -89,6 +97,8 @@ export abstract class BaseLayerModel extends BaseModel {
   protected opacity: LayerProps["opacity"];
   protected autoHighlight: LayerProps["autoHighlight"];
 
+  protected extensions: BaseExtensionModel[];
+
   constructor(model: WidgetModel, updateStateCallback: () => void) {
     super(model, updateStateCallback);
 
@@ -100,8 +110,26 @@ export abstract class BaseLayerModel extends BaseModel {
     this.initRegularAttribute("auto_highlight", "autoHighlight");
   }
 
+  async loadSubModels() {
+    await this.initLayerExtensions();
+  }
+
+  extensionInstances(): LayerExtension[] {
+    return this.extensions.map((extension) => extension.extensionInstance);
+  }
+
+  extensionProps() {
+    let props = {};
+    for (const extension of this.extensions) {
+      props = { ...props, ...extension.extensionProps() };
+    }
+    return props;
+  }
+
   baseLayerProps(): LayerProps {
     return {
+      extensions: this.extensionInstances(),
+      ...this.extensionProps(),
       id: this.model.model_id,
       pickable: this.pickable,
       visible: this.visible,
@@ -137,9 +165,30 @@ export abstract class BaseLayerModel extends BaseModel {
 
     this.callbacks.set(`change:${pythonName}`, callback);
   }
+
+  async initLayerExtensions() {
+    const childModelIds = this.model.get("_extensions");
+    const childModels = await loadChildModels(
+      this.model.widget_manager,
+      childModelIds
+    );
+
+    const extensions: BaseExtensionModel[] = [];
+    for (const childModel of childModels) {
+      const extension = await initializeExtension(
+        childModel,
+        this.updateStateCallback
+      );
+      extensions.push(extension);
+    }
+
+    this.extensions = extensions;
+  }
 }
 
 export class ScatterplotModel extends BaseLayerModel {
+  static layerType = "scatterplot";
+
   protected radiusUnits: GeoArrowScatterplotLayerProps["radiusUnits"] | null;
   protected radiusScale: GeoArrowScatterplotLayerProps["radiusScale"] | null;
   protected radiusMinPixels:
@@ -223,6 +272,8 @@ export class ScatterplotModel extends BaseLayerModel {
 }
 
 export class PathModel extends BaseLayerModel {
+  static layerType = "path";
+
   protected widthUnits: GeoArrowPathLayerProps["widthUnits"] | null;
   protected widthScale: GeoArrowPathLayerProps["widthScale"] | null;
   protected widthMinPixels: GeoArrowPathLayerProps["widthMinPixels"] | null;
@@ -272,6 +323,8 @@ export class PathModel extends BaseLayerModel {
 }
 
 export class SolidPolygonModel extends BaseLayerModel {
+  static layerType = "solid-polygon";
+
   protected filled: GeoArrowSolidPolygonLayerProps["filled"] | null;
   protected extruded: GeoArrowSolidPolygonLayerProps["extruded"] | null;
   protected wireframe: GeoArrowSolidPolygonLayerProps["wireframe"] | null;
@@ -310,5 +363,35 @@ export class SolidPolygonModel extends BaseLayerModel {
       ...(this.getFillColor && { getFillColor: this.getFillColor }),
       ...(this.getLineColor && { getLineColor: this.getLineColor }),
     });
+  }
+}
+
+export async function initializeLayer(
+  model: WidgetModel,
+  updateStateCallback: () => void
+): Promise<BaseLayerModel> {
+  const layerType = model.get("_layer_type");
+  switch (layerType) {
+    case ScatterplotModel.layerType: {
+      const layerModel = new ScatterplotModel(model, updateStateCallback);
+      await layerModel.loadSubModels();
+      return layerModel;
+    }
+
+    case PathModel.layerType: {
+      const layerModel = new PathModel(model, updateStateCallback);
+      await layerModel.loadSubModels();
+      return layerModel;
+    }
+
+    case SolidPolygonModel.layerType: {
+      const layerModel = new SolidPolygonModel(model, updateStateCallback);
+      await layerModel.loadSubModels();
+      return layerModel;
+    }
+
+    default:
+      console.error(`no layer supported for ${layerType}`);
+      break;
   }
 }

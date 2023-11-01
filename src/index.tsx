@@ -4,15 +4,11 @@ import { createRender, useModelState, useModel } from "@anywidget/react";
 import Map from "react-map-gl/maplibre";
 import DeckGL from "@deck.gl/react/typed";
 import type { Layer } from "@deck.gl/core/typed";
-import type { IWidgetManager, WidgetModel } from "@jupyter-widgets/base";
-import {
-  BaseLayerModel,
-  PathModel,
-  ScatterplotModel,
-  SolidPolygonModel,
-} from "./model";
+import type { WidgetModel } from "@jupyter-widgets/base";
+import { BaseLayerModel, initializeLayer } from "./model";
 import { useParquetWasm } from "./parquet";
 import { getTooltip } from "./tooltip";
+import { loadChildModels } from "./util";
 
 const DEFAULT_INITIAL_VIEW_STATE = {
   latitude: 10,
@@ -25,29 +21,14 @@ const DEFAULT_INITIAL_VIEW_STATE = {
 const MAP_STYLE =
   "https://basemaps.cartocdn.com/gl/positron-nolabels-gl-style/style.json";
 
-/**
- * Load the child models of this model
- */
-async function loadChildModels(
-  widget_manager: IWidgetManager,
-  childLayerIds: string[]
-): Promise<WidgetModel[]> {
-  const promises: Promise<WidgetModel>[] = [];
-  for (const childLayerId of childLayerIds) {
-    promises.push(
-      widget_manager.get_model(childLayerId.slice("IPY_MODEL_".length))
-    );
-  }
-  return await Promise.all(promises);
-}
-
-function getChildModelState(
+async function getChildModelState(
   childModels: WidgetModel[],
   childLayerIds: string[],
   previousSubModelState: Record<string, BaseLayerModel>,
   setStateCounter: React.Dispatch<React.SetStateAction<Date>>
-): Record<string, BaseLayerModel> {
+): Promise<Record<string, BaseLayerModel>> {
   const newSubModelState: Record<string, BaseLayerModel> = {};
+  const updateStateCallback = () => setStateCounter(new Date());
 
   for (let i = 0; i < childLayerIds.length; i++) {
     const childLayerId = childLayerIds[i];
@@ -62,27 +43,8 @@ function getChildModelState(
       continue;
     }
 
-    const layerType = childModel.get("_layer_type");
-    switch (layerType) {
-      case "scatterplot":
-        newSubModelState[childLayerId] = new ScatterplotModel(childModel, () =>
-          setStateCounter(new Date())
-        );
-        break;
-      case "path":
-        newSubModelState[childLayerId] = new PathModel(childModel, () =>
-          setStateCounter(new Date())
-        );
-        break;
-      case "solid-polygon":
-        newSubModelState[childLayerId] = new SolidPolygonModel(childModel, () =>
-          setStateCounter(new Date())
-        );
-        break;
-      default:
-        console.error(`no layer supported for ${layerType}`);
-        break;
-    }
+    const childLayer = await initializeLayer(childModel, updateStateCallback);
+    newSubModelState[childLayerId] = childLayer;
   }
 
   // finalize models that were deleted
@@ -122,7 +84,7 @@ function App() {
         model.widget_manager,
         childLayerIds
       );
-      const newSubModelState = getChildModelState(
+      const newSubModelState = await getChildModelState(
         childModels,
         childLayerIds,
         subModelState,
