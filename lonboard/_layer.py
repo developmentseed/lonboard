@@ -5,6 +5,7 @@ import warnings
 from typing import TYPE_CHECKING
 
 import geopandas as gpd
+import ipywidgets
 import pyarrow as pa
 import traitlets
 from ipywidgets import Widget
@@ -12,6 +13,7 @@ from ipywidgets import Widget
 from lonboard._constants import EPSG_4326, EXTENSION_NAME, OGC_84
 from lonboard._geoarrow.geopandas_interop import geopandas_to_geoarrow
 from lonboard._serialization import infer_rows_per_chunk
+from lonboard.experimental.layer_extension import BaseExtension
 from lonboard.traits import ColorAccessor, FloatAccessor, PyarrowTableTrait
 
 if TYPE_CHECKING:
@@ -23,6 +25,10 @@ if TYPE_CHECKING:
 
 class BaseLayer(Widget):
     table: traitlets.TraitType
+
+    extensions = traitlets.List(trait=traitlets.Instance(BaseExtension)).tag(
+        sync=True, **ipywidgets.widget_serialization
+    )
 
     pickable = traitlets.Bool(True).tag(sync=True)
     """
