@@ -80,4 +80,9 @@
          <lastmod>2023-11-01</lastmod>
          <changefreq>daily</changefreq>
     </url>
+    <url>
+         <loc>https://developmentseed.org/lonboard/latest/examples/map_challenge/1-points/</loc>
+         <lastmod>2023-11-01</lastmod>
+         <changefreq>daily</changefreq>
+    </url>
 </urlset>
