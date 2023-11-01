@@ -6,7 +6,7 @@ import DeckGL from "@deck.gl/react/typed";
 import type { Layer } from "@deck.gl/core/typed";
 import type { IWidgetManager, WidgetModel } from "@jupyter-widgets/base";
 import {
-  BaseGeoArrowModel,
+  BaseLayerModel,
   PathModel,
   ScatterplotModel,
   SolidPolygonModel,
@@ -44,10 +44,10 @@ async function loadChildModels(
 function getChildModelState(
   childModels: WidgetModel[],
   childLayerIds: string[],
-  previousSubModelState: Record<string, BaseGeoArrowModel>,
+  previousSubModelState: Record<string, BaseLayerModel>,
   setStateCounter: React.Dispatch<React.SetStateAction<Date>>
-): Record<string, BaseGeoArrowModel> {
-  const newSubModelState: Record<string, BaseGeoArrowModel> = {};
+): Record<string, BaseLayerModel> {
+  const newSubModelState: Record<string, BaseLayerModel> = {};
 
   for (let i = 0; i < childLayerIds.length; i++) {
     const childLayerId = childLayerIds[i];
@@ -100,7 +100,7 @@ function App() {
   let [showTooltip] = useModelState<boolean>("show_tooltip");
 
   let [subModelState, setSubModelState] = useState<
-    Record<string, BaseGeoArrowModel>
+    Record<string, BaseLayerModel>
   >({});
   let model = useModel();
   let [childLayerIds] = useModelState<string[]>("layers");
