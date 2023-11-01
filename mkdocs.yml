@@ -27,6 +27,8 @@ nav:
     - Integrations:
       - ColorPicker: examples/integrations/color-picker.ipynb
       - Sidecar: examples/integrations/sidecar.ipynb
+    - 30 Day Map Challenge:
+      - "Day 1: Points": examples/map_challenge/1-points.ipynb
   - API Reference:
     - api/viz.md
     - api/map.md
