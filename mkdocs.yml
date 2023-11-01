@@ -38,6 +38,7 @@ nav:
     - api/traits.md
   # - Caveats: caveats.md
   - Performance: performance.md
+  - Changelog: CHANGELOG.md
   - Alternatives: alternatives.md
   - "How it works?": how-it-works.md
 
