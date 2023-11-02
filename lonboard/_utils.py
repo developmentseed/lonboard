@@ -35,7 +35,11 @@ def auto_downcast(df: DF) -> DF:
         DataFrame with downcasted data types
     """
     # Convert objects to numeric types where possible.
-    df = df.convert_dtypes(
+    # Note: we have to exclude geometry because
+    # `convert_dtypes(dtype_backend="pyarrow")` fails on the geometory column, but we
+    # also have to manually cast to a non-geo data frame because it'll fail to convert
+    # dtypes on a GeoDataFrame without a geom col
+    casted_df = pd.DataFrame(df.select_dtypes(exclude="geometry")).convert_dtypes(
         infer_objects=True,
         convert_string=True,
         convert_integer=True,
@@ -43,6 +47,7 @@ def auto_downcast(df: DF) -> DF:
         convert_floating=True,
         dtype_backend="pyarrow",
     )
+    df[casted_df.columns] = casted_df
 
     # Try to convert _all_ integer columns to unsigned integer columns, but use
     # errors='ignore' to return signed integer data types for columns with negative
