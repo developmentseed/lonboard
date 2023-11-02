@@ -12,6 +12,7 @@ from ipywidgets import Widget
 from lonboard._constants import EPSG_4326, EXTENSION_NAME, OGC_84
 from lonboard._geoarrow.geopandas_interop import geopandas_to_geoarrow
 from lonboard._serialization import infer_rows_per_chunk
+from lonboard._utils import auto_downcast as _auto_downcast
 from lonboard.traits import ColorAccessor, FloatAccessor, PyarrowTableTrait
 
 if TYPE_CHECKING:
@@ -82,7 +83,9 @@ class BaseLayer(Widget):
         return infer_rows_per_chunk(self.table)
 
     @classmethod
-    def from_geopandas(cls, gdf: gpd.GeoDataFrame, **kwargs) -> Self:
+    def from_geopandas(
+        cls, gdf: gpd.GeoDataFrame, *, auto_downcast: bool = True, **kwargs
+    ) -> Self:
         """Construct a Layer from a geopandas GeoDataFrame.
 
         The GeoDataFrame will be reprojected to EPSG:4326 if it is not already in that
@@ -91,12 +94,22 @@ class BaseLayer(Widget):
         Args:
             gdf: The GeoDataFrame to set on the layer.
 
+        Other parameters:
+            auto_downcast: If `True`, automatically downcast to smaller-size data types
+                if possible without loss of precision. This calls
+                [pandas.DataFrame.convert_dtypes][pandas.DataFrame.convert_dtypes] and
+                [pandas.to_numeric][pandas.to_numeric] under the hood.
+
         Returns:
             A Layer with the initialized data.
         """
         if gdf.crs and gdf.crs not in [EPSG_4326, OGC_84]:
             warnings.warn("GeoDataFrame being reprojected to EPSG:4326")
             gdf = gdf.to_crs(OGC_84)  # type: ignore
+
+        if auto_downcast:
+            # Note: we don't deep copy because we don't need to clone geometries
+            gdf = _auto_downcast(gdf.copy())
 
         table = geopandas_to_geoarrow(gdf)
         return cls(table=table, **kwargs)
