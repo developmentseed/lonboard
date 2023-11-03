@@ -1,3 +1,5 @@
+*.html
+*.zip
 *.geojson
 *.geojson.zip
 *.arrow
