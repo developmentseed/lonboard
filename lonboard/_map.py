@@ -9,7 +9,9 @@ from ipywidgets.embed import embed_minimal_html
 
 from lonboard._base import BaseAnyWidget
 from lonboard._layer import BaseLayer
-from lonboard._viewport import compute_view
+from lonboard._serialization import VIEW_STATE_SERIALIZATION
+from lonboard._viewport import ViewState, compute_view
+from lonboard.traits import _ObservableInstance
 
 # bundler yields lonboard/static/{index.js,styles.css}
 bundler_output_dir = Path(__file__).parent / "static"
@@ -46,7 +48,10 @@ class Map(BaseAnyWidget):
     _esm = bundler_output_dir / "index.js"
     _css = bundler_output_dir / "index.css"
 
-    _initial_view_state = traitlets.Dict().tag(sync=True)
+    _view_state = _ObservableInstance(ViewState).tag(
+        sync=True,
+        **VIEW_STATE_SERIALIZATION,
+    )
     """
     The initial view state of the map.
 
@@ -102,7 +107,7 @@ class Map(BaseAnyWidget):
         """
         embed_minimal_html(filename, views=[self], drop_defaults=False)
 
-    @traitlets.default("_initial_view_state")
+    @traitlets.default("_view_state")
     def _default_initial_view_state(self):
         tables = [layer.table for layer in self.layers]
         return compute_view(tables)
