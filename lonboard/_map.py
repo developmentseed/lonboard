@@ -94,6 +94,17 @@ class Map(BaseAnyWidget):
     - Default: `True`
     """
 
+    picking_radius = traitlets.Int(5).tag(sync=True)
+    """
+    Extra pixels around the pointer to include while picking (such as for a tooltip).
+
+    This is helpful when rendered objects are difficult to target, for example
+    irregularly shaped icons, small moving circles or interaction by touch.
+
+    - Type: `int`
+    - Default: `5`
+    """
+
     def to_html(self, filename: Union[str, Path]) -> None:
         """Save the current map as a standalone HTML file.
 
