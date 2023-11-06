@@ -7,14 +7,68 @@ under the Apache 2 license.
 
 from __future__ import annotations
 
+import dataclasses
 import math
-from typing import List, Tuple
+from dataclasses import dataclass
+from typing import TYPE_CHECKING, List, Tuple
 
 import pyarrow as pa
+from psygnal import SignalGroup, evented
 
 from lonboard._geoarrow.ops.bbox import Bbox, total_bounds
 from lonboard._geoarrow.ops.centroid import WeightedCentroid, weighted_centroid
 from lonboard._utils import get_geometry_column_index
+
+# from lonboard.traits import _ObservableInstance
+
+
+@evented
+@dataclass(init=False)
+class ViewState:
+    if TYPE_CHECKING:
+        events: SignalGroup
+
+    def __init__(self, **kwargs):
+        names = set([f.name for f in dataclasses.fields(self)])
+        kwargs = {k: v for k, v in kwargs.items() if k in names}
+        super().__init__(**kwargs)
+        # for k, v in kwargs.items():
+        #     if k in names:
+        #         setattr(self, k, v)
+
+    longitude: float
+    latitude: float
+    zoom: float
+
+
+ViewState(a=1, longitude=1, latitude=1, zoom=1)
+
+# class MyWidget(Widget):
+#     a = _ObservableInstance(ViewState)
+
+#     @observe('a')
+#     def _observe_a(self, change):
+#         print(change)
+
+# vs = ViewState(longitude=0, latitude=0, zoom=0)
+# w = MyWidget(a={'longitude': 0, 'latitude': 0, 'zoom': 0})
+# type(w.a)
+# # w.a.age = 1
+
+# x = vs.events.connect()
+# x()
+
+# vs.events.signals['age'].
+# len({})
+# vs.events.c
+# type(vs.events)
+
+
+# @test.events.connect
+# def on_any_change(info: EmissionInfo):
+#     print(f"field {info.signal.name!r} changed to {info.args}")
+
+# test.name = 'other'
 
 
 def get_bbox_center(tables: List[pa.Table]) -> Tuple[Bbox, WeightedCentroid]:
