@@ -1912,30 +1912,27 @@ files = [
 
 [[package]]
 name = "mike"
-version = "1.2.0.dev0"
+version = "2.0.0"
 description = "Manage multiple versions of your MkDocs-powered documentation"
 optional = false
 python-versions = "*"
-files = []
-develop = false
+files = [
+    {file = "mike-2.0.0-py3-none-any.whl", hash = "sha256:87f496a65900f93ba92d72940242b65c86f3f2f82871bc60ebdcffc91fad1d9e"},
+    {file = "mike-2.0.0.tar.gz", hash = "sha256:566f1cab1a58cc50b106fb79ea2f1f56e7bfc8b25a051e95e6eaee9fba0922de"},
+]
 
 [package.dependencies]
 importlib-metadata = "*"
 importlib-resources = "*"
 jinja2 = ">=2.7"
 mkdocs = ">=1.0"
+pyparsing = ">=3.0"
 pyyaml = ">=5.1"
 verspec = "*"
 
 [package.extras]
 dev = ["coverage", "flake8 (>=3.0)", "flake8-quotes", "shtab"]
 test = ["coverage", "flake8 (>=3.0)", "flake8-quotes", "shtab"]
-
-[package.source]
-type = "git"
-url = "https://github.com/jimporter/mike"
-reference = "b3eea1258fea864cfe7ed2dd7b583d5a63ce2209"
-resolved_reference = "b3eea1258fea864cfe7ed2dd7b583d5a63ce2209"
 
 [[package]]
 name = "mistune"
@@ -3900,4 +3897,4 @@ testing = ["big-O", "jaraco.functools", "jaraco.itertools", "more-itertools", "p
 [metadata]
 lock-version = "2.0"
 python-versions = "^3.8"
-content-hash = "98a10e4c5160960236d57632f79b1e5df8ea5ddd6dffd70735480092bf3fceec"
+content-hash = "87574bd7e75c7b7c261e0b62fda819a77424c3b83b0e519a15f2336be0b31b8e"
