@@ -7,8 +7,8 @@ from typing import TYPE_CHECKING
 import geopandas as gpd
 import pyarrow as pa
 import traitlets
-from ipywidgets import Widget
 
+from lonboard._base import BaseWidget
 from lonboard._constants import EPSG_4326, EXTENSION_NAME, OGC_84
 from lonboard._geoarrow.geopandas_interop import geopandas_to_geoarrow
 from lonboard._serialization import infer_rows_per_chunk
@@ -22,7 +22,7 @@ if TYPE_CHECKING:
         from typing_extensions import Self
 
 
-class BaseLayer(Widget):
+class BaseLayer(BaseWidget):
     table: traitlets.TraitType
 
     pickable = traitlets.Bool(True).tag(sync=True)
