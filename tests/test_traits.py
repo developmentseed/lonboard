@@ -1,4 +1,5 @@
 import numpy as np
+import pandas as pd
 import pyarrow as pa
 import pytest
 from ipywidgets import Widget
@@ -133,6 +134,9 @@ def test_float_accessor_validation_type():
     FloatAccessorWidget(value=np.array([2, 3, 4]))
     FloatAccessorWidget(value=np.array([2, 3, 4], dtype=np.float32))
     FloatAccessorWidget(value=np.array([2, 3, 4], dtype=np.float64))
+    FloatAccessorWidget(value=pd.Series([2, 3, 4]))
+    FloatAccessorWidget(value=pd.Series([2, 3, 4], dtype=np.float32))
+    FloatAccessorWidget(value=pd.Series([2, 3, 4], dtype=np.float64))
 
     # Must be floating-point array type
     with pytest.raises(TraitError):
