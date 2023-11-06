@@ -3,11 +3,11 @@ from __future__ import annotations
 from pathlib import Path
 from typing import Union
 
-import anywidget
 import ipywidgets
 import traitlets
 from ipywidgets.embed import embed_minimal_html
 
+from lonboard._base import BaseAnyWidget
 from lonboard._layer import BaseLayer
 from lonboard._viewport import compute_view
 
@@ -15,7 +15,7 @@ from lonboard._viewport import compute_view
 bundler_output_dir = Path(__file__).parent / "static"
 
 
-class Map(anywidget.AnyWidget):
+class Map(BaseAnyWidget):
     """
     The top-level class used to display a map in a Jupyter Widget.
 
