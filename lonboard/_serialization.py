@@ -1,6 +1,8 @@
 import math
 from io import BytesIO
 from typing import List, Tuple, Union
+import dataclasses
+from lonboard._viewport import ViewState
 
 import numpy as np
 import pyarrow as pa
@@ -74,6 +76,14 @@ def infer_rows_per_chunk(table: pa.Table) -> int:
     return rows_per_chunk
 
 
+def dataclass_serialization(data, obj):
+    return dataclasses.asdict(data)
+
+def dataclass_deserialization(data):
+    names = ["latitude", "longitude", "zoom"]
+    ViewState
+
 COLOR_SERIALIZATION = {"to_json": serialize_color_accessor}
 FLOAT_SERIALIZATION = {"to_json": serialize_float_accessor}
 TABLE_SERIALIZATION = {"to_json": serialize_table}
+VIEW_STATE_SERIALIZATION = {"to_json": dataclass_serialization, "from_json": }

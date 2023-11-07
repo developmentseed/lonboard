@@ -12,7 +12,7 @@ import matplotlib as mpl
 import numpy as np
 import pyarrow as pa
 import traitlets
-from traitlets import TraitError
+from traitlets import HasTraits, TraitError
 from traitlets.traitlets import TraitType
 from traitlets.utils.descriptions import class_of, describe
 from typing_extensions import Self
@@ -333,3 +333,23 @@ class FloatAccessor(FixedErrorTraitType):
 
         self.error(obj, value)
         assert False
+
+
+class _ObservableInstance(traitlets.Instance):
+    """Mimics the traitlets `Dict` class, but will fire a `change` event when
+    a dictionary object is updated (new value added, etc.). Can get hooked up
+    with traitlets/ipywidget `observe()` func and some other thigns"""
+
+    def validate(self, obj: HasTraits, value):
+        if isinstance(value, dict):
+            value = self.klass(**value)  # type: ignore
+
+        value = super().validate(obj, value)
+
+        @value.events.connect
+        def on_any_change():
+            obj._notify_observers(
+                {"name": self.name, "value": value, "owner": obj, "type": "change"}
+            )
+
+        return value

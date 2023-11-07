@@ -18,6 +18,7 @@ palettable = "^3.3.3"
 # future to remove the matplotlib dependency.
 matplotlib = "^3.7"
 shapely = "^2"
+psygnal = "^0.9.4"
 
 
 [tool.poetry.group.dev.dependencies]
