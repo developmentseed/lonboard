@@ -8,6 +8,7 @@ import type { IWidgetManager, WidgetModel } from "@jupyter-widgets/base";
 import {
   ArcModel,
   BaseLayerModel,
+  HeatmapModel,
   PathModel,
   ScatterplotModel,
   SolidPolygonModel,
@@ -82,6 +83,11 @@ function getChildModelState(
         break;
       case "arc":
         newSubModelState[childLayerId] = new ArcModel(childModel, () =>
+          setStateCounter(new Date())
+        );
+        break;
+      case "heatmap":
+        newSubModelState[childLayerId] = new HeatmapModel(childModel, () =>
           setStateCounter(new Date())
         );
         break;
