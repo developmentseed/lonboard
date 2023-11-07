@@ -7,6 +7,8 @@ import {
   GeoArrowSolidPolygonLayerProps,
   GeoArrowArcLayer,
   GeoArrowArcLayerProps,
+  GeoArrowHeatmapLayerProps,
+  GeoArrowHeatmapLayer,
 } from "@geoarrow/deck.gl-layers";
 import * as arrow from "apache-arrow";
 import type { WidgetModel } from "@jupyter-widgets/base";
@@ -377,6 +379,61 @@ export class ArcModel extends BaseLayerModel {
       ...(this.getWidth && { getWidth: this.getWidth }),
       ...(this.getHeight && { getHeight: this.getHeight }),
       ...(this.getTilt && { getTilt: this.getTilt }),
+    });
+  }
+}
+
+export class HeatmapModel extends BaseLayerModel {
+  protected radiusPixels: GeoArrowHeatmapLayerProps["radiusPixels"] | null;
+  protected colorRange: GeoArrowHeatmapLayerProps["colorRange"] | null;
+  protected intensity: GeoArrowHeatmapLayerProps["intensity"] | null;
+  protected threshold: GeoArrowHeatmapLayerProps["threshold"] | null;
+  protected colorDomain: GeoArrowHeatmapLayerProps["colorDomain"] | null;
+  protected aggregation: GeoArrowHeatmapLayerProps["aggregation"] | null;
+  protected weightsTextureSize:
+    | GeoArrowHeatmapLayerProps["weightsTextureSize"]
+    | null;
+  protected debounceTimeout:
+    | GeoArrowHeatmapLayerProps["debounceTimeout"]
+    | null;
+  protected getPosition: GeoArrowHeatmapLayerProps["getPosition"] | null;
+  protected getWeight: GeoArrowHeatmapLayerProps["getWeight"] | null;
+
+  constructor(model: WidgetModel, updateStateCallback: () => void) {
+    super(model, updateStateCallback);
+
+    this.initRegularAttribute("radius_pixels", "radiusPixels");
+    this.initRegularAttribute("color_range", "colorRange");
+    this.initRegularAttribute("intensity", "intensity");
+    this.initRegularAttribute("threshold", "threshold");
+    this.initRegularAttribute("color_domain", "colorDomain");
+    this.initRegularAttribute("aggregation", "aggregation");
+    this.initRegularAttribute("weights_texture_size", "weightsTextureSize");
+    this.initRegularAttribute("debounce_timeout", "debounceTimeout");
+
+    this.initVectorizedAccessor("get_position", "getPosition");
+    this.initVectorizedAccessor("get_weight", "getWeight");
+  }
+
+  render(): GeoArrowHeatmapLayer {
+    return new GeoArrowHeatmapLayer({
+      ...this.baseLayerProps(),
+      // Note: this is included here instead of in baseLayerProps to satisfy
+      // typing.
+      data: this.table,
+
+      ...(this.radiusPixels && { radiusPixels: this.radiusPixels }),
+      ...(this.colorRange && { colorRange: this.colorRange }),
+      ...(this.intensity && { intensity: this.intensity }),
+      ...(this.threshold && { threshold: this.threshold }),
+      ...(this.colorDomain && { colorDomain: this.colorDomain }),
+      ...(this.aggregation && { aggregation: this.aggregation }),
+      ...(this.weightsTextureSize && {
+        weightsTextureSize: this.weightsTextureSize,
+      }),
+      ...(this.debounceTimeout && { debounceTimeout: this.debounceTimeout }),
+      ...(this.getPosition && { getPosition: this.getPosition }),
+      ...(this.getWeight && { getWeight: this.getWeight }),
     });
   }
 }
