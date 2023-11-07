@@ -6,6 +6,7 @@ import DeckGL from "@deck.gl/react/typed";
 import type { Layer } from "@deck.gl/core/typed";
 import type { IWidgetManager, WidgetModel } from "@jupyter-widgets/base";
 import {
+  ArcModel,
   BaseLayerModel,
   PathModel,
   ScatterplotModel,
@@ -76,6 +77,11 @@ function getChildModelState(
         break;
       case "solid-polygon":
         newSubModelState[childLayerId] = new SolidPolygonModel(childModel, () =>
+          setStateCounter(new Date())
+        );
+        break;
+      case "arc":
+        newSubModelState[childLayerId] = new ArcModel(childModel, () =>
           setStateCounter(new Date())
         );
         break;
