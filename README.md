@@ -11,7 +11,7 @@
 [colab_badge]: https://colab.research.google.com/assets/colab-badge.svg
 [colab_notebook_link]: https://colab.research.google.com/github/developmentseed/lonboard/blob/main
 
-Python library for extremely fast geospatial vector data visualization in Jupyter.
+Python library for fast, interactive geospatial vector data visualization in Jupyter.
 
 ![](assets/hero-image.jpg)
 

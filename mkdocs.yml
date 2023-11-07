@@ -22,22 +22,22 @@ extra:
 nav:
   - "index.md"
   - Example Notebooks:
-    - examples/internet-speeds.ipynb
-    - examples/north-america-roads.ipynb
-    - Integrations:
-      - ColorPicker: examples/integrations/color-picker.ipynb
-      - Sidecar: examples/integrations/sidecar.ipynb
-    - 30 Day Map Challenge:
-      - "Day 1: Points": examples/map_challenge/1-points.ipynb
+      - examples/internet-speeds.ipynb
+      - examples/north-america-roads.ipynb
+      - Integrations:
+          - ColorPicker: examples/integrations/color-picker.ipynb
+          - Sidecar: examples/integrations/sidecar.ipynb
+      - 30 Day Map Challenge:
+          - "Day 1: Points": examples/map_challenge/1-points.ipynb
   - API Reference:
-    - api/viz.md
-    - api/map.md
-    - Layers:
-      - api/layers/scatterplot-layer.md
-      - api/layers/path-layer.md
-      - api/layers/solid-polygon-layer.md
-    - api/colormap.md
-    - api/traits.md
+      - api/viz.md
+      - api/map.md
+      - Layers:
+          - api/layers/scatterplot-layer.md
+          - api/layers/path-layer.md
+          - api/layers/solid-polygon-layer.md
+      - api/colormap.md
+      - api/traits.md
   # - Caveats: caveats.md
   - Performance: performance.md
   - Changelog: CHANGELOG.md
@@ -84,8 +84,8 @@ plugins:
   - search
   - social
   - mike:
-      alias_type: 'copy'
-      canonical_version: 'latest'
+      alias_type: "copy"
+      canonical_version: "latest"
   - mkdocs-jupyter:
       include_source: True
       ignore: ["**/.ipynb_checkpoints/*.ipynb"]
@@ -93,7 +93,7 @@ plugins:
       enable_inventory: true
       handlers:
         python:
-          paths: [ lonboard ]
+          paths: [lonboard]
           options:
             show_root_heading: true
             docstring_style: google
@@ -128,7 +128,6 @@ plugins:
             - https://shapely.readthedocs.io/en/stable/objects.inv
             - https://traitlets.readthedocs.io/en/stable/objects.inv
             - https://xyzservices.readthedocs.io/en/stable/objects.inv
-
 
 # https://github.com/developmentseed/titiler/blob/50934c929cca2fa8d3c408d239015f8da429c6a8/docs/mkdocs.yml#L115-L140
 markdown_extensions:
