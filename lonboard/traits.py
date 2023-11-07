@@ -133,6 +133,9 @@ class PyarrowTableTrait(FixedErrorTraitType):
             self.error(obj, value)
 
         allowed_geometry_types = self.metadata.get("allowed_geometry_types")
+        if not allowed_geometry_types:
+            return value
+
         geometry_extension_type = value.schema.field("geometry").metadata.get(
             b"ARROW:extension:name"
         )
