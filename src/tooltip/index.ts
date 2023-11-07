@@ -23,11 +23,17 @@ function toHtmlTable(featureProperties: Record<string, any>): string {
 
 export function getTooltip({ object }: GeoArrowPickingInfo): TooltipContent {
   if (object) {
-    // If the row index is -1, return
+    // If the row index is -1 or undefined, return
     //
     // Note that this is a private API, but this appears to be the only way to
     // get this information
-    if (object[rowIndexSymbol] && object[rowIndexSymbol] < 0) {
+    //
+    // Without this block, we end up showing a tooltip even when not hovering
+    // over a point
+    if (
+      !object[rowIndexSymbol] ||
+      (object[rowIndexSymbol] && object[rowIndexSymbol] < 0)
+    ) {
       return null;
     }
 
