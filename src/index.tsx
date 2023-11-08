@@ -111,6 +111,7 @@ function App() {
   let [mapHeight] = useModelState<number>("_height");
   let [showTooltip] = useModelState<boolean>("show_tooltip");
   let [pickingRadius] = useModelState<number>("picking_radius");
+  let [mapId] = useModelState<string>("_id");
 
   let [subModelState, setSubModelState] = useState<
     Record<string, BaseLayerModel>
@@ -156,7 +157,7 @@ function App() {
   useEffect(() => {
     if (mapHeight) return;
 
-    const mapContainer = document.getElementById("map");
+    const mapContainer = document.getElementById(`map-${mapId}`);
     const mapContainerParent = mapContainer?.parentElement;
 
     if (mapContainerParent) {
@@ -173,7 +174,7 @@ function App() {
   }, []);
 
   return (
-    <div id="map" style={{ height: mapHeight || "100%" }}>
+    <div id={`map-${mapId}`} style={{ height: mapHeight || "100%" }}>
       <DeckGL
         initialViewState={
           ["longitude", "latitude", "zoom"].every((key) =>

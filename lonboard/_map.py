@@ -2,6 +2,7 @@ from __future__ import annotations
 
 from pathlib import Path
 from typing import Union
+from uuid import uuid4
 
 import ipywidgets
 import traitlets
@@ -74,6 +75,9 @@ class Map(BaseAnyWidget):
     This API is not yet stabilized and may change in the future.
     """
 
+    # A map-specific UUID
+    _id = traitlets.Unicode().tag(sync=True)
+
     _height = traitlets.Int(default_value=None, allow_none=True).tag(sync=True)
     """Height of the map in pixels.
 
@@ -112,6 +116,10 @@ class Map(BaseAnyWidget):
             filename: where to save the generated HTML file.
         """
         embed_minimal_html(filename, views=[self], drop_defaults=False)
+
+    @traitlets.default("_id")
+    def _default_id(self):
+        return str(uuid4())
 
     @traitlets.default("_initial_view_state")
     def _default_initial_view_state(self):
