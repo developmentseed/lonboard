@@ -151,7 +151,7 @@ function App() {
     layers.push(subModel.render());
   }
 
-  // This hook check if the map container parent has a height set, which is
+  // This hook checks if the map container parent has a height set, which is
   // needed to make the map fill the parent container.
   useEffect(() => {
     const mapContainer = document.getElementById("map");
