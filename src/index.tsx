@@ -6,7 +6,9 @@ import DeckGL from "@deck.gl/react/typed";
 import type { Layer } from "@deck.gl/core/typed";
 import type { IWidgetManager, WidgetModel } from "@jupyter-widgets/base";
 import {
+  ArcModel,
   BaseLayerModel,
+  HeatmapModel,
   PathModel,
   ScatterplotModel,
   SolidPolygonModel,
@@ -79,6 +81,16 @@ function getChildModelState(
           setStateCounter(new Date())
         );
         break;
+      case "arc":
+        newSubModelState[childLayerId] = new ArcModel(childModel, () =>
+          setStateCounter(new Date())
+        );
+        break;
+      case "heatmap":
+        newSubModelState[childLayerId] = new HeatmapModel(childModel, () =>
+          setStateCounter(new Date())
+        );
+        break;
       default:
         console.error(`no layer supported for ${layerType}`);
         break;
@@ -98,6 +110,7 @@ function App() {
   let [initialViewState] = useModelState<DataView>("_initial_view_state");
   let [mapHeight] = useModelState<number>("_height");
   let [showTooltip] = useModelState<boolean>("show_tooltip");
+  let [pickingRadius] = useModelState<number>("picking_radius");
 
   let [subModelState, setSubModelState] = useState<
     Record<string, BaseLayerModel>
@@ -151,7 +164,7 @@ function App() {
         controller={true}
         layers={layers}
         getTooltip={showTooltip && getTooltip}
-        pickingRadius={10}
+        pickingRadius={pickingRadius}
       >
         <Map mapStyle={MAP_STYLE} />
       </DeckGL>

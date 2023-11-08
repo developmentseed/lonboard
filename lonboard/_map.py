@@ -1,11 +1,13 @@
 from __future__ import annotations
 
 from pathlib import Path
+from typing import Union
 
-import anywidget
 import ipywidgets
 import traitlets
+from ipywidgets.embed import embed_minimal_html
 
+from lonboard._base import BaseAnyWidget
 from lonboard._layer import BaseLayer
 from lonboard._viewport import compute_view
 
@@ -13,7 +15,7 @@ from lonboard._viewport import compute_view
 bundler_output_dir = Path(__file__).parent / "static"
 
 
-class Map(anywidget.AnyWidget):
+class Map(BaseAnyWidget):
     """
     The top-level class used to display a map in a Jupyter Widget.
 
@@ -92,7 +94,29 @@ class Map(anywidget.AnyWidget):
     - Default: `True`
     """
 
+    picking_radius = traitlets.Int(5).tag(sync=True)
+    """
+    Extra pixels around the pointer to include while picking (such as for a tooltip).
+
+    This is helpful when rendered objects are difficult to target, for example
+    irregularly shaped icons, small moving circles or interaction by touch.
+
+    - Type: `int`
+    - Default: `5`
+    """
+
+    def to_html(self, filename: Union[str, Path]) -> None:
+        """Save the current map as a standalone HTML file.
+
+        Args:
+            filename: where to save the generated HTML file.
+        """
+        embed_minimal_html(filename, views=[self], drop_defaults=False)
+
     @traitlets.default("_initial_view_state")
     def _default_initial_view_state(self):
-        tables = [layer.table for layer in self.layers]
-        return compute_view(tables)
+        tables = [layer.table for layer in self.layers if layer.table]
+        if tables:
+            return compute_view(tables)
+        else:
+            return {}

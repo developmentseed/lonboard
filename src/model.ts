@@ -5,6 +5,10 @@ import {
   GeoArrowScatterplotLayerProps,
   GeoArrowSolidPolygonLayer,
   GeoArrowSolidPolygonLayerProps,
+  GeoArrowArcLayer,
+  GeoArrowArcLayerProps,
+  GeoArrowHeatmapLayerProps,
+  GeoArrowHeatmapLayer,
 } from "@geoarrow/deck.gl-layers";
 import * as arrow from "apache-arrow";
 import type { WidgetModel } from "@jupyter-widgets/base";
@@ -309,6 +313,127 @@ export class SolidPolygonModel extends BaseLayerModel {
       ...(this.getElevation && { getElevation: this.getElevation }),
       ...(this.getFillColor && { getFillColor: this.getFillColor }),
       ...(this.getLineColor && { getLineColor: this.getLineColor }),
+    });
+  }
+}
+
+export class ArcModel extends BaseLayerModel {
+  protected greatCircle: GeoArrowArcLayerProps["greatCircle"] | null;
+  protected numSegments: GeoArrowArcLayerProps["numSegments"] | null;
+  protected widthUnits: GeoArrowArcLayerProps["widthUnits"] | null;
+  protected widthScale: GeoArrowArcLayerProps["widthScale"] | null;
+  protected widthMinPixels: GeoArrowArcLayerProps["widthMinPixels"] | null;
+  protected widthMaxPixels: GeoArrowArcLayerProps["widthMaxPixels"] | null;
+  protected getSourcePosition:
+    | GeoArrowArcLayerProps["getSourcePosition"]
+    | null;
+  protected getTargetPosition:
+    | GeoArrowArcLayerProps["getTargetPosition"]
+    | null;
+  protected getSourceColor: GeoArrowArcLayerProps["getSourceColor"] | null;
+  protected getTargetColor: GeoArrowArcLayerProps["getTargetColor"] | null;
+  protected getWidth: GeoArrowArcLayerProps["getWidth"] | null;
+  protected getHeight: GeoArrowArcLayerProps["getHeight"] | null;
+  protected getTilt: GeoArrowArcLayerProps["getTilt"] | null;
+
+  constructor(model: WidgetModel, updateStateCallback: () => void) {
+    super(model, updateStateCallback);
+
+    this.initRegularAttribute("great_circle", "greatCircle");
+    this.initRegularAttribute("num_segments", "numSegments");
+    this.initRegularAttribute("width_units", "widthUnits");
+    this.initRegularAttribute("width_scale", "widthScale");
+    this.initRegularAttribute("width_min_pixels", "widthMinPixels");
+    this.initRegularAttribute("width_max_pixels", "widthMaxPixels");
+
+    this.initVectorizedAccessor("get_source_position", "getSourcePosition");
+    this.initVectorizedAccessor("get_target_position", "getTargetPosition");
+    this.initVectorizedAccessor("get_source_color", "getSourceColor");
+    this.initVectorizedAccessor("get_target_color", "getTargetColor");
+    this.initVectorizedAccessor("get_width", "getWidth");
+    this.initVectorizedAccessor("get_height", "getHeight");
+    this.initVectorizedAccessor("get_tilt", "getTilt");
+  }
+
+  render(): GeoArrowArcLayer {
+    return new GeoArrowArcLayer({
+      ...this.baseLayerProps(),
+      // Note: this is included here instead of in baseLayerProps to satisfy
+      // typing.
+      data: this.table,
+
+      ...(this.greatCircle && { greatCircle: this.greatCircle }),
+      ...(this.numSegments && { numSegments: this.numSegments }),
+      ...(this.widthUnits && { widthUnits: this.widthUnits }),
+      ...(this.widthScale && { widthScale: this.widthScale }),
+      ...(this.widthMinPixels && { widthMinPixels: this.widthMinPixels }),
+      ...(this.widthMaxPixels && { widthMaxPixels: this.widthMaxPixels }),
+      ...(this.getSourcePosition && {
+        getSourcePosition: this.getSourcePosition,
+      }),
+      ...(this.getTargetPosition && {
+        getTargetPosition: this.getTargetPosition,
+      }),
+      ...(this.getSourceColor && { getSourceColor: this.getSourceColor }),
+      ...(this.getTargetColor && { getTargetColor: this.getTargetColor }),
+      ...(this.getWidth && { getWidth: this.getWidth }),
+      ...(this.getHeight && { getHeight: this.getHeight }),
+      ...(this.getTilt && { getTilt: this.getTilt }),
+    });
+  }
+}
+
+export class HeatmapModel extends BaseLayerModel {
+  protected radiusPixels: GeoArrowHeatmapLayerProps["radiusPixels"] | null;
+  protected colorRange: GeoArrowHeatmapLayerProps["colorRange"] | null;
+  protected intensity: GeoArrowHeatmapLayerProps["intensity"] | null;
+  protected threshold: GeoArrowHeatmapLayerProps["threshold"] | null;
+  protected colorDomain: GeoArrowHeatmapLayerProps["colorDomain"] | null;
+  protected aggregation: GeoArrowHeatmapLayerProps["aggregation"] | null;
+  protected weightsTextureSize:
+    | GeoArrowHeatmapLayerProps["weightsTextureSize"]
+    | null;
+  protected debounceTimeout:
+    | GeoArrowHeatmapLayerProps["debounceTimeout"]
+    | null;
+  protected getPosition: GeoArrowHeatmapLayerProps["getPosition"] | null;
+  protected getWeight: GeoArrowHeatmapLayerProps["getWeight"] | null;
+
+  constructor(model: WidgetModel, updateStateCallback: () => void) {
+    super(model, updateStateCallback);
+
+    this.initRegularAttribute("radius_pixels", "radiusPixels");
+    this.initRegularAttribute("color_range", "colorRange");
+    this.initRegularAttribute("intensity", "intensity");
+    this.initRegularAttribute("threshold", "threshold");
+    this.initRegularAttribute("color_domain", "colorDomain");
+    this.initRegularAttribute("aggregation", "aggregation");
+    this.initRegularAttribute("weights_texture_size", "weightsTextureSize");
+    this.initRegularAttribute("debounce_timeout", "debounceTimeout");
+
+    this.initVectorizedAccessor("get_position", "getPosition");
+    this.initVectorizedAccessor("get_weight", "getWeight");
+  }
+
+  render(): GeoArrowHeatmapLayer {
+    return new GeoArrowHeatmapLayer({
+      ...this.baseLayerProps(),
+      // Note: this is included here instead of in baseLayerProps to satisfy
+      // typing.
+      data: this.table,
+
+      ...(this.radiusPixels && { radiusPixels: this.radiusPixels }),
+      ...(this.colorRange && { colorRange: this.colorRange }),
+      ...(this.intensity && { intensity: this.intensity }),
+      ...(this.threshold && { threshold: this.threshold }),
+      ...(this.colorDomain && { colorDomain: this.colorDomain }),
+      ...(this.aggregation && { aggregation: this.aggregation }),
+      ...(this.weightsTextureSize && {
+        weightsTextureSize: this.weightsTextureSize,
+      }),
+      ...(this.debounceTimeout && { debounceTimeout: this.debounceTimeout }),
+      ...(this.getPosition && { getPosition: this.getPosition }),
+      ...(this.getWeight && { getWeight: this.getWeight }),
     });
   }
 }
