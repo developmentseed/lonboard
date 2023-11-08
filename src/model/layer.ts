@@ -137,186 +137,6 @@ export abstract class BaseLayerModel extends BaseModel {
   }
 }
 
-export class ScatterplotModel extends BaseLayerModel {
-  static layerType = "scatterplot";
-
-  protected radiusUnits: GeoArrowScatterplotLayerProps["radiusUnits"] | null;
-  protected radiusScale: GeoArrowScatterplotLayerProps["radiusScale"] | null;
-  protected radiusMinPixels:
-    | GeoArrowScatterplotLayerProps["radiusMinPixels"]
-    | null;
-  protected radiusMaxPixels:
-    | GeoArrowScatterplotLayerProps["radiusMaxPixels"]
-    | null;
-  protected lineWidthUnits:
-    | GeoArrowScatterplotLayerProps["lineWidthUnits"]
-    | null;
-  protected lineWidthScale:
-    | GeoArrowScatterplotLayerProps["lineWidthScale"]
-    | null;
-  protected lineWidthMinPixels:
-    | GeoArrowScatterplotLayerProps["lineWidthMinPixels"]
-    | null;
-  protected lineWidthMaxPixels:
-    | GeoArrowScatterplotLayerProps["lineWidthMaxPixels"]
-    | null;
-  protected stroked: GeoArrowScatterplotLayerProps["stroked"] | null;
-  protected filled: GeoArrowScatterplotLayerProps["filled"] | null;
-  protected billboard: GeoArrowScatterplotLayerProps["billboard"] | null;
-  protected antialiasing: GeoArrowScatterplotLayerProps["antialiasing"] | null;
-  protected getRadius: GeoArrowScatterplotLayerProps["getRadius"] | null;
-  protected getFillColor: GeoArrowScatterplotLayerProps["getFillColor"] | null;
-  protected getLineColor: GeoArrowScatterplotLayerProps["getLineColor"] | null;
-  protected getLineWidth: GeoArrowScatterplotLayerProps["getLineWidth"] | null;
-
-  constructor(model: WidgetModel, updateStateCallback: () => void) {
-    super(model, updateStateCallback);
-
-    this.initRegularAttribute("radius_units", "radiusUnits");
-    this.initRegularAttribute("radius_scale", "radiusScale");
-    this.initRegularAttribute("radius_min_pixels", "radiusMinPixels");
-    this.initRegularAttribute("radius_max_pixels", "radiusMaxPixels");
-    this.initRegularAttribute("line_width_units", "lineWidthUnits");
-    this.initRegularAttribute("line_width_scale", "lineWidthScale");
-    this.initRegularAttribute("line_width_min_pixels", "lineWidthMinPixels");
-    this.initRegularAttribute("line_width_max_pixels", "lineWidthMaxPixels");
-    this.initRegularAttribute("stroked", "stroked");
-    this.initRegularAttribute("filled", "filled");
-    this.initRegularAttribute("billboard", "billboard");
-    this.initRegularAttribute("antialiasing", "antialiasing");
-
-    this.initVectorizedAccessor("get_radius", "getRadius");
-    this.initVectorizedAccessor("get_fill_color", "getFillColor");
-    this.initVectorizedAccessor("get_line_color", "getLineColor");
-    this.initVectorizedAccessor("get_line_width", "getLineWidth");
-  }
-
-  render(): GeoArrowScatterplotLayer {
-    return new GeoArrowScatterplotLayer({
-      ...this.baseLayerProps(),
-      // Note: this is included here instead of in baseLayerProps to satisfy
-      // typing.
-      data: this.table,
-
-      ...(this.radiusUnits && { radiusUnits: this.radiusUnits }),
-      ...(this.radiusScale && { radiusScale: this.radiusScale }),
-      ...(this.radiusMinPixels && { radiusMinPixels: this.radiusMinPixels }),
-      ...(this.radiusMaxPixels && { radiusMaxPixels: this.radiusMaxPixels }),
-      ...(this.lineWidthUnits && { lineWidthUnits: this.lineWidthUnits }),
-      ...(this.lineWidthScale && { lineWidthScale: this.lineWidthScale }),
-      ...(this.lineWidthMinPixels && {
-        lineWidthMinPixels: this.lineWidthMinPixels,
-      }),
-      ...(this.lineWidthMaxPixels && {
-        lineWidthMaxPixels: this.lineWidthMaxPixels,
-      }),
-      ...(this.stroked && { stroked: this.stroked }),
-      ...(this.filled && { filled: this.filled }),
-      ...(this.billboard && { billboard: this.billboard }),
-      ...(this.antialiasing && { antialiasing: this.antialiasing }),
-      ...(this.getRadius && { getRadius: this.getRadius }),
-      ...(this.getFillColor && { getFillColor: this.getFillColor }),
-      ...(this.getLineColor && { getLineColor: this.getLineColor }),
-      ...(this.getLineWidth && { getLineWidth: this.getLineWidth }),
-    });
-  }
-}
-
-export class PathModel extends BaseLayerModel {
-  static layerType = "path";
-
-  protected widthUnits: GeoArrowPathLayerProps["widthUnits"] | null;
-  protected widthScale: GeoArrowPathLayerProps["widthScale"] | null;
-  protected widthMinPixels: GeoArrowPathLayerProps["widthMinPixels"] | null;
-  protected widthMaxPixels: GeoArrowPathLayerProps["widthMaxPixels"] | null;
-  protected jointRounded: GeoArrowPathLayerProps["jointRounded"] | null;
-  protected capRounded: GeoArrowPathLayerProps["capRounded"] | null;
-  protected miterLimit: GeoArrowPathLayerProps["miterLimit"] | null;
-  protected billboard: GeoArrowPathLayerProps["billboard"] | null;
-  protected getColor: GeoArrowPathLayerProps["getColor"] | null;
-  protected getWidth: GeoArrowPathLayerProps["getWidth"] | null;
-
-  constructor(model: WidgetModel, updateStateCallback: () => void) {
-    super(model, updateStateCallback);
-
-    this.initRegularAttribute("width_units", "widthUnits");
-    this.initRegularAttribute("width_scale", "widthScale");
-    this.initRegularAttribute("width_min_pixels", "widthMinPixels");
-    this.initRegularAttribute("width_max_pixels", "widthMaxPixels");
-    this.initRegularAttribute("joint_rounded", "jointRounded");
-    this.initRegularAttribute("cap_rounded", "capRounded");
-    this.initRegularAttribute("miter_limit", "miterLimit");
-    this.initRegularAttribute("billboard", "billboard");
-
-    this.initVectorizedAccessor("get_color", "getColor");
-    this.initVectorizedAccessor("get_width", "getWidth");
-  }
-
-  render(): GeoArrowPathLayer {
-    return new GeoArrowPathLayer({
-      ...this.baseLayerProps(),
-      // Note: this is included here instead of in baseLayerProps to satisfy
-      // typing.
-      data: this.table,
-
-      ...(this.widthUnits && { widthUnits: this.widthUnits }),
-      ...(this.widthScale && { widthScale: this.widthScale }),
-      ...(this.widthMinPixels && { widthMinPixels: this.widthMinPixels }),
-      ...(this.widthMaxPixels && { widthMaxPixels: this.widthMaxPixels }),
-      ...(this.jointRounded && { jointRounded: this.jointRounded }),
-      ...(this.capRounded && { capRounded: this.capRounded }),
-      ...(this.miterLimit && { miterLimit: this.miterLimit }),
-      ...(this.billboard && { billboard: this.billboard }),
-      ...(this.getColor && { getColor: this.getColor }),
-      ...(this.getWidth && { getWidth: this.getWidth }),
-    });
-  }
-}
-
-export class SolidPolygonModel extends BaseLayerModel {
-  static layerType = "solid-polygon";
-
-  protected filled: GeoArrowSolidPolygonLayerProps["filled"] | null;
-  protected extruded: GeoArrowSolidPolygonLayerProps["extruded"] | null;
-  protected wireframe: GeoArrowSolidPolygonLayerProps["wireframe"] | null;
-  protected elevationScale:
-    | GeoArrowSolidPolygonLayerProps["elevationScale"]
-    | null;
-  protected getElevation: GeoArrowSolidPolygonLayerProps["getElevation"] | null;
-  protected getFillColor: GeoArrowSolidPolygonLayerProps["getFillColor"] | null;
-  protected getLineColor: GeoArrowSolidPolygonLayerProps["getLineColor"] | null;
-
-  constructor(model: WidgetModel, updateStateCallback: () => void) {
-    super(model, updateStateCallback);
-
-    this.initRegularAttribute("filled", "filled");
-    this.initRegularAttribute("extruded", "extruded");
-    this.initRegularAttribute("wireframe", "wireframe");
-    this.initRegularAttribute("elevation_scale", "elevationScale");
-
-    this.initVectorizedAccessor("get_elevation", "getElevation");
-    this.initVectorizedAccessor("get_fill_color", "getFillColor");
-    this.initVectorizedAccessor("get_line_color", "getLineColor");
-  }
-
-  render(): GeoArrowSolidPolygonLayer {
-    return new GeoArrowSolidPolygonLayer({
-      ...this.baseLayerProps(),
-      // Note: this is included here instead of in baseLayerProps to satisfy
-      // typing.
-      data: this.table,
-
-      ...(this.filled && { filled: this.filled }),
-      ...(this.extruded && { extruded: this.extruded }),
-      ...(this.wireframe && { wireframe: this.wireframe }),
-      ...(this.elevationScale && { elevationScale: this.elevationScale }),
-      ...(this.getElevation && { getElevation: this.getElevation }),
-      ...(this.getFillColor && { getFillColor: this.getFillColor }),
-      ...(this.getLineColor && { getLineColor: this.getLineColor }),
-    });
-  }
-}
-
 export class ArcModel extends BaseLayerModel {
   static layerType = "arc";
 
@@ -442,6 +262,185 @@ export class HeatmapModel extends BaseLayerModel {
   }
 }
 
+export class PathModel extends BaseLayerModel {
+  static layerType = "path";
+
+  protected widthUnits: GeoArrowPathLayerProps["widthUnits"] | null;
+  protected widthScale: GeoArrowPathLayerProps["widthScale"] | null;
+  protected widthMinPixels: GeoArrowPathLayerProps["widthMinPixels"] | null;
+  protected widthMaxPixels: GeoArrowPathLayerProps["widthMaxPixels"] | null;
+  protected jointRounded: GeoArrowPathLayerProps["jointRounded"] | null;
+  protected capRounded: GeoArrowPathLayerProps["capRounded"] | null;
+  protected miterLimit: GeoArrowPathLayerProps["miterLimit"] | null;
+  protected billboard: GeoArrowPathLayerProps["billboard"] | null;
+  protected getColor: GeoArrowPathLayerProps["getColor"] | null;
+  protected getWidth: GeoArrowPathLayerProps["getWidth"] | null;
+
+  constructor(model: WidgetModel, updateStateCallback: () => void) {
+    super(model, updateStateCallback);
+
+    this.initRegularAttribute("width_units", "widthUnits");
+    this.initRegularAttribute("width_scale", "widthScale");
+    this.initRegularAttribute("width_min_pixels", "widthMinPixels");
+    this.initRegularAttribute("width_max_pixels", "widthMaxPixels");
+    this.initRegularAttribute("joint_rounded", "jointRounded");
+    this.initRegularAttribute("cap_rounded", "capRounded");
+    this.initRegularAttribute("miter_limit", "miterLimit");
+    this.initRegularAttribute("billboard", "billboard");
+
+    this.initVectorizedAccessor("get_color", "getColor");
+    this.initVectorizedAccessor("get_width", "getWidth");
+  }
+
+  render(): GeoArrowPathLayer {
+    return new GeoArrowPathLayer({
+      ...this.baseLayerProps(),
+      // Note: this is included here instead of in baseLayerProps to satisfy
+      // typing.
+      data: this.table,
+
+      ...(this.widthUnits && { widthUnits: this.widthUnits }),
+      ...(this.widthScale && { widthScale: this.widthScale }),
+      ...(this.widthMinPixels && { widthMinPixels: this.widthMinPixels }),
+      ...(this.widthMaxPixels && { widthMaxPixels: this.widthMaxPixels }),
+      ...(this.jointRounded && { jointRounded: this.jointRounded }),
+      ...(this.capRounded && { capRounded: this.capRounded }),
+      ...(this.miterLimit && { miterLimit: this.miterLimit }),
+      ...(this.billboard && { billboard: this.billboard }),
+      ...(this.getColor && { getColor: this.getColor }),
+      ...(this.getWidth && { getWidth: this.getWidth }),
+    });
+  }
+}
+export class ScatterplotModel extends BaseLayerModel {
+  static layerType = "scatterplot";
+
+  protected radiusUnits: GeoArrowScatterplotLayerProps["radiusUnits"] | null;
+  protected radiusScale: GeoArrowScatterplotLayerProps["radiusScale"] | null;
+  protected radiusMinPixels:
+    | GeoArrowScatterplotLayerProps["radiusMinPixels"]
+    | null;
+  protected radiusMaxPixels:
+    | GeoArrowScatterplotLayerProps["radiusMaxPixels"]
+    | null;
+  protected lineWidthUnits:
+    | GeoArrowScatterplotLayerProps["lineWidthUnits"]
+    | null;
+  protected lineWidthScale:
+    | GeoArrowScatterplotLayerProps["lineWidthScale"]
+    | null;
+  protected lineWidthMinPixels:
+    | GeoArrowScatterplotLayerProps["lineWidthMinPixels"]
+    | null;
+  protected lineWidthMaxPixels:
+    | GeoArrowScatterplotLayerProps["lineWidthMaxPixels"]
+    | null;
+  protected stroked: GeoArrowScatterplotLayerProps["stroked"] | null;
+  protected filled: GeoArrowScatterplotLayerProps["filled"] | null;
+  protected billboard: GeoArrowScatterplotLayerProps["billboard"] | null;
+  protected antialiasing: GeoArrowScatterplotLayerProps["antialiasing"] | null;
+  protected getRadius: GeoArrowScatterplotLayerProps["getRadius"] | null;
+  protected getFillColor: GeoArrowScatterplotLayerProps["getFillColor"] | null;
+  protected getLineColor: GeoArrowScatterplotLayerProps["getLineColor"] | null;
+  protected getLineWidth: GeoArrowScatterplotLayerProps["getLineWidth"] | null;
+
+  constructor(model: WidgetModel, updateStateCallback: () => void) {
+    super(model, updateStateCallback);
+
+    this.initRegularAttribute("radius_units", "radiusUnits");
+    this.initRegularAttribute("radius_scale", "radiusScale");
+    this.initRegularAttribute("radius_min_pixels", "radiusMinPixels");
+    this.initRegularAttribute("radius_max_pixels", "radiusMaxPixels");
+    this.initRegularAttribute("line_width_units", "lineWidthUnits");
+    this.initRegularAttribute("line_width_scale", "lineWidthScale");
+    this.initRegularAttribute("line_width_min_pixels", "lineWidthMinPixels");
+    this.initRegularAttribute("line_width_max_pixels", "lineWidthMaxPixels");
+    this.initRegularAttribute("stroked", "stroked");
+    this.initRegularAttribute("filled", "filled");
+    this.initRegularAttribute("billboard", "billboard");
+    this.initRegularAttribute("antialiasing", "antialiasing");
+
+    this.initVectorizedAccessor("get_radius", "getRadius");
+    this.initVectorizedAccessor("get_fill_color", "getFillColor");
+    this.initVectorizedAccessor("get_line_color", "getLineColor");
+    this.initVectorizedAccessor("get_line_width", "getLineWidth");
+  }
+
+  render(): GeoArrowScatterplotLayer {
+    return new GeoArrowScatterplotLayer({
+      ...this.baseLayerProps(),
+      // Note: this is included here instead of in baseLayerProps to satisfy
+      // typing.
+      data: this.table,
+
+      ...(this.radiusUnits && { radiusUnits: this.radiusUnits }),
+      ...(this.radiusScale && { radiusScale: this.radiusScale }),
+      ...(this.radiusMinPixels && { radiusMinPixels: this.radiusMinPixels }),
+      ...(this.radiusMaxPixels && { radiusMaxPixels: this.radiusMaxPixels }),
+      ...(this.lineWidthUnits && { lineWidthUnits: this.lineWidthUnits }),
+      ...(this.lineWidthScale && { lineWidthScale: this.lineWidthScale }),
+      ...(this.lineWidthMinPixels && {
+        lineWidthMinPixels: this.lineWidthMinPixels,
+      }),
+      ...(this.lineWidthMaxPixels && {
+        lineWidthMaxPixels: this.lineWidthMaxPixels,
+      }),
+      ...(this.stroked && { stroked: this.stroked }),
+      ...(this.filled && { filled: this.filled }),
+      ...(this.billboard && { billboard: this.billboard }),
+      ...(this.antialiasing && { antialiasing: this.antialiasing }),
+      ...(this.getRadius && { getRadius: this.getRadius }),
+      ...(this.getFillColor && { getFillColor: this.getFillColor }),
+      ...(this.getLineColor && { getLineColor: this.getLineColor }),
+      ...(this.getLineWidth && { getLineWidth: this.getLineWidth }),
+    });
+  }
+}
+
+export class SolidPolygonModel extends BaseLayerModel {
+  static layerType = "solid-polygon";
+
+  protected filled: GeoArrowSolidPolygonLayerProps["filled"] | null;
+  protected extruded: GeoArrowSolidPolygonLayerProps["extruded"] | null;
+  protected wireframe: GeoArrowSolidPolygonLayerProps["wireframe"] | null;
+  protected elevationScale:
+    | GeoArrowSolidPolygonLayerProps["elevationScale"]
+    | null;
+  protected getElevation: GeoArrowSolidPolygonLayerProps["getElevation"] | null;
+  protected getFillColor: GeoArrowSolidPolygonLayerProps["getFillColor"] | null;
+  protected getLineColor: GeoArrowSolidPolygonLayerProps["getLineColor"] | null;
+
+  constructor(model: WidgetModel, updateStateCallback: () => void) {
+    super(model, updateStateCallback);
+
+    this.initRegularAttribute("filled", "filled");
+    this.initRegularAttribute("extruded", "extruded");
+    this.initRegularAttribute("wireframe", "wireframe");
+    this.initRegularAttribute("elevation_scale", "elevationScale");
+
+    this.initVectorizedAccessor("get_elevation", "getElevation");
+    this.initVectorizedAccessor("get_fill_color", "getFillColor");
+    this.initVectorizedAccessor("get_line_color", "getLineColor");
+  }
+
+  render(): GeoArrowSolidPolygonLayer {
+    return new GeoArrowSolidPolygonLayer({
+      ...this.baseLayerProps(),
+      // Note: this is included here instead of in baseLayerProps to satisfy
+      // typing.
+      data: this.table,
+
+      ...(this.filled && { filled: this.filled }),
+      ...(this.extruded && { extruded: this.extruded }),
+      ...(this.wireframe && { wireframe: this.wireframe }),
+      ...(this.elevationScale && { elevationScale: this.elevationScale }),
+      ...(this.getElevation && { getElevation: this.getElevation }),
+      ...(this.getFillColor && { getFillColor: this.getFillColor }),
+      ...(this.getLineColor && { getLineColor: this.getLineColor }),
+    });
+  }
+}
+
 export async function initializeLayer(
   model: WidgetModel,
   updateStateCallback: () => void
@@ -449,24 +448,24 @@ export async function initializeLayer(
   const layerType = model.get("_layer_type");
   let layerModel: BaseLayerModel;
   switch (layerType) {
-    case ScatterplotModel.layerType:
-      layerModel = new ScatterplotModel(model, updateStateCallback);
-      break;
-
-    case PathModel.layerType:
-      layerModel = new PathModel(model, updateStateCallback);
-      break;
-
-    case SolidPolygonModel.layerType:
-      layerModel = new SolidPolygonModel(model, updateStateCallback);
-      break;
-
     case ArcModel.layerType:
       layerModel = new ArcModel(model, updateStateCallback);
       break;
 
     case HeatmapModel.layerType:
       layerModel = new HeatmapModel(model, updateStateCallback);
+      break;
+
+    case PathModel.layerType:
+      layerModel = new PathModel(model, updateStateCallback);
+      break;
+
+    case ScatterplotModel.layerType:
+      layerModel = new ScatterplotModel(model, updateStateCallback);
+      break;
+
+    case SolidPolygonModel.layerType:
+      layerModel = new SolidPolygonModel(model, updateStateCallback);
       break;
 
     default:
