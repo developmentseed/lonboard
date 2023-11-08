@@ -56,6 +56,8 @@ export abstract class BaseLayerModel extends BaseModel {
   }
 
   baseLayerProps(): LayerProps {
+    console.log("extensions", this.extensionInstances());
+    console.log("extensionprops", this.extensionProps());
     return {
       extensions: this.extensionInstances(),
       ...this.extensionProps(),
@@ -95,34 +97,43 @@ export abstract class BaseLayerModel extends BaseModel {
     this.callbacks.set(`change:${pythonName}`, callback);
   }
 
-  // TODO!!: need to update extensions on model events
+  // NOTE: this is flaky, especially when changing extensions
+  // This is the main place where extensions should still be considered
+  // experimental
   async initLayerExtensions() {
-    // const callback = async () => {
-    //   this.model.get()
-    // }
+    const initExtensionsCallback = async () => {
+      console.log("initExtensionsCallback");
+      const childModelIds = this.model.get("extensions");
+      if (!childModelIds) {
+        this.extensions = [];
+        return;
+      }
 
-    const childModelIds = this.model.get("extensions");
-    if (!childModelIds) {
-      this.extensions = [];
-      return;
-    }
-
-    console.log(childModelIds);
-    const childModels = await loadChildModels(
-      this.model.widget_manager,
-      childModelIds
-    );
-
-    const extensions: BaseExtensionModel[] = [];
-    for (const childModel of childModels) {
-      const extension = await initializeExtension(
-        childModel,
-        this.updateStateCallback
+      console.log(childModelIds);
+      const childModels = await loadChildModels(
+        this.model.widget_manager,
+        childModelIds
       );
-      extensions.push(extension);
-    }
 
-    this.extensions = extensions;
+      const extensions: BaseExtensionModel[] = [];
+      for (const childModel of childModels) {
+        const extension = await initializeExtension(
+          childModel,
+          this.updateStateCallback
+        );
+        extensions.push(extension);
+      }
+
+      this.extensions = extensions;
+    };
+    await initExtensionsCallback();
+
+    // Remove all existing change callbacks for this attribute
+    this.model.off(`change:extensions`);
+
+    this.model.on(`change:extensions`, initExtensionsCallback);
+
+    this.callbacks.set(`change:extensions`, initExtensionsCallback);
   }
 }
 

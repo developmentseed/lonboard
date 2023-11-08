@@ -98,24 +98,20 @@ export async function initializeExtension(
   updateStateCallback: () => void
 ): Promise<BaseExtensionModel> {
   const extensionType = model.get("_extension_type");
+  let extensionModel: BaseExtensionModel;
   switch (extensionType) {
-    case BrushingExtension.extensionType: {
-      const extension = new BrushingExtension(model, updateStateCallback);
-      await extension.loadSubModels();
-      return extension;
-    }
+    case BrushingExtension.extensionType:
+      extensionModel = new BrushingExtension(model, updateStateCallback);
+      break;
 
-    case CollisionFilterExtension.extensionType: {
-      const extension = new CollisionFilterExtension(
-        model,
-        updateStateCallback
-      );
-      await extension.loadSubModels();
-      return extension;
-    }
+    case CollisionFilterExtension.extensionType:
+      extensionModel = new CollisionFilterExtension(model, updateStateCallback);
+      break;
 
     default:
-      console.error(`no known model for ${extensionType}`);
-      break;
+      throw new Error(`no known model for extension type ${extensionType}`);
   }
+
+  await extensionModel.loadSubModels();
+  return extensionModel;
 }

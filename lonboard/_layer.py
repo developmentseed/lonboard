@@ -114,7 +114,7 @@ class BaseLayer(BaseWidget):
 
         if auto_downcast:
             # Note: we don't deep copy because we don't need to clone geometries
-            gdf = _auto_downcast(gdf.copy())
+            gdf = _auto_downcast(gdf.copy())  # type: ignore
 
         table = geopandas_to_geoarrow(gdf)
         return cls(table=table, **kwargs)
