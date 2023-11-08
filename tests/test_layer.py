@@ -27,3 +27,17 @@ def test_layer_fails_with_unexpected_argument():
 
     with pytest.raises(TypeError, match="unexpected keyword argument"):
         ScatterplotLayer.from_geopandas(gdf, unknown_keyword="foo")
+
+
+def test_layer_from_geoarrow_pyarrow():
+    ga = pytest.importorskip("geoarrow.pyarrow")
+    import pyarrow as pa
+
+    points = gpd.GeoSeries(shapely.points([1, 2], [3, 4]))
+
+    # convert to geoarrow.pyarrow Table (currently requires to ensure interleaved
+    # coordinates manually)
+    points = ga.with_coord_type(ga.as_geoarrow(points), ga.CoordType.INTERLEAVED)
+    table = pa.table({"geometry": points})
+
+    _layer = ScatterplotLayer(table=table)

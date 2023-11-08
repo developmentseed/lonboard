@@ -138,7 +138,7 @@ class PyarrowTableTrait(FixedErrorTraitType):
 
         field = value.schema.field("geometry")
         if isinstance(field.type, pa.ExtensionType):
-            geometry_extension_type = bytes(field.type.extension_name)
+            geometry_extension_type = field.type.extension_name.encode()
             storage_type = field.type.storage_type
             new_field = pa.field(
                 "geometry",
@@ -147,9 +147,9 @@ class PyarrowTableTrait(FixedErrorTraitType):
                 metadata={"ARROW:extension:name": field.type.extension_name},
             )
             value = value.set_column(
-                value.schema.get_field_index("geometry"), 
+                value.schema.get_field_index("geometry"),
                 new_field,
-                value.field("geometry").cast(storage_type)
+                value.column("geometry").cast(storage_type),
             )
         else:
             geometry_extension_type = value.schema.field("geometry").metadata.get(
