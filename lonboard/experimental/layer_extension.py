@@ -1,11 +1,7 @@
 import traitlets
-from ipywidgets import Widget
 
+from lonboard._base import BaseExtension
 from lonboard.traits import FloatAccessor
-
-
-class BaseExtension(Widget):
-    pass
 
 
 class BrushingExtension(BaseExtension):

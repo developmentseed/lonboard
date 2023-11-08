@@ -24,3 +24,7 @@ class BaseAnyWidget(AnyWidget):
                 raise TypeError(f"unexpected keyword argument '{provided_trait_name}'")
 
         super().__init__(**kwargs)
+
+
+class BaseExtension(Widget):
+    pass

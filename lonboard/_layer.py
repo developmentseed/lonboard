@@ -9,12 +9,11 @@ import ipywidgets
 import pyarrow as pa
 import traitlets
 
-from lonboard._base import BaseWidget
+from lonboard._base import BaseExtension, BaseWidget
 from lonboard._constants import EPSG_4326, EXTENSION_NAME, OGC_84
 from lonboard._geoarrow.geopandas_interop import geopandas_to_geoarrow
 from lonboard._serialization import infer_rows_per_chunk
 from lonboard._utils import auto_downcast as _auto_downcast
-from lonboard.experimental.layer_extension import BaseExtension
 from lonboard.traits import ColorAccessor, FloatAccessor, PyarrowTableTrait
 
 if TYPE_CHECKING:
