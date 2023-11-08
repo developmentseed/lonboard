@@ -336,3 +336,61 @@ class FloatAccessor(FixedErrorTraitType):
 
         self.error(obj, value)
         assert False
+
+
+class TextAccessor(FixedErrorTraitType):
+    """A representation of a deck.gl text accessor.
+
+    Various input is allowed:
+
+    - A `str`. This will be used as the value for all objects.
+    - A numpy `ndarray` with a string data type Each value in the array will be used as
+      the value for the object at the same row index.
+    - A pandas `Series` with a string data type. Each value in the array will be used as
+      the value for the object at the same row index.
+    - A pyarrow [`StringArray`][pyarrow.StringArray] or
+      [`ChunkedArray`][pyarrow.ChunkedArray] containing a `StringArray`. Each value in
+      the array will be used as the value for the object at the same row index.
+    """
+
+    default_value = ""
+    info_text = (
+        "a string value or numpy ndarray or pandas Series or pyarrow array representing"
+        " an array of strings"
+    )
+
+    def __init__(
+        self: TraitType,
+        *args,
+        **kwargs: Any,
+    ) -> None:
+        super().__init__(*args, **kwargs)
+        self.tag(sync=True, **FLOAT_SERIALIZATION)
+
+    def validate(self, obj, value) -> Union[float, pa.ChunkedArray, pa.DoubleArray]:
+        if isinstance(value, str):
+            return value
+
+        # pandas Series
+        if (
+            value.__class__.__module__.startswith("pandas")
+            and value.__class__.__name__ == "Series"
+        ):
+            # Cast pandas Series to pyarrow array
+            value = pa.array(value)
+
+        if isinstance(value, np.ndarray):
+            value = pa.StringArray.from_pandas(value)
+
+        if isinstance(value, (pa.ChunkedArray, pa.Array)):
+            if not pa.types.is_string(value.type):
+                self.error(
+                    obj,
+                    value,
+                    info="String pyarrow array must be a string type.",
+                )
+
+            return value
+
+        self.error(obj, value)
+        assert False

@@ -56,7 +56,7 @@ def serialize_float_accessor(data: Union[int, float, NDArray[np.floating]], obj)
     if data is None:
         return None
 
-    if isinstance(data, (int, float)):
+    if isinstance(data, (str, int, float)):
         return data
 
     assert isinstance(data, (pa.ChunkedArray, pa.Array))
@@ -75,5 +75,6 @@ def infer_rows_per_chunk(table: pa.Table) -> int:
 
 
 COLOR_SERIALIZATION = {"to_json": serialize_color_accessor}
+# TODO: rename as it's used for text as well
 FLOAT_SERIALIZATION = {"to_json": serialize_float_accessor}
 TABLE_SERIALIZATION = {"to_json": serialize_table}

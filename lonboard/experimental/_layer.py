@@ -6,7 +6,12 @@ import traitlets
 from lonboard._constants import EXTENSION_NAME
 from lonboard._layer import BaseLayer
 from lonboard.experimental.traits import PointAccessor
-from lonboard.traits import ColorAccessor, FloatAccessor, PyarrowTableTrait
+from lonboard.traits import (
+    ColorAccessor,
+    FloatAccessor,
+    PyarrowTableTrait,
+    TextAccessor,
+)
 
 
 class ArcLayer(BaseLayer):
@@ -135,14 +140,14 @@ class TextLayer(BaseLayer):
     - Default: `True`
     """
 
-    sizeScale = traitlets.Any().tag(sync=True)
+    size_scale = traitlets.Any().tag(sync=True)
     """Text size multiplier.
 
     - Type: `float`.
     - Default: `1`
     """
 
-    sizeUnits = traitlets.Any().tag(sync=True)
+    size_units = traitlets.Any().tag(sync=True)
     """The units of the size, one of `'meters'`, `'common'`, and `'pixels'`.
     default 'pixels'. See [unit
     system](https://deck.gl/docs/developer-guide/coordinate-systems#supported-units).
@@ -151,7 +156,7 @@ class TextLayer(BaseLayer):
     - Default: `'pixels'`
     """
 
-    sizeMinPixels = traitlets.Any().tag(sync=True)
+    size_min_pixels = traitlets.Any().tag(sync=True)
     """
     The minimum size in pixels. When using non-pixel `sizeUnits`, this prop can be used
     to prevent the icon from getting too small when zoomed out.
@@ -160,7 +165,7 @@ class TextLayer(BaseLayer):
     - Default: `0`
     """
 
-    sizeMaxPixels = traitlets.Any().tag(sync=True)
+    size_max_pixels = traitlets.Any().tag(sync=True)
     """
     The maximum size in pixels. When using non-pixel `sizeUnits`, this prop can be used
     to prevent the icon from getting too big when zoomed in.
@@ -176,25 +181,25 @@ class TextLayer(BaseLayer):
     # - Default: `False`
     # """
 
-    get_background_color = ColorAccessor
+    get_background_color = ColorAccessor()
     """Background color accessor.
 
     default [255, 255, 255, 255]
     """
 
-    getBorderColor = ColorAccessor
+    get_border_color = ColorAccessor()
     """Border color accessor.
 
     default [0, 0, 0, 255]
     """
 
-    getBorderWidth = FloatAccessor
+    get_border_width = FloatAccessor()
     """Border width accessor.
 
     default 0
     """
 
-    backgroundPadding = traitlets.Any().tag(sync=True)
+    background_padding = traitlets.Any().tag(sync=True)
     """The padding of the background.
 
     - If an array of 2 is supplied, it is interpreted as `[padding_x, padding_y]` in
@@ -205,7 +210,7 @@ class TextLayer(BaseLayer):
     default [0, 0, 0, 0]
     """
 
-    characterSet = traitlets.Any().tag(sync=True)
+    character_set = traitlets.Any().tag(sync=True)
     """
     Specifies a list of characters to include in the font. If set to 'auto', will be
     automatically generated from the data set.
@@ -213,25 +218,25 @@ class TextLayer(BaseLayer):
     default (ASCII characters 32-128)
     """
 
-    fontFamily = traitlets.Any().tag(sync=True)
+    font_family = traitlets.Any().tag(sync=True)
     """CSS font family
 
     default 'Monaco, monospace'
     """
 
-    fontWeight = traitlets.Any().tag(sync=True)
+    font_weight = traitlets.Any().tag(sync=True)
     """CSS font weight
 
     default 'normal'
     """
 
-    lineHeight = traitlets.Any().tag(sync=True)
+    line_height = traitlets.Any().tag(sync=True)
     """
     A unitless number that will be multiplied with the current text size to set the line
     height.
     """
 
-    outlineWidth = traitlets.Any().tag(sync=True)
+    outline_width = traitlets.Any().tag(sync=True)
     """
     Width of outline around the text, relative to the text size. Only effective if
     `fontSettings.sdf` is `true`.
@@ -239,7 +244,7 @@ class TextLayer(BaseLayer):
     default 0
     """
 
-    outlineColor = traitlets.Any().tag(sync=True)
+    outline_color = traitlets.Any().tag(sync=True)
     """
     Color of outline around the text, in `[r, g, b, [a]]`. Each channel is a number
     between 0-255 and `a` is 255 if not supplied.
@@ -247,13 +252,13 @@ class TextLayer(BaseLayer):
     default [0, 0, 0, 255]
     """
 
-    fontSettings = traitlets.Any().tag(sync=True)
+    font_settings = traitlets.Any().tag(sync=True)
     """
     Advance options for fine tuning the appearance and performance of the generated
     shared `fontAtlas`.
     """
 
-    wordBreak = traitlets.Any().tag(sync=True)
+    word_break = traitlets.Any().tag(sync=True)
     """
     Available options are `break-all` and `break-word`. A valid `maxWidth` has to be
     provided to use `wordBreak`.
@@ -261,7 +266,7 @@ class TextLayer(BaseLayer):
     default 'break-word'
     """
 
-    maxWidth = traitlets.Any().tag(sync=True)
+    max_width = traitlets.Any().tag(sync=True)
     """
     A unitless number that will be multiplied with the current text size to set the
     width limit of a string.
@@ -272,47 +277,47 @@ class TextLayer(BaseLayer):
     default -1
     """
 
-    getText = traitlets.Any().tag(sync=True)
+    get_text = TextAccessor()
     """Label text accessor"""
 
-    # getPosition = traitlets.Any().tag(sync=True)
+    # get_position = traitlets.Any().tag(sync=True)
     # """Anchor position accessor"""
 
     #  ?: Accessor<DataT, Position>;
 
-    getColor = ColorAccessor
+    get_color = ColorAccessor()
     """Label color accessor
 
     default [0, 0, 0, 255]
     """
 
-    getSize = FloatAccessor
+    get_size = FloatAccessor()
     """Label size accessor
 
     default 32
     """
 
-    getAngle = FloatAccessor
+    get_angle = FloatAccessor()
     """Label rotation accessor, in degrees
 
     default 0
     """
 
-    getTextAnchor = traitlets.Any().tag(sync=True)
+    get_text_anchor = traitlets.Any().tag(sync=True)
     """Horizontal alignment accessor
 
     default 'middle'
     """
     #  ?: Accessor<DataT, 'start' | 'middle' | 'end'>;
 
-    getAlignmentBaseline = traitlets.Any().tag(sync=True)
+    get_alignment_baseline = traitlets.Any().tag(sync=True)
     """Vertical alignment accessor
 
     default 'center'
     """
     #  ?: Accessor<DataT, 'top' | 'center' | 'bottom'>;
 
-    getPixelOffset = traitlets.Any().tag(sync=True)
+    get_pixel_offset = traitlets.Any().tag(sync=True)
     """Label offset from the anchor position, [x, y] in pixels
 
     default [0, 0]
