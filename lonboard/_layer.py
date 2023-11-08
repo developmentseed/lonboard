@@ -8,11 +8,12 @@ import geopandas as gpd
 import ipywidgets
 import pyarrow as pa
 import traitlets
-from ipywidgets import Widget
 
+from lonboard._base import BaseWidget
 from lonboard._constants import EPSG_4326, EXTENSION_NAME, OGC_84
 from lonboard._geoarrow.geopandas_interop import geopandas_to_geoarrow
 from lonboard._serialization import infer_rows_per_chunk
+from lonboard._utils import auto_downcast as _auto_downcast
 from lonboard.experimental.layer_extension import BaseExtension
 from lonboard.traits import ColorAccessor, FloatAccessor, PyarrowTableTrait
 
@@ -23,7 +24,7 @@ if TYPE_CHECKING:
         from typing_extensions import Self
 
 
-class BaseLayer(Widget):
+class BaseLayer(BaseWidget):
     table: traitlets.TraitType
 
     extensions = traitlets.List(trait=traitlets.Instance(BaseExtension)).tag(
@@ -88,7 +89,9 @@ class BaseLayer(Widget):
         return infer_rows_per_chunk(self.table)
 
     @classmethod
-    def from_geopandas(cls, gdf: gpd.GeoDataFrame, **kwargs) -> Self:
+    def from_geopandas(
+        cls, gdf: gpd.GeoDataFrame, *, auto_downcast: bool = True, **kwargs
+    ) -> Self:
         """Construct a Layer from a geopandas GeoDataFrame.
 
         The GeoDataFrame will be reprojected to EPSG:4326 if it is not already in that
@@ -97,12 +100,22 @@ class BaseLayer(Widget):
         Args:
             gdf: The GeoDataFrame to set on the layer.
 
+        Other parameters:
+            auto_downcast: If `True`, automatically downcast to smaller-size data types
+                if possible without loss of precision. This calls
+                [pandas.DataFrame.convert_dtypes][pandas.DataFrame.convert_dtypes] and
+                [pandas.to_numeric][pandas.to_numeric] under the hood.
+
         Returns:
             A Layer with the initialized data.
         """
         if gdf.crs and gdf.crs not in [EPSG_4326, OGC_84]:
             warnings.warn("GeoDataFrame being reprojected to EPSG:4326")
             gdf = gdf.to_crs(OGC_84)  # type: ignore
+
+        if auto_downcast:
+            # Note: we don't deep copy because we don't need to clone geometries
+            gdf = _auto_downcast(gdf.copy())
 
         table = geopandas_to_geoarrow(gdf)
         return cls(table=table, **kwargs)
@@ -547,6 +560,122 @@ class SolidPolygonLayer(BaseLayer):
     """
 
     @traitlets.validate("get_elevation", "get_fill_color", "get_line_color")
+    def _validate_accessor_length(self, proposal):
+        if isinstance(proposal["value"], (pa.ChunkedArray, pa.Array)):
+            if len(proposal["value"]) != len(self.table):
+                raise traitlets.TraitError("accessor must have same length as table")
+
+        return proposal["value"]
+
+
+class HeatmapLayer(BaseLayer):
+    """The `HeatmapLayer` visualizes the spatial distribution of data.
+
+    **Example:**
+
+    ```py
+    import geopandas as gpd
+    from lonboard import Map, HeatmapLayer
+
+    # A GeoDataFrame with Point geometries
+    gdf = gpd.GeoDataFrame()
+    layer = HeatmapLayer.from_geopandas(gdf,)
+    map_ = Map(layers=[layer])
+    ```
+    """
+
+    _layer_type = traitlets.Unicode("heatmap").tag(sync=True)
+
+    # NOTE: we override the default for _rows_per_chunk because otherwise we render one
+    # heatmap per _chunk_ not for the entire dataset.
+    # TODO: on the JS side, rechunk the table into a single contiguous chunk.
+    @traitlets.default("_rows_per_chunk")
+    def _default_rows_per_chunk(self):
+        return len(self.table)
+
+    table = PyarrowTableTrait(allowed_geometry_types={EXTENSION_NAME.POINT})
+
+    radius_pixels = traitlets.Float(allow_none=True).tag(sync=True)
+    """Radius of the circle in pixels, to which the weight of an object is distributed.
+
+    - Type: `float`, optional
+    - Default: `30`
+    """
+
+    # TODO: stabilize ColormapTrait
+    # color_range?: Color[];
+    # """Specified as an array of colors [color1, color2, ...].
+
+    # - Default: `6-class YlOrRd` - [colorbrewer](http://colorbrewer2.org/#type=sequential&scheme=YlOrRd&n=6)
+    # """
+
+    intensity = traitlets.Float(allow_none=True).tag(sync=True)
+    """
+    Value that is multiplied with the total weight at a pixel to obtain the final
+    weight.
+
+    - Type: `float`, optional
+    - Default: `1`
+    """
+
+    threshold = traitlets.Float(allow_none=True, min=0, max=1).tag(sync=True)
+    """Ratio of the fading weight to the max weight, between `0` and `1`.
+
+    For example, `0.1` affects all pixels with weight under 10% of the max.
+
+    Ignored when `color_domain` is specified.
+
+    - Type: `float`, optional
+    - Default: `0.05`
+    """
+
+    color_domain = traitlets.List(
+        traitlets.Float(), default_value=None, allow_none=True, minlen=2, maxlen=2
+    ).tag(sync=True)
+    # """
+    # Controls how weight values are mapped to the `color_range`, as an array of two
+    # numbers [`min_value`, `max_value`].
+
+    # - Type: `(float, float)`, optional
+    # - Default: `None`
+    # """
+
+    aggregation = traitlets.Unicode(allow_none=True).tag(sync=True)
+    """Defines the type of aggregation operation
+
+    Valid values are 'SUM', 'MEAN'.
+
+    - Type: `str`, optional
+    - Default: `"SUM"`
+    """
+
+    weights_texture_size = traitlets.Int(allow_none=True).tag(sync=True)
+    """Specifies the size of weight texture.
+
+    - Type: `int`, optional
+    - Default: `2048`
+    """
+
+    debounce_timeout = traitlets.Int(allow_none=True).tag(sync=True)
+    """
+    Interval in milliseconds during which changes to the viewport don't trigger
+    aggregation.
+
+    - Type: `int`, optional
+    - Default: `500`
+    """
+
+    get_weight = FloatAccessor()
+    """The weight of each object.
+
+    - Type: [FloatAccessor][lonboard.traits.FloatAccessor], optional
+        - If a number is provided, it is used as the outline width for all objects.
+        - If an array is provided, each value in the array will be used as the outline
+          width for the object at the same row index.
+    - Default: `1`.
+    """
+
+    @traitlets.validate("get_weight")
     def _validate_accessor_length(self, proposal):
         if isinstance(proposal["value"], (pa.ChunkedArray, pa.Array)):
             if len(proposal["value"]) != len(self.table):

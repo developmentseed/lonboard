@@ -6,6 +6,15 @@ import DeckGL from "@deck.gl/react/typed";
 import type { Layer } from "@deck.gl/core/typed";
 import type { WidgetModel } from "@jupyter-widgets/base";
 import { BaseLayerModel, initializeLayer } from "./model";
+import type { IWidgetManager, WidgetModel } from "@jupyter-widgets/base";
+import {
+  ArcModel,
+  BaseLayerModel,
+  HeatmapModel,
+  PathModel,
+  ScatterplotModel,
+  SolidPolygonModel,
+} from "./model";
 import { useParquetWasm } from "./parquet";
 import { getTooltip } from "./tooltip";
 import { loadChildModels } from "./util";
@@ -60,6 +69,7 @@ function App() {
   let [initialViewState] = useModelState<DataView>("_initial_view_state");
   let [mapHeight] = useModelState<number>("_height");
   let [showTooltip] = useModelState<boolean>("show_tooltip");
+  let [pickingRadius] = useModelState<number>("picking_radius");
 
   let [subModelState, setSubModelState] = useState<
     Record<string, BaseLayerModel>
@@ -113,7 +123,7 @@ function App() {
         controller={true}
         layers={layers}
         getTooltip={showTooltip && getTooltip}
-        pickingRadius={10}
+        pickingRadius={pickingRadius}
       >
         <Map mapStyle={MAP_STYLE} />
       </DeckGL>

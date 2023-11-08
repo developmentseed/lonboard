@@ -133,6 +133,9 @@ class PyarrowTableTrait(FixedErrorTraitType):
             self.error(obj, value)
 
         allowed_geometry_types = self.metadata.get("allowed_geometry_types")
+        if not allowed_geometry_types:
+            return value
+
         geometry_extension_type = value.schema.field("geometry").metadata.get(
             b"ARROW:extension:name"
         )
@@ -186,7 +189,6 @@ class ColorAccessor(FixedErrorTraitType):
         super().__init__(*args, **kwargs)
         self.tag(sync=True, **COLOR_SERIALIZATION)
 
-    # TODO: subclass self.error so that `info` is actually printed?
     def validate(
         self, obj, value
     ) -> Union[Tuple[int, ...], List[int], pa.ChunkedArray, pa.FixedSizeListArray]:
@@ -279,6 +281,9 @@ class FloatAccessor(FixedErrorTraitType):
     - A numpy `ndarray` with a numeric data type. This will be casted to an array of
       data type [`np.float32`][numpy.float32]. Each value in the array will be used as
       the value for the object at the same row index.
+    - A pandas `Series` with a numeric data type. This will be casted to an array of
+      data type [`np.float32`][numpy.float32]. Each value in the array will be used as
+      the value for the object at the same row index.
     - A pyarrow [`FloatArray`][pyarrow.FloatArray], [`DoubleArray`][pyarrow.DoubleArray]
       or [`ChunkedArray`][pyarrow.ChunkedArray] containing either a `FloatArray` or
       `DoubleArray`. Each value in the array will be used as the value for the object at
@@ -299,10 +304,17 @@ class FloatAccessor(FixedErrorTraitType):
         super().__init__(*args, **kwargs)
         self.tag(sync=True, **FLOAT_SERIALIZATION)
 
-    # TODO: subclass self.error so that `info` is actually printed?
     def validate(self, obj, value) -> Union[float, pa.ChunkedArray, pa.DoubleArray]:
         if isinstance(value, (int, float)):
             return float(value)
+
+        # pandas Series
+        if (
+            value.__class__.__module__.startswith("pandas")
+            and value.__class__.__name__ == "Series"
+        ):
+            # Cast pandas Series to numpy ndarray
+            value = np.asarray(value)
 
         if isinstance(value, np.ndarray):
             if not np.issubdtype(value.dtype, np.number):
