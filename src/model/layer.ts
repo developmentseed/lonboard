@@ -1,89 +1,22 @@
+import type { Layer, LayerExtension, LayerProps } from "@deck.gl/core/typed";
 import {
+  GeoArrowArcLayer,
+  GeoArrowArcLayerProps,
+  GeoArrowHeatmapLayer,
+  GeoArrowHeatmapLayerProps,
   GeoArrowPathLayer,
   GeoArrowPathLayerProps,
   GeoArrowScatterplotLayer,
   GeoArrowScatterplotLayerProps,
   GeoArrowSolidPolygonLayer,
   GeoArrowSolidPolygonLayerProps,
-  GeoArrowArcLayer,
-  GeoArrowArcLayerProps,
-  GeoArrowHeatmapLayerProps,
-  GeoArrowHeatmapLayer,
 } from "@geoarrow/deck.gl-layers";
-import * as arrow from "apache-arrow";
 import type { WidgetModel } from "@jupyter-widgets/base";
-import type { Layer, LayerProps } from "@deck.gl/core/typed";
-import { parseParquetBuffers } from "./parquet";
-import { parseAccessor } from "./accessor";
-
-export abstract class BaseModel {
-  protected model: WidgetModel;
-  protected callbacks: Map<string, () => void>;
-
-  constructor(model: WidgetModel, updateStateCallback: () => void) {
-    this.model = model;
-    this.model.on("change", updateStateCallback);
-    this.callbacks = new Map();
-    this.callbacks.set("change", updateStateCallback);
-  }
-
-  /**
-   * Initialize an attribute that does not need any transformation from its
-   * serialized representation to its deck.gl representation.
-   *
-   * This also watches for changes on the Jupyter model and propagates those
-   * changes to this class' internal state.
-   *
-   * @param   {string}  pythonName  Name of attribute on Python model (usually snake-cased)
-   * @param   {string}  jsName      Name of attribute in deck.gl (usually camel-cased)
-   */
-  protected initRegularAttribute(pythonName: string, jsName: string) {
-    this[jsName] = this.model.get(pythonName);
-
-    // Remove all existing change callbacks for this attribute
-    this.model.off(`change:${pythonName}`);
-
-    const callback = () => {
-      this[jsName] = this.model.get(pythonName);
-    };
-    this.model.on(`change:${pythonName}`, callback);
-
-    this.callbacks.set(`change:${pythonName}`, callback);
-  }
-
-  /**
-   * Initialize an accessor that can either be a scalar JSON value or a Parquet
-   * table with a single column, intended to be passed in as an Arrow Vector.
-   *
-   * This also watches for changes on the Jupyter model and propagates those
-   * changes to this class' internal state.
-   *
-   * @param   {string}  pythonName  Name of attribute on Python model (usually snake-cased)
-   * @param   {string}  jsName      Name of attribute in deck.gl (usually camel-cased)
-   */
-  protected initVectorizedAccessor(pythonName: string, jsName: string) {
-    this[jsName] = parseAccessor(this.model.get(pythonName));
-
-    // Remove all existing change callbacks for this attribute
-    this.model.off(`change:${pythonName}`);
-
-    const callback = () => {
-      this[jsName] = parseAccessor(this.model.get(pythonName));
-    };
-    this.model.on(`change:${pythonName}`, callback);
-
-    this.callbacks.set(`change:${pythonName}`, callback);
-  }
-
-  /**
-   * Finalize any resources held by the model
-   */
-  finalize(): void {
-    for (const [changeKey, callback] of Object.entries(this.callbacks)) {
-      this.model.off(changeKey, callback);
-    }
-  }
-}
+import * as arrow from "apache-arrow";
+import { parseParquetBuffers } from "../parquet";
+import { loadChildModels } from "../util";
+import { BaseModel } from "./base";
+import { BaseExtensionModel, initializeExtension } from "./extension";
 
 export abstract class BaseLayerModel extends BaseModel {
   protected table: arrow.Table;
@@ -92,6 +25,8 @@ export abstract class BaseLayerModel extends BaseModel {
   protected visible: LayerProps["visible"];
   protected opacity: LayerProps["opacity"];
   protected autoHighlight: LayerProps["autoHighlight"];
+
+  protected extensions: BaseExtensionModel[];
 
   constructor(model: WidgetModel, updateStateCallback: () => void) {
     super(model, updateStateCallback);
@@ -104,8 +39,28 @@ export abstract class BaseLayerModel extends BaseModel {
     this.initRegularAttribute("auto_highlight", "autoHighlight");
   }
 
+  async loadSubModels() {
+    await this.initLayerExtensions();
+  }
+
+  extensionInstances(): LayerExtension[] {
+    return this.extensions.map((extension) => extension.extensionInstance);
+  }
+
+  extensionProps() {
+    let props = {};
+    for (const extension of this.extensions) {
+      props = { ...props, ...extension.extensionProps() };
+    }
+    return props;
+  }
+
   baseLayerProps(): LayerProps {
+    console.log("extensions", this.extensionInstances());
+    console.log("extensionprops", this.extensionProps());
     return {
+      extensions: this.extensionInstances(),
+      ...this.extensionProps(),
       id: this.model.model_id,
       pickable: this.pickable,
       visible: this.visible,
@@ -141,9 +96,50 @@ export abstract class BaseLayerModel extends BaseModel {
 
     this.callbacks.set(`change:${pythonName}`, callback);
   }
+
+  // NOTE: this is flaky, especially when changing extensions
+  // This is the main place where extensions should still be considered
+  // experimental
+  async initLayerExtensions() {
+    const initExtensionsCallback = async () => {
+      console.log("initExtensionsCallback");
+      const childModelIds = this.model.get("extensions");
+      if (!childModelIds) {
+        this.extensions = [];
+        return;
+      }
+
+      console.log(childModelIds);
+      const childModels = await loadChildModels(
+        this.model.widget_manager,
+        childModelIds
+      );
+
+      const extensions: BaseExtensionModel[] = [];
+      for (const childModel of childModels) {
+        const extension = await initializeExtension(
+          childModel,
+          this.updateStateCallback
+        );
+        extensions.push(extension);
+      }
+
+      this.extensions = extensions;
+    };
+    await initExtensionsCallback();
+
+    // Remove all existing change callbacks for this attribute
+    this.model.off(`change:extensions`);
+
+    this.model.on(`change:extensions`, initExtensionsCallback);
+
+    this.callbacks.set(`change:extensions`, initExtensionsCallback);
+  }
 }
 
 export class ScatterplotModel extends BaseLayerModel {
+  static layerType = "scatterplot";
+
   protected radiusUnits: GeoArrowScatterplotLayerProps["radiusUnits"] | null;
   protected radiusScale: GeoArrowScatterplotLayerProps["radiusScale"] | null;
   protected radiusMinPixels:
@@ -227,6 +223,8 @@ export class ScatterplotModel extends BaseLayerModel {
 }
 
 export class PathModel extends BaseLayerModel {
+  static layerType = "path";
+
   protected widthUnits: GeoArrowPathLayerProps["widthUnits"] | null;
   protected widthScale: GeoArrowPathLayerProps["widthScale"] | null;
   protected widthMinPixels: GeoArrowPathLayerProps["widthMinPixels"] | null;
@@ -276,6 +274,8 @@ export class PathModel extends BaseLayerModel {
 }
 
 export class SolidPolygonModel extends BaseLayerModel {
+  static layerType = "solid-polygon";
+
   protected filled: GeoArrowSolidPolygonLayerProps["filled"] | null;
   protected extruded: GeoArrowSolidPolygonLayerProps["extruded"] | null;
   protected wireframe: GeoArrowSolidPolygonLayerProps["wireframe"] | null;
@@ -318,6 +318,8 @@ export class SolidPolygonModel extends BaseLayerModel {
 }
 
 export class ArcModel extends BaseLayerModel {
+  static layerType = "arc";
+
   protected greatCircle: GeoArrowArcLayerProps["greatCircle"] | null;
   protected numSegments: GeoArrowArcLayerProps["numSegments"] | null;
   protected widthUnits: GeoArrowArcLayerProps["widthUnits"] | null;
@@ -384,6 +386,8 @@ export class ArcModel extends BaseLayerModel {
 }
 
 export class HeatmapModel extends BaseLayerModel {
+  static layerType = "heatmap";
+
   protected radiusPixels: GeoArrowHeatmapLayerProps["radiusPixels"] | null;
   protected colorRange: GeoArrowHeatmapLayerProps["colorRange"] | null;
   protected intensity: GeoArrowHeatmapLayerProps["intensity"] | null;
@@ -436,4 +440,39 @@ export class HeatmapModel extends BaseLayerModel {
       ...(this.getWeight && { getWeight: this.getWeight }),
     });
   }
+}
+
+export async function initializeLayer(
+  model: WidgetModel,
+  updateStateCallback: () => void
+): Promise<BaseLayerModel> {
+  const layerType = model.get("_layer_type");
+  let layerModel: BaseLayerModel;
+  switch (layerType) {
+    case ScatterplotModel.layerType:
+      layerModel = new ScatterplotModel(model, updateStateCallback);
+      break;
+
+    case PathModel.layerType:
+      layerModel = new PathModel(model, updateStateCallback);
+      break;
+
+    case SolidPolygonModel.layerType:
+      layerModel = new SolidPolygonModel(model, updateStateCallback);
+      break;
+
+    case ArcModel.layerType:
+      layerModel = new ArcModel(model, updateStateCallback);
+      break;
+
+    case HeatmapModel.layerType:
+      layerModel = new HeatmapModel(model, updateStateCallback);
+      break;
+
+    default:
+      throw new Error(`no layer supported for ${layerType}`);
+  }
+
+  await layerModel.loadSubModels();
+  return layerModel;
 }
