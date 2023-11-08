@@ -151,8 +151,27 @@ function App() {
     layers.push(subModel.render());
   }
 
+  // This hook check if the map container parent has a height set, which is
+  // needed to make the map fill the parent container.
+  useEffect(() => {
+    const mapContainer = document.getElementById("map");
+    const mapContainerParent = mapContainer?.parentElement;
+
+    if (mapContainerParent) {
+      // Compute the actual style considering stylesheets, inline styles, and browser default styles
+      const parentStyle = window.getComputedStyle(mapContainerParent);
+
+      // Check if the height is not already set
+      if (!parentStyle.height || parentStyle.height === "0px") {
+        // Set the height to 100% only if it's not already set
+        mapContainerParent.style.height = "100%";
+      }
+    }
+  }, []);
+
   return (
-    <div style={{ height: mapHeight || 500 }}>
+    // <div id="map" style={{ height: mapHeight || "100%" }}>
+    <div id="map" style={{ height: "100%" }}>
       <DeckGL
         initialViewState={
           ["longitude", "latitude", "zoom"].every((key) =>
