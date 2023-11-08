@@ -165,8 +165,9 @@ function App() {
 
       // Check if the height is not already set
       if (!parentStyle.height || parentStyle.height === "0px") {
-        // Set the height to 100% only if it's not already set
+        // Set the height to 100% and min-height to 400px
         mapContainerParent.style.height = "100%";
+        mapContainerParent.style.minHeight = "500px";
       }
     }
   }, []);
