@@ -4,17 +4,8 @@ import { createRender, useModelState, useModel } from "@anywidget/react";
 import Map from "react-map-gl/maplibre";
 import DeckGL from "@deck.gl/react/typed";
 import type { Layer } from "@deck.gl/core/typed";
-import type { WidgetModel } from "@jupyter-widgets/base";
 import { BaseLayerModel, initializeLayer } from "./model";
-import type { IWidgetManager, WidgetModel } from "@jupyter-widgets/base";
-import {
-  ArcModel,
-  BaseLayerModel,
-  HeatmapModel,
-  PathModel,
-  ScatterplotModel,
-  SolidPolygonModel,
-} from "./model";
+import type { WidgetModel } from "@jupyter-widgets/base";
 import { useParquetWasm } from "./parquet";
 import { getTooltip } from "./tooltip";
 import { loadChildModels } from "./util";

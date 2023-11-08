@@ -307,6 +307,8 @@ export class SolidPolygonModel extends BaseLayerModel {
 }
 
 export class ArcModel extends BaseLayerModel {
+  static layerType = "arc";
+
   protected greatCircle: GeoArrowArcLayerProps["greatCircle"] | null;
   protected numSegments: GeoArrowArcLayerProps["numSegments"] | null;
   protected widthUnits: GeoArrowArcLayerProps["widthUnits"] | null;
@@ -373,6 +375,8 @@ export class ArcModel extends BaseLayerModel {
 }
 
 export class HeatmapModel extends BaseLayerModel {
+  static layerType = "heatmap";
+
   protected radiusPixels: GeoArrowHeatmapLayerProps["radiusPixels"] | null;
   protected colorRange: GeoArrowHeatmapLayerProps["colorRange"] | null;
   protected intensity: GeoArrowHeatmapLayerProps["intensity"] | null;
@@ -432,27 +436,32 @@ export async function initializeLayer(
   updateStateCallback: () => void
 ): Promise<BaseLayerModel> {
   const layerType = model.get("_layer_type");
+  let layerModel: BaseLayerModel;
   switch (layerType) {
-    case ScatterplotModel.layerType: {
-      const layerModel = new ScatterplotModel(model, updateStateCallback);
-      await layerModel.loadSubModels();
-      return layerModel;
-    }
+    case ScatterplotModel.layerType:
+      layerModel = new ScatterplotModel(model, updateStateCallback);
+      break;
 
-    case PathModel.layerType: {
-      const layerModel = new PathModel(model, updateStateCallback);
-      await layerModel.loadSubModels();
-      return layerModel;
-    }
+    case PathModel.layerType:
+      layerModel = new PathModel(model, updateStateCallback);
+      break;
 
-    case SolidPolygonModel.layerType: {
-      const layerModel = new SolidPolygonModel(model, updateStateCallback);
-      await layerModel.loadSubModels();
-      return layerModel;
-    }
+    case SolidPolygonModel.layerType:
+      layerModel = new SolidPolygonModel(model, updateStateCallback);
+      break;
+
+    case ArcModel.layerType:
+      layerModel = new ArcModel(model, updateStateCallback);
+      break;
+
+    case HeatmapModel.layerType:
+      layerModel = new HeatmapModel(model, updateStateCallback);
+      break;
 
     default:
-      console.error(`no layer supported for ${layerType}`);
-      break;
+      throw new Error(`no layer supported for ${layerType}`);
   }
+
+  await layerModel.loadSubModels();
+  return layerModel;
 }
