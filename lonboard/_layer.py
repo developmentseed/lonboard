@@ -5,10 +5,11 @@ import warnings
 from typing import TYPE_CHECKING
 
 import geopandas as gpd
+import ipywidgets
 import pyarrow as pa
 import traitlets
 
-from lonboard._base import BaseWidget
+from lonboard._base import BaseExtension, BaseWidget
 from lonboard._constants import EPSG_4326, EXTENSION_NAME, OGC_84
 from lonboard._geoarrow.geopandas_interop import geopandas_to_geoarrow
 from lonboard._serialization import infer_rows_per_chunk
@@ -24,6 +25,10 @@ if TYPE_CHECKING:
 
 class BaseLayer(BaseWidget):
     table: traitlets.TraitType
+
+    extensions = traitlets.List(trait=traitlets.Instance(BaseExtension)).tag(
+        sync=True, **ipywidgets.widget_serialization
+    )
 
     pickable = traitlets.Bool(True).tag(sync=True)
     """
@@ -109,7 +114,7 @@ class BaseLayer(BaseWidget):
 
         if auto_downcast:
             # Note: we don't deep copy because we don't need to clone geometries
-            gdf = _auto_downcast(gdf.copy())
+            gdf = _auto_downcast(gdf.copy())  # type: ignore
 
         table = geopandas_to_geoarrow(gdf)
         return cls(table=table, **kwargs)
