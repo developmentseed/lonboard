@@ -1,6 +1,8 @@
 # lonboard
 
 [![PyPI][pypi_badge]][pypi_link]
+[![Conda Version][conda_version_badge]][conda_version]
+[![Conda Recipe][conda_recipe_badge]][conda_recipe]
 [![Binder][binder_badge]][binder_jupyterlab_url]
 [![open_in_colab][colab_badge]][colab_notebook_link]
 
@@ -10,6 +12,10 @@
 [binder_jupyterlab_url]: https://mybinder.org/v2/gh/developmentseed/lonboard/HEAD?urlpath=lab/tree/examples/
 [colab_badge]: https://colab.research.google.com/assets/colab-badge.svg
 [colab_notebook_link]: https://colab.research.google.com/github/developmentseed/lonboard/blob/main
+[conda_recipe_badge]: https://img.shields.io/badge/recipe-lonboard-green.svg
+[conda_recipe]: https://github.com/conda-forge/lonboard-feedstock
+[conda_version_badge]: https://img.shields.io/conda/vn/conda-forge/lonboard.svg
+[conda_version]: https://anaconda.org/conda-forge/lonboard
 
 Python library for fast, interactive geospatial vector data visualization in Jupyter.
 
@@ -19,8 +25,16 @@ Python library for fast, interactive geospatial vector data visualization in Jup
 
 ## Install
 
+To install lonboard using pip:
+
 ```
 pip install lonboard
+```
+
+To install lonboard using conda:
+
+```
+conda install -c conda-forge lonboard
 ```
 
 ## Get Started
