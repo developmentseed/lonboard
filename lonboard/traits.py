@@ -136,9 +136,26 @@ class PyarrowTableTrait(FixedErrorTraitType):
         if not allowed_geometry_types:
             return value
 
-        geometry_extension_type = value.schema.field("geometry").metadata.get(
-            b"ARROW:extension:name"
-        )
+        field = value.schema.field("geometry")
+        if isinstance(field.type, pa.ExtensionType):
+            geometry_extension_type = field.type.extension_name.encode()
+            storage_type = field.type.storage_type
+            new_field = pa.field(
+                "geometry",
+                storage_type,
+                nullable=True,
+                metadata={"ARROW:extension:name": field.type.extension_name},
+            )
+            value = value.set_column(
+                value.schema.get_field_index("geometry"),
+                new_field,
+                value.column("geometry").cast(storage_type),
+            )
+        else:
+            geometry_extension_type = value.schema.field("geometry").metadata.get(
+                b"ARROW:extension:name"
+            )
+
         if (
             allowed_geometry_types
             and geometry_extension_type not in allowed_geometry_types
