@@ -4,6 +4,12 @@ import shapely
 
 from lonboard import Map, ScatterplotLayer
 
+if hasattr(Map, "_esm"):
+    del Map._esm
+
+if hasattr(Map, "_css"):
+    del Map._css
+
 
 def test_map_fails_with_unexpected_argument():
     points = shapely.points([1, 2], [3, 4])
