@@ -23,10 +23,29 @@ jobs:
         with:
           python-version: "3.11"
 
+      # Note: this should stay synced with the volta-pinned version in
+      # package.json
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "18"
+
+      - name: Cache NPM dependencies
+        uses: actions/cache@v3
+        with:
+          path: ~/.npm
+          # Note: this does **not** depend on the Python version in the cache
+          # key
+          key: ${{ runner.OS }}-npm-cache-${{ hashFiles('**/package-lock.json') }}
+
+      - name: Install JS dependencies
+        run: |
+          # Note: we use ci for a "clean install", checking the lockfile
+          npm ci
+
       - name: Install and configure Poetry
         uses: snok/install-poetry@v1
         with:
-          version: 1.6.1
+          version: 1.7.0
           virtualenvs-create: true
           virtualenvs-in-project: true
           installer-parallel: true
@@ -40,10 +59,14 @@ jobs:
 
       - name: Install dependencies
         if: steps.cached-poetry-dependencies.outputs.cache-hit != 'true'
-        run: poetry install --no-interaction --no-root
+        run: poetry install --no-interaction --no-root --without watchfiles
 
       - name: Install root project
-        run: poetry install --no-interaction
+        run: poetry install --no-interaction --without watchfiles
+
+      - name: Build JS bundle
+        run: |
+          npm run build
 
       - name: Deploy docs
         env:
