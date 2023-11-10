@@ -33,6 +33,8 @@ jobs:
         uses: actions/cache@v3
         with:
           path: ~/.npm
+          # Note: this does **not** depend on the Python version in the cache
+          # key
           key: ${{ runner.OS }}-npm-cache-${{ hashFiles('**/package-lock.json') }}
 
       - name: Install JS dependencies
