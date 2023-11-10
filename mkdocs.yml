@@ -24,11 +24,13 @@ nav:
   - Example Notebooks:
       - examples/internet-speeds.ipynb
       - examples/north-america-roads.ipynb
+      - examples/migration.ipynb
       - Integrations:
           - ColorPicker: examples/integrations/color-picker.ipynb
           - Sidecar: examples/integrations/sidecar.ipynb
       - 30 Day Map Challenge:
           - "Day 1: Points": examples/map_challenge/1-points.ipynb
+          - "Day 6: Asia": examples/map_challenge/6-asia.ipynb
   - API Reference:
       - api/viz.md
       - api/map.md
