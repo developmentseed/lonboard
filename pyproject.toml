@@ -10,7 +10,7 @@ include = ["lonboard/static/*.js", "lonboard/static/*.css"]
 
 [tool.poetry.dependencies]
 python = "^3.8"
-anywidget = "^0.6.3"
+anywidget = "^0.7.1"
 pyarrow = ">=14.0.1"
 geopandas = ">=0.13"
 pandas = "^2"
@@ -22,7 +22,7 @@ shapely = "^2"
 
 
 [tool.poetry.group.dev.dependencies]
-anywidget = { version = "^0.6.3", extras = ["dev"] }
+anywidget = { version = "^0.7.1", extras = ["dev"] }
 jupyterlab = "^4.0.5"
 watchfiles = "^0.20.0"
 pre-commit = "^3.4.0"
