@@ -38,6 +38,13 @@ mkdocstrings = {version = "^0.23.0", extras = ["python"]}
 mkdocs-jupyter = {version = "^0.24.5", python = "^3.9"}
 mike = "^2"
 
+# Note: this is defined as a separate group so that it can be not installed in
+# CI. See:
+# https://github.com/developmentseed/lonboard/pull/234
+# https://github.com/manzt/anywidget/issues/374
+[tool.poetry.group.watchfiles.dependencies]
+watchfiles = "^0.21.0"
+
 [build-system]
 requires = ["poetry-core"]
 build-backend = "poetry.core.masonry.api"
