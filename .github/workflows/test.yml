@@ -67,10 +67,10 @@ jobs:
       # https://github.com/manzt/anywidget/issues/374
       - name: Install dependencies
         if: steps.cached-poetry-dependencies.outputs.cache-hit != 'true'
-        run: poetry install --no-interaction --no-root --without=watchfiles
+        run: poetry install --no-interaction --no-root --without watchfiles
 
       - name: Install root project
-        run: poetry install --no-interaction
+        run: poetry install --no-interaction --without watchfiles
 
       - name: Build JS bundle
         run: |

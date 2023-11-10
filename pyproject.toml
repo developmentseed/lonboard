@@ -42,9 +42,6 @@ mike = "^2"
 # CI. See:
 # https://github.com/developmentseed/lonboard/pull/234
 # https://github.com/manzt/anywidget/issues/374
-[tool.poetry.group.watchfiles]
-optional = true
-
 [tool.poetry.group.watchfiles.dependencies]
 watchfiles = "^0.21.0"
 
