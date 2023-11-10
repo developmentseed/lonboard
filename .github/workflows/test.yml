@@ -61,9 +61,13 @@ jobs:
           path: .venv
           key: venv-${{ runner.os }}-${{ steps.setup-python.outputs.python-version }}-${{ hashFiles('**/poetry.lock') }}
 
+      # Note: we don't install the "watchfiles" group on CI because it gives
+      # threading errors when running tests. See
+      # https://github.com/developmentseed/lonboard/pull/234
+      # https://github.com/manzt/anywidget/issues/374
       - name: Install dependencies
         if: steps.cached-poetry-dependencies.outputs.cache-hit != 'true'
-        run: poetry install --no-interaction --no-root
+        run: poetry install --no-interaction --no-root --without=watchfiles
 
       - name: Install root project
         run: poetry install --no-interaction
