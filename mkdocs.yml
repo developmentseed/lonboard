@@ -35,11 +35,21 @@ nav:
       - api/viz.md
       - api/map.md
       - Layers:
-          - api/layers/scatterplot-layer.md
+          - api/layers/heatmap-layer.md
           - api/layers/path-layer.md
+          - api/layers/scatterplot-layer.md
           - api/layers/solid-polygon-layer.md
       - api/colormap.md
       - api/traits.md
+      - Experimental:
+        - Layer Extensions:
+          - api/layer-extensions/brushing-extension.md
+          - api/layer-extensions/collision-filter-extension.md
+        - Layers:
+          - api/layers/arc-layer.md
+          - api/layers/text-layer.md
+        - api/experimental/traits.md
+
   # - Caveats: caveats.md
   - Performance: performance.md
   - Changelog: CHANGELOG.md
