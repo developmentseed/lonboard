@@ -4,7 +4,7 @@ name: Release
 on:
   push:
     tags:
-      - 'v*'
+      - "v*"
 
 jobs:
   build:
@@ -12,38 +12,41 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
-    - uses: actions/checkout@v4
+      - uses: actions/checkout@v4
 
-    - uses: actions/setup-python@v4
-      name: Install Python
-      with:
-        python-version: '3.11'
+      - uses: actions/setup-python@v4
+        name: Install Python
+        with:
+          python-version: "3.11"
 
-    - uses: actions/setup-node@v4
-      with:
-        node-version: "18"
+      # Note: this should stay synced with the volta-pinned version in
+      # package.json
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "18"
 
-    - name: Install JS dependencies
-      run: |
-        npm install
+      - name: Install JS dependencies
+        run: |
+          # Note: we use ci for a "clean install", checking the lockfile
+          npm ci
 
-    - name: Build JS bundle
-      run: |
-        npm run build
+      - name: Build JS bundle
+        run: |
+          npm run build
 
-    - name: Build dist
-      run: |
-        python -m pip install -U build
-        python -m build
+      - name: Build dist
+        run: |
+          python -m pip install -U build
+          python -m build
 
-    - name: Ensure JS files included
-      run: |
-        # If no files with path lonboard/static, fail
-        unzip -l dist/*.whl | grep "lonboard/static" || exit 1
+      - name: Ensure JS files included
+        run: |
+          # If no files with path lonboard/static, fail
+          unzip -l dist/*.whl | grep "lonboard/static" || exit 1
 
-    - uses: actions/upload-artifact@v3
-      with:
-        path: ./dist/
+      - uses: actions/upload-artifact@v3
+        with:
+          path: ./dist/
 
   upload_pypi:
     needs: [build]
