@@ -25,7 +25,13 @@ def get_bbox_center(tables: List[pa.Table]) -> Tuple[Bbox, WeightedCentroid]:
     overall_centroid = WeightedCentroid()
 
     for table in tables:
-        geom_col_idx = get_geometry_column_index(table.schema)
+        # Note: in the ArcLayer we won't necessarily have a column with a geoarrow
+        # extension type/metadata
+        try:
+            geom_col_idx = get_geometry_column_index(table.schema)
+        except ValueError:
+            continue
+
         geom_field = table.schema.field(geom_col_idx)
         geom_col = table.column(geom_col_idx)
 
@@ -67,5 +73,9 @@ def bbox_to_zoom_level(bbox: Bbox) -> int:
 def compute_view(tables: List[pa.Table]):
     """Automatically computes a view state for the data passed in."""
     bbox, center = get_bbox_center(tables)
-    zoom = bbox_to_zoom_level(bbox)
-    return {"longitude": center.x, "latitude": center.y, "zoom": zoom}
+    # When no geo column is found, bbox will have inf values
+    try:
+        zoom = bbox_to_zoom_level(bbox)
+        return {"longitude": center.x, "latitude": center.y, "zoom": zoom}
+    except OverflowError:
+        return {"longitude": center.x or 0, "latitude": center.y or 0, "zoom": 0}
