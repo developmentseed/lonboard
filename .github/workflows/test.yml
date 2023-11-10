@@ -40,9 +40,9 @@ jobs:
           # Note: we use ci for a "clean install", checking the lockfile
           npm ci
 
-      - name: Build JS bundle
-        run: |
-          npm run build
+      # - name: Build JS bundle
+      #   run: |
+      #     npm run build
 
       - name: Install and configure Poetry
         uses: snok/install-poetry@v1

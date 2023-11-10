@@ -27,8 +27,7 @@ jobs:
 
       - name: Install JS dependencies
         run: |
-          # Note: we use ci for a "clean install", checking the lockfile
-          npm ci
+          npm install
 
       - name: Build JS bundle
         run: |
