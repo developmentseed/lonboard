@@ -13,6 +13,7 @@ python = "^3.8"
 anywidget = "^0.6.3"
 pyarrow = "^13.0.0"
 geopandas = ">=0.13"
+pandas = "^2"
 palettable = "^3.3.3"
 # We use the colormap module from matplotlib. This module may be vendored in the
 # future to remove the matplotlib dependency.
