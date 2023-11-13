@@ -7,8 +7,8 @@
     "@deck.gl/layers": "^8.9.32",
     "@deck.gl/react": "^8.9.32",
     "@geoarrow/deck.gl-layers": "^0.3.0-beta.7",
-    "apache-arrow": "^13.0.0",
-    "maplibre-gl": "^3.5.2",
+    "apache-arrow": "^14.0.1",
+    "maplibre-gl": "^3.6.0",
     "parquet-wasm": "0.5.0",
     "react": "^18.2.0",
     "react-dom": "^18.2.0",
@@ -16,7 +16,7 @@
   },
   "devDependencies": {
     "@jupyter-widgets/base": "^6.0.6",
-    "@types/react": "^18.2.35",
+    "@types/react": "^18.2.37",
     "esbuild": "^0.19.5",
     "nodemon": "^3.0.1"
   },
