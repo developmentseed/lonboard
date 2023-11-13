@@ -15,6 +15,7 @@ import {
 } from "./model";
 import { useParquetWasm } from "./parquet";
 import { getTooltip } from "./tooltip";
+import { v4 as uuidv4 } from "uuid";
 
 const DEFAULT_INITIAL_VIEW_STATE = {
   latitude: 10,
@@ -111,7 +112,7 @@ function App() {
   let [mapHeight] = useModelState<number>("_height");
   let [showTooltip] = useModelState<boolean>("show_tooltip");
   let [pickingRadius] = useModelState<number>("picking_radius");
-  let [mapId] = useModelState<string>("_id");
+  const [mapId] = useState(uuidv4());
 
   let [subModelState, setSubModelState] = useState<
     Record<string, BaseLayerModel>
