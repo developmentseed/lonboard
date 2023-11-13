@@ -1,5 +1,13 @@
 # Changelog
 
+## [0.4.2] - 2023-11-13
+
+### Fixed
+
+- Fixed ScatterplotLayer rendering by @kylebarron in https://github.com/developmentseed/lonboard/pull/246
+
+**Full Changelog**: https://github.com/developmentseed/lonboard/compare/v0.4.1...v0.4.2
+
 ## [0.4.1] - 2023-11-13
 
 ### Fixed
