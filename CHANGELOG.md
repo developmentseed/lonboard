@@ -1,5 +1,13 @@
 # Changelog
 
+## [0.4.1] - 2023-11-10
+
+### Fixed
+
+- Fixed Polygon rendering
+
+**Full Changelog**: https://github.com/developmentseed/lonboard/compare/v0.4.0...v0.4.1
+
 ## [0.4.0] - 2023-11-10
 
 ### New Features
