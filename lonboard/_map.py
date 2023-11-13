@@ -74,7 +74,7 @@ class Map(BaseAnyWidget):
     This API is not yet stabilized and may change in the future.
     """
 
-    _height = traitlets.Int(500).tag(sync=True)
+    _height = traitlets.Int(default_value=None, allow_none=True).tag(sync=True)
     """Height of the map in pixels.
 
     This API is not yet stabilized and may change in the future.
