@@ -1,6 +1,6 @@
 [tool.poetry]
 name = "lonboard"
-version = "0.3.0"
+version = "0.4.1"
 description = "Python library for fast, interactive geospatial vector data visualization in Jupyter."
 authors = ["Kyle Barron <kyle@developmentseed.org>"]
 license = "MIT"
@@ -10,9 +10,10 @@ include = ["lonboard/static/*.js", "lonboard/static/*.css"]
 
 [tool.poetry.dependencies]
 python = "^3.8"
-anywidget = "^0.6.3"
-pyarrow = "^13.0.0"
+anywidget = "^0.7.1"
+pyarrow = ">=14.0.1"
 geopandas = ">=0.13"
+pandas = "^2"
 palettable = "^3.3.3"
 # We use the colormap module from matplotlib. This module may be vendored in the
 # future to remove the matplotlib dependency.
@@ -21,9 +22,8 @@ shapely = "^2"
 
 
 [tool.poetry.group.dev.dependencies]
-anywidget = { version = "^0.6.3", extras = ["dev"] }
+# anywidget = { version = "^0.7.1", extras = ["dev"] }
 jupyterlab = "^4.0.5"
-watchfiles = "^0.20.0"
 pre-commit = "^3.4.0"
 pytest = "^7.4.2"
 # We use ruff format ourselves, but mkdocstrings requires black to be installed
@@ -37,6 +37,13 @@ mkdocstrings = {version = "^0.23.0", extras = ["python"]}
 # This version only on 3.9+. Ok because it's a dev dependency
 mkdocs-jupyter = {version = "^0.24.5", python = "^3.9"}
 mike = "^2"
+
+# Note: this is defined as a separate group so that it can be not installed in
+# CI. See:
+# https://github.com/developmentseed/lonboard/pull/234
+# https://github.com/manzt/anywidget/issues/374
+[tool.poetry.group.watchfiles.dependencies]
+watchfiles = "^0.21.0"
 
 [build-system]
 requires = ["poetry-core"]

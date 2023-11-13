@@ -23,13 +23,36 @@ jobs:
         with:
           python-version: ${{ matrix.python-version }}
 
+      # Note: this should stay synced with the volta-pinned version in
+      # package.json
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "18"
+
+      - name: Cache NPM dependencies
+        uses: actions/cache@v3
+        with:
+          path: ~/.npm
+          # Note: this does **not** depend on the Python version in the cache
+          # key
+          key: ${{ runner.OS }}-npm-cache-${{ hashFiles('**/package-lock.json') }}
+
+      - name: Install JS dependencies
+        run: |
+          # Note: we use ci for a "clean install", checking the lockfile
+          npm ci
+
       - name: Install and configure Poetry
         uses: snok/install-poetry@v1
         with:
-          version: 1.6.1
+          version: 1.7.0
           virtualenvs-create: true
           virtualenvs-in-project: true
           installer-parallel: true
+
+      - name: Check Poetry lockfile up to date
+        run: |
+          poetry check --lock
 
       - name: Load cached venv
         id: cached-poetry-dependencies
@@ -38,12 +61,20 @@ jobs:
           path: .venv
           key: venv-${{ runner.os }}-${{ steps.setup-python.outputs.python-version }}-${{ hashFiles('**/poetry.lock') }}
 
+      # Note: we don't install the "watchfiles" group on CI because it gives
+      # threading errors when running tests. See
+      # https://github.com/developmentseed/lonboard/pull/234
+      # https://github.com/manzt/anywidget/issues/374
       - name: Install dependencies
         if: steps.cached-poetry-dependencies.outputs.cache-hit != 'true'
-        run: poetry install --no-interaction --no-root
+        run: poetry install --no-interaction --no-root --without watchfiles
 
       - name: Install root project
-        run: poetry install --no-interaction
+        run: poetry install --no-interaction --without watchfiles
+
+      - name: Build JS bundle
+        run: |
+          npm run build
 
       - name: Run tests
         run: poetry run pytest
