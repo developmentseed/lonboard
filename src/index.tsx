@@ -9,6 +9,7 @@ import type { WidgetModel } from "@jupyter-widgets/base";
 import { useParquetWasm } from "./parquet";
 import { getTooltip } from "./tooltip";
 import { loadChildModels } from "./util";
+import { v4 as uuidv4 } from "uuid";
 
 const DEFAULT_INITIAL_VIEW_STATE = {
   latitude: 10,
@@ -61,6 +62,7 @@ function App() {
   let [mapHeight] = useModelState<number>("_height");
   let [showTooltip] = useModelState<boolean>("show_tooltip");
   let [pickingRadius] = useModelState<number>("picking_radius");
+  const [mapId] = useState(uuidv4());
 
   let [subModelState, setSubModelState] = useState<
     Record<string, BaseLayerModel>
@@ -101,8 +103,29 @@ function App() {
     layers.push(subModel.render());
   }
 
+  // This hook checks if the map container parent has a height set, which is
+  // needed to make the map fill the parent container.
+  useEffect(() => {
+    if (mapHeight) return;
+
+    const mapContainer = document.getElementById(`map-${mapId}`);
+    const mapContainerParent = mapContainer?.parentElement;
+
+    if (mapContainerParent) {
+      // Compute the actual style considering stylesheets, inline styles, and browser default styles
+      const parentStyle = window.getComputedStyle(mapContainerParent);
+
+      // Check if the height is not already set
+      if (!parentStyle.height || parentStyle.height === "0px") {
+        // Set the height to 100% and min-height
+        mapContainerParent.style.height = "100%";
+        mapContainerParent.style.minHeight = "500px";
+      }
+    }
+  }, []);
+
   return (
-    <div style={{ height: mapHeight || 500 }}>
+    <div id={`map-${mapId}`} style={{ height: mapHeight || "100%" }}>
       <DeckGL
         initialViewState={
           ["longitude", "latitude", "zoom"].every((key) =>
