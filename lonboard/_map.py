@@ -8,6 +8,7 @@ import traitlets
 from ipywidgets.embed import embed_minimal_html
 
 from lonboard._base import BaseAnyWidget
+from lonboard._environment import DEFAULT_HEIGHT
 from lonboard._layer import BaseLayer
 from lonboard._viewport import compute_view
 
@@ -74,7 +75,9 @@ class Map(BaseAnyWidget):
     This API is not yet stabilized and may change in the future.
     """
 
-    _height = traitlets.Int(default_value=None, allow_none=True).tag(sync=True)
+    _height = traitlets.Int(default_value=DEFAULT_HEIGHT, allow_none=True).tag(
+        sync=True
+    )
     """Height of the map in pixels.
 
     This API is not yet stabilized and may change in the future.

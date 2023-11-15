@@ -15,3 +15,23 @@ class EXTENSION_NAME(bytes, Enum):
     MULTIPOINT = b"geoarrow.multipoint"
     MULTILINESTRING = b"geoarrow.multilinestring"
     MULTIPOLYGON = b"geoarrow.multipolygon"
+
+
+class Environment(str, Enum):
+    Azure = "azure"
+    """Azure notebook"""
+
+    Cocalc = "cocalc"
+    Colab = "colab"
+    """Colab notebook"""
+
+    Databricks = "databricks"
+
+    IPythonTerminal = "ipython_terminal"
+
+    Kaggle = "kaggle"
+    """Kaggle notebook"""
+
+    Nteract = "nteract"
+    Unknown = "unknown"
+    Vscode = "vscode"
