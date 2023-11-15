@@ -9,6 +9,11 @@ import pyarrow.compute as pc
 from numpy.typing import NDArray
 from palettable.palette import Palette
 
+__all__ = (
+    "apply_continuous_cmap",
+    "apply_categorical_cmap",
+)
+
 RGBColor = Union[Tuple[int, int, int], Tuple[int, int, int, int], Sequence[int]]
 """A type definition for an RGB or RGBA color value
 
@@ -134,6 +139,10 @@ def apply_categorical_cmap(
         cmap: A dictionary mapping keys to colors. See [DiscreteColormap] for more
             information.
 
+    Other Args:
+        alpha: The _default_ alpha value for entries in the colormap that do not have an
+            alpha value defined. Alpha must be an integer between 0 and 255 (inclusive).
+
     Returns:
         A two dimensional numpy array with data type [np.uint8][numpy.uint8]. The second
             dimension will have a length of either `3` if `alpha` is `None`, or `4` is
@@ -149,7 +158,12 @@ def apply_categorical_cmap(
     # Build lookup table
     lut = np.zeros((len(values.dictionary), 4), dtype=np.uint8)
     if alpha is not None:
+        assert isinstance(alpha, int), "alpha must be an integer"
+        assert 0 <= alpha <= 255, "alpha must be between 0-255 (inclusive)."
+
         lut[:, 3] = alpha
+    else:
+        lut[:, 3] = 255
 
     for i, key in enumerate(values.dictionary):
         color = cmap[key.as_py()]
