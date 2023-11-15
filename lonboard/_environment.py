@@ -51,7 +51,7 @@ ENVIRONMENT = detect_environment()
 
 
 def default_height():
-    if ENVIRONMENT == Environment.Vscode:
+    if ENVIRONMENT in [Environment.Vscode, Environment.Colab]:
         return 500
 
     return None
