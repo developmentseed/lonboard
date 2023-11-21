@@ -12,8 +12,8 @@
     "esModuleInterop": true,
     "forceConsistentCasingInFileNames": true,
     "jsx": "react",
-    // "strict": true,
-    // "strictNullChecks": true,
+    "strict": true,
+    "strictNullChecks": true,
     // "lib": [
     //   "es2019.array", "es6", "dom"
     // ],
