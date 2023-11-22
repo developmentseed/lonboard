@@ -26,7 +26,7 @@ async function getChildModelState(
   childModels: WidgetModel[],
   childLayerIds: string[],
   previousSubModelState: Record<string, BaseLayerModel>,
-  setStateCounter: React.Dispatch<React.SetStateAction<Date>>
+  setStateCounter: React.Dispatch<React.SetStateAction<Date>>,
 ): Promise<Record<string, BaseLayerModel>> {
   const newSubModelState: Record<string, BaseLayerModel> = {};
   const updateStateCallback = () => setStateCounter(new Date());
@@ -85,13 +85,13 @@ function App() {
 
       const childModels = await loadChildModels(
         model.widget_manager,
-        childLayerIds
+        childLayerIds,
       );
       const newSubModelState = await getChildModelState(
         childModels,
         childLayerIds,
         subModelState,
-        setStateCounter
+        setStateCounter,
       );
       setSubModelState(newSubModelState);
     };
@@ -129,7 +129,7 @@ function App() {
       <DeckGL
         initialViewState={
           ["longitude", "latitude", "zoom"].every((key) =>
-            Object.keys(initialViewState).includes(key)
+            Object.keys(initialViewState).includes(key),
           )
             ? initialViewState
             : DEFAULT_INITIAL_VIEW_STATE
