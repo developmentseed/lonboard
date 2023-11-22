@@ -74,7 +74,7 @@ export class CollisionFilterExtension extends BaseExtensionModel {
 
     this.initVectorizedAccessor(
       "get_collision_priority",
-      "getCollisionPriority"
+      "getCollisionPriority",
     );
   }
 
@@ -95,7 +95,7 @@ export class CollisionFilterExtension extends BaseExtensionModel {
 
 export async function initializeExtension(
   model: WidgetModel,
-  updateStateCallback: () => void
+  updateStateCallback: () => void,
 ): Promise<BaseExtensionModel> {
   const extensionType = model.get("_extension_type");
   let extensionModel: BaseExtensionModel;

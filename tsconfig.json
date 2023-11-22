@@ -12,6 +12,7 @@
     "esModuleInterop": true,
     "forceConsistentCasingInFileNames": true,
     "jsx": "react",
+    "skipLibCheck": true,
     // "strict": true,
     // "strictNullChecks": true,
     // "lib": [

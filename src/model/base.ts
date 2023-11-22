@@ -1,7 +1,6 @@
 import type { WidgetModel } from "@jupyter-widgets/base";
 import { parseAccessor } from "../accessor";
 
-
 export abstract class BaseModel {
   protected model: WidgetModel;
   protected callbacks: Map<string, () => void>;
