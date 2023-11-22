@@ -121,14 +121,14 @@ export abstract class BaseLayerModel extends BaseModel {
       console.log(childModelIds);
       const childModels = await loadChildModels(
         this.model.widget_manager,
-        childModelIds
+        childModelIds,
       );
 
       const extensions: BaseExtensionModel[] = [];
       for (const childModel of childModels) {
         const extension = await initializeExtension(
           childModel,
-          this.updateStateCallback
+          this.updateStateCallback,
         );
         extensions.push(extension);
       }
@@ -634,7 +634,7 @@ export class TextModel extends BaseLayerModel {
     this.initVectorizedAccessor("get_text_anchor", "getTextAnchor");
     this.initVectorizedAccessor(
       "get_alignment_baseline",
-      "getAlignmentBaseline"
+      "getAlignmentBaseline",
     );
     this.initVectorizedAccessor("get_pixel_offset", "getPixelOffset");
   }
@@ -689,7 +689,7 @@ export class TextModel extends BaseLayerModel {
 
 export async function initializeLayer(
   model: WidgetModel,
-  updateStateCallback: () => void
+  updateStateCallback: () => void,
 ): Promise<BaseLayerModel> {
   const layerType = model.get("_layer_type");
   let layerModel: BaseLayerModel;

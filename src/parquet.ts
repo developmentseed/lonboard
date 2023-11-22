@@ -29,7 +29,7 @@ export function parseParquet(dataView: DataView): arrow.Table {
 
   // TODO: use arrow-js-ffi for more memory-efficient wasm --> js transfer
   const arrowIPCBuffer = readParquet(
-    new Uint8Array(dataView.buffer)
+    new Uint8Array(dataView.buffer),
   ).intoIPCStream();
   const arrowTable = arrow.tableFromIPC(arrowIPCBuffer);
 
