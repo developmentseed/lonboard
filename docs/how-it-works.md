@@ -13,6 +13,8 @@ Lonboard is built on four foundational technologies: deck.gl, GeoArrow, GeoParqu
 
 [anywidget](https://anywidget.dev/) is a framework for building custom Jupyter widgets that makes the process much easier than before.
 
+While [geopandas](https://geopandas.org/en/stable/) is the primary interface to work with the data, the data is stored in-memory as geoarrow. Geoarrow is transferred as geoparquet to the browser and rendered using deck.gl.
+
 ## How is it so fast?
 
 Lonboard is so fast because it moves data from Python to JavaScript (in your browser) and then from JavaScript to your Graphics Processing Unit (GPU) more efficiently than ever before.
