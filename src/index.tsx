@@ -142,9 +142,7 @@ function App() {
         pickingRadius={pickingRadius}
       >
         {/* @ts-expect-error */}
-        <Map
-          mapStyle={mapStyle || DEFAULT_MAP_STYLE}
-        />
+        <Map mapStyle={mapStyle || DEFAULT_MAP_STYLE} />
       </DeckGL>
     </div>
   );
