@@ -12,4 +12,7 @@ esbuild.build({
   define: {
     "define.amd": "false",
   },
+  // Code splitting didn't work initially because it tried to load from a local
+  // relative path ./chunk.js
+  // splitting: true,
 });

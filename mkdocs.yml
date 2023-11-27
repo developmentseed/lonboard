@@ -39,6 +39,7 @@ nav:
           - api/layers/path-layer.md
           - api/layers/scatterplot-layer.md
           - api/layers/solid-polygon-layer.md
+      - api/basemap.md
       - api/colormap.md
       - api/traits.md
       - Experimental:

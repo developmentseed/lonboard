@@ -2,7 +2,8 @@
   "include": ["src/**/*"],
   "exclude": ["node_modules"],
   "compilerOptions": {
-    "moduleResolution": "node",
+    "moduleResolution": "nodenext",
+    "module": "NodeNext",
     "outDir": "./dist",
     "allowJs": true,
     "target": "ES2020",
