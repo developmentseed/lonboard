@@ -127,7 +127,6 @@ function App() {
 
   return (
     <div id={`map-${mapId}`} style={{ height: mapHeight || "100%" }}>
-      {/* @ts-expect-error */}
       <DeckGL
         initialViewState={
           ["longitude", "latitude", "zoom"].every((key) =>
@@ -141,7 +140,6 @@ function App() {
         getTooltip={showTooltip && getTooltip}
         pickingRadius={pickingRadius}
       >
-        {/* @ts-expect-error */}
         <Map mapStyle={mapStyle || DEFAULT_MAP_STYLE} />
       </DeckGL>
     </div>

@@ -19,6 +19,7 @@
   "devDependencies": {
     "@jupyter-widgets/base": "^6.0.6",
     "@types/react": "^18.2.35",
+    "@types/uuid": "^9.0.7",
     "esbuild": "^0.19.5",
     "nodemon": "^3.0.1",
     "prettier": "^3.1.0",

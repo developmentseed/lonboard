@@ -1,5 +1,5 @@
 import * as arrow from "apache-arrow";
-import { parseParquetBuffers } from "./parquet";
+import { parseParquetBuffers } from "./parquet.js";
 import { useState, useEffect } from "react";
 
 export function useTableBufferState(
