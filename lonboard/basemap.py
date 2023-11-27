@@ -15,7 +15,7 @@ class CartoBasemap(str, Enum):
     ![](https://carto.com/help/images/building-maps/basemaps/dark_labels.png)
     """
 
-    DarkMatterWithoutLabels = (
+    DarkMatterNoLabels = (
         "https://basemaps.cartocdn.com/gl/dark-matter-nolabels-gl-style/style.json"
     )
     """A dark map style without labels."""
@@ -26,7 +26,7 @@ class CartoBasemap(str, Enum):
     ![](https://carto.com/help/images/building-maps/basemaps/positron_labels.png)
     """
 
-    PositronWithoutLabels = (
+    PositronNoLabels = (
         "https://basemaps.cartocdn.com/gl/positron-nolabels-gl-style/style.json"
     )
     """A light map style without labels."""
@@ -37,7 +37,7 @@ class CartoBasemap(str, Enum):
     ![](https://carto.com/help/images/building-maps/basemaps/voyager_labels.png)
     """
 
-    VoyagerWithoutLabels = (
+    VoyagerNoLabels = (
         "https://basemaps.cartocdn.com/gl/voyager-nolabels-gl-style/style.json"
     )
     """A light, colored map style without labels."""

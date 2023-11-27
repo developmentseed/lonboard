@@ -109,7 +109,7 @@ class Map(BaseAnyWidget):
     - Default: `5`
     """
 
-    basemap_style = traitlets.Unicode(CartoBasemap.PositronWithoutLabels).tag(sync=True)
+    basemap_style = traitlets.Unicode(CartoBasemap.PositronNoLabels).tag(sync=True)
     """
     A MapLibre-compatible basemap style.
 
@@ -117,7 +117,7 @@ class Map(BaseAnyWidget):
 
     - Type: `str`
     - Default
-      [`lonboard.basemap.CartoBasemap.PositronWithoutLabels`][lonboard.basemap.CartoBasemap.PositronWithoutLabels]
+      [`lonboard.basemap.CartoBasemap.PositronNoLabels`][lonboard.basemap.CartoBasemap.PositronNoLabels]
     """
 
     def to_html(self, filename: Union[str, Path]) -> None:
