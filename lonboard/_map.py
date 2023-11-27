@@ -11,6 +11,7 @@ from lonboard._base import BaseAnyWidget
 from lonboard._environment import DEFAULT_HEIGHT
 from lonboard._layer import BaseLayer
 from lonboard._viewport import compute_view
+from lonboard.basemap import CartoBasemap
 
 # bundler yields lonboard/static/{index.js,styles.css}
 bundler_output_dir = Path(__file__).parent / "static"
@@ -106,6 +107,17 @@ class Map(BaseAnyWidget):
 
     - Type: `int`
     - Default: `5`
+    """
+
+    basemap_style = traitlets.Unicode(CartoBasemap.PositronNoLabels).tag(sync=True)
+    """
+    A MapLibre-compatible basemap style.
+
+    Various styles are provided in [`lonboard.basemap`][lonboard.basemap].
+
+    - Type: `str`
+    - Default
+      [`lonboard.basemap.CartoBasemap.PositronNoLabels`][lonboard.basemap.CartoBasemap.PositronNoLabels]
     """
 
     def to_html(self, filename: Union[str, Path]) -> None:

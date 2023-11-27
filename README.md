@@ -13,7 +13,7 @@
 
 A Python library for fast, interactive geospatial vector data visualization in Jupyter.
 
-By utilizing new technologies like [GeoArrow](https://github.com/geoarrow/geoarrow) and [GeoParquet](https://github.com/opengeospatial/geoparquet) in conjunction with [GPU-based map rendering](https://deck.gl/), lonboard aims to enable visualizing large geospatial datasets interactively through a simple interface.
+Building on cutting-edge technologies like [GeoArrow](https://github.com/geoarrow/geoarrow) and [GeoParquet](https://github.com/opengeospatial/geoparquet) in conjunction with [GPU-based map rendering](https://deck.gl/), lonboard aims to enable visualizing large geospatial datasets interactively through a simple interface.
 
 ![](assets/hero-image.jpg)
 

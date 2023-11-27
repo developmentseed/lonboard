@@ -1,5 +1,5 @@
-import { TooltipContent } from "@deck.gl/core/typed/lib/tooltip";
-import { GeoArrowPickingInfo } from "@geoarrow/deck.gl-layers/dist/types";
+import { TooltipContent } from "@deck.gl/core/typed/lib/tooltip.js";
+import type { GeoArrowPickingInfo } from "@geoarrow/deck.gl-layers";
 
 import "./index.css";
 

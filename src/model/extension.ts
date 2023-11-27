@@ -6,7 +6,7 @@ import {
   CollisionFilterExtension as _CollisionFilterExtension,
 } from "@deck.gl/extensions/typed";
 import type { WidgetModel } from "@jupyter-widgets/base";
-import { BaseModel } from "./base";
+import { BaseModel } from "./base.js";
 
 export abstract class BaseExtensionModel extends BaseModel {
   static extensionType: string;

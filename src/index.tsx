@@ -4,11 +4,11 @@ import { createRender, useModelState, useModel } from "@anywidget/react";
 import Map from "react-map-gl/maplibre";
 import DeckGL from "@deck.gl/react/typed";
 import type { Layer } from "@deck.gl/core/typed";
-import { BaseLayerModel, initializeLayer } from "./model";
+import { BaseLayerModel, initializeLayer } from "./model/index.js";
 import type { WidgetModel } from "@jupyter-widgets/base";
-import { useParquetWasm } from "./parquet";
-import { getTooltip } from "./tooltip";
-import { loadChildModels } from "./util";
+import { useParquetWasm } from "./parquet.js";
+import { getTooltip } from "./tooltip/index.js";
+import { loadChildModels } from "./util.js";
 import { v4 as uuidv4 } from "uuid";
 
 const DEFAULT_INITIAL_VIEW_STATE = {
@@ -19,7 +19,7 @@ const DEFAULT_INITIAL_VIEW_STATE = {
   pitch: 0,
 };
 
-const MAP_STYLE =
+const DEFAULT_MAP_STYLE =
   "https://basemaps.cartocdn.com/gl/positron-nolabels-gl-style/style.json";
 
 async function getChildModelState(
@@ -59,6 +59,7 @@ async function getChildModelState(
 function App() {
   let [parquetWasmReady] = useParquetWasm();
   let [initialViewState] = useModelState<DataView>("_initial_view_state");
+  let [mapStyle] = useModelState<string>("basemap_style");
   let [mapHeight] = useModelState<number>("_height");
   let [showTooltip] = useModelState<boolean>("show_tooltip");
   let [pickingRadius] = useModelState<number>("picking_radius");
@@ -139,7 +140,7 @@ function App() {
         getTooltip={showTooltip && getTooltip}
         pickingRadius={pickingRadius}
       >
-        <Map mapStyle={MAP_STYLE} />
+        <Map mapStyle={mapStyle || DEFAULT_MAP_STYLE} />
       </DeckGL>
     </div>
   );

@@ -1,5 +1,5 @@
 import type { WidgetModel } from "@jupyter-widgets/base";
-import { parseAccessor } from "../accessor";
+import { parseAccessor } from "../accessor.js";
 
 export abstract class BaseModel {
   protected model: WidgetModel;
