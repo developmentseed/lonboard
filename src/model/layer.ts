@@ -17,10 +17,10 @@ import {
 } from "@geoarrow/deck.gl-layers";
 import type { WidgetModel } from "@jupyter-widgets/base";
 import * as arrow from "apache-arrow";
-import { parseParquetBuffers } from "../parquet";
-import { loadChildModels } from "../util";
-import { BaseModel } from "./base";
-import { BaseExtensionModel, initializeExtension } from "./extension";
+import { parseParquetBuffers } from "../parquet.js";
+import { loadChildModels } from "../util.js";
+import { BaseModel } from "./base.js";
+import { BaseExtensionModel, initializeExtension } from "./extension.js";
 
 export abstract class BaseLayerModel extends BaseModel {
   protected table: arrow.Table;
