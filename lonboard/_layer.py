@@ -80,6 +80,27 @@ class BaseLayer(BaseWidget):
     - Default: `False`
     """
 
+    selected_index = traitlets.Int(None, allow_none=True).tag(sync=True)
+    """
+    The positional index of the most-recently clicked on row of data.
+
+    You can use this to access the full row of data from a GeoDataFrame
+
+    ```py
+    gdf.iloc[layer.selected_index]
+    ```
+
+    Setting a value here from Python will do nothing. This attribute only exists to be
+    updated from JavaScript on a map click. Note that `pickable` must be `True` (the
+    default) on this layer for the JavaScript `onClick` handler to work; if `pickable`
+    is set to `False`, `selected_index` will never update.
+
+    Note that you can use `observe` to call a function whenever a new value is received
+    from JavaScript. Refer
+    [here](https://ipywidgets.readthedocs.io/en/stable/examples/Widget%20Events.html#signatures)
+    for an example.
+    """
+
     _rows_per_chunk = traitlets.Int()
     """Number of rows per chunk for serializing table and accessor columns."""
 
