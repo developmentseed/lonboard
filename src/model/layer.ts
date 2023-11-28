@@ -8,6 +8,7 @@ import {
   GeoArrowHeatmapLayerProps,
   GeoArrowPathLayer,
   GeoArrowPathLayerProps,
+  GeoArrowPickingInfo,
   GeoArrowScatterplotLayer,
   GeoArrowScatterplotLayerProps,
   GeoArrowSolidPolygonLayer,
@@ -59,6 +60,13 @@ export abstract class BaseLayerModel extends BaseModel {
     return props;
   }
 
+  onClick(pickingInfo: GeoArrowPickingInfo) {
+    if (!pickingInfo.index) return;
+
+    this.model.set("selected_index", pickingInfo.index);
+    this.model.save_changes();
+  }
+
   baseLayerProps(): LayerProps {
     console.log("extensions", this.extensionInstances());
     console.log("extensionprops", this.extensionProps());
@@ -70,6 +78,7 @@ export abstract class BaseLayerModel extends BaseModel {
       visible: this.visible,
       opacity: this.opacity,
       autoHighlight: this.autoHighlight,
+      onClick: this.onClick.bind(this),
     };
   }
 
