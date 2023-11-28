@@ -11,7 +11,7 @@ import { BaseModel } from "./base.js";
 export abstract class BaseExtensionModel extends BaseModel {
   static extensionType: string;
 
-  extensionInstance: LayerExtension;
+  abstract extensionInstance: LayerExtension;
 
   constructor(model: WidgetModel, updateStateCallback: () => void) {
     super(model, updateStateCallback);
@@ -80,6 +80,7 @@ export class CollisionFilterExtension extends BaseExtensionModel {
 
   extensionProps(): CollisionFilterExtensionProps {
     // TODO: vectorized accessor array doesn't get set yet on data.attributes
+    // @ts-expect-error
     return {
       ...(this.collisionEnabled && { collisionEnabled: this.collisionEnabled }),
       ...(this.collisionGroup && { collisionGroup: this.collisionGroup }),

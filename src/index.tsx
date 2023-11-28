@@ -137,6 +137,7 @@ function App() {
         }
         controller={true}
         layers={layers}
+        // @ts-expect-error
         getTooltip={showTooltip && getTooltip}
         pickingRadius={pickingRadius}
       >

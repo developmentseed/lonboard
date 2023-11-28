@@ -1,4 +1,4 @@
-import type { Layer, LayerExtension, LayerProps } from "@deck.gl/core/typed";
+import type { Layer, LayerExtension, LayerProps, PickingInfo } from "@deck.gl/core/typed";
 import {
   GeoArrowArcLayer,
   GeoArrowArcLayerProps,
@@ -24,7 +24,7 @@ import { BaseModel } from "./base.js";
 import { BaseExtensionModel, initializeExtension } from "./extension.js";
 
 export abstract class BaseLayerModel extends BaseModel {
-  protected table: arrow.Table;
+  protected table!: arrow.Table;
 
   protected pickable: LayerProps["pickable"];
   protected visible: LayerProps["visible"];
@@ -36,12 +36,14 @@ export abstract class BaseLayerModel extends BaseModel {
   constructor(model: WidgetModel, updateStateCallback: () => void) {
     super(model, updateStateCallback);
 
-    this.initTable("table", "table");
+    this.initTable("table");
 
     this.initRegularAttribute("pickable", "pickable");
     this.initRegularAttribute("visible", "visible");
     this.initRegularAttribute("opacity", "opacity");
     this.initRegularAttribute("auto_highlight", "autoHighlight");
+
+    this.extensions = [];
   }
 
   async loadSubModels() {
@@ -60,7 +62,7 @@ export abstract class BaseLayerModel extends BaseModel {
     return props;
   }
 
-  onClick(pickingInfo: GeoArrowPickingInfo) {
+  onClick(pickingInfo: PickingInfo) {
     if (!pickingInfo.index) return;
 
     this.model.set("selected_index", pickingInfo.index);
@@ -99,16 +101,15 @@ export abstract class BaseLayerModel extends BaseModel {
    * changes to this class' internal state.
    *
    * @param   {string}  pythonName  Name of attribute on Python model (usually snake-cased)
-   * @param   {string}  jsName      Name of attribute in deck.gl (usually camel-cased)
    */
-  initTable(pythonName: string, jsName: string) {
-    this[jsName] = parseParquetBuffers(this.model.get(pythonName));
+  initTable(pythonName: string) {
+    this.table = parseParquetBuffers(this.model.get(pythonName));
 
     // Remove all existing change callbacks for this attribute
     this.model.off(`change:${pythonName}`);
 
     const callback = () => {
-      this[jsName] = parseParquetBuffers(this.model.get(pythonName));
+      this.table = parseParquetBuffers(this.model.get(pythonName));
     };
     this.model.on(`change:${pythonName}`, callback);
 
@@ -164,12 +165,8 @@ export class ArcModel extends BaseLayerModel {
   protected widthScale: GeoArrowArcLayerProps["widthScale"] | null;
   protected widthMinPixels: GeoArrowArcLayerProps["widthMinPixels"] | null;
   protected widthMaxPixels: GeoArrowArcLayerProps["widthMaxPixels"] | null;
-  protected getSourcePosition:
-    | GeoArrowArcLayerProps["getSourcePosition"]
-    | null;
-  protected getTargetPosition:
-    | GeoArrowArcLayerProps["getTargetPosition"]
-    | null;
+  protected getSourcePosition!: GeoArrowArcLayerProps["getSourcePosition"]
+  protected getTargetPosition!: GeoArrowArcLayerProps["getTargetPosition"]
   protected getSourceColor: GeoArrowArcLayerProps["getSourceColor"] | null;
   protected getTargetColor: GeoArrowArcLayerProps["getTargetColor"] | null;
   protected getWidth: GeoArrowArcLayerProps["getWidth"] | null;
@@ -232,7 +229,7 @@ export class ColumnModel extends BaseLayerModel {
   protected diskResolution: GeoArrowColumnLayerProps["diskResolution"] | null;
   protected radius: GeoArrowColumnLayerProps["radius"] | null;
   protected angle: GeoArrowColumnLayerProps["angle"] | null;
-  protected vertices: GeoArrowColumnLayerProps["vertices"] | null;
+  protected vertices!: GeoArrowColumnLayerProps["vertices"];
   protected offset: GeoArrowColumnLayerProps["offset"] | null;
   protected coverage: GeoArrowColumnLayerProps["coverage"] | null;
   protected elevationScale: GeoArrowColumnLayerProps["elevationScale"] | null;
@@ -292,7 +289,7 @@ export class ColumnModel extends BaseLayerModel {
       ...(this.diskResolution && { diskResolution: this.diskResolution }),
       ...(this.radius && { radius: this.radius }),
       ...(this.angle && { angle: this.angle }),
-      ...(this.vertices && { vertices: this.vertices }),
+      ...(this.vertices! && { vertices: this.vertices }),
       ...(this.offset && { offset: this.offset }),
       ...(this.coverage && { coverage: this.coverage }),
       ...(this.elevationScale && { elevationScale: this.elevationScale }),
@@ -601,7 +598,7 @@ export class TextModel extends BaseLayerModel {
   protected fontSettings: GeoArrowTextLayerProps["fontSettings"] | null;
   protected wordBreak: GeoArrowTextLayerProps["wordBreak"] | null;
   protected maxWidth: GeoArrowTextLayerProps["maxWidth"] | null;
-  protected getText: GeoArrowTextLayerProps["getText"] | null;
+  protected getText!: GeoArrowTextLayerProps["getText"];
   protected getPosition: GeoArrowTextLayerProps["getPosition"] | null;
   protected getColor: GeoArrowTextLayerProps["getColor"] | null;
   protected getSize: GeoArrowTextLayerProps["getSize"] | null;
