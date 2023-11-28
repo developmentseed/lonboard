@@ -1,4 +1,9 @@
-import type { Layer, LayerExtension, LayerProps, PickingInfo } from "@deck.gl/core/typed";
+import type {
+  Layer,
+  LayerExtension,
+  LayerProps,
+  PickingInfo,
+} from "@deck.gl/core/typed";
 import {
   GeoArrowArcLayer,
   GeoArrowArcLayerProps,
@@ -8,7 +13,6 @@ import {
   GeoArrowHeatmapLayerProps,
   GeoArrowPathLayer,
   GeoArrowPathLayerProps,
-  GeoArrowPickingInfo,
   GeoArrowScatterplotLayer,
   GeoArrowScatterplotLayerProps,
   GeoArrowSolidPolygonLayer,
@@ -165,8 +169,8 @@ export class ArcModel extends BaseLayerModel {
   protected widthScale: GeoArrowArcLayerProps["widthScale"] | null;
   protected widthMinPixels: GeoArrowArcLayerProps["widthMinPixels"] | null;
   protected widthMaxPixels: GeoArrowArcLayerProps["widthMaxPixels"] | null;
-  protected getSourcePosition!: GeoArrowArcLayerProps["getSourcePosition"]
-  protected getTargetPosition!: GeoArrowArcLayerProps["getTargetPosition"]
+  protected getSourcePosition!: GeoArrowArcLayerProps["getSourcePosition"];
+  protected getTargetPosition!: GeoArrowArcLayerProps["getTargetPosition"];
   protected getSourceColor: GeoArrowArcLayerProps["getSourceColor"] | null;
   protected getTargetColor: GeoArrowArcLayerProps["getTargetColor"] | null;
   protected getWidth: GeoArrowArcLayerProps["getWidth"] | null;

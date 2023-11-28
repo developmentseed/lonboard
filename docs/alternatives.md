@@ -24,7 +24,7 @@ Aside from this, pydeck and lonboard use different widget architectures. Pydeck 
 
 ## Lonboard vs kepler.gl-jupyter
 
-[kepler.gl](https://kepler.gl/) is a JavaScript application focused on presenting a simple, high-level visualization and analysis toolkit to browser-based users. It also has Python bindings via [kepler.gl-jupyter](https://docs.kepler.gl/docs/keplergl-jupyter).
+[kepler.gl](https://kepler.gl/) is a JavaScript application focused on presenting a simple, high-level visualization and analysis toolkit to browser-based users. Just like Lonboard, it's built on top of [deck.gl](https://deck.gl). It also has Python bindings via [kepler.gl-jupyter](https://docs.kepler.gl/docs/keplergl-jupyter).
 
 kepler.gl is a very good tool for data analysis and exploration _in the browser_. On the contrary, Lonboard targets users who plan to do most analysis in Python, but want the best performance to visualize the maximum amount of data. Lonboard should have better rendering performance, but has no user interface to analyze data _in the browser_.
 
