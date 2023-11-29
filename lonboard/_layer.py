@@ -349,6 +349,7 @@ class PathLayer(BaseLayer):
     layer = PathLayer.from_geopandas(
         gdf,
         get_color=[255, 0, 0],
+        width_min_pixels=2,
     )
     map_ = Map(layers=[layer])
     ```
