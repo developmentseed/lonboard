@@ -7,8 +7,8 @@ from typing import TYPE_CHECKING
 import geopandas as gpd
 import ipywidgets
 import pyarrow as pa
-from shapely.geometry import box
 import traitlets
+from shapely.geometry import box
 
 from lonboard._base import BaseExtension, BaseWidget
 from lonboard._constants import EPSG_4326, EXTENSION_NAME, OGC_84
