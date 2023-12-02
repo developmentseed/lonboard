@@ -121,7 +121,7 @@ function App() {
         // Set the height to 100%, min-height, and display to flex
         mapContainerParent.style.height = "100%";
         mapContainerParent.style.minHeight = "500px";
-        mapContainerParent.style.display = 'flex';
+        mapContainerParent.style.display = "flex";
       }
     }
   }, []);
