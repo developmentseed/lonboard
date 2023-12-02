@@ -118,9 +118,10 @@ function App() {
 
       // Check if the height is not already set
       if (!parentStyle.height || parentStyle.height === "0px") {
-        // Set the height to 100% and min-height
+        // Set the height to 100%, min-height, and display to flex
         mapContainerParent.style.height = "100%";
         mapContainerParent.style.minHeight = "500px";
+        mapContainerParent.style.display = 'flex';
       }
     }
   }, []);
