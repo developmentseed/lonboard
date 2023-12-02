@@ -1,4 +1,9 @@
 /* Remove spaces between table cells */
+.lonboard-tooltip {
+  font-family: var(--jp-ui-font-family);
+  font-size: var(--jp-ui-font-size1);
+}
+
 .lonboard-tooltip table {
   border-collapse: collapse;
 }
