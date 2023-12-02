@@ -7,6 +7,7 @@ from typing import TYPE_CHECKING
 import geopandas as gpd
 import ipywidgets
 import pyarrow as pa
+from shapely.geometry import box
 import traitlets
 
 from lonboard._base import BaseExtension, BaseWidget
@@ -703,3 +704,21 @@ class HeatmapLayer(BaseLayer):
                 raise traitlets.TraitError("accessor must have same length as table")
 
         return proposal["value"]
+
+
+class BitmapLayer(BaseLayer):
+    _layer_type = traitlets.Unicode("bitmap").tag(sync=True)
+    # set table not required
+    # table = None
+    bounds = traitlets.List(
+        traitlets.Float(), default_value=None, allow_none=True, minlen=4, maxlen=4
+    ).tag(sync=True)
+
+    image = traitlets.Unicode(allow_none=True).tag(sync=True)
+
+    # hack to get initial view state to consider bounds/image
+    @property
+    def table(self):
+        gdf = gpd.GeoDataFrame(geometry=[box(*self.bounds)])
+        table = geopandas_to_geoarrow(gdf)
+        return table

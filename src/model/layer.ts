@@ -3,6 +3,7 @@ import type {
   LayerExtension,
   LayerProps,
   PickingInfo,
+  Texture,
 } from "@deck.gl/core/typed";
 import {
   GeoArrowArcLayer,
@@ -26,6 +27,11 @@ import { parseParquetBuffers } from "../parquet.js";
 import { loadChildModels } from "../util.js";
 import { BaseModel } from "./base.js";
 import { BaseExtensionModel, initializeExtension } from "./extension.js";
+import {
+  BitmapBoundingBox,
+  BitmapLayer,
+  BitmapLayerProps,
+} from "@deck.gl/layers/typed";
 
 export abstract class BaseLayerModel extends BaseModel {
   protected table!: arrow.Table;
@@ -696,7 +702,37 @@ export class TextModel extends BaseLayerModel {
     });
   }
 }
+export class BitmapModel extends BaseModel {
+  static layerType = "bitmap";
+  protected image: BitmapLayerProps["image"];
+  protected bounds: BitmapLayerProps["bounds"];
+  constructor(model: WidgetModel, updateStateCallback: () => void) {
+    super(model, updateStateCallback);
 
+    this.initRegularAttribute("image", "image");
+    this.initRegularAttribute("bounds", "bounds");
+  }
+  baseLayerProps(): { id: string } {
+    return {
+      id: this.model.model_id,
+    };
+  }
+  layerProps(): {
+    image?: string | Texture | undefined;
+    bounds?: BitmapBoundingBox;
+  } {
+    return {
+      ...(this.bounds && { bounds: this.bounds }),
+      ...(this.image && { image: this.image }),
+    };
+  }
+  render(): BitmapLayer {
+    return new BitmapLayer({
+      ...this.baseLayerProps(),
+      ...this.layerProps(),
+    });
+  }
+}
 export async function initializeLayer(
   model: WidgetModel,
   updateStateCallback: () => void,
@@ -730,6 +766,9 @@ export async function initializeLayer(
 
     case TextModel.layerType:
       layerModel = new TextModel(model, updateStateCallback);
+      break;
+    case BitmapModel.layerType:
+      layerModel = new BitmapModel(model, updateStateCallback);
       break;
 
     default:
