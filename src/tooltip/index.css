@@ -1,9 +1,10 @@
-/* Remove spaces between table cells */
+/* Set fonts based on jupyter defaults */
 .lonboard-tooltip {
   font-family: var(--jp-ui-font-family);
   font-size: var(--jp-ui-font-size1);
 }
 
+/* Remove spaces between table cells */
 .lonboard-tooltip table {
   border-collapse: collapse;
 }
