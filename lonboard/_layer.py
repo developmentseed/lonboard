@@ -722,3 +722,10 @@ class BitmapLayer(BaseLayer):
         gdf = gpd.GeoDataFrame(geometry=[box(*self.bounds)])
         table = geopandas_to_geoarrow(gdf)
         return table
+
+
+class BitmapTileLayer(BaseLayer):
+    _layer_type = traitlets.Unicode("bitmap_tile").tag(sync=True)
+    table = None
+
+    data = traitlets.Unicode(allow_none=True).tag(sync=True)

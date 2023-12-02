@@ -32,6 +32,7 @@ import {
   BitmapLayer,
   BitmapLayerProps,
 } from "@deck.gl/layers/typed";
+import { TileLayer } from "@deck.gl/geo-layers/typed";
 
 export abstract class BaseLayerModel extends BaseModel {
   protected table!: arrow.Table;
@@ -702,6 +703,7 @@ export class TextModel extends BaseLayerModel {
     });
   }
 }
+// TODO: Figure out if i can just inherit from BaseLayer with disabling a few arrow specific parameters
 export class BitmapModel extends BaseModel {
   static layerType = "bitmap";
   protected image: BitmapLayerProps["image"];
@@ -733,6 +735,52 @@ export class BitmapModel extends BaseModel {
     });
   }
 }
+
+export class BitmapTileModel extends BaseModel {
+  static layerType = "bitmap_tile";
+  protected data: string;
+  constructor(model: WidgetModel, updateStateCallback: () => void) {
+    super(model, updateStateCallback);
+
+    this.initRegularAttribute("data", "data");
+  }
+  baseLayerProps(): { id: string } {
+    return {
+      id: this.model.model_id,
+    };
+  }
+  layerProps(): {
+    data?: string;
+  } {
+    return {
+      ...(this.data && { data: this.data }),
+    };
+  }
+  render(): TileLayer {
+    return new TileLayer({
+      // https://wiki.openstreetmap.org/wiki/Slippy_map_tilenames#Tile_servers
+      ...this.baseLayerProps(),
+      ...this.layerProps(),
+
+      minZoom: 0,
+      maxZoom: 19,
+      tileSize: 256,
+
+      renderSubLayers: (props) => {
+        const {
+          bbox: { west, south, east, north },
+        } = props.tile;
+
+        return new BitmapLayer(props, {
+          data: null,
+          image: props.data,
+          bounds: [west, south, east, north],
+        });
+      },
+    });
+  }
+}
+
 export async function initializeLayer(
   model: WidgetModel,
   updateStateCallback: () => void,
@@ -768,7 +816,12 @@ export async function initializeLayer(
       layerModel = new TextModel(model, updateStateCallback);
       break;
     case BitmapModel.layerType:
+      // TODO THIS FAILS TYPESCRIPT CHECKS
       layerModel = new BitmapModel(model, updateStateCallback);
+      break;
+    case BitmapTileModel.layerType:
+      // TODO THIS FAILS TYPESCRIPT CHECKS
+      layerModel = new BitmapTileModel(model, updateStateCallback);
       break;
 
     default:
