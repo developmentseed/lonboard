@@ -239,6 +239,8 @@ class BitmapTileLayer(BaseLayer):
         data="https://tile.openstreetmap.org/{z}/{x}/{y}.png",
         tile_size=256,
         max_requests=-1,
+        min_zoom=0,
+        max_zoom=19,
     )
     m = Map(layers=[layer])
     ```
