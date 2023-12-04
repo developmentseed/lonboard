@@ -25,8 +25,6 @@ if TYPE_CHECKING:
 
 
 class BaseLayer(BaseWidget):
-    table: traitlets.TraitType
-
     extensions = traitlets.List(trait=traitlets.Instance(BaseExtension)).tag(
         sync=True, **ipywidgets.widget_serialization
     )
@@ -105,6 +103,10 @@ class BaseLayer(BaseWidget):
     _rows_per_chunk = traitlets.Int()
     """Number of rows per chunk for serializing table and accessor columns."""
 
+
+class BaseArrowLayer(BaseLayer):
+    table: traitlets.TraitType
+
     @traitlets.default("_rows_per_chunk")
     def _default_rows_per_chunk(self):
         return infer_rows_per_chunk(self.table)
@@ -142,7 +144,229 @@ class BaseLayer(BaseWidget):
         return cls(table=table, **kwargs)
 
 
-class ScatterplotLayer(BaseLayer):
+class BitmapLayer(BaseLayer):
+    _layer_type = traitlets.Unicode("bitmap").tag(sync=True)
+
+    image = traitlets.Unicode().tag(sync=True)
+    """The URL to an image to display.
+
+    - Type: `str`
+    """
+
+    bounds = traitlets.Union(
+        [
+            traitlets.List(traitlets.Float(), minlen=4, maxlen=4),
+            traitlets.List(
+                traitlets.List(traitlets.Float(), minlen=2, maxlen=2),
+                minlen=4,
+                maxlen=4,
+            ),
+        ]
+    ).tag(sync=True)
+    """The bounds of the image.
+
+    Supported formats:
+
+        - Coordinates of the bounding box of the bitmap `[left, bottom, right, top]`
+        - Coordinates of four corners of the bitmap, should follow the sequence of
+          `[[left, bottom], [left, top], [right, top], [right, bottom]]`.
+    """
+
+    desaturate = traitlets.Float(0, min=0, max=1).tag(sync=True)
+    """The desaturation of the bitmap. Between `[0, 1]`.
+
+    - Type: `float`, optional
+    - Default: `0`
+    """
+
+    transparent_color = traitlets.List(
+        traitlets.Float(), default_value=None, allow_none=True, minlen=3, maxlen=4
+    )
+    """The color to use for transparent pixels, in `[r, g, b, a]`.
+
+    - Type: `List[float]`, optional
+    - Default: `[0, 0, 0, 0]`
+    """
+
+    tint_color = traitlets.List(
+        traitlets.Float(), default_value=None, allow_none=True, minlen=3, maxlen=4
+    )
+    """The color to tint the bitmap by, in `[r, g, b]`.
+
+    - Type: `List[float]`, optional
+    - Default: `[255, 255, 255]`
+    """
+
+    # hack to get initial view state to consider bounds/image
+    @property
+    def table(self):
+        gdf = gpd.GeoDataFrame(geometry=[box(*self.bounds)])  # type: ignore
+        table = geopandas_to_geoarrow(gdf)
+        return table
+
+
+class BitmapTileLayer(BaseLayer):
+    _layer_type = traitlets.Unicode("bitmap-tile").tag(sync=True)
+
+    data = traitlets.Union(
+        [traitlets.Unicode(), traitlets.List(traitlets.Unicode(), minlen=1)]
+    ).tag(sync=True)
+    """
+    Either a URL template or an array of URL templates from which the tile data should
+    be loaded.
+
+    If the value is a string: a URL template. Substrings {x} {y} and {z}, if present,
+    will be replaced with a tile's actual index when it is requested.
+
+    If the value is an array: multiple URL templates. Each endpoint must return the same
+    content for the same tile index. This can be used to work around domain sharding,
+    allowing browsers to download more resources simultaneously. Requests made are
+    balanced among the endpoints, based on the tile index.
+    """
+
+    tile_size = traitlets.Int(None, allow_none=True).tag(sync=True)
+    """
+    The pixel dimension of the tiles, usually a power of 2.
+
+    Tile size represents the target pixel width and height of each tile when rendered.
+    Smaller tile sizes display the content at higher resolution, while the layer needs
+    to load more tiles to fill the same viewport.
+
+    - Type: `int`, optional
+    - Default: `512`
+    """
+
+    zoom_offset = traitlets.Int(None, allow_none=True).tag(sync=True)
+    """
+    This offset changes the zoom level at which the tiles are fetched. Needs to be an
+    integer.
+
+    - Type: `int`, optional
+    - Default: `0`
+    """
+
+    max_zoom = traitlets.Int(None, allow_none=True).tag(sync=True)
+    """
+    The max zoom level of the layer's data. When overzoomed (i.e. `zoom > max_zoom`),
+    tiles from this level will be displayed.
+
+    - Type: `int`, optional
+    - Default: `None`
+    """
+
+    min_zoom = traitlets.Int(None, allow_none=True).tag(sync=True)
+    """
+    The min zoom level of the layer's data. When underzoomed (i.e. `zoom < min_zoom`),
+    the layer will not display any tiles unless `extent` is defined, to avoid issuing
+    too many tile requests.
+
+    - Type: `int`, optional
+    - Default: `None`
+    """
+
+    extent = traitlets.List(
+        traitlets.Float(), minlen=4, maxlen=4, allow_none=True, default_value=None
+    ).tag(sync=True)
+    """
+    The bounding box of the layer's data, in the form of `[min_x, min_y, max_x, max_y]`.
+    If provided, the layer will only load and render the tiles that are needed to fill
+    this box.
+
+    - Type: `List[float]`, optional
+    - Default: `None`
+    """
+
+    max_cache_size = traitlets.Int(None, allow_none=True).tag(sync=True)
+    """
+    The maximum number of tiles that can be cached. The tile cache keeps loaded tiles in
+    memory even if they are no longer visible. It reduces the need to re-download the
+    same data over and over again when the user pan/zooms around the map, providing a
+    smoother experience.
+
+    If not supplied, the `max_cache_size` is calculated as 5 times the number of tiles
+    in the current viewport.
+
+    - Type: `int`, optional
+    - Default: `None`
+    """
+
+    # TODO: Not sure if `getTileData` returns a `byteLength`?
+    # max_cache_byte_size = traitlets.Int(None, allow_none=True).tag(sync=True)
+    # """
+    # """
+
+    refinement_strategy = traitlets.Unicode(None, allow_none=True).tag(sync=True)
+    """How the tile layer refines the visibility of tiles.
+
+    When zooming in and out, if the layer only shows tiles from the current zoom level,
+    then the user may observe undesirable flashing while new data is loading. By setting
+    `refinement_strategy` the layer can attempt to maintain visual continuity by
+    displaying cached data from a different zoom level before data is available.
+
+    This prop accepts one of the following:
+
+    - `"best-available"`: If a tile in the current viewport is waiting for its data to
+      load, use cached content from the closest zoom level to fill the empty space. This
+      approach minimizes the visual flashing due to missing content.
+    - `"no-overlap"`: Avoid showing overlapping tiles when backfilling with cached
+      content. This is usually favorable when tiles do not have opaque backgrounds.
+    - `"never"`: Do not display any tile that is not selected.
+
+    - Type: `str`, optional
+    - Default: `"best-available"`
+    """
+
+    max_requests = traitlets.Int(None, allow_none=True).tag(sync=True)
+    """The maximum number of concurrent data fetches.
+
+    If <= 0, no throttling will occur, and `get_tile_data` may be called an unlimited
+    number of times concurrently regardless of how long that tile is or was visible.
+
+    If > 0, a maximum of `max_requests` instances of `get_tile_data` will be called
+    concurrently. Requests may never be called if the tile wasn't visible long enough to
+    be scheduled and started. Requests may also be aborted (through the signal passed to
+    `get_tile_data`) if there are more than `max_requests` ongoing requests and some of
+    those are for tiles that are no longer visible.
+
+    If `get_tile_data` makes fetch requests against an HTTP 1 web server, then
+    max_requests should correlate to the browser's maximum number of concurrent fetch
+    requests. For Chrome, the max is 6 per domain. If you use the data prop and specify
+    multiple domains, you can increase this limit. For example, with Chrome and 3
+    domains specified, you can set max_requests=18.
+
+    If the web server supports HTTP/2 (Open Chrome dev tools and look for "h2" in the
+    Protocol column), then you can make an unlimited number of concurrent requests (and
+    can set max_requests=-1). Note that this will request data for every tile, no matter
+    how long the tile was visible, and may increase server load.
+    """
+
+    desaturate = traitlets.Float(0, min=0, max=1).tag(sync=True)
+    """The desaturation of the bitmap. Between `[0, 1]`.
+
+    - Type: `float`, optional
+    - Default: `0`
+    """
+
+    transparent_color = traitlets.List(
+        traitlets.Float(), default_value=None, allow_none=True, minlen=3, maxlen=4
+    )
+    """The color to use for transparent pixels, in `[r, g, b, a]`.
+
+    - Type: `List[float]`, optional
+    - Default: `[0, 0, 0, 0]`
+    """
+
+    tint_color = traitlets.List(
+        traitlets.Float(), default_value=None, allow_none=True, minlen=3, maxlen=4
+    )
+    """The color to tint the bitmap by, in `[r, g, b]`.
+
+    - Type: `List[float]`, optional
+    - Default: `[255, 255, 255]`
+    """
+
+
+class ScatterplotLayer(BaseArrowLayer):
     """The `ScatterplotLayer` renders circles at given coordinates.
 
     **Example:**
@@ -334,7 +558,7 @@ class ScatterplotLayer(BaseLayer):
         return proposal["value"]
 
 
-class PathLayer(BaseLayer):
+class PathLayer(BaseArrowLayer):
     """
     The `PathLayer` renders lists of coordinate points as extruded polylines with
     mitering.
@@ -468,7 +692,7 @@ class PathLayer(BaseLayer):
         return proposal["value"]
 
 
-class SolidPolygonLayer(BaseLayer):
+class SolidPolygonLayer(BaseArrowLayer):
     """
     The `SolidPolygonLayer` renders filled and/or extruded polygons.
 
@@ -590,7 +814,7 @@ class SolidPolygonLayer(BaseLayer):
         return proposal["value"]
 
 
-class HeatmapLayer(BaseLayer):
+class HeatmapLayer(BaseArrowLayer):
     """The `HeatmapLayer` visualizes the spatial distribution of data.
 
     **Example:**
@@ -704,28 +928,3 @@ class HeatmapLayer(BaseLayer):
                 raise traitlets.TraitError("accessor must have same length as table")
 
         return proposal["value"]
-
-
-class BitmapLayer(BaseLayer):
-    _layer_type = traitlets.Unicode("bitmap").tag(sync=True)
-    # set table not required
-    # table = None
-    bounds = traitlets.List(
-        traitlets.Float(), default_value=None, allow_none=True, minlen=4, maxlen=4
-    ).tag(sync=True)
-
-    image = traitlets.Unicode(allow_none=True).tag(sync=True)
-
-    # hack to get initial view state to consider bounds/image
-    @property
-    def table(self):
-        gdf = gpd.GeoDataFrame(geometry=[box(*self.bounds)])
-        table = geopandas_to_geoarrow(gdf)
-        return table
-
-
-class BitmapTileLayer(BaseLayer):
-    _layer_type = traitlets.Unicode("bitmap_tile").tag(sync=True)
-    table = None
-
-    data = traitlets.Unicode(allow_none=True).tag(sync=True)

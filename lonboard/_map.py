@@ -130,7 +130,11 @@ class Map(BaseAnyWidget):
 
     @traitlets.default("_initial_view_state")
     def _default_initial_view_state(self):
-        tables = [layer.table for layer in self.layers if layer.table]
+        tables = [
+            layer.table
+            for layer in self.layers
+            if hasattr(layer, "table") and layer.table
+        ]
         if tables:
             return compute_view(tables)
         else:
