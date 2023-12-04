@@ -41,7 +41,7 @@ class Map(BaseAnyWidget):
         get_fill_color=[255, 0, 0],
     )
 
-    map_ = Map(layers=[point_layer, polygon_layer])
+    m = Map(layers=[point_layer, polygon_layer])
     ```
     """
 
@@ -130,7 +130,11 @@ class Map(BaseAnyWidget):
 
     @traitlets.default("_initial_view_state")
     def _default_initial_view_state(self):
-        tables = [layer.table for layer in self.layers if layer.table]
+        tables = [
+            layer.table
+            for layer in self.layers
+            if hasattr(layer, "table") and layer.table
+        ]
         if tables:
             return compute_view(tables)
         else:
