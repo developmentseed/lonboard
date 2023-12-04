@@ -41,7 +41,7 @@ class Map(BaseAnyWidget):
         get_fill_color=[255, 0, 0],
     )
 
-    map_ = Map(layers=[point_layer, polygon_layer])
+    m = Map(layers=[point_layer, polygon_layer])
     ```
     """
 

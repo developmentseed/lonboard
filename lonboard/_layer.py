@@ -145,6 +145,24 @@ class BaseArrowLayer(BaseLayer):
 
 
 class BitmapLayer(BaseLayer):
+    """
+    The `BitmapLayer` renders a bitmap (e.g. PNG, JPEG, or WebP) at specified
+    boundaries.
+
+    **Example:**
+
+    ```py
+    from lonboard import Map, BitmapLayer
+
+    layer = BitmapLayer(
+        image='https://raw.githubusercontent.com/visgl/deck.gl-data/master/website/sf-districts.png',
+        bounds=[-122.5190, 37.7045, -122.355, 37.829]
+    )
+    m = Map(layers=[layer])
+    m
+    ```
+    """
+
     _layer_type = traitlets.Unicode("bitmap").tag(sync=True)
 
     image = traitlets.Unicode().tag(sync=True)
@@ -206,6 +224,28 @@ class BitmapLayer(BaseLayer):
 
 
 class BitmapTileLayer(BaseLayer):
+    """
+    The BitmapTileLayer renders image tiles (e.g. PNG, JPEG, or WebP) in the web
+    mercator tiling system. Only the tiles visible in the current viewport are loaded
+    and rendered.
+
+    **Example:**
+
+    ```py
+    from lonboard import Map, BitmapTileLayer
+
+    layer = BitmapTileLayer(
+        data=[
+            'https://a.tile.openstreetmap.org/{z}/{x}/{y}.png',
+            'https://b.tile.openstreetmap.org/{z}/{x}/{y}.png',
+            'https://c.tile.openstreetmap.org/{z}/{x}/{y}.png',
+        ],
+        tile_size=256,
+    )
+    m = Map(layers=[layer])
+    ```
+    """
+
     _layer_type = traitlets.Unicode("bitmap-tile").tag(sync=True)
 
     data = traitlets.Union(
@@ -381,7 +421,7 @@ class ScatterplotLayer(BaseArrowLayer):
         gdf,
         get_fill_color=[255, 0, 0],
     )
-    map_ = Map(layers=[layer])
+    m = Map(layers=[layer])
     ```
     """
 
@@ -576,7 +616,7 @@ class PathLayer(BaseArrowLayer):
         get_color=[255, 0, 0],
         width_min_pixels=2,
     )
-    map_ = Map(layers=[layer])
+    m = Map(layers=[layer])
     ```
     """
 
@@ -708,7 +748,7 @@ class SolidPolygonLayer(BaseArrowLayer):
         gdf,
         get_fill_color=[255, 0, 0],
     )
-    map_ = Map(layers=[layer])
+    m = Map(layers=[layer])
     ```
     """
 
@@ -826,7 +866,7 @@ class HeatmapLayer(BaseArrowLayer):
     # A GeoDataFrame with Point geometries
     gdf = gpd.GeoDataFrame()
     layer = HeatmapLayer.from_geopandas(gdf,)
-    map_ = Map(layers=[layer])
+    m = Map(layers=[layer])
     ```
     """
 
