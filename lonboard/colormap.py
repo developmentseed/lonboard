@@ -2,6 +2,7 @@ from __future__ import annotations
 
 from typing import Any, Dict, Optional, Sequence, Tuple, Union
 
+import matplotlib as mpl
 import numpy as np
 import pandas as pd
 import pyarrow as pa
@@ -68,15 +69,16 @@ colormap should be integers.
 
 def apply_continuous_cmap(
     values: NDArray[np.floating],
-    cmap: Palette,
+    cmap: Union[Palette, mpl.colors.Colormap],
     *,
     alpha: Union[float, int, NDArray[np.floating], None] = None,
 ) -> NDArray[np.uint8]:
     """Apply a colormap to a column of continuous values.
 
-    This is described as "continuous" because it uses matplotlib's
-    [LinearSegmentedColormap][matplotlib.colors.LinearSegmentedColormap] under the hood.
-    As described in Matplotlib's referenced docstring:
+    If you pass in a `Palette` object from the
+    [`palettable`](https://github.com/jiffyclub/palettable) package, this will use
+    matplotlib's [LinearSegmentedColormap][matplotlib.colors.LinearSegmentedColormap]
+    under the hood. As described in Matplotlib's referenced docstring:
 
     > The lookup table is generated using linear interpolation for each primary color,
     > with the 0-1 domain divided into any number of segments.
@@ -84,12 +86,12 @@ def apply_continuous_cmap(
     This means that input values are linearly combined from the two nearest colormap
     colors.
 
-    If you want to snap to the "nearest" colormap value, you should use another function
-    (not yet implemented) to snap to the strictly nearest color value.
+    If you pass in a Matplotlib `Colormap` object, this will use the lookup method
+    defined in that class.
 
     Args:
         values: A numpy array of floating point values ranging from 0 to 1.
-        cmap: Any `Palette` object from the
+        cmap: Any matplotlib `Colormap` or `Palette` object from the
             [`palettable`](https://github.com/jiffyclub/palettable) package.
 
     Other Args:
@@ -101,11 +103,12 @@ def apply_continuous_cmap(
             dimension will have a length of either `3` if `alpha` is `None`, or `4` is
             each color has an alpha value.
     """
-    assert isinstance(cmap, Palette), "Expected cmap to be a palettable colormap."
-
-    # Note: we can remove the matplotlib dependency in the future if we vendor
-    # matplotlib.colormap
-    colors: NDArray[np.uint8] = cmap.mpl_colormap(values, alpha=alpha, bytes=True)  # type: ignore
+    if isinstance(cmap, Palette):
+        colors: NDArray[np.uint8] = cmap.mpl_colormap(values, alpha=alpha, bytes=True)  # type: ignore
+    elif isinstance(cmap, mpl.colors.Colormap):
+        colors: NDArray[np.uint8] = cmap(values, alpha=alpha, bytes=True)  # type: ignore
+    else:
+        raise TypeError("Expected cmap to be a palettable or matplotlib colormap.")
 
     # If the alpha values are all 255, don't serialize
     if (colors[:, 3] == 255).all():
