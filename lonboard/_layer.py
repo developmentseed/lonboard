@@ -234,13 +234,11 @@ class BitmapTileLayer(BaseLayer):
     ```py
     from lonboard import Map, BitmapTileLayer
 
+    # We set `max_requests < 0` because `tile.openstreetmap.org` supports HTTP/2.
     layer = BitmapTileLayer(
-        data=[
-            'https://a.tile.openstreetmap.org/{z}/{x}/{y}.png',
-            'https://b.tile.openstreetmap.org/{z}/{x}/{y}.png',
-            'https://c.tile.openstreetmap.org/{z}/{x}/{y}.png',
-        ],
+        data="https://tile.openstreetmap.org/{z}/{x}/{y}.png",
         tile_size=256,
+        max_requests=-1,
     )
     m = Map(layers=[layer])
     ```
