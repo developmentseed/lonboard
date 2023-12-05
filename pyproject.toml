@@ -19,7 +19,10 @@ palettable = "^3.3.3"
 # future to remove the matplotlib dependency.
 matplotlib = "^3.7"
 shapely = "^2"
+movingpandas = {version = ">=0.17", optional = true}
 
+[tool.poetry.extras]
+movingpandas = ["movingpandas"]
 
 [tool.poetry.group.dev.dependencies]
 # anywidget = { version = "^0.7.1", extras = ["dev"] }
