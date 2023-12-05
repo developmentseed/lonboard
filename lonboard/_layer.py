@@ -15,7 +15,11 @@ from lonboard._constants import EPSG_4326, EXTENSION_NAME, OGC_84
 from lonboard._geoarrow.geopandas_interop import geopandas_to_geoarrow
 from lonboard._serialization import infer_rows_per_chunk
 from lonboard._utils import auto_downcast as _auto_downcast
-from lonboard.traits import ColorAccessor, FloatAccessor, PyarrowTableTrait
+from lonboard.traits import (
+    ColorAccessor,
+    FloatAccessor,
+    PyarrowTableTrait,
+)
 
 if TYPE_CHECKING:
     if sys.version_info >= (3, 11):

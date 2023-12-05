@@ -1,11 +1,16 @@
 from __future__ import annotations
 
+import sys
+from typing import TYPE_CHECKING
+
+import numpy as np
 import pyarrow as pa
+import shapely
 import traitlets
 
 from lonboard._constants import EXTENSION_NAME
-from lonboard._layer import BaseLayer
-from lonboard.experimental.traits import PointAccessor
+from lonboard._layer import BaseArrowLayer
+from lonboard.experimental.traits import PointAccessor, TimestampAccessor
 from lonboard.traits import (
     ColorAccessor,
     FloatAccessor,
@@ -13,8 +18,16 @@ from lonboard.traits import (
     TextAccessor,
 )
 
+if TYPE_CHECKING:
+    from movingpandas import TrajectoryCollection
 
-class ArcLayer(BaseLayer):
+    if sys.version_info >= (3, 11):
+        from typing import Self
+    else:
+        from typing_extensions import Self
+
+
+class ArcLayer(BaseArrowLayer):
     """Render raised arcs joining pairs of source and target coordinates."""
 
     _layer_type = traitlets.Unicode("arc").tag(sync=True)
@@ -126,7 +139,7 @@ class ArcLayer(BaseLayer):
         return proposal["value"]
 
 
-class TextLayer(BaseLayer):
+class TextLayer(BaseArrowLayer):
     """Render text labels at given coordinates."""
 
     _layer_type = traitlets.Unicode("text").tag(sync=True)
@@ -323,3 +336,199 @@ class TextLayer(BaseLayer):
     default [0, 0]
     """
     #  ?: Accessor<DataT, [number, number]>;
+
+
+class TripsLayer(BaseArrowLayer):
+    """ """
+
+    _layer_type = traitlets.Unicode("trip").tag(sync=True)
+
+    table = PyarrowTableTrait(
+        allowed_geometry_types={
+            EXTENSION_NAME.LINESTRING,
+        }
+    )
+
+    width_units = traitlets.Unicode(allow_none=True).tag(sync=True)
+    """
+    The units of the line width, one of `'meters'`, `'common'`, and `'pixels'`. See
+    [unit
+    system](https://deck.gl/docs/developer-guide/coordinate-systems#supported-units).
+
+    - Type: `str`, optional
+    - Default: `'meters'`
+    """
+
+    width_scale = traitlets.Float(allow_none=True, min=0).tag(sync=True)
+    """
+    The path width multiplier that multiplied to all paths.
+
+    - Type: `float`, optional
+    - Default: `1`
+    """
+
+    width_min_pixels = traitlets.Float(allow_none=True, min=0).tag(sync=True)
+    """
+    The minimum path width in pixels. This prop can be used to prevent the path from
+    getting too thin when zoomed out.
+
+    - Type: `float`, optional
+    - Default: `0`
+    """
+
+    width_max_pixels = traitlets.Float(allow_none=True, min=0).tag(sync=True)
+    """
+    The maximum path width in pixels. This prop can be used to prevent the path from
+    getting too thick when zoomed in.
+
+    - Type: `float`, optional
+    - Default: `None`
+    """
+
+    joint_rounded = traitlets.Bool(allow_none=True).tag(sync=True)
+    """
+    Type of joint. If `True`, draw round joints. Otherwise draw miter joints.
+
+    - Type: `bool`, optional
+    - Default: `False`
+    """
+
+    cap_rounded = traitlets.Bool(allow_none=True).tag(sync=True)
+    """
+    Type of caps. If `True`, draw round caps. Otherwise draw square caps.
+
+    - Type: `bool`, optional
+    - Default: `False`
+    """
+
+    miter_limit = traitlets.Int(allow_none=True).tag(sync=True)
+    """
+    The maximum extent of a joint in ratio to the stroke width.
+    Only works if `jointRounded` is `False`.
+
+    - Type: `float`, optional
+    - Default: `4`
+    """
+
+    billboard = traitlets.Bool(allow_none=True).tag(sync=True)
+    """
+    If `True`, extrude the path in screen space (width always faces the camera).
+    If `False`, the width always faces up.
+
+    - Type: `bool`, optional
+    - Default: `False`
+    """
+
+    fade_trail = traitlets.Bool(allow_none=True).tag(sync=True)
+    """Whether or not the path fades out.
+
+    - Type: `bool`, optional
+    - Default: `True`
+    """
+
+    trail_length = traitlets.Float(allow_none=True).tag(sync=True)
+    """Trail length.
+
+    - Type: `float`, optional
+    - Default: `120`
+    """
+
+    current_time = traitlets.Float(0).tag(sync=True)
+    """The current time of the frame.
+
+    - Type: `float`, optional
+    - Default: `0`
+    """
+
+    get_color = ColorAccessor()
+    """
+    The color of each path in the format of `[r, g, b, [a]]`. Each channel is a number
+    between 0-255 and `a` is 255 if not supplied.
+
+    - Type: [ColorAccessor][lonboard.traits.ColorAccessor], optional
+        - If a single `list` or `tuple` is provided, it is used as the color for all
+          paths.
+        - If a numpy or pyarrow array is provided, each value in the array will be used
+          as the color for the path at the same row index.
+    - Default: `[0, 0, 0, 255]`.
+    """
+
+    get_width = FloatAccessor()
+    """
+    The width of each path, in units specified by `width_units` (default `'meters'`).
+
+    - Type: [FloatAccessor][lonboard.traits.FloatAccessor], optional
+        - If a number is provided, it is used as the width for all paths.
+        - If an array is provided, each value in the array will be used as the width for
+          the path at the same row index.
+    - Default: `1`.
+    """
+
+    get_timestamps = TimestampAccessor()
+    """
+    The timestamp of each coordinate.
+
+    - Type: [TimestampAccessor][lonboard.traits.TimestampAccessor]
+    """
+
+    @traitlets.validate("get_color", "get_width", "get_timestamps")
+    def _validate_accessor_length(self, proposal):
+        if isinstance(proposal["value"], (pa.ChunkedArray, pa.Array)):
+            if len(proposal["value"]) != len(self.table):
+                raise traitlets.TraitError("accessor must have same length as table")
+
+        return proposal["value"]
+
+    @classmethod
+    def from_movingpandas(cls, traj_collection: TrajectoryCollection, **kwargs) -> Self:
+        num_coords = 0
+        num_rows = len(traj_collection)
+        offsets = np.zeros(num_rows + 1, dtype=np.int32)
+
+        for i, traj in enumerate(traj_collection.trajectories):
+            num_coords += traj.size()
+            offsets[i + 1] = num_coords
+
+        coords = np.zeros((num_coords, 2), dtype=np.float32)
+        timestamps = np.zeros(num_coords, dtype=np.int64)
+
+        for i, traj in enumerate(traj_collection.trajectories):
+            start_offset = offsets[i]
+            end_offset = offsets[i + 1]
+
+            # millisecond-based timestamps
+            int64_ms_timestamps = traj.df.index.to_series().astype(np.int64) // (
+                1000**2
+            )
+            timestamps[start_offset:end_offset] = int64_ms_timestamps
+
+            coords[start_offset:end_offset, 0] = shapely.get_x(traj.df.geometry).values
+            coords[start_offset:end_offset, 1] = shapely.get_y(traj.df.geometry).values
+
+        # offset by earliest timestamp
+        timestamps -= timestamps.min()
+
+        # Cast to float32
+        timestamps = timestamps.astype(np.float32)
+
+        coords_fixed_size_list = pa.FixedSizeListArray.from_arrays(
+            pa.array(coords.flatten("C")), 2
+        )
+        linestrings_arr = pa.ListArray.from_arrays(
+            pa.array(offsets), coords_fixed_size_list
+        )
+        timestamp_arr = pa.ListArray.from_arrays(
+            pa.array(offsets), pa.array(timestamps)
+        )
+
+        linestrings_field = pa.field(
+            "geometry",
+            linestrings_arr.type,
+            nullable=True,
+            metadata={"ARROW:extension:name": "geoarrow.linestring"},
+        )
+
+        # TODO: don't add timestamps onto table
+        table = pa.table({"timestamps": timestamp_arr})
+        table = table.append_column(linestrings_field, linestrings_arr)
+        return cls(table=table, get_timestamps=timestamp_arr, **kwargs)

@@ -20,6 +20,8 @@ import {
   GeoArrowSolidPolygonLayerProps,
   _GeoArrowTextLayer as GeoArrowTextLayer,
   _GeoArrowTextLayerProps as GeoArrowTextLayerProps,
+  GeoArrowTripsLayer,
+  GeoArrowTripsLayerProps,
 } from "@geoarrow/deck.gl-layers";
 import type { WidgetModel } from "@jupyter-widgets/base";
 import * as arrow from "apache-arrow";
@@ -829,6 +831,74 @@ export class TextModel extends BaseArrowLayerModel {
   }
 }
 
+export class TripsModel extends BaseArrowLayerModel {
+  static layerType = "trip";
+
+  protected widthUnits: GeoArrowTripsLayerProps["widthUnits"] | null;
+  protected widthScale: GeoArrowTripsLayerProps["widthScale"] | null;
+  protected widthMinPixels: GeoArrowTripsLayerProps["widthMinPixels"] | null;
+  protected widthMaxPixels: GeoArrowTripsLayerProps["widthMaxPixels"] | null;
+  protected jointRounded: GeoArrowTripsLayerProps["jointRounded"] | null;
+  protected capRounded: GeoArrowTripsLayerProps["capRounded"] | null;
+  protected miterLimit: GeoArrowTripsLayerProps["miterLimit"] | null;
+  protected billboard: GeoArrowTripsLayerProps["billboard"] | null;
+  protected fadeTrail: GeoArrowTripsLayerProps["fadeTrail"] | null;
+  protected trailLength: GeoArrowTripsLayerProps["trailLength"] | null;
+  protected currentTime: GeoArrowTripsLayerProps["currentTime"] | null;
+
+  protected getColor: GeoArrowTripsLayerProps["getColor"] | null;
+  protected getWidth: GeoArrowTripsLayerProps["getWidth"] | null;
+  protected getTimestamps!: GeoArrowTripsLayerProps["getTimestamps"];
+
+  constructor(model: WidgetModel, updateStateCallback: () => void) {
+    super(model, updateStateCallback);
+
+    this.initRegularAttribute("width_units", "widthUnits");
+    this.initRegularAttribute("width_scale", "widthScale");
+    this.initRegularAttribute("width_min_pixels", "widthMinPixels");
+    this.initRegularAttribute("width_max_pixels", "widthMaxPixels");
+    this.initRegularAttribute("joint_rounded", "jointRounded");
+    this.initRegularAttribute("cap_rounded", "capRounded");
+    this.initRegularAttribute("miter_limit", "miterLimit");
+    this.initRegularAttribute("billboard", "billboard");
+    this.initRegularAttribute("fade_trail", "fadeTrail");
+    this.initRegularAttribute("trail_length", "trailLength");
+    this.initRegularAttribute("current_time", "currentTime");
+
+    this.initVectorizedAccessor("get_color", "getColor");
+    this.initVectorizedAccessor("get_width", "getWidth");
+    this.initVectorizedAccessor("get_timestamps", "getTimestamps");
+  }
+
+  layerProps(): Omit<GeoArrowTripsLayerProps, "id"> {
+    return {
+      data: this.table,
+      // Required argument
+      getTimestamps: this.getTimestamps,
+      ...(this.widthUnits && { widthUnits: this.widthUnits }),
+      ...(this.widthScale && { widthScale: this.widthScale }),
+      ...(this.widthMinPixels && { widthMinPixels: this.widthMinPixels }),
+      ...(this.widthMaxPixels && { widthMaxPixels: this.widthMaxPixels }),
+      ...(this.jointRounded && { jointRounded: this.jointRounded }),
+      ...(this.capRounded && { capRounded: this.capRounded }),
+      ...(this.miterLimit && { miterLimit: this.miterLimit }),
+      ...(this.billboard && { billboard: this.billboard }),
+      ...(this.fadeTrail && { fadeTrail: this.fadeTrail }),
+      ...(this.trailLength && { trailLength: this.trailLength }),
+      ...(this.currentTime && { currentTime: this.currentTime }),
+      ...(this.getColor && { getColor: this.getColor }),
+      ...(this.getWidth && { getWidth: this.getWidth }),
+    };
+  }
+
+  render(): GeoArrowTripsLayer {
+    return new GeoArrowTripsLayer({
+      ...this.baseLayerProps(),
+      ...this.layerProps(),
+    });
+  }
+}
+
 export async function initializeLayer(
   model: WidgetModel,
   updateStateCallback: () => void,
@@ -870,6 +940,10 @@ export async function initializeLayer(
 
     case TextModel.layerType:
       layerModel = new TextModel(model, updateStateCallback);
+      break;
+
+    case TripsModel.layerType:
+      layerModel = new TripsModel(model, updateStateCallback);
       break;
 
     default:
