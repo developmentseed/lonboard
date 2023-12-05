@@ -9,6 +9,7 @@ from ._layer import (
     PathLayer,
     ScatterplotLayer,
     SolidPolygonLayer,
+    TripsLayer,
 )
 from ._map import Map
 from ._version import __version__
