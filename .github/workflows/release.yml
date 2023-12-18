@@ -44,7 +44,7 @@ jobs:
           # If no files with path lonboard/static, fail
           unzip -l dist/*.whl | grep "lonboard/static" || exit 1
 
-      - uses: actions/upload-artifact@v3
+      - uses: actions/upload-artifact@v4
         with:
           path: ./dist/
 
