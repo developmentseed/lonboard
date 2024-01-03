@@ -25,6 +25,13 @@ Building on cutting-edge technologies like [GeoArrow](https://github.com/geoarro
 pip install lonboard
 ```
 
+If you are installing from source, git clone this repository and you should also make sure you build the JS components (requires node version >18):
+
+```
+npm install && npm build
+pip install -e .
+```
+
 ## Get Started
 
 For the simplest rendering, pass geospatial data into the top-level [`viz` function](https://developmentseed.org/lonboard/latest/api/viz/#lonboard.viz.viz).
