@@ -2,8 +2,10 @@ import { LayerExtension } from "@deck.gl/core/typed";
 import {
   BrushingExtensionProps,
   CollisionFilterExtensionProps,
+  DataFilterExtensionProps,
   BrushingExtension as _BrushingExtension,
   CollisionFilterExtension as _CollisionFilterExtension,
+  DataFilterExtension as _DataFilterExtension,
 } from "@deck.gl/extensions/typed";
 import type { WidgetModel } from "@jupyter-widgets/base";
 import { BaseModel } from "./base.js";
@@ -79,16 +81,58 @@ export class CollisionFilterExtension extends BaseExtensionModel {
   }
 
   extensionProps(): CollisionFilterExtensionProps {
-    // TODO: vectorized accessor array doesn't get set yet on data.attributes
     // @ts-expect-error
     return {
-      ...(this.collisionEnabled && { collisionEnabled: this.collisionEnabled }),
+      ...(this.collisionEnabled !== undefined && { collisionEnabled: this.collisionEnabled }),
       ...(this.collisionGroup && { collisionGroup: this.collisionGroup }),
       ...(this.collisionTestProps && {
         collisionTestProps: this.collisionTestProps,
       }),
       ...(this.getCollisionPriority && {
         getCollisionPriority: this.getCollisionPriority,
+      }),
+    };
+  }
+}
+
+export class DataFilterExtension extends BaseExtensionModel {
+  static extensionType = "data-filter";
+
+  extensionInstance: _DataFilterExtension;
+
+  protected getFilterValue?: DataFilterExtensionProps["getFilterValue"];
+
+  protected filterEnabled?: DataFilterExtensionProps["filterEnabled"];
+  protected filterRange?: DataFilterExtensionProps["filterRange"];
+  protected filterSoftRange?: DataFilterExtensionProps["filterSoftRange"];
+  protected filterTransformSize?: DataFilterExtensionProps["filterTransformSize"];
+  protected filterTransformColor?: DataFilterExtensionProps["filterTransformColor"];
+
+  constructor(model: WidgetModel, updateStateCallback: () => void) {
+    super(model, updateStateCallback);
+    // TODO: set filterSize, fp64, countItems in constructor
+    this.extensionInstance = new _DataFilterExtension();
+
+    this.initRegularAttribute("filter_enabled", "filterEnabled");
+    this.initRegularAttribute("filter_range", "filterRange");
+    this.initRegularAttribute("filter_soft_range", "filterSoftRange");
+    this.initRegularAttribute("filter_transform_size", "filterTransformSize");
+    this.initRegularAttribute("filter_transform_color", "filterTransformColor");
+
+    this.initVectorizedAccessor("get_filter_value", "getFilterValue");
+  }
+
+  extensionProps(): DataFilterExtensionProps {
+    return {
+      ...(this.getFilterValue && { getFilterValue: this.getFilterValue }),
+      ...(this.filterEnabled && { filterEnabled: this.filterEnabled }),
+      ...(this.filterRange && { filterRange: this.filterRange }),
+      ...(this.filterSoftRange && { filterSoftRange: this.filterSoftRange }),
+      ...(this.filterTransformSize && {
+        filterTransformSize: this.filterTransformSize,
+      }),
+      ...(this.filterTransformColor && {
+        filterTransformColor: this.filterTransformColor,
       }),
     };
   }
@@ -107,6 +151,10 @@ export async function initializeExtension(
 
     case CollisionFilterExtension.extensionType:
       extensionModel = new CollisionFilterExtension(model, updateStateCallback);
+      break;
+
+    case DataFilterExtension.extensionType:
+      extensionModel = new DataFilterExtension(model, updateStateCallback);
       break;
 
     default:
