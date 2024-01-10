@@ -29,10 +29,11 @@ pytest = "^7.4.2"
 # We use ruff format ourselves, but mkdocstrings requires black to be installed
 # to format signatures in the docs
 black = "^23.10.1"
+geoarrow-rust-core = "^0.1.0"
 
 [tool.poetry.group.docs.dependencies]
 mkdocs = "^1.4.3"
-mkdocs-material = { version = "^9.1.16", extras = ["imaging"] }
+mkdocs-material = { version = "^9.5", extras = ["imaging"] }
 mkdocstrings = {version = "^0.23.0", extras = ["python"]}
 # This version only on 3.9+. Ok because it's a dev dependency
 mkdocs-jupyter = {version = "^0.24.5", python = "^3.9"}

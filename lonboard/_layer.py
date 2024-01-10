@@ -411,14 +411,31 @@ class ScatterplotLayer(BaseArrowLayer):
 
     **Example:**
 
+    From GeoPandas:
+
     ```py
     import geopandas as gpd
     from lonboard import Map, ScatterplotLayer
 
-    # A GeoDataFrame with Point geometries
+    # A GeoDataFrame with Point or MultiPoint geometries
     gdf = gpd.GeoDataFrame()
     layer = ScatterplotLayer.from_geopandas(
         gdf,
+        get_fill_color=[255, 0, 0],
+    )
+    m = Map(layers=[layer])
+    ```
+
+    From [geoarrow-rust](https://geoarrow.github.io/geoarrow-rs/python/latest):
+
+    ```py
+    from geoarrow.rust.core import read_parquet
+    from lonboard import Map, ScatterplotLayer
+
+    # Example: A GeoParquet file with Point or MultiPoint geometries
+    table = read_parquet("path/to/file.parquet")
+    layer = ScatterplotLayer(
+        table=table,
         get_fill_color=[255, 0, 0],
     )
     m = Map(layers=[layer])
@@ -430,6 +447,15 @@ class ScatterplotLayer(BaseArrowLayer):
     table = PyarrowTableTrait(
         allowed_geometry_types={EXTENSION_NAME.POINT, EXTENSION_NAME.MULTIPOINT}
     )
+    """A GeoArrow table with a Point or MultiPoint column.
+
+    This is the fastest way to plot data from an existing GeoArrow source, such as
+    [geoarrow-rust](https://geoarrow.github.io/geoarrow-rs/python/latest) or
+    [geoarrow-pyarrow](https://geoarrow.github.io/geoarrow-python/main/index.html).
+
+    If you have a GeoPandas `GeoDataFrame`, use
+    [`from_geopandas`][lonboard.ScatterplotLayer.from_geopandas] instead.
+    """
 
     radius_units = traitlets.Unicode("meters", allow_none=True).tag(sync=True)
     """
@@ -605,14 +631,32 @@ class PathLayer(BaseArrowLayer):
 
     **Example:**
 
+    From GeoPandas:
+
     ```py
     import geopandas as gpd
     from lonboard import Map, PathLayer
 
-    # A GeoDataFrame with LineString geometries
+    # A GeoDataFrame with LineString or MultiLineString geometries
     gdf = gpd.GeoDataFrame()
     layer = PathLayer.from_geopandas(
         gdf,
+        get_color=[255, 0, 0],
+        width_min_pixels=2,
+    )
+    m = Map(layers=[layer])
+    ```
+
+    From [geoarrow-rust](https://geoarrow.github.io/geoarrow-rs/python/latest):
+
+    ```py
+    from geoarrow.rust.core import read_parquet
+    from lonboard import Map, PathLayer
+
+    # Example: A GeoParquet file with LineString or MultiLineString geometries
+    table = read_parquet("path/to/file.parquet")
+    layer = PathLayer(
+        table=table,
         get_color=[255, 0, 0],
         width_min_pixels=2,
     )
@@ -628,6 +672,15 @@ class PathLayer(BaseArrowLayer):
             EXTENSION_NAME.MULTILINESTRING,
         }
     )
+    """A GeoArrow table with a LineString or MultiLineString column.
+
+    This is the fastest way to plot data from an existing GeoArrow source, such as
+    [geoarrow-rust](https://geoarrow.github.io/geoarrow-rs/python/latest) or
+    [geoarrow-pyarrow](https://geoarrow.github.io/geoarrow-python/main/index.html).
+
+    If you have a GeoPandas `GeoDataFrame`, use
+    [`from_geopandas`][lonboard.PathLayer.from_geopandas] instead.
+    """
 
     width_units = traitlets.Unicode(allow_none=True).tag(sync=True)
     """
@@ -738,14 +791,31 @@ class SolidPolygonLayer(BaseArrowLayer):
 
     **Example:**
 
+    From GeoPandas:
+
     ```py
     import geopandas as gpd
     from lonboard import Map, SolidPolygonLayer
 
-    # A GeoDataFrame with Polygon geometries
+    # A GeoDataFrame with Polygon or MultiPolygon geometries
     gdf = gpd.GeoDataFrame()
     layer = SolidPolygonLayer.from_geopandas(
         gdf,
+        get_fill_color=[255, 0, 0],
+    )
+    m = Map(layers=[layer])
+    ```
+
+    From [geoarrow-rust](https://geoarrow.github.io/geoarrow-rs/python/latest):
+
+    ```py
+    from geoarrow.rust.core import read_parquet
+    from lonboard import Map, SolidPolygonLayer
+
+    # Example: A GeoParquet file with Polygon or MultiPolygon geometries
+    table = read_parquet("path/to/file.parquet")
+    layer = SolidPolygonLayer(
+        table=table,
         get_fill_color=[255, 0, 0],
     )
     m = Map(layers=[layer])
@@ -757,6 +827,15 @@ class SolidPolygonLayer(BaseArrowLayer):
     table = PyarrowTableTrait(
         allowed_geometry_types={EXTENSION_NAME.POLYGON, EXTENSION_NAME.MULTIPOLYGON}
     )
+    """A GeoArrow table with a Polygon or MultiPolygon column.
+
+    This is the fastest way to plot data from an existing GeoArrow source, such as
+    [geoarrow-rust](https://geoarrow.github.io/geoarrow-rs/python/latest) or
+    [geoarrow-pyarrow](https://geoarrow.github.io/geoarrow-python/main/index.html).
+
+    If you have a GeoPandas `GeoDataFrame`, use
+    [`from_geopandas`][lonboard.SolidPolygonLayer.from_geopandas] instead.
+    """
 
     filled = traitlets.Bool(allow_none=True).tag(sync=True)
     """
@@ -857,7 +936,9 @@ class SolidPolygonLayer(BaseArrowLayer):
 class HeatmapLayer(BaseArrowLayer):
     """The `HeatmapLayer` visualizes the spatial distribution of data.
 
-    **Example:**
+    **Example**
+
+    From GeoPandas:
 
     ```py
     import geopandas as gpd
@@ -865,9 +946,25 @@ class HeatmapLayer(BaseArrowLayer):
 
     # A GeoDataFrame with Point geometries
     gdf = gpd.GeoDataFrame()
-    layer = HeatmapLayer.from_geopandas(gdf,)
+    layer = HeatmapLayer.from_geopandas(gdf)
     m = Map(layers=[layer])
     ```
+
+    From [geoarrow-rust](https://geoarrow.github.io/geoarrow-rs/python/latest):
+
+    ```py
+    from geoarrow.rust.core import read_parquet
+    from lonboard import Map, HeatmapLayer
+
+    # Example: A GeoParquet file with Point geometries
+    table = read_parquet("path/to/file.parquet")
+    layer = HeatmapLayer(
+        table=table,
+        get_fill_color=[255, 0, 0],
+    )
+    m = Map(layers=[layer])
+    ```
+
     """
 
     _layer_type = traitlets.Unicode("heatmap").tag(sync=True)
@@ -880,6 +977,15 @@ class HeatmapLayer(BaseArrowLayer):
         return len(self.table)
 
     table = PyarrowTableTrait(allowed_geometry_types={EXTENSION_NAME.POINT})
+    """A GeoArrow table with a Point column.
+
+    This is the fastest way to plot data from an existing GeoArrow source, such as
+    [geoarrow-rust](https://geoarrow.github.io/geoarrow-rs/python/latest) or
+    [geoarrow-pyarrow](https://geoarrow.github.io/geoarrow-python/main/index.html).
+
+    If you have a GeoPandas `GeoDataFrame`, use
+    [`from_geopandas`][lonboard.HeatmapLayer.from_geopandas] instead.
+    """
 
     radius_pixels = traitlets.Float(allow_none=True).tag(sync=True)
     """Radius of the circle in pixels, to which the weight of an object is distributed.

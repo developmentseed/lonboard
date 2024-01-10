@@ -73,6 +73,16 @@ def bbox_to_zoom_level(bbox: Bbox) -> int:
 def compute_view(tables: List[pa.Table]):
     """Automatically computes a view state for the data passed in."""
     bbox, center = get_bbox_center(tables)
+
+    if center.x is not None and (center.x < 180 or center.x > 180):
+        msg = "Longitude of data's center is outside of WGS84 bounds.\n"
+        msg += "Is data in WGS84 projection?"
+        raise ValueError(msg)
+    if center.y is not None and (center.y < 90 or center.y > 90):
+        msg = "Latitude of data's center is outside of WGS84 bounds.\n"
+        msg += "Is data in WGS84 projection?"
+        raise ValueError(msg)
+
     # When no geo column is found, bbox will have inf values
     try:
         zoom = bbox_to_zoom_level(bbox)
