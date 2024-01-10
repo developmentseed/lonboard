@@ -36,12 +36,17 @@ if TYPE_CHECKING:
         def __geo_interface__(self) -> dict:
             ...
 
+    class ArrowStreamExportable(Protocol):
+        def __arrow_c_stream__(self, requested_schema: object | None = None) -> object:
+            ...
+
     VizDataInput = Union[
         gpd.GeoDataFrame,
         gpd.GeoSeries,
         pa.Table,
         NDArray[np.object_],
         shapely.geometry.base.BaseGeometry,
+        ArrowStreamExportable,
         GeoInterfaceProtocol,
         Dict[str, Any],
     ]
@@ -120,6 +125,11 @@ def create_layer_from_data_input(
     # Shapely scalar
     if isinstance(data, shapely.geometry.base.BaseGeometry):
         return _viz_shapely_scalar(data, **kwargs)
+
+    # Anything with __arrow_c_stream__
+    if hasattr(data, "__arrow_c_stream__"):
+        data = cast(ArrowStreamExportable, data)
+        return _viz_geoarrow_table(pa.table(data.__arrow_c_stream__()), **kwargs)
 
     # Anything with __geo_interface__
     if hasattr(data, "__geo_interface__"):
@@ -236,6 +246,7 @@ def _viz_geo_interface(
 def _viz_geoarrow_table(
     table: pa.Table, **kwargs
 ) -> Union[ScatterplotLayer, PathLayer, SolidPolygonLayer]:
+    # TODO: don't hard-code "geometry"
     geometry_ext_type = table.schema.field("geometry").metadata.get(
         b"ARROW:extension:name"
     )
