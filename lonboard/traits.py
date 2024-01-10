@@ -28,7 +28,7 @@ from lonboard._serialization import (
 # the `info` passed in. See https://github.com/developmentseed/lonboard/issues/71 and
 # https://github.com/ipython/traitlets/pull/884
 class FixedErrorTraitType(traitlets.TraitType):
-    def error(self, obj, value, error=None, info=None):
+    def error(self, obj: Self, value, error=None, info=None):
         """Raise a TraitError
 
         Parameters
@@ -110,10 +110,21 @@ class FixedErrorTraitType(traitlets.TraitType):
 
 
 class PyarrowTableTrait(FixedErrorTraitType):
-    """A traitlets trait for a geospatial pyarrow table"""
+    """A trait to validate input for a geospatial Arrow-backed table
+
+    Allowed input includes:
+
+    - A pyarrow [`Table`][pyarrow.Table] or containing a geometry column with [GeoArrow metadata](https://geoarrow.org/extension-types).
+    - Any GeoArrow table from a library that implements the [Arrow PyCapsule
+      Interface](https://arrow.apache.org/docs/format/CDataInterface/PyCapsuleInterface.html).
+      This includes the
+      [`GeoTable`](https://geoarrow.github.io/geoarrow-rs/python/latest/api/core/table/#geoarrow.rust.core.GeoTable)
+      class from
+      [`geoarrow-rust`](https://geoarrow.github.io/geoarrow-rs/python/latest/).
+    """
 
     default_value = None
-    info_text = "a pyarrow Table"
+    info_text = "a pyarrow or GeoArrow Table"
 
     def __init__(
         self: TraitType,
@@ -129,6 +140,11 @@ class PyarrowTableTrait(FixedErrorTraitType):
         )
 
     def validate(self, obj: Self, value: Any):
+        # Check for Arrow PyCapsule Interface
+        # https://arrow.apache.org/docs/format/CDataInterface/PyCapsuleInterface.html
+        if not isinstance(value, pa.Table) and hasattr(value, "__arrow_c_stream__"):
+            value = pa.table(value)
+
         if not isinstance(value, pa.Table):
             self.error(obj, value)
 
@@ -154,7 +170,7 @@ class PyarrowTableTrait(FixedErrorTraitType):
 
 
 class ColorAccessor(FixedErrorTraitType):
-    """A representation of a deck.gl color accessor.
+    """A trait to validate input for a deck.gl color accessor.
 
     Various input is allowed:
 
@@ -169,6 +185,9 @@ class ColorAccessor(FixedErrorTraitType):
       [`ChunkedArray`][pyarrow.ChunkedArray] containing `FixedSizeListArray`s. The inner
       size of the fixed size list must be `3` or `4` and its child must have type
       `uint8`.
+    - Any Arrow fixed size list array from a library that implements the [Arrow
+      PyCapsule
+      Interface](https://arrow.apache.org/docs/format/CDataInterface/PyCapsuleInterface.html).
 
     You can use helpers in the `lonboard.colormap` module (i.e.
     [`apply_continuous_cmap`][lonboard.colormap.apply_continuous_cmap]) to simplify
@@ -229,6 +248,13 @@ class ColorAccessor(FixedErrorTraitType):
 
             return pa.FixedSizeListArray.from_arrays(value.flatten("C"), list_size)
 
+        # Check for Arrow PyCapsule Interface
+        # https://arrow.apache.org/docs/format/CDataInterface/PyCapsuleInterface.html
+        # TODO: with pyarrow v16 also import chunked array from stream
+        if not isinstance(value, (pa.ChunkedArray, pa.Array)):
+            if hasattr(value, "__arrow_c_array__"):
+                value = pa.array(value)
+
         if isinstance(value, (pa.ChunkedArray, pa.Array)):
             if not pa.types.is_fixed_size_list(value.type):
                 self.error(
@@ -273,7 +299,7 @@ class ColorAccessor(FixedErrorTraitType):
 
 
 class FloatAccessor(FixedErrorTraitType):
-    """A representation of a deck.gl float accessor.
+    """A trait to validate input for a deck.gl float accessor.
 
     Various input is allowed:
 
@@ -288,6 +314,10 @@ class FloatAccessor(FixedErrorTraitType):
       or [`ChunkedArray`][pyarrow.ChunkedArray] containing either a `FloatArray` or
       `DoubleArray`. Each value in the array will be used as the value for the object at
       the same row index.
+    - Any Arrow floating point array from a library that implements the [Arrow PyCapsule
+      Interface](https://arrow.apache.org/docs/format/CDataInterface/PyCapsuleInterface.html).
+      This includes data structures from
+      [`geoarrow-rust`](https://geoarrow.github.io/geoarrow-rs/python/latest/).
     """
 
     default_value = float(0)
@@ -324,6 +354,13 @@ class FloatAccessor(FixedErrorTraitType):
             # possible/allowed to pass in ~int8 or a data type smaller than float32?
             return pa.array(value.astype(np.float32))
 
+        # Check for Arrow PyCapsule Interface
+        # https://arrow.apache.org/docs/format/CDataInterface/PyCapsuleInterface.html
+        # TODO: with pyarrow v16 also import chunked array from stream
+        if not isinstance(value, (pa.ChunkedArray, pa.Array)):
+            if hasattr(value, "__arrow_c_array__"):
+                value = pa.array(value)
+
         if isinstance(value, (pa.ChunkedArray, pa.Array)):
             if not pa.types.is_floating(value.type):
                 self.error(
@@ -339,7 +376,7 @@ class FloatAccessor(FixedErrorTraitType):
 
 
 class TextAccessor(FixedErrorTraitType):
-    """A representation of a deck.gl text accessor.
+    """A trait to validate input for a deck.gl text accessor.
 
     Various input is allowed:
 

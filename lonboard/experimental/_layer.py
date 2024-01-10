@@ -20,6 +20,15 @@ class ArcLayer(BaseLayer):
     _layer_type = traitlets.Unicode("arc").tag(sync=True)
 
     table = PyarrowTableTrait()
+    """A GeoArrow table.
+
+    This is the fastest way to plot data from an existing GeoArrow source, such as
+    [geoarrow-rust](https://geoarrow.github.io/geoarrow-rs/python/latest) or
+    [geoarrow-pyarrow](https://geoarrow.github.io/geoarrow-python/main/index.html).
+
+    If you have a GeoPandas `GeoDataFrame`, use
+    [`from_geopandas`][lonboard.ScatterplotLayer.from_geopandas] instead.
+    """
 
     great_circle = traitlets.Bool(allow_none=True).tag(sync=True)
     """If `True`, create the arc along the shortest path on the earth surface.
@@ -132,6 +141,15 @@ class TextLayer(BaseLayer):
     _layer_type = traitlets.Unicode("text").tag(sync=True)
 
     table = PyarrowTableTrait(allowed_geometry_types={EXTENSION_NAME.POINT})
+    """A GeoArrow table with a Point or MultiPoint column.
+
+    This is the fastest way to plot data from an existing GeoArrow source, such as
+    [geoarrow-rust](https://geoarrow.github.io/geoarrow-rs/python/latest) or
+    [geoarrow-pyarrow](https://geoarrow.github.io/geoarrow-python/main/index.html).
+
+    If you have a GeoPandas `GeoDataFrame`, use
+    [`from_geopandas`][lonboard.ScatterplotLayer.from_geopandas] instead.
+    """
 
     billboard = traitlets.Bool().tag(sync=True)
     """If `true`, the text always faces camera. Otherwise the text faces up (z).

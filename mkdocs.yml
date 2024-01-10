@@ -65,21 +65,28 @@ theme:
   name: material
   custom_dir: docs/overrides
   palette:
+    # Palette toggle for automatic mode
+    - media: "(prefers-color-scheme)"
+      toggle:
+        icon: material/brightness-auto
+        name: Switch to light mode
+
     # Palette toggle for light mode
-    - scheme: default
+    - media: "(prefers-color-scheme: light)"
       primary: teal
       accent: indigo
       toggle:
-        icon: material/lightbulb
+        icon: material/brightness-7
         name: Switch to dark mode
 
     # Palette toggle for dark mode
-    - scheme: slate
+    - media: "(prefers-color-scheme: dark)"
+      scheme: slate
       primary: teal
       accent: indigo
       toggle:
-        icon: material/lightbulb-outline
-        name: Switch to light mode
+        icon: material/brightness-4
+        name: Switch to system preference
 
   font:
     text: Roboto
@@ -88,6 +95,9 @@ theme:
   # logo: img/geopolars_logo.svg
 
   features:
+    - content.code.annotate
+    - content.code.copy
+    - navigation.indexes
     - navigation.instant
     - navigation.tracking
     - search.suggest
@@ -121,6 +131,7 @@ plugins:
             - https://contextily.readthedocs.io/en/stable/objects.inv
             - https://docs.python.org/3/objects.inv
             - https://fiona.readthedocs.io/en/stable/objects.inv
+            - https://geoarrow.github.io/geoarrow-rs/python/latest/objects.inv
             - https://geopandas.org/en/stable/objects.inv
             - https://geopy.readthedocs.io/en/stable/objects.inv
             - https://matplotlib.org/stable/objects.inv
