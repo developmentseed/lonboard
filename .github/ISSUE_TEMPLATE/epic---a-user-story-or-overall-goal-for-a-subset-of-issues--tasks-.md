@@ -12,7 +12,7 @@ What is the driving factor behind this work? <br/>
 Describe any relevant background information; optionally include screenshots.
 
 ## Issue
-Describe the work that we need to do and any possible dependencies on decisions 
+Describe the work that we need to do and any possible dependencies on decisions
 
 ## Acceptance-Criteria
 List the tasks that need to be completed or artifacts that need to be produced
