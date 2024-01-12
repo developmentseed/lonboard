@@ -3,6 +3,8 @@
 
 from . import colormap, traits
 from ._layer import (
+    BaseArrowLayer,
+    BaseLayer,
     BitmapLayer,
     BitmapTileLayer,
     HeatmapLayer,

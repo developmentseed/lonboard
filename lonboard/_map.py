@@ -45,7 +45,18 @@ class Map(BaseAnyWidget):
     ```
     """
 
-    def __init__(self, layers: Union[BaseLayer, Sequence[BaseLayer]], **kwargs):
+    def __init__(self, layers: Union[BaseLayer, Sequence[BaseLayer]], **kwargs) -> None:
+        """Create a new Map.
+
+        Aside from the `layers` argument, pass keyword arguments for any other attribute
+        defined in this class.
+
+        Args:
+            layers: One or more layers to render on this map.
+
+        Returns:
+            A Map object.
+        """
         if isinstance(layers, BaseLayer):
             layers = [layers]
 
