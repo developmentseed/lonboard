@@ -1,7 +1,7 @@
 from __future__ import annotations
 
 from pathlib import Path
-from typing import Union
+from typing import Sequence, Union
 
 import ipywidgets
 import traitlets
@@ -41,9 +41,15 @@ class Map(BaseAnyWidget):
         get_fill_color=[255, 0, 0],
     )
 
-    m = Map(layers=[point_layer, polygon_layer])
+    m = Map([point_layer, polygon_layer])
     ```
     """
+
+    def __init__(self, layers: Union[BaseLayer, Sequence[BaseLayer]], **kwargs):
+        if isinstance(layers, BaseLayer):
+            layers = [layers]
+
+        super().__init__(layers=layers, **kwargs)
 
     _esm = bundler_output_dir / "index.js"
     _css = bundler_output_dir / "index.css"
