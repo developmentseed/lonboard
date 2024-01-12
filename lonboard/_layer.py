@@ -131,14 +131,14 @@ def default_geoarrow_viewport(
     # epsg:4326 bounds
     if table_centroid.num_items > 0:
         if table_centroid.x is not None and (
-            table_centroid.x < 180 or table_centroid.x > 180
+            table_centroid.x < -180 or table_centroid.x > 180
         ):
             msg = "Longitude of data's center is outside of WGS84 bounds.\n"
             msg += "Is data in WGS84 projection?"
             raise ValueError(msg)
 
         if table_centroid.y is not None and (
-            table_centroid.y < 90 or table_centroid.y > 90
+            table_centroid.y < -90 or table_centroid.y > 90
         ):
             msg = "Latitude of data's center is outside of WGS84 bounds.\n"
             msg += "Is data in WGS84 projection?"
