@@ -156,7 +156,7 @@ class BaseArrowLayer(BaseLayer):
             self._bbox = default_viewport[0]
             self._weighted_centroid = default_viewport[1]
 
-        super().__init__(**kwargs)
+        super().__init__(table=table, **kwargs)
 
     @traitlets.default("_rows_per_chunk")
     def _default_rows_per_chunk(self):
