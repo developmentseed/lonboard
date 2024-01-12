@@ -209,7 +209,7 @@ class BitmapLayer(BaseLayer):
         image='https://raw.githubusercontent.com/visgl/deck.gl-data/master/website/sf-districts.png',
         bounds=[-122.5190, 37.7045, -122.355, 37.829]
     )
-    m = Map(layers=[layer])
+    m = Map(layer)
     m
     ```
     """
@@ -309,7 +309,7 @@ class BitmapTileLayer(BaseLayer):
         min_zoom=0,
         max_zoom=19,
     )
-    m = Map(layers=[layer])
+    m = Map(layer)
     ```
     """
 
@@ -490,7 +490,7 @@ class ScatterplotLayer(BaseArrowLayer):
         gdf,
         get_fill_color=[255, 0, 0],
     )
-    m = Map(layers=[layer])
+    m = Map(layer)
     ```
 
     From [geoarrow-rust](https://geoarrow.github.io/geoarrow-rs/python/latest):
@@ -505,7 +505,7 @@ class ScatterplotLayer(BaseArrowLayer):
         table=table,
         get_fill_color=[255, 0, 0],
     )
-    m = Map(layers=[layer])
+    m = Map(layer)
     ```
     """
 
@@ -711,7 +711,7 @@ class PathLayer(BaseArrowLayer):
         get_color=[255, 0, 0],
         width_min_pixels=2,
     )
-    m = Map(layers=[layer])
+    m = Map(layer)
     ```
 
     From [geoarrow-rust](https://geoarrow.github.io/geoarrow-rs/python/latest):
@@ -727,7 +727,7 @@ class PathLayer(BaseArrowLayer):
         get_color=[255, 0, 0],
         width_min_pixels=2,
     )
-    m = Map(layers=[layer])
+    m = Map(layer)
     ```
     """
 
@@ -870,7 +870,7 @@ class SolidPolygonLayer(BaseArrowLayer):
         gdf,
         get_fill_color=[255, 0, 0],
     )
-    m = Map(layers=[layer])
+    m = Map(layer)
     ```
 
     From [geoarrow-rust](https://geoarrow.github.io/geoarrow-rs/python/latest):
@@ -885,7 +885,7 @@ class SolidPolygonLayer(BaseArrowLayer):
         table=table,
         get_fill_color=[255, 0, 0],
     )
-    m = Map(layers=[layer])
+    m = Map(layer)
     ```
     """
 
@@ -1014,7 +1014,7 @@ class HeatmapLayer(BaseArrowLayer):
     # A GeoDataFrame with Point geometries
     gdf = gpd.GeoDataFrame()
     layer = HeatmapLayer.from_geopandas(gdf)
-    m = Map(layers=[layer])
+    m = Map(layer)
     ```
 
     From [geoarrow-rust](https://geoarrow.github.io/geoarrow-rs/python/latest):
@@ -1029,7 +1029,7 @@ class HeatmapLayer(BaseArrowLayer):
         table=table,
         get_fill_color=[255, 0, 0],
     )
-    m = Map(layers=[layer])
+    m = Map(layer)
     ```
 
     """
