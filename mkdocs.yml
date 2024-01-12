@@ -35,10 +35,13 @@ nav:
       - api/viz.md
       - api/map.md
       - Layers:
+          - api/layers/bitmap-layer.md
+          - api/layers/bitmap-tile-layer.md
           - api/layers/heatmap-layer.md
           - api/layers/path-layer.md
           - api/layers/scatterplot-layer.md
           - api/layers/solid-polygon-layer.md
+          - api/layers/base-layer.md
       - api/basemap.md
       - api/colormap.md
       - api/traits.md
