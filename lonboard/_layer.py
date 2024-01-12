@@ -2,19 +2,21 @@ from __future__ import annotations
 
 import sys
 import warnings
-from typing import TYPE_CHECKING
+from typing import TYPE_CHECKING, Optional, Tuple
 
 import geopandas as gpd
 import ipywidgets
 import pyarrow as pa
 import traitlets
-from shapely.geometry import box
 
 from lonboard._base import BaseExtension, BaseWidget
 from lonboard._constants import EPSG_4326, EXTENSION_NAME, OGC_84
 from lonboard._geoarrow.geopandas_interop import geopandas_to_geoarrow
+from lonboard._geoarrow.ops.bbox import Bbox, total_bounds
+from lonboard._geoarrow.ops.centroid import WeightedCentroid, weighted_centroid
 from lonboard._serialization import infer_rows_per_chunk
 from lonboard._utils import auto_downcast as _auto_downcast
+from lonboard._utils import get_geometry_column_index
 from lonboard.traits import ColorAccessor, FloatAccessor, PyarrowTableTrait
 
 if TYPE_CHECKING:
@@ -25,6 +27,11 @@ if TYPE_CHECKING:
 
 
 class BaseLayer(BaseWidget):
+    # Note: these are **not** serialized to JS
+    _bbox = Bbox()
+    _weighted_centroid = WeightedCentroid()
+
+    # The following traitlets **are** serialized to JS
     extensions = traitlets.List(trait=traitlets.Instance(BaseExtension)).tag(
         sync=True, **ipywidgets.widget_serialization
     )
@@ -104,8 +111,52 @@ class BaseLayer(BaseWidget):
     """Number of rows per chunk for serializing table and accessor columns."""
 
 
+def default_geoarrow_viewport(
+    table: pa.Table
+) -> Optional[Tuple[Bbox, WeightedCentroid]]:
+    # Note: in the ArcLayer we won't necessarily have a column with a geoarrow
+    # extension type/metadata
+    try:
+        geom_col_idx = get_geometry_column_index(table.schema)
+    except ValueError:
+        return None
+
+    geom_field = table.schema.field(geom_col_idx)
+    geom_col = table.column(geom_col_idx)
+
+    table_bbox = total_bounds(geom_field, geom_col)
+    table_centroid = weighted_centroid(geom_field, geom_col)
+
+    # Check each layer's data _individually_ to ensure that no layer is outside of
+    # epsg:4326 bounds
+    if table_centroid.num_items > 0:
+        if table_centroid.x is not None and (
+            table_centroid.x < 180 or table_centroid.x > 180
+        ):
+            msg = "Longitude of data's center is outside of WGS84 bounds.\n"
+            msg += "Is data in WGS84 projection?"
+            raise ValueError(msg)
+
+        if table_centroid.y is not None and (
+            table_centroid.y < 90 or table_centroid.y > 90
+        ):
+            msg = "Latitude of data's center is outside of WGS84 bounds.\n"
+            msg += "Is data in WGS84 projection?"
+            raise ValueError(msg)
+
+    return table_bbox, table_centroid
+
+
 class BaseArrowLayer(BaseLayer):
     table: traitlets.TraitType
+
+    def __init__(self, *, table: pa.Table, **kwargs):
+        default_viewport = default_geoarrow_viewport(table)
+        if default_viewport is not None:
+            self._bbox = default_viewport[0]
+            self._weighted_centroid = default_viewport[1]
+
+        super().__init__(**kwargs)
 
     @traitlets.default("_rows_per_chunk")
     def _default_rows_per_chunk(self):
@@ -215,12 +266,28 @@ class BitmapLayer(BaseLayer):
     - Default: `[255, 255, 255]`
     """
 
-    # hack to get initial view state to consider bounds/image
     @property
-    def table(self):
-        gdf = gpd.GeoDataFrame(geometry=[box(*self.bounds)])  # type: ignore
-        table = geopandas_to_geoarrow(gdf)
-        return table
+    def _bbox(self) -> Bbox:
+        a, b, c, d = self.bounds
+
+        # Four corners
+        if isinstance(a, tuple):
+            bbox = Bbox()
+            bbox.update(Bbox(a[0], a[1], a[0], a[1]))
+            bbox.update(Bbox(b[0], b[1], b[0], b[1]))
+            bbox.update(Bbox(c[0], c[1], c[0], c[1]))
+            bbox.update(Bbox(d[0], d[1], d[0], d[1]))
+            return bbox
+
+        return Bbox(a, b, c, d)
+
+    def _weighted_centroid(self) -> WeightedCentroid:
+        bbox = self._bbox
+        center_x = (bbox.minx + bbox.maxx) / 2
+        center_y = (bbox.miny + bbox.maxy) / 2
+        # no idea what weight to put on this; we don't know how many "objects" this
+        # image should represent.
+        return WeightedCentroid(x=center_x, y=center_y, num_items=100)
 
 
 class BitmapTileLayer(BaseLayer):

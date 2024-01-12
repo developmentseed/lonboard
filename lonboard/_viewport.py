@@ -10,36 +10,21 @@ from __future__ import annotations
 import math
 from typing import List, Tuple
 
-import pyarrow as pa
-
-from lonboard._geoarrow.ops.bbox import Bbox, total_bounds
-from lonboard._geoarrow.ops.centroid import WeightedCentroid, weighted_centroid
-from lonboard._utils import get_geometry_column_index
+from lonboard._geoarrow.ops.bbox import Bbox
+from lonboard._geoarrow.ops.centroid import WeightedCentroid
+from lonboard._layer import BaseLayer
 
 
-def get_bbox_center(tables: List[pa.Table]) -> Tuple[Bbox, WeightedCentroid]:
+def get_bbox_center(layers: List[BaseLayer]) -> Tuple[Bbox, WeightedCentroid]:
     """Get the bounding box and geometric (weighted) center of the geometries in the
     table."""
 
     overall_bbox = Bbox()
     overall_centroid = WeightedCentroid()
 
-    for table in tables:
-        # Note: in the ArcLayer we won't necessarily have a column with a geoarrow
-        # extension type/metadata
-        try:
-            geom_col_idx = get_geometry_column_index(table.schema)
-        except ValueError:
-            continue
-
-        geom_field = table.schema.field(geom_col_idx)
-        geom_col = table.column(geom_col_idx)
-
-        table_bbox = total_bounds(geom_field, geom_col)
-        overall_bbox.update(table_bbox)
-
-        table_centroid = weighted_centroid(geom_field, geom_col)
-        overall_centroid.update(table_centroid)
+    for layer in layers:
+        overall_bbox.update(layer._bbox)
+        overall_centroid.update(layer._weighted_centroid)
 
     return overall_bbox, overall_centroid
 
@@ -70,18 +55,9 @@ def bbox_to_zoom_level(bbox: Bbox) -> int:
     return zoom_level
 
 
-def compute_view(tables: List[pa.Table]):
+def compute_view(layers: List[BaseLayer]):
     """Automatically computes a view state for the data passed in."""
-    bbox, center = get_bbox_center(tables)
-
-    if center.x is not None and (center.x < 180 or center.x > 180):
-        msg = "Longitude of data's center is outside of WGS84 bounds.\n"
-        msg += "Is data in WGS84 projection?"
-        raise ValueError(msg)
-    if center.y is not None and (center.y < 90 or center.y > 90):
-        msg = "Latitude of data's center is outside of WGS84 bounds.\n"
-        msg += "Is data in WGS84 projection?"
-        raise ValueError(msg)
+    bbox, center = get_bbox_center(layers)
 
     # When no geo column is found, bbox will have inf values
     try:
