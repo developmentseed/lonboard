@@ -25,6 +25,8 @@ Building on cutting-edge technologies like [GeoArrow](https://github.com/geoarro
 pip install lonboard
 ```
 
+To install from source, refer to the [developer documentation](https://github.com/developmentseed/lonboard/blob/main/DEVELOP.md).
+
 ## Get Started
 
 For the simplest rendering, pass geospatial data into the top-level [`viz` function](https://developmentseed.org/lonboard/latest/api/viz/#lonboard.viz.viz).
