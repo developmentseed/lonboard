@@ -26,7 +26,12 @@ def serialize_table_to_parquet(
                 compression=DEFAULT_PARQUET_COMPRESSION,
                 compression_level=DEFAULT_PARQUET_COMPRESSION_LEVEL,
             ) as writer:
-                writer.write_batch(record_batch, row_group_size=record_batch.num_rows)
+                # Occasionally it's possible for there to be empty batches in the
+                # pyarrow table. This will error when writing to parquet.
+                if record_batch.num_rows > 0:
+                    writer.write_batch(
+                        record_batch, row_group_size=record_batch.num_rows
+                    )
 
             buffers.append(bio.getvalue())
 
