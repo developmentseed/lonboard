@@ -1,5 +1,5 @@
-# HeatmapLayer
+# BitmapLayer
 
-::: lonboard.HeatmapLayer
+::: lonboard.BitmapLayer
     options:
       inherited_members: true

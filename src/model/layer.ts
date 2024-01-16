@@ -3,6 +3,7 @@ import type {
   LayerExtension,
   LayerProps,
   PickingInfo,
+  Texture,
 } from "@deck.gl/core/typed";
 import {
   GeoArrowArcLayer,
@@ -26,10 +27,10 @@ import { parseParquetBuffers } from "../parquet.js";
 import { loadChildModels } from "../util.js";
 import { BaseModel } from "./base.js";
 import { BaseExtensionModel, initializeExtension } from "./extension.js";
+import { BitmapLayer, BitmapLayerProps } from "@deck.gl/layers/typed";
+import { TileLayer, TileLayerProps } from "@deck.gl/geo-layers/typed";
 
 export abstract class BaseLayerModel extends BaseModel {
-  protected table!: arrow.Table;
-
   protected pickable: LayerProps["pickable"];
   protected visible: LayerProps["visible"];
   protected opacity: LayerProps["opacity"];
@@ -39,8 +40,6 @@ export abstract class BaseLayerModel extends BaseModel {
 
   constructor(model: WidgetModel, updateStateCallback: () => void) {
     super(model, updateStateCallback);
-
-    this.initTable("table");
 
     this.initRegularAttribute("pickable", "pickable");
     this.initRegularAttribute("visible", "visible");
@@ -74,8 +73,8 @@ export abstract class BaseLayerModel extends BaseModel {
   }
 
   baseLayerProps(): LayerProps {
-    console.log("extensions", this.extensionInstances());
-    console.log("extensionprops", this.extensionProps());
+    // console.log("extensions", this.extensionInstances());
+    // console.log("extensionprops", this.extensionProps());
     return {
       extensions: this.extensionInstances(),
       ...this.extensionProps(),
@@ -97,28 +96,6 @@ export abstract class BaseLayerModel extends BaseModel {
    * Generate a deck.gl layer from this model description.
    */
   abstract render(): Layer;
-
-  /**
-   * Initialize a Table on the model.
-   *
-   * This also watches for changes on the Jupyter model and propagates those
-   * changes to this class' internal state.
-   *
-   * @param   {string}  pythonName  Name of attribute on Python model (usually snake-cased)
-   */
-  initTable(pythonName: string) {
-    this.table = parseParquetBuffers(this.model.get(pythonName));
-
-    // Remove all existing change callbacks for this attribute
-    this.model.off(`change:${pythonName}`);
-
-    const callback = () => {
-      this.table = parseParquetBuffers(this.model.get(pythonName));
-    };
-    this.model.on(`change:${pythonName}`, callback);
-
-    this.callbacks.set(`change:${pythonName}`, callback);
-  }
 
   // NOTE: this is flaky, especially when changing extensions
   // This is the main place where extensions should still be considered
@@ -160,7 +137,42 @@ export abstract class BaseLayerModel extends BaseModel {
   }
 }
 
-export class ArcModel extends BaseLayerModel {
+/**
+ * An abstract base class for a layer that uses an Arrow Table as the data prop.
+ */
+export abstract class BaseArrowLayerModel extends BaseLayerModel {
+  protected table!: arrow.Table;
+
+  constructor(model: WidgetModel, updateStateCallback: () => void) {
+    super(model, updateStateCallback);
+
+    this.initTable("table");
+  }
+
+  /**
+   * Initialize a Table on the model.
+   *
+   * This also watches for changes on the Jupyter model and propagates those
+   * changes to this class' internal state.
+   *
+   * @param   {string}  pythonName  Name of attribute on Python model (usually snake-cased)
+   */
+  initTable(pythonName: string) {
+    this.table = parseParquetBuffers(this.model.get(pythonName));
+
+    // Remove all existing change callbacks for this attribute
+    this.model.off(`change:${pythonName}`);
+
+    const callback = () => {
+      this.table = parseParquetBuffers(this.model.get(pythonName));
+    };
+    this.model.on(`change:${pythonName}`, callback);
+
+    this.callbacks.set(`change:${pythonName}`, callback);
+  }
+}
+
+export class ArcModel extends BaseArrowLayerModel {
   static layerType = "arc";
 
   protected greatCircle: GeoArrowArcLayerProps["greatCircle"] | null;
@@ -227,7 +239,127 @@ export class ArcModel extends BaseLayerModel {
   }
 }
 
-export class ColumnModel extends BaseLayerModel {
+export class BitmapModel extends BaseLayerModel {
+  static layerType = "bitmap";
+
+  protected image: BitmapLayerProps["image"];
+  protected bounds: BitmapLayerProps["bounds"];
+  protected desaturate: BitmapLayerProps["desaturate"];
+  protected transparentColor: BitmapLayerProps["transparentColor"];
+  protected tintColor: BitmapLayerProps["tintColor"];
+
+  constructor(model: WidgetModel, updateStateCallback: () => void) {
+    super(model, updateStateCallback);
+
+    this.initRegularAttribute("image", "image");
+    this.initRegularAttribute("bounds", "bounds");
+    this.initRegularAttribute("desaturate", "desaturate");
+    this.initRegularAttribute("transparent_color", "transparentColor");
+    this.initRegularAttribute("tint_color", "tintColor");
+  }
+
+  layerProps(): Omit<BitmapLayerProps, "id" | "data"> {
+    return {
+      ...(this.image && { image: this.image }),
+      ...(this.bounds && { bounds: this.bounds }),
+      ...(this.desaturate && { desaturate: this.desaturate }),
+      ...(this.transparentColor && { transparentColor: this.transparentColor }),
+      ...(this.tintColor && { tintColor: this.tintColor }),
+    };
+  }
+
+  render(): BitmapLayer {
+    return new BitmapLayer({
+      ...this.baseLayerProps(),
+      ...this.layerProps(),
+      data: undefined,
+      pickable: false,
+    });
+  }
+}
+
+export class BitmapTileModel extends BaseLayerModel {
+  static layerType = "bitmap-tile";
+
+  protected data!: TileLayerProps["data"];
+  protected tileSize: TileLayerProps["tileSize"];
+  protected zoomOffset: TileLayerProps["zoomOffset"];
+  protected maxZoom: TileLayerProps["maxZoom"];
+  protected minZoom: TileLayerProps["minZoom"];
+  protected extent: TileLayerProps["extent"];
+  protected maxCacheSize: TileLayerProps["maxCacheSize"];
+  protected maxCacheByteSize: TileLayerProps["maxCacheByteSize"];
+  protected refinementStrategy: TileLayerProps["refinementStrategy"];
+  protected maxRequests: TileLayerProps["maxRequests"];
+
+  protected desaturate: BitmapLayerProps["desaturate"];
+  protected transparentColor: BitmapLayerProps["transparentColor"];
+  protected tintColor: BitmapLayerProps["tintColor"];
+
+  constructor(model: WidgetModel, updateStateCallback: () => void) {
+    super(model, updateStateCallback);
+
+    this.initRegularAttribute("data", "data");
+
+    this.initRegularAttribute("tile_size", "tileSize");
+    this.initRegularAttribute("zoom_offset", "zoomOffset");
+    this.initRegularAttribute("max_zoom", "maxZoom");
+    this.initRegularAttribute("min_zoom", "minZoom");
+    this.initRegularAttribute("extent", "extent");
+    this.initRegularAttribute("max_cache_size", "maxCacheSize");
+    this.initRegularAttribute("max_cache_byte_size", "maxCacheByteSize");
+    this.initRegularAttribute("refinement_strategy", "refinementStrategy");
+    this.initRegularAttribute("max_requests", "maxRequests");
+    this.initRegularAttribute("desaturate", "desaturate");
+    this.initRegularAttribute("transparent_color", "transparentColor");
+    this.initRegularAttribute("tint_color", "tintColor");
+  }
+
+  bitmapLayerProps(): Omit<BitmapLayerProps, "id" | "data"> {
+    return {
+      ...(this.desaturate && { desaturate: this.desaturate }),
+      ...(this.transparentColor && { transparentColor: this.transparentColor }),
+      ...(this.tintColor && { tintColor: this.tintColor }),
+    };
+  }
+
+  layerProps(): Omit<TileLayerProps, "id"> {
+    return {
+      data: this.data,
+      ...(this.tileSize && { tileSize: this.tileSize }),
+      ...(this.zoomOffset && { zoomOffset: this.zoomOffset }),
+      ...(this.maxZoom && { maxZoom: this.maxZoom }),
+      ...(this.minZoom && { minZoom: this.minZoom }),
+      ...(this.extent && { extent: this.extent }),
+      ...(this.maxCacheSize && { maxCacheSize: this.maxCacheSize }),
+      ...(this.maxCacheByteSize && { maxCacheByteSize: this.maxCacheByteSize }),
+      ...(this.refinementStrategy && {
+        refinementStrategy: this.refinementStrategy,
+      }),
+      ...(this.maxRequests && { maxRequests: this.maxRequests }),
+    };
+  }
+
+  render(): TileLayer {
+    return new TileLayer({
+      ...this.baseLayerProps(),
+      ...this.layerProps(),
+
+      renderSubLayers: (props) => {
+        const [min, max] = props.tile.boundingBox;
+
+        return new BitmapLayer(props, {
+          ...this.bitmapLayerProps(),
+          data: undefined,
+          image: props.data,
+          bounds: [min[0], min[1], max[0], max[1]],
+        });
+      },
+    });
+  }
+}
+
+export class ColumnModel extends BaseArrowLayerModel {
   static layerType = "column";
 
   protected diskResolution: GeoArrowColumnLayerProps["diskResolution"] | null;
@@ -328,7 +460,7 @@ export class ColumnModel extends BaseLayerModel {
   }
 }
 
-export class HeatmapModel extends BaseLayerModel {
+export class HeatmapModel extends BaseArrowLayerModel {
   static layerType = "heatmap";
 
   protected radiusPixels: GeoArrowHeatmapLayerProps["radiusPixels"] | null;
@@ -388,7 +520,7 @@ export class HeatmapModel extends BaseLayerModel {
   }
 }
 
-export class PathModel extends BaseLayerModel {
+export class PathModel extends BaseArrowLayerModel {
   static layerType = "path";
 
   protected widthUnits: GeoArrowPathLayerProps["widthUnits"] | null;
@@ -441,7 +573,7 @@ export class PathModel extends BaseLayerModel {
     });
   }
 }
-export class ScatterplotModel extends BaseLayerModel {
+export class ScatterplotModel extends BaseArrowLayerModel {
   static layerType = "scatterplot";
 
   protected radiusUnits: GeoArrowScatterplotLayerProps["radiusUnits"] | null;
@@ -529,7 +661,7 @@ export class ScatterplotModel extends BaseLayerModel {
   }
 }
 
-export class SolidPolygonModel extends BaseLayerModel {
+export class SolidPolygonModel extends BaseArrowLayerModel {
   static layerType = "solid-polygon";
 
   protected filled: GeoArrowSolidPolygonLayerProps["filled"] | null;
@@ -576,7 +708,7 @@ export class SolidPolygonModel extends BaseLayerModel {
   }
 }
 
-export class TextModel extends BaseLayerModel {
+export class TextModel extends BaseArrowLayerModel {
   static layerType = "text";
 
   protected billboard: GeoArrowTextLayerProps["billboard"] | null;
@@ -706,6 +838,14 @@ export async function initializeLayer(
   switch (layerType) {
     case ArcModel.layerType:
       layerModel = new ArcModel(model, updateStateCallback);
+      break;
+
+    case BitmapModel.layerType:
+      layerModel = new BitmapModel(model, updateStateCallback);
+      break;
+
+    case BitmapTileModel.layerType:
+      layerModel = new BitmapTileModel(model, updateStateCallback);
       break;
 
     case ColumnModel.layerType:

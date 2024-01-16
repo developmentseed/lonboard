@@ -50,13 +50,13 @@ Install module dependencies:
 npm install
 ```
 
-We use ESBuild to bundle into an ES Module, which the Jupyter Widget will then load at runtime. The configuration for ESBuild can be found in build.mjs. To start watching for changes in the /src folder and automatically generate a new build, use:
+We use ESBuild to bundle into an ES Module, which the Jupyter Widget will then load at runtime. The configuration for ESBuild can be found in `build.mjs`. To start watching for changes in the `/src` folder and automatically generate a new build, use:
 
 ```sh
 npm run build:watch
 ```
 
-Currently, each Python model (the `ScatterplotLayer`, `PathLayer`, and `SolidPolygonLayer` classes) use _their own individual JS entry points_. You can inspect this with the `_esm` key on each class, which is used by anywidget to load in the widget. The ESBuild script converts `scatterplot-layer.tsx`, `path-layer.tsx`, and `solid-polygon-layer.tsx` into bundles used by each class, respectively.
+All models on the TypeScript side are combined into a single entry point, which is compiled by ESBuild and loaded by the Python `Map` class. (Refer to the `_esm` key on the `Map` class, which tells Jupyter/ipywidgets where to load the JavaScript bundle.)
 
 Anywidget and its dependency ipywidgets handles the serialization from Python into JS, automatically keeping each side in sync.
 
@@ -72,4 +72,4 @@ The documentation website is generated with `mkdocs` and [`mkdocs-material`](htt
 poetry run mkdocs serve
 ```
 
-Publishing documentation happens automatically via CI when a PR is merged.
+Publishing documentation happens automatically via CI when a new tag is published of the format `v*`. It can also be triggered manually through the Github Actions dashboard on [this page](https://github.com/developmentseed/lonboard/actions/workflows/deploy-mkdocs.yml). Note that publishing docs manually is **not advised if there have been new code additions since the last release** as the new functionality will be associated in the documentation with the tag of the _previous_ release. In this case, prefer publishing a new patch or minor release, which will publish both a new Python package and the new documentation for it.
