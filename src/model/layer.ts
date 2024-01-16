@@ -17,7 +17,7 @@ import {
 import type { WidgetModel } from "@jupyter-widgets/base";
 import * as arrow from "apache-arrow";
 import { parseParquetBuffers } from "../parquet.js";
-import { BaseLayerModel } from "./base.js";
+import { BaseLayerModel } from "./base-layer.js";
 import { BitmapLayer, BitmapLayerProps } from "@deck.gl/layers/typed";
 import { TileLayer, TileLayerProps } from "@deck.gl/geo-layers/typed";
 

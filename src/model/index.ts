@@ -1,6 +1,6 @@
 export { BaseModel } from "./base.js";
+export { BaseLayerModel } from "./base-layer.js";
 export {
-  BaseLayerModel,
   PathModel,
   ScatterplotModel,
   SolidPolygonModel,

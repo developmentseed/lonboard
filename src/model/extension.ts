@@ -8,7 +8,8 @@ import {
   DataFilterExtension as _DataFilterExtension,
 } from "@deck.gl/extensions/typed";
 import type { WidgetModel } from "@jupyter-widgets/base";
-import { BaseModel, BaseLayerModel } from "./base.js";
+import { BaseModel } from "./base.js";
+import type { BaseLayerModel } from "./base-layer.js";
 
 export abstract class BaseExtensionModel extends BaseModel {
   static extensionType: string;

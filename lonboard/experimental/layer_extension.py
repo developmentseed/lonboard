@@ -114,6 +114,12 @@ class DataFilterExtension(BaseExtension):
 
     _layer_traits = {
         "get_filter_value": FloatAccessor(None, allow_none=False),
+        "filter_range": traitlets.Tuple(
+            traitlets.Float(), traitlets.Float(), default_value=(-1, 1)
+        ).tag(sync=True),
+        "filter_soft_range": traitlets.Tuple(
+            traitlets.Float(), traitlets.Float(), default_value=None, allow_none=True
+        ).tag(sync=True),
     }
 
     filter_enabled = traitlets.Bool(True).tag(sync=True)
