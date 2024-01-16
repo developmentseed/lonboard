@@ -38,6 +38,11 @@ export abstract class BaseLayerModel extends BaseModel {
 
   protected extensions: BaseExtensionModel[];
 
+  /** Names of additional layer properties that are dynamically added by
+   * extensions and should be rendered with layer attributes.
+   */
+  extensionLayerPropertyNames: string[] = [];
+
   constructor(model: WidgetModel, updateStateCallback: () => void) {
     super(model, updateStateCallback);
 
@@ -58,9 +63,11 @@ export abstract class BaseLayerModel extends BaseModel {
   }
 
   extensionProps() {
-    let props = {};
-    for (const extension of this.extensions) {
-      props = { ...props, ...extension.extensionProps() };
+    let props: Record<string, any> = {};
+    for (const layerPropertyName of this.extensionLayerPropertyNames) {
+      if (this[layerPropertyName as keyof this] !== undefined) {
+        props[layerPropertyName] = this[layerPropertyName as keyof this];
+      }
     }
     return props;
   }
@@ -119,6 +126,7 @@ export abstract class BaseLayerModel extends BaseModel {
       for (const childModel of childModels) {
         const extension = await initializeExtension(
           childModel,
+          this,
           this.updateStateCallback,
         );
         extensions.push(extension);
