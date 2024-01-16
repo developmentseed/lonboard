@@ -2,7 +2,7 @@ from __future__ import annotations
 
 import sys
 import warnings
-from typing import TYPE_CHECKING, Optional, Tuple
+from typing import TYPE_CHECKING, List, Optional, Tuple
 
 import geopandas as gpd
 import ipywidgets
@@ -32,9 +32,43 @@ class BaseLayer(BaseWidget):
     _weighted_centroid = WeightedCentroid()
 
     # The following traitlets **are** serialized to JS
+
+    def __init__(self, **kwargs):
+        # Dynamically set layer traits from extensions before calling __init__
+        if "extensions" in kwargs:
+            self._add_extension_traits(kwargs["extensions"])
+
+        super().__init__(**kwargs)
+
+    # TODO: validate that only one extension per type is included. E.g. you can't have
+    # two data filter extensions.
     extensions = traitlets.List(trait=traitlets.Instance(BaseExtension)).tag(
         sync=True, **ipywidgets.widget_serialization
     )
+
+    @traitlets.observe("extensions")
+    def _observe_extensions(self, change):
+        """When a new extension is assigned, add its layer props to this layer."""
+        new_extensions: List[BaseExtension] = change["new"]
+        for extension in new_extensions:
+            self.add_traits(**extension._layer_traits)
+
+    def _add_extension_traits(self, extensions: List[BaseExtension]):
+        """Assign selected traits from the extension onto this Layer."""
+        for extension in extensions:
+            # NOTE: here it's important that we call `traitlets.HasTraits.add_traits`
+            # and not `self.add_traits`. This is because `add_traits` is originally
+            # defined on `HasTraits` but `ipywidgets.Widget` overrides that method to
+            # additionally call `send_state` for any trait that has `"sync"` tagged in
+            # its metadata. But this is incompatible with traits that don't have default
+            # values.
+            #
+            # For example, with the DataFilterExtension, we want to dynamically add the
+            # `get_filter_value` trait, but require that the user pass in a value. With
+            # the `Widget` implementation, `send_state` will fail, even if the user
+            # passes in a value, because `send_state` is called before we call
+            # `super().__init__()`
+            traitlets.HasTraits.add_traits(self, **extension._layer_traits)
 
     pickable = traitlets.Bool(True).tag(sync=True)
     """

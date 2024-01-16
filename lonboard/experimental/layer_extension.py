@@ -90,23 +90,31 @@ class CollisionFilterExtension(BaseExtension):
     """
 
 
+# TODO: support filterSize > 1
 class DataFilterExtension(BaseExtension):
     """
     Adds GPU-based data filtering functionalities to layers. It allows the layer to
     show/hide objects based on user-defined properties.
-    """
 
-    _extension_type = traitlets.Unicode("data-filter").tag(sync=True)
+    ### Layer Parameters
 
-    # TODO: support filterSize > 1
-    get_filter_value = FloatAccessor(allow_none=False)
-    """Accessor to retrieve the value for each object that it will be filtered by.
+    ```
+    get_filter_value = FloatAccessor(None, allow_none=False)
+    ```
+
+    Accessor to retrieve the value for each object that it will be filtered by.
 
     - Type: [FloatAccessor][lonboard.traits.FloatAccessor]
         - If a number is provided, it is used as the value for all objects.
         - If an array is provided, each value in the array will be used as the value
           for the object at the same row index.
     """
+
+    _extension_type = traitlets.Unicode("data-filter").tag(sync=True)
+
+    _layer_traits = {
+        "get_filter_value": FloatAccessor(None, allow_none=False),
+    }
 
     filter_enabled = traitlets.Bool(True).tag(sync=True)
     """

@@ -8,7 +8,7 @@ import {
   DataFilterExtension as _DataFilterExtension,
 } from "@deck.gl/extensions/typed";
 import type { WidgetModel } from "@jupyter-widgets/base";
-import { BaseModel } from "./base.js";
+import { BaseModel, BaseLayerModel } from "./base.js";
 
 export abstract class BaseExtensionModel extends BaseModel {
   static extensionType: string;
@@ -18,8 +18,6 @@ export abstract class BaseExtensionModel extends BaseModel {
   constructor(model: WidgetModel, updateStateCallback: () => void) {
     super(model, updateStateCallback);
   }
-
-  abstract extensionProps(): {};
 }
 
 export class BrushingExtension extends BaseExtensionModel {
@@ -32,27 +30,32 @@ export class BrushingExtension extends BaseExtensionModel {
   protected brushingTarget?: BrushingExtensionProps["brushingTarget"];
   protected brushingRadius?: BrushingExtensionProps["brushingRadius"];
 
-  constructor(model: WidgetModel, updateStateCallback: () => void) {
+  constructor(
+    model: WidgetModel,
+    layerModel: BaseLayerModel,
+    updateStateCallback: () => void,
+  ) {
     super(model, updateStateCallback);
     this.extensionInstance = new _BrushingExtension();
 
-    this.initRegularAttribute("brushing_enabled", "brushingEnabled");
-    this.initRegularAttribute("brushing_target", "brushingTarget");
-    this.initRegularAttribute("brushing_radius", "brushingRadius");
+    layerModel.initRegularAttribute("brushing_enabled", "brushingEnabled");
+    layerModel.initRegularAttribute("brushing_target", "brushingTarget");
+    layerModel.initRegularAttribute("brushing_radius", "brushingRadius");
 
-    this.initVectorizedAccessor("get_brushing_target", "getBrushingTarget");
-  }
+    layerModel.initVectorizedAccessor(
+      "get_brushing_target",
+      "getBrushingTarget",
+    );
 
-  extensionProps(): BrushingExtensionProps {
-    // TODO: vectorized accessor array doesn't get set yet on data.attributes
-    return {
-      ...(this.getBrushingTarget && {
-        getBrushingTarget: this.getBrushingTarget,
-      }),
-      ...(this.brushingEnabled && { brushingEnabled: this.brushingEnabled }),
-      ...(this.brushingTarget && { brushingTarget: this.brushingTarget }),
-      ...(this.brushingRadius && { brushingRadius: this.brushingRadius }),
-    };
+    // Update the layer model with the list of the JS property names added by
+    // this extension
+    layerModel.extensionLayerPropertyNames = [
+      ...layerModel.extensionLayerPropertyNames,
+      "brushingEnabled",
+      "brushingTarget",
+      "brushingRadius",
+      "getBrushingTarget",
+    ];
   }
 }
 
@@ -66,32 +69,35 @@ export class CollisionFilterExtension extends BaseExtensionModel {
   protected collisionTestProps?: CollisionFilterExtensionProps["collisionTestProps"];
   protected getCollisionPriority?: CollisionFilterExtensionProps["getCollisionPriority"];
 
-  constructor(model: WidgetModel, updateStateCallback: () => void) {
+  constructor(
+    model: WidgetModel,
+    layerModel: BaseLayerModel,
+    updateStateCallback: () => void,
+  ) {
     super(model, updateStateCallback);
     this.extensionInstance = new _CollisionFilterExtension();
 
-    this.initRegularAttribute("collision_enabled", "collisionEnabled");
-    this.initRegularAttribute("collision_group", "collisionGroup");
-    this.initRegularAttribute("collision_test_props", "collisionTestProps");
+    layerModel.initRegularAttribute("collision_enabled", "collisionEnabled");
+    layerModel.initRegularAttribute("collision_group", "collisionGroup");
+    layerModel.initRegularAttribute(
+      "collision_test_props",
+      "collisionTestProps",
+    );
 
-    this.initVectorizedAccessor(
+    layerModel.initVectorizedAccessor(
       "get_collision_priority",
       "getCollisionPriority",
     );
-  }
 
-  extensionProps(): CollisionFilterExtensionProps {
-    // @ts-expect-error
-    return {
-      ...(this.collisionEnabled !== undefined && { collisionEnabled: this.collisionEnabled }),
-      ...(this.collisionGroup && { collisionGroup: this.collisionGroup }),
-      ...(this.collisionTestProps && {
-        collisionTestProps: this.collisionTestProps,
-      }),
-      ...(this.getCollisionPriority && {
-        getCollisionPriority: this.getCollisionPriority,
-      }),
-    };
+    // Update the layer model with the list of the JS property names added by
+    // this extension
+    layerModel.extensionLayerPropertyNames = [
+      ...layerModel.extensionLayerPropertyNames,
+      "collisionEnabled",
+      "collisionGroup",
+      "collisionTestProps",
+      "getCollisionPriority",
+    ];
   }
 }
 
@@ -108,53 +114,74 @@ export class DataFilterExtension extends BaseExtensionModel {
   protected filterTransformSize?: DataFilterExtensionProps["filterTransformSize"];
   protected filterTransformColor?: DataFilterExtensionProps["filterTransformColor"];
 
-  constructor(model: WidgetModel, updateStateCallback: () => void) {
+  constructor(
+    model: WidgetModel,
+    layerModel: BaseLayerModel,
+    updateStateCallback: () => void,
+  ) {
     super(model, updateStateCallback);
     // TODO: set filterSize, fp64, countItems in constructor
     this.extensionInstance = new _DataFilterExtension();
 
-    this.initRegularAttribute("filter_enabled", "filterEnabled");
-    this.initRegularAttribute("filter_range", "filterRange");
-    this.initRegularAttribute("filter_soft_range", "filterSoftRange");
-    this.initRegularAttribute("filter_transform_size", "filterTransformSize");
-    this.initRegularAttribute("filter_transform_color", "filterTransformColor");
+    // Properties added by the extension onto the layer
+    layerModel.initRegularAttribute("filter_enabled", "filterEnabled");
+    layerModel.initRegularAttribute("filter_range", "filterRange");
+    layerModel.initRegularAttribute("filter_soft_range", "filterSoftRange");
+    layerModel.initRegularAttribute(
+      "filter_transform_size",
+      "filterTransformSize",
+    );
+    layerModel.initRegularAttribute(
+      "filter_transform_color",
+      "filterTransformColor",
+    );
 
-    this.initVectorizedAccessor("get_filter_value", "getFilterValue");
-  }
+    layerModel.initVectorizedAccessor("get_filter_value", "getFilterValue");
 
-  extensionProps(): DataFilterExtensionProps {
-    return {
-      ...(this.getFilterValue && { getFilterValue: this.getFilterValue }),
-      ...(this.filterEnabled && { filterEnabled: this.filterEnabled }),
-      ...(this.filterRange && { filterRange: this.filterRange }),
-      ...(this.filterSoftRange && { filterSoftRange: this.filterSoftRange }),
-      ...(this.filterTransformSize && {
-        filterTransformSize: this.filterTransformSize,
-      }),
-      ...(this.filterTransformColor && {
-        filterTransformColor: this.filterTransformColor,
-      }),
-    };
+    // Update the layer model with the list of the JS property names added by
+    // this extension
+    layerModel.extensionLayerPropertyNames = [
+      ...layerModel.extensionLayerPropertyNames,
+      "filterEnabled",
+      "filterRange",
+      "filterSoftRange",
+      "filterTransformSize",
+      "filterTransformColor",
+      "getFilterValue",
+    ];
   }
 }
 
 export async function initializeExtension(
   model: WidgetModel,
+  layerModel: BaseLayerModel,
   updateStateCallback: () => void,
 ): Promise<BaseExtensionModel> {
   const extensionType = model.get("_extension_type");
   let extensionModel: BaseExtensionModel;
   switch (extensionType) {
     case BrushingExtension.extensionType:
-      extensionModel = new BrushingExtension(model, updateStateCallback);
+      extensionModel = new BrushingExtension(
+        model,
+        layerModel,
+        updateStateCallback,
+      );
       break;
 
     case CollisionFilterExtension.extensionType:
-      extensionModel = new CollisionFilterExtension(model, updateStateCallback);
+      extensionModel = new CollisionFilterExtension(
+        model,
+        layerModel,
+        updateStateCallback,
+      );
       break;
 
     case DataFilterExtension.extensionType:
-      extensionModel = new DataFilterExtension(model, updateStateCallback);
+      extensionModel = new DataFilterExtension(
+        model,
+        layerModel,
+        updateStateCallback,
+      );
       break;
 
     default:

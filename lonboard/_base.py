@@ -1,3 +1,5 @@
+from typing import Dict
+
 import traitlets
 from anywidget import AnyWidget
 from ipywidgets import Widget
@@ -28,5 +30,5 @@ class BaseAnyWidget(AnyWidget):
 
 
 class BaseExtension(Widget):
-    _rows_per_chunk = traitlets.Int()
-    """Number of rows per chunk for serializing table and accessor columns."""
+    _layer_traits: Dict[str, traitlets.TraitType] = {}
+    """Traits from this extension to dynamically assign onto a layer."""
