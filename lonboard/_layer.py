@@ -33,7 +33,7 @@ class BaseLayer(BaseWidget):
 
     # The following traitlets **are** serialized to JS
 
-    def __init__(self, *, extensions: Sequence[BaseExtension], **kwargs):
+    def __init__(self, *, extensions: Sequence[BaseExtension] = (), **kwargs):
         # We allow layer extensions to dynamically inject properties onto the layer
         # widgets where the layer is defined. We wish to allow extensions and their
         # properties to be passed in the layer constructor. _However_, if
