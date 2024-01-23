@@ -12,7 +12,15 @@ class BrushingExtension(BaseExtension):
 
     _extension_type = traitlets.Unicode("brushing").tag(sync=True)
 
-    brushing_enabled = traitlets.Bool(True).tag(sync=True)
+    _layer_traits = {
+        "brushing_enabled": traitlets.Bool(True).tag(sync=True),
+        "brushing_target": traitlets.Unicode("source", allow_none=True).tag(sync=True),
+        "brushing_radius": traitlets.Float(allow_none=True, min=0).tag(sync=True),
+        # TODO: update trait
+        "get_brushing_target": traitlets.Any(allow_none=True).tag(sync=True),
+    }
+
+    # brushing_enabled = traitlets.Bool(True).tag(sync=True)
     """
     Enable/disable brushing. If brushing is disabled, all objects are rendered.
 
@@ -20,7 +28,7 @@ class BrushingExtension(BaseExtension):
     - Default: `True`
     """
 
-    brushing_target = traitlets.Unicode("source", allow_none=True).tag(sync=True)
+    # brushing_target = traitlets.Unicode("source", allow_none=True).tag(sync=True)
     """
     The position used to filter each object by.
 
@@ -32,7 +40,7 @@ class BrushingExtension(BaseExtension):
 
     """
 
-    brushing_radius = traitlets.Float(allow_none=True, min=0).tag(sync=True)
+    # brushing_radius = traitlets.Float(allow_none=True, min=0).tag(sync=True)
     """
     The brushing radius centered at the pointer, in meters. If a data object is within
     this circle, it is rendered; otherwise it is hidden.
@@ -42,7 +50,7 @@ class BrushingExtension(BaseExtension):
     """
 
     # TODO: update trait
-    get_brushing_target = traitlets.Any(allow_none=True).tag(sync=True)
+    # get_brushing_target = traitlets.Any(allow_none=True).tag(sync=True)
     """
     Called to retrieve an arbitrary position for each object that it will be filtered
     by.
@@ -56,19 +64,25 @@ class CollisionFilterExtension(BaseExtension):
 
     _extension_type = traitlets.Unicode("collision-filter").tag(sync=True)
 
+    _layer_traits = {
+        "collision_enabled": traitlets.Bool(True).tag(sync=True),
+        "collision_group": traitlets.Unicode().tag(sync=True),
+        "get_collision_priority": FloatAccessor(allow_none=True),
+    }
+
     #   /**
     #    * Props to override when rendering collision map
     #    */
     #   collisionTestProps?: {};
 
-    collision_enabled = traitlets.Bool(True).tag(sync=True)
+    # collision_enabled = traitlets.Bool(True).tag(sync=True)
     """Enable/disable collisions. If collisions are disabled, all objects are rendered.
 
     - Type: `bool`, optional
     - Default: `True`
     """
 
-    collision_group = traitlets.Unicode().tag(sync=True)
+    # collision_group = traitlets.Unicode().tag(sync=True)
     """
     Collision group this layer belongs to. If it is not set, the 'default' collision
     group is used
@@ -77,7 +91,7 @@ class CollisionFilterExtension(BaseExtension):
     - Default: `None`
     """
 
-    get_collision_priority = FloatAccessor(allow_none=True)
+    # get_collision_priority = FloatAccessor(allow_none=True)
     """
     Accessor for collision priority. Must return a number in the range -1000 -> 1000.
     Features with higher values are shown preferentially.
@@ -90,7 +104,6 @@ class CollisionFilterExtension(BaseExtension):
     """
 
 
-# TODO: support filterSize > 1
 class DataFilterExtension(BaseExtension):
     """
     Adds GPU-based data filtering functionalities to layers. It allows the layer to
@@ -113,16 +126,33 @@ class DataFilterExtension(BaseExtension):
     _extension_type = traitlets.Unicode("data-filter").tag(sync=True)
 
     _layer_traits = {
-        "get_filter_value": FloatAccessor(None, allow_none=False),
+        "filter_enabled": traitlets.Bool(True).tag(sync=True),
         "filter_range": traitlets.Tuple(
             traitlets.Float(), traitlets.Float(), default_value=(-1, 1)
         ).tag(sync=True),
         "filter_soft_range": traitlets.Tuple(
             traitlets.Float(), traitlets.Float(), default_value=None, allow_none=True
         ).tag(sync=True),
+        "filter_transform_size": traitlets.Bool(True).tag(sync=True),
+        "filter_transform_color": traitlets.Bool(True).tag(sync=True),
+        "get_filter_value": FloatAccessor(None, allow_none=False),
     }
 
-    filter_enabled = traitlets.Bool(True).tag(sync=True)
+    # TODO: support filterSize > 1
+    # In order to support filterSize > 1, we need to allow the get_filter_value accessor
+    # to be either a single float or a fixed size list of up to 4 floats.
+
+    # filter_size = traitlets.Int(1).tag(sync=True)
+    """The size of the filter (number of columns to filter by).
+
+    The data filter can show/hide data based on 1-4 numeric properties of each object.
+
+    - Type: `int`, optional
+    - Default 1.
+    """
+
+    # TODO: document in constructor and then remove.
+    # filter_enabled = traitlets.Bool(True).tag(sync=True)
     """
     Enable/disable the data filter. If the data filter is disabled, all objects are
     rendered.
@@ -131,9 +161,9 @@ class DataFilterExtension(BaseExtension):
     - Default: `True`
     """
 
-    filter_range = traitlets.Tuple(
-        traitlets.Float(), traitlets.Float(), default_value=(-1, 1)
-    ).tag(sync=True)
+    # filter_range = traitlets.Tuple(
+    #     traitlets.Float(), traitlets.Float(), default_value=(-1, 1)
+    # ).tag(sync=True)
     """The (min, max) bounds which defines whether an object should be rendered.
 
     If an object's filtered value is within the bounds, the object will be rendered;
@@ -143,9 +173,9 @@ class DataFilterExtension(BaseExtension):
     - Default: `(-1, 1)`
     """
 
-    filter_soft_range = traitlets.Tuple(
-        traitlets.Float(), traitlets.Float(), default_value=None, allow_none=True
-    ).tag(sync=True)
+    # filter_soft_range = traitlets.Tuple(
+    #     traitlets.Float(), traitlets.Float(), default_value=None, allow_none=True
+    # ).tag(sync=True)
     """If specified, objects will be faded in/out instead of abruptly shown/hidden.
 
     When the filtered value is outside of the bounds defined by `filter_soft_range` but
@@ -156,7 +186,7 @@ class DataFilterExtension(BaseExtension):
     - Default: `None`
     """
 
-    filter_transform_size = traitlets.Bool(True).tag(sync=True)
+    # filter_transform_size = traitlets.Bool(True).tag(sync=True)
     """
     When an object is "faded", manipulate its size so that it appears smaller or
     thinner. Only works if `filter_soft_range` is specified.
@@ -165,7 +195,7 @@ class DataFilterExtension(BaseExtension):
     - Default: `True`
     """
 
-    filter_transform_color = traitlets.Bool(True).tag(sync=True)
+    # filter_transform_color = traitlets.Bool(True).tag(sync=True)
     """
     When an object is "faded", manipulate its opacity so that it appears more
     translucent. Only works if `filter_soft_range` is specified.
