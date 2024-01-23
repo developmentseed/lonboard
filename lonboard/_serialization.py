@@ -14,9 +14,7 @@ DEFAULT_PARQUET_CHUNK_SIZE = 2**16
 DEFAULT_ARROW_CHUNK_BYTES_SIZE = 5 * 1024 * 1024  # 5MB
 
 
-def serialize_table_to_parquet(
-    table: pa.Table, *, max_chunksize: int = DEFAULT_PARQUET_CHUNK_SIZE
-) -> List[bytes]:
+def serialize_table_to_parquet(table: pa.Table, *, max_chunksize: int) -> List[bytes]:
     buffers: List[bytes] = []
     for record_batch in table.to_batches(max_chunksize=max_chunksize):
         with BytesIO() as bio:
@@ -27,11 +25,12 @@ def serialize_table_to_parquet(
                 compression_level=DEFAULT_PARQUET_COMPRESSION_LEVEL,
             ) as writer:
                 # Occasionally it's possible for there to be empty batches in the
-                # pyarrow table. This will error when writing to parquet.
-                if record_batch.num_rows > 0:
-                    writer.write_batch(
-                        record_batch, row_group_size=record_batch.num_rows
-                    )
+                # pyarrow table. This will error when writing to parquet. We want to
+                # give a more informative error.
+                if record_batch.num_rows == 0:
+                    raise ValueError("Batch with 0 rows.")
+
+                writer.write_batch(record_batch, row_group_size=record_batch.num_rows)
 
             buffers.append(bio.getvalue())
 

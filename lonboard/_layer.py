@@ -2,7 +2,7 @@ from __future__ import annotations
 
 import sys
 import warnings
-from typing import TYPE_CHECKING, List, Optional, Tuple
+from typing import TYPE_CHECKING, List, Optional, Sequence, Tuple
 
 import geopandas as gpd
 import ipywidgets
@@ -16,7 +16,7 @@ from lonboard._geoarrow.ops.bbox import Bbox, total_bounds
 from lonboard._geoarrow.ops.centroid import WeightedCentroid, weighted_centroid
 from lonboard._serialization import infer_rows_per_chunk
 from lonboard._utils import auto_downcast as _auto_downcast
-from lonboard._utils import get_geometry_column_index
+from lonboard._utils import get_geometry_column_index, remove_extension_kwargs
 from lonboard.traits import ColorAccessor, FloatAccessor, PyarrowTableTrait
 
 if TYPE_CHECKING:
@@ -33,12 +33,26 @@ class BaseLayer(BaseWidget):
 
     # The following traitlets **are** serialized to JS
 
-    def __init__(self, **kwargs):
-        # Dynamically set layer traits from extensions before calling __init__
-        if "extensions" in kwargs:
-            self._add_extension_traits(kwargs["extensions"])
+    def __init__(self, *, extensions: Sequence[BaseExtension], **kwargs):
+        # We allow layer extensions to dynamically inject properties onto the layer
+        # widgets where the layer is defined. We wish to allow extensions and their
+        # properties to be passed in the layer constructor. _However_, if
 
-        super().__init__(**kwargs)
+        extension_kwargs = remove_extension_kwargs(extensions, kwargs)
+
+        super().__init__(extensions=extensions, **kwargs)
+
+        # Dynamically set layer traits from extensions after calling __init__
+        self._add_extension_traits(extensions)
+
+        # Assign any extension properties that we took out before calling __init__
+        added_names: List[str] = []
+        for prop_name, prop_value in extension_kwargs.items():
+            print("set_trait", prop_name, prop_value)
+            self.set_trait(prop_name, prop_value)
+            added_names.append(prop_name)
+
+        self.send_state(added_names)
 
     # TODO: validate that only one extension per type is included. E.g. you can't have
     # two data filter extensions.
@@ -46,14 +60,17 @@ class BaseLayer(BaseWidget):
         sync=True, **ipywidgets.widget_serialization
     )
 
-    @traitlets.observe("extensions")
-    def _observe_extensions(self, change):
-        """When a new extension is assigned, add its layer props to this layer."""
-        new_extensions: List[BaseExtension] = change["new"]
-        for extension in new_extensions:
-            self.add_traits(**extension._layer_traits)
+    # TODO: the extensions list is not observed; separately, the list object itself does
+    # not propagate events, so an append wouldn't work.
 
-    def _add_extension_traits(self, extensions: List[BaseExtension]):
+    # @traitlets.observe("extensions")
+    # def _observe_extensions(self, change):
+    #     """When a new extension is assigned, add its layer props to this layer."""
+    #     new_extensions: List[BaseExtension] = change["new"]
+    #     for extension in new_extensions:
+    #         self.add_traits(**extension._layer_traits)
+
+    def _add_extension_traits(self, extensions: Sequence[BaseExtension]):
         """Assign selected traits from the extension onto this Layer."""
         for extension in extensions:
             # NOTE: here it's important that we call `traitlets.HasTraits.add_traits`
@@ -69,6 +86,12 @@ class BaseLayer(BaseWidget):
             # passes in a value, because `send_state` is called before we call
             # `super().__init__()`
             traitlets.HasTraits.add_traits(self, **extension._layer_traits)
+
+            # Note: This is part of `Widget.add_traits` (in the direct superclass) that
+            # we skip by calling `traitlets.HasTraits.add_traits`
+            for name, trait in extension._layer_traits.items():
+                if trait.get_metadata("sync"):
+                    self.keys.append(name)
 
     pickable = traitlets.Bool(True).tag(sync=True)
     """
@@ -190,7 +213,10 @@ class BaseArrowLayer(BaseLayer):
             self._bbox = default_viewport[0]
             self._weighted_centroid = default_viewport[1]
 
-        super().__init__(table=table, **kwargs)
+        # We manually call this I think because we need the information before
+        # instantiation and before `traitlets.default` ever gets a chance to get called
+        rows_per_chunk = infer_rows_per_chunk(table)
+        super().__init__(table=table, _rows_per_chunk=rows_per_chunk, **kwargs)
 
     @traitlets.default("_rows_per_chunk")
     def _default_rows_per_chunk(self):
