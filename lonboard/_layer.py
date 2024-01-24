@@ -48,7 +48,6 @@ class BaseLayer(BaseWidget):
         # Assign any extension properties that we took out before calling __init__
         added_names: List[str] = []
         for prop_name, prop_value in extension_kwargs.items():
-            print("set_trait", prop_name, prop_value)
             self.set_trait(prop_name, prop_value)
             added_names.append(prop_name)
 
@@ -59,6 +58,10 @@ class BaseLayer(BaseWidget):
     extensions = traitlets.List(trait=traitlets.Instance(BaseExtension)).tag(
         sync=True, **ipywidgets.widget_serialization
     )
+    """
+    A list of [layer extension](https://developmentseed.org/lonboard/latest/api/layer-extensions/)
+    objects to add additional features to a layer.
+    """
 
     # TODO: the extensions list is not observed; separately, the list object itself does
     # not propagate events, so an append wouldn't work.
