@@ -27,7 +27,7 @@ if TYPE_CHECKING:
 
 
 class BaseLayer(BaseWidget):
-    # Note: these are **not** serialized to JS
+    # Note: these class attributes are **not** serialized to JS
     _bbox = Bbox()
     _weighted_centroid = WeightedCentroid()
 
@@ -107,9 +107,6 @@ class BaseLayer(BaseWidget):
     for an example.
     """
 
-    _rows_per_chunk = traitlets.Int()
-    """Number of rows per chunk for serializing table and accessor columns."""
-
 
 def default_geoarrow_viewport(
     table: pa.Table
@@ -148,19 +145,30 @@ def default_geoarrow_viewport(
 
 
 class BaseArrowLayer(BaseLayer):
+    """Any Arrow-based layer should subclass from BaseArrowLayer"""
+
+    # Note: these class attributes are **not** serialized to JS
+
+    _rows_per_chunk: int
+    """Number of rows per chunk for serializing table and accessor columns."""
+
+    # The following traitlets **are** serialized to JS
+
     table: traitlets.TraitType
 
-    def __init__(self, *, table: pa.Table, **kwargs):
+    def __init__(
+        self, *, table: pa.Table, _rows_per_chunk: Optional[int] = None, **kwargs
+    ):
         default_viewport = default_geoarrow_viewport(table)
         if default_viewport is not None:
             self._bbox = default_viewport[0]
             self._weighted_centroid = default_viewport[1]
 
-        super().__init__(table=table, **kwargs)
+        rows_per_chunk = _rows_per_chunk or infer_rows_per_chunk(table)
+        if rows_per_chunk <= 0:
+            raise ValueError("Cannot serialize table with 0 rows per chunk.")
 
-    @traitlets.default("_rows_per_chunk")
-    def _default_rows_per_chunk(self):
-        return infer_rows_per_chunk(self.table)
+        super().__init__(table=table, **kwargs)
 
     @classmethod
     def from_geopandas(
@@ -1034,14 +1042,12 @@ class HeatmapLayer(BaseArrowLayer):
 
     """
 
-    _layer_type = traitlets.Unicode("heatmap").tag(sync=True)
+    def __init__(self, *args, table: pa.Table, **kwargs):
+        # NOTE: we override the default for _rows_per_chunk because otherwise we render
+        # one heatmap per _chunk_ not for the entire dataset.
+        super().__init__(*args, table=table, _rows_per_chunk=len(self.table), **kwargs)
 
-    # NOTE: we override the default for _rows_per_chunk because otherwise we render one
-    # heatmap per _chunk_ not for the entire dataset.
-    # TODO: on the JS side, rechunk the table into a single contiguous chunk.
-    @traitlets.default("_rows_per_chunk")
-    def _default_rows_per_chunk(self):
-        return len(self.table)
+    _layer_type = traitlets.Unicode("heatmap").tag(sync=True)
 
     table = PyarrowTableTrait(allowed_geometry_types={EXTENSION_NAME.POINT})
     """A GeoArrow table with a Point column.
