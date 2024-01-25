@@ -29,6 +29,6 @@ class BaseAnyWidget(AnyWidget):
         super().__init__(**kwargs)
 
 
-class BaseExtension(Widget):
+class BaseExtension(BaseWidget):
     _layer_traits: Dict[str, traitlets.TraitType] = {}
     """Traits from this extension to dynamically assign onto a layer."""
