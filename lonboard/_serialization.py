@@ -16,6 +16,8 @@ DEFAULT_ARROW_CHUNK_BYTES_SIZE = 5 * 1024 * 1024  # 5MB
 
 def serialize_table_to_parquet(table: pa.Table, *, max_chunksize: int) -> List[bytes]:
     buffers: List[bytes] = []
+    # NOTE: passing `max_chunksize=0` creates an infinite loop
+    # https://github.com/apache/arrow/issues/39788
     for record_batch in table.to_batches(max_chunksize=max_chunksize):
         with BytesIO() as bio:
             with pq.ParquetWriter(
