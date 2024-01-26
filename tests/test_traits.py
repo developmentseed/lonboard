@@ -2,13 +2,13 @@ import numpy as np
 import pandas as pd
 import pyarrow as pa
 import pytest
-from ipywidgets import Widget
 from traitlets import TraitError
 
+from lonboard._layer import BaseLayer
 from lonboard.traits import ColorAccessor, FloatAccessor
 
 
-class ColorAccessorWidget(Widget):
+class ColorAccessorWidget(BaseLayer):
     _rows_per_chunk = 2
 
     color = ColorAccessor()
@@ -115,7 +115,7 @@ def test_color_accessor_validation_string():
         ColorAccessorWidget(color="#ff")
 
 
-class FloatAccessorWidget(Widget):
+class FloatAccessorWidget(BaseLayer):
     _rows_per_chunk = 2
 
     value = FloatAccessor()
