@@ -6,6 +6,7 @@ import numpy as np
 import pyarrow as pa
 import pyarrow.parquet as pq
 from numpy.typing import NDArray
+from traitlets import TraitError
 
 DEFAULT_PARQUET_COMPRESSION = "ZSTD"
 DEFAULT_PARQUET_COMPRESSION_LEVEL = 7
@@ -60,6 +61,7 @@ def serialize_color_accessor(
         return data
 
     assert isinstance(data, (pa.ChunkedArray, pa.Array))
+    validate_accessor_length_matches_table(data, obj.table)
     return serialize_pyarrow_column(data, max_chunksize=obj._rows_per_chunk)
 
 
@@ -71,6 +73,7 @@ def serialize_float_accessor(data: Union[int, float, NDArray[np.floating]], obj)
         return data
 
     assert isinstance(data, (pa.ChunkedArray, pa.Array))
+    validate_accessor_length_matches_table(data, obj.table)
     return serialize_pyarrow_column(data, max_chunksize=obj._rows_per_chunk)
 
 
@@ -88,6 +91,11 @@ def infer_rows_per_chunk(table: pa.Table) -> int:
 
     rows_per_chunk = math.ceil((table.num_rows / num_chunks))
     return rows_per_chunk
+
+
+def validate_accessor_length_matches_table(accessor, table):
+    if len(accessor) != len(table):
+        raise TraitError("accessor must have same length as table")
 
 
 COLOR_SERIALIZATION = {"to_json": serialize_color_accessor}

@@ -5,6 +5,7 @@ import shapely
 from traitlets import TraitError
 
 from lonboard import ScatterplotLayer
+from lonboard.experimental import DataFilterExtension
 
 
 def test_accessor_length_validation():
@@ -19,6 +20,27 @@ def test_accessor_length_validation():
         _layer = ScatterplotLayer.from_geopandas(gdf, get_radius=np.array([1, 2, 3]))
 
     _layer = ScatterplotLayer.from_geopandas(gdf, get_radius=np.array([1, 2]))
+
+
+def test_accessor_length_validation_extension():
+    """Accessor length must match table length"""
+    points = shapely.points([1, 2], [3, 4])
+    gdf = gpd.GeoDataFrame(geometry=points)
+    extension = DataFilterExtension()
+
+    with pytest.raises(TraitError, match="same length as table"):
+        _layer = ScatterplotLayer.from_geopandas(
+            gdf, extensions=[extension], get_filter_value=np.array([1])
+        )
+
+    with pytest.raises(TraitError, match="same length as table"):
+        _layer = ScatterplotLayer.from_geopandas(
+            gdf, extensions=[extension], get_filter_value=np.array([1, 2, 3])
+        )
+
+    _layer = ScatterplotLayer.from_geopandas(
+        gdf, extensions=[extension], get_radius=np.array([1, 2])
+    )
 
 
 def test_layer_fails_with_unexpected_argument():

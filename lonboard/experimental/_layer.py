@@ -5,7 +5,6 @@
 
 from __future__ import annotations
 
-import pyarrow as pa
 import traitlets
 
 from lonboard._constants import EXTENSION_NAME
@@ -122,22 +121,6 @@ class ArcLayer(BaseArrowLayer):
           the path at the same row index.
     - Default: `0`.
     """
-
-    @traitlets.validate(
-        "get_source_position",
-        "get_target_position",
-        "get_source_color",
-        "get_target_color",
-        "get_width",
-        "get_height",
-        "get_tilt",
-    )
-    def _validate_accessor_length(self, proposal):
-        if isinstance(proposal["value"], (pa.ChunkedArray, pa.Array)):
-            if len(proposal["value"]) != len(self.table):
-                raise traitlets.TraitError("accessor must have same length as table")
-
-        return proposal["value"]
 
 
 class TextLayer(BaseArrowLayer):
