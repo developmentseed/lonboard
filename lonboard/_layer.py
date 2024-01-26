@@ -168,6 +168,8 @@ class BaseArrowLayer(BaseLayer):
         if rows_per_chunk <= 0:
             raise ValueError("Cannot serialize table with 0 rows per chunk.")
 
+        self._rows_per_chunk = rows_per_chunk
+
         super().__init__(table=table, **kwargs)
 
     @classmethod
