@@ -1,8 +1,5 @@
 import { LayerExtension } from "@deck.gl/core/typed";
 import {
-  BrushingExtensionProps,
-  CollisionFilterExtensionProps,
-  DataFilterExtensionProps,
   BrushingExtension as _BrushingExtension,
   CollisionFilterExtension as _CollisionFilterExtension,
   DataFilterExtension as _DataFilterExtension,
