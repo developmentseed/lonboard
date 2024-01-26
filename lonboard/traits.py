@@ -18,8 +18,7 @@ from traitlets.utils.descriptions import class_of, describe
 from typing_extensions import Self
 
 from lonboard._serialization import (
-    COLOR_SERIALIZATION,
-    FLOAT_SERIALIZATION,
+    ACCESSOR_SERIALIZATION,
     TABLE_SERIALIZATION,
 )
 
@@ -206,7 +205,7 @@ class ColorAccessor(FixedErrorTraitType):
         **kwargs: Any,
     ) -> None:
         super().__init__(*args, **kwargs)
-        self.tag(sync=True, **COLOR_SERIALIZATION)
+        self.tag(sync=True, **ACCESSOR_SERIALIZATION)
 
     def validate(
         self, obj, value
@@ -332,7 +331,7 @@ class FloatAccessor(FixedErrorTraitType):
         **kwargs: Any,
     ) -> None:
         super().__init__(*args, **kwargs)
-        self.tag(sync=True, **FLOAT_SERIALIZATION)
+        self.tag(sync=True, **ACCESSOR_SERIALIZATION)
 
     def validate(self, obj, value) -> Union[float, pa.ChunkedArray, pa.DoubleArray]:
         if isinstance(value, (int, float)):
@@ -402,7 +401,7 @@ class TextAccessor(FixedErrorTraitType):
         **kwargs: Any,
     ) -> None:
         super().__init__(*args, **kwargs)
-        self.tag(sync=True, **FLOAT_SERIALIZATION)
+        self.tag(sync=True, **ACCESSOR_SERIALIZATION)
 
     def validate(self, obj, value) -> Union[float, pa.ChunkedArray, pa.DoubleArray]:
         if isinstance(value, str):
