@@ -763,16 +763,6 @@ class ScatterplotLayer(BaseArrowLayer):
     - Default: `1`.
     """
 
-    @traitlets.validate(
-        "get_radius", "get_fill_color", "get_line_color", "get_line_width"
-    )
-    def _validate_accessor_length(self, proposal):
-        if isinstance(proposal["value"], (pa.ChunkedArray, pa.Array)):
-            if len(proposal["value"]) != len(self.table):
-                raise traitlets.TraitError("accessor must have same length as table")
-
-        return proposal["value"]
-
 
 class PathLayer(BaseArrowLayer):
     """
@@ -926,14 +916,6 @@ class PathLayer(BaseArrowLayer):
     - Default: `1`.
     """
 
-    @traitlets.validate("get_color", "get_width")
-    def _validate_accessor_length(self, proposal):
-        if isinstance(proposal["value"], (pa.ChunkedArray, pa.Array)):
-            if len(proposal["value"]) != len(self.table):
-                raise traitlets.TraitError("accessor must have same length as table")
-
-        return proposal["value"]
-
 
 class SolidPolygonLayer(BaseArrowLayer):
     """
@@ -1074,14 +1056,6 @@ class SolidPolygonLayer(BaseArrowLayer):
     - Default: `[0, 0, 0, 255]`.
     """
 
-    @traitlets.validate("get_elevation", "get_fill_color", "get_line_color")
-    def _validate_accessor_length(self, proposal):
-        if isinstance(proposal["value"], (pa.ChunkedArray, pa.Array)):
-            if len(proposal["value"]) != len(self.table):
-                raise traitlets.TraitError("accessor must have same length as table")
-
-        return proposal["value"]
-
 
 class HeatmapLayer(BaseArrowLayer):
     """The `HeatmapLayer` visualizes the spatial distribution of data.
@@ -1214,11 +1188,3 @@ class HeatmapLayer(BaseArrowLayer):
           width for the object at the same row index.
     - Default: `1`.
     """
-
-    @traitlets.validate("get_weight")
-    def _validate_accessor_length(self, proposal):
-        if isinstance(proposal["value"], (pa.ChunkedArray, pa.Array)):
-            if len(proposal["value"]) != len(self.table):
-                raise traitlets.TraitError("accessor must have same length as table")
-
-        return proposal["value"]
