@@ -121,7 +121,6 @@ plugins:
       canonical_version: "latest"
   - mkdocs-jupyter:
       include_source: True
-      include: ["examples/**/*.ipynb"]
       ignore: ["**/.ipynb_checkpoints/*.ipynb"]
   - mkdocstrings:
       enable_inventory: true
