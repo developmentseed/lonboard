@@ -1,6 +1,7 @@
 import traitlets
 
 from lonboard._base import BaseExtension
+from lonboard.experimental.traits import PointAccessor
 from lonboard.traits import FloatAccessor
 
 
@@ -8,6 +9,11 @@ class BrushingExtension(BaseExtension):
     """
     Adds GPU-based data brushing functionalities to layers. It allows the layer to
     show/hide objects based on the current pointer position.
+
+    # Example
+
+    An example is in the [County-to-County Migration
+    notebook](https://developmentseed.org/lonboard/latest/examples/migration/).
 
     # Layer Properties
 
@@ -23,13 +29,26 @@ class BrushingExtension(BaseExtension):
 
     ## `brushing_target`
 
-    The position used to filter each object by.
+    The position used to filter each object by. One of the following:
+
+    - `"source"`: Use the primary position for each object. This can mean different
+      things depending on the layer. It usually refers to the coordinates returned by
+      `getPosition` or `getSourcePosition` accessors.
+    - `"target"`: Use the secondary position for each object. This may not be available
+      in some layers. It usually refers to the coordinates returned by
+      `getTargetPosition` accessor.
+    - `"source_target"`: Use both the primary position and secondary position for each
+      object. Show object if either is in brushing range.
+    - `"custom"`: Some layers may not describe their data objects with one or two
+      coordinates, for example `PathLayer` and `PolygonLayer`. Use this option with the
+      `get_brushing_target` prop to provide a custom position that each object should be
+      filtered by.
 
     - Type: `str`, optional
 
-        One of: 'source' | 'target' | 'source_target' | 'custom'
+        One of: "source" | "target" | "source_target" | "custom"
 
-    - Default: `10000`
+    - Default: `"source"`
 
     ## `brushing_radius`
 
@@ -39,28 +58,27 @@ class BrushingExtension(BaseExtension):
     - Type: `float`, optional
     - Default: `10000`
 
-    An example is in the [County-to-County Migration
-    notebook](https://developmentseed.org/lonboard/latest/examples/migration/).
+    ## `get_brushing_target`
+
+    An arbitrary position for each object that it will be filtered by.
+
+    Only effective if `brushing_target` is set to `"custom"`.
+
+    - Type: [PointAccessor][lonboard.experimental.traits.PointAccessor], optional
+        - If a point is provided, it is used as the target for all rows.
+        - If an array of points is provided, each value in the array will be used as the
+          target for the row at the same row index.
+    - Default: `None`.
     """
 
     _extension_type = traitlets.Unicode("brushing").tag(sync=True)
 
     _layer_traits = {
         "brushing_enabled": traitlets.Bool(True).tag(sync=True),
-        "brushing_target": traitlets.Unicode("source", allow_none=True).tag(sync=True),
-        "brushing_radius": traitlets.Float(allow_none=True, min=0).tag(sync=True),
-        # TODO: Add trait and support
-        # "get_brushing_target": traitlets.Any(allow_none=True).tag(sync=True),
+        "brushing_target": traitlets.Unicode(None, allow_none=True).tag(sync=True),
+        "brushing_radius": traitlets.Float(None, allow_none=True, min=0).tag(sync=True),
+        "get_brushing_target": PointAccessor(None, allow_none=True),
     }
-
-    # TODO: update trait
-    # get_brushing_target = traitlets.Any(allow_none=True).tag(sync=True)
-    """
-    Called to retrieve an arbitrary position for each object that it will be filtered
-    by.
-
-    Only effective if `brushingTarget` is set to `"custom"`.
-    """
 
 
 class CollisionFilterExtension(BaseExtension):
@@ -103,8 +121,8 @@ class CollisionFilterExtension(BaseExtension):
 
     _layer_traits = {
         "collision_enabled": traitlets.Bool(True).tag(sync=True),
-        "collision_group": traitlets.Unicode().tag(sync=True),
-        "get_collision_priority": FloatAccessor(allow_none=True),
+        "collision_group": traitlets.Unicode(None, allow_none=True).tag(sync=True),
+        "get_collision_priority": FloatAccessor(None, allow_none=True),
     }
 
 

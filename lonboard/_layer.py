@@ -607,7 +607,7 @@ class ScatterplotLayer(BaseArrowLayer):
     [`from_geopandas`][lonboard.ScatterplotLayer.from_geopandas] instead.
     """
 
-    radius_units = traitlets.Unicode("meters", allow_none=True).tag(sync=True)
+    radius_units = traitlets.Unicode(None, allow_none=True).tag(sync=True)
     """
     The units of the radius, one of `'meters'`, `'common'`, and `'pixels'`. See [unit
     system](https://deck.gl/docs/developer-guide/coordinate-systems#supported-units).
@@ -642,7 +642,7 @@ class ScatterplotLayer(BaseArrowLayer):
     - Default: `None`
     """
 
-    line_width_units = traitlets.Unicode("meters", allow_none=True).tag(sync=True)
+    line_width_units = traitlets.Unicode(None, allow_none=True).tag(sync=True)
     """
     The units of the line width, one of `'meters'`, `'common'`, and `'pixels'`. See
     [unit
@@ -713,7 +713,7 @@ class ScatterplotLayer(BaseArrowLayer):
     - Default: `True`
     """
 
-    get_radius = FloatAccessor()
+    get_radius = FloatAccessor(None, allow_none=True)
     """
     The radius of each object, in units specified by `radius_units` (default
     `'meters'`).
@@ -725,7 +725,7 @@ class ScatterplotLayer(BaseArrowLayer):
     - Default: `1`.
     """
 
-    get_fill_color = ColorAccessor()
+    get_fill_color = ColorAccessor(None, allow_none=True)
     """
     The filled color of each object in the format of `[r, g, b, [a]]`. Each channel is a
     number between 0-255 and `a` is 255 if not supplied.
@@ -738,7 +738,7 @@ class ScatterplotLayer(BaseArrowLayer):
     - Default: `[0, 0, 0, 255]`.
     """
 
-    get_line_color = ColorAccessor()
+    get_line_color = ColorAccessor(None, allow_none=True)
     """
     The outline color of each object in the format of `[r, g, b, [a]]`. Each channel is
     a number between 0-255 and `a` is 255 if not supplied.
@@ -751,7 +751,7 @@ class ScatterplotLayer(BaseArrowLayer):
     - Default: `[0, 0, 0, 255]`.
     """
 
-    get_line_width = FloatAccessor()
+    get_line_width = FloatAccessor(None, allow_none=True)
     """
     The width of the outline of each object, in units specified by `line_width_units`
     (default `'meters'`).
@@ -902,7 +902,7 @@ class PathLayer(BaseArrowLayer):
     - Default: `False`
     """
 
-    get_color = ColorAccessor()
+    get_color = ColorAccessor(None, allow_none=True)
     """
     The color of each path in the format of `[r, g, b, [a]]`. Each channel is a number
     between 0-255 and `a` is 255 if not supplied.
@@ -915,7 +915,7 @@ class PathLayer(BaseArrowLayer):
     - Default: `[0, 0, 0, 255]`.
     """
 
-    get_width = FloatAccessor()
+    get_width = FloatAccessor(None, allow_none=True)
     """
     The width of each path, in units specified by `width_units` (default `'meters'`).
 
@@ -1033,7 +1033,7 @@ class SolidPolygonLayer(BaseArrowLayer):
       with the same data if you want a combined rendering effect.
     """
 
-    get_elevation = FloatAccessor()
+    get_elevation = FloatAccessor(None, allow_none=True)
     """
     The elevation to extrude each polygon with, in meters.
 
@@ -1046,7 +1046,7 @@ class SolidPolygonLayer(BaseArrowLayer):
     - Default: `1000`.
     """
 
-    get_fill_color = ColorAccessor()
+    get_fill_color = ColorAccessor(None, allow_none=True)
     """
     The fill color of each polygon in the format of `[r, g, b, [a]]`. Each channel is a
     number between 0-255 and `a` is 255 if not supplied.
@@ -1059,7 +1059,7 @@ class SolidPolygonLayer(BaseArrowLayer):
     - Default: `[0, 0, 0, 255]`.
     """
 
-    get_line_color = ColorAccessor()
+    get_line_color = ColorAccessor(None, allow_none=True)
     """
     The line color of each polygon in the format of `[r, g, b, [a]]`. Each channel is a
     number between 0-255 and `a` is 255 if not supplied.
@@ -1205,7 +1205,7 @@ class HeatmapLayer(BaseArrowLayer):
     - Default: `500`
     """
 
-    get_weight = FloatAccessor()
+    get_weight = FloatAccessor(None, allow_none=True)
     """The weight of each object.
 
     - Type: [FloatAccessor][lonboard.traits.FloatAccessor], optional

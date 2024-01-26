@@ -204,19 +204,19 @@ class TextLayer(BaseArrowLayer):
     # - Default: `False`
     # """
 
-    get_background_color = ColorAccessor()
+    get_background_color = ColorAccessor(None, allow_none=True)
     """Background color accessor.
 
     default [255, 255, 255, 255]
     """
 
-    get_border_color = ColorAccessor()
+    get_border_color = ColorAccessor(None, allow_none=True)
     """Border color accessor.
 
     default [0, 0, 0, 255]
     """
 
-    get_border_width = FloatAccessor()
+    get_border_width = FloatAccessor(None, allow_none=True)
     """Border width accessor.
 
     default 0
@@ -300,7 +300,7 @@ class TextLayer(BaseArrowLayer):
     default -1
     """
 
-    get_text = TextAccessor()
+    get_text = TextAccessor(None, allow_none=True)
     """Label text accessor"""
 
     # get_position = traitlets.Any(None, allow_none=True).tag(sync=True)
@@ -308,19 +308,19 @@ class TextLayer(BaseArrowLayer):
 
     #  ?: Accessor<DataT, Position>;
 
-    get_color = ColorAccessor()
+    get_color = ColorAccessor(None, allow_none=True)
     """Label color accessor
 
     default [0, 0, 0, 255]
     """
 
-    get_size = FloatAccessor()
+    get_size = FloatAccessor(None, allow_none=True)
     """Label size accessor
 
     default 32
     """
 
-    get_angle = FloatAccessor()
+    get_angle = FloatAccessor(None, allow_none=True)
     """Label rotation accessor, in degrees
 
     default 0
