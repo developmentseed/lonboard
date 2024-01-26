@@ -13,6 +13,11 @@ DEFAULT_PARQUET_CHUNK_SIZE = 2**16
 # Target chunk size for Arrow (uncompressed) per Parquet chunk
 DEFAULT_ARROW_CHUNK_BYTES_SIZE = 5 * 1024 * 1024  # 5MB
 
+# Maximum number of separate chunks/row groups to allow splitting an input layer into
+# Deck.gl can pick from a maximum of 256 layers, and a user could have many layers, so
+# we don't want to use too many layers per data file.
+DEFAULT_MAX_NUM_CHUNKS = 32
+
 
 def serialize_table_to_parquet(table: pa.Table, *, max_chunksize: int) -> List[bytes]:
     buffers: List[bytes] = []
@@ -75,7 +80,12 @@ def serialize_table(data, obj):
 
 
 def infer_rows_per_chunk(table: pa.Table) -> int:
+    # At least one chunk
     num_chunks = max(round(table.nbytes / DEFAULT_ARROW_CHUNK_BYTES_SIZE), 1)
+
+    # Clamp to the maximum number of chunks
+    num_chunks = min(num_chunks, DEFAULT_MAX_NUM_CHUNKS)
+
     rows_per_chunk = math.ceil((table.num_rows / num_chunks))
     return rows_per_chunk
 
