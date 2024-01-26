@@ -94,14 +94,12 @@ export abstract class BaseLayerModel extends BaseModel {
   // experimental
   async initLayerExtensions() {
     const initExtensionsCallback = async () => {
-      console.log("initExtensionsCallback");
       const childModelIds = this.model.get("extensions");
       if (!childModelIds) {
         this.extensions = [];
         return;
       }
 
-      console.log(childModelIds);
       const childModels = await loadChildModels(
         this.model.widget_manager,
         childModelIds,

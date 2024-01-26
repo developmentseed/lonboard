@@ -545,8 +545,6 @@ export class ScatterplotModel extends BaseArrowLayerModel {
   }
 
   layerProps(): Omit<GeoArrowScatterplotLayerProps, "id"> {
-    console.log("stroked", this.stroked);
-
     return {
       data: this.table,
       ...(this.radiusUnits !== null && { radiusUnits: this.radiusUnits }),
