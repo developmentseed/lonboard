@@ -44,31 +44,29 @@ class PointAccessor(FixedErrorTraitType):
     ) -> Union[Tuple[int, ...], List[int], pa.ChunkedArray, pa.FixedSizeListArray]:
         if isinstance(value, np.ndarray):
             if value.ndim != 2:
-                self.error(obj, value, info="Point array must have 2 dimensions.")
+                self.error(obj, value, info="Point array to have 2 dimensions")
 
             list_size = value.shape[1]
             if list_size not in (2, 3):
                 self.error(
                     obj,
                     value,
-                    info="Point array must have 2 or 3 as its second dimension.",
+                    info="Point array to have 2 or 3 as its second dimension",
                 )
 
             return pa.FixedSizeListArray.from_arrays(value.flatten("C"), list_size)
 
         if isinstance(value, (pa.ChunkedArray, pa.Array)):
             if not pa.types.is_fixed_size_list(value.type):
-                self.error(
-                    obj, value, info="Point pyarrow array must be a FixedSizeList."
-                )
+                self.error(obj, value, info="Point pyarrow array to be a FixedSizeList")
 
             if value.type.list_size not in (2, 3):
                 self.error(
                     obj,
                     value,
                     info=(
-                        "Color pyarrow array must have a FixedSizeList inner size of "
-                        "2 or 3."
+                        "Color pyarrow array to be a FixedSizeList with list size of "
+                        "2 or 3"
                     ),
                 )
 
@@ -76,7 +74,7 @@ class PointAccessor(FixedErrorTraitType):
                 self.error(
                     obj,
                     value,
-                    info="Point pyarrow array must have a floating point child.",
+                    info="Point pyarrow array to have a floating point child",
                 )
 
             return value
@@ -89,8 +87,8 @@ class PointAccessor(FixedErrorTraitType):
                     obj,
                     value,
                     info=(
-                        "Color string must be a hex string interpretable by "
-                        "matplotlib.colors.to_rgba."
+                        "Color string to be a hex string interpretable by "
+                        "matplotlib.colors.to_rgba"
                     ),
                 )
                 return
@@ -181,7 +179,9 @@ class GetFilterValueAccessor(FixedErrorTraitType):
         if isinstance(value, (tuple, list)):
             if filter_size != len(value):
                 self.error(
-                    obj, value, info="filter_size to match length of tuple or list"
+                    obj,
+                    value,
+                    info=f"filter_size ({filter_size}) to match length of tuple/list",
                 )
 
             if any(not isinstance(v, (int, float)) for v in value):
@@ -225,7 +225,12 @@ class GetFilterValueAccessor(FixedErrorTraitType):
 
             if value.shape[1] != filter_size:
                 self.error(
-                    obj, value, info="filter_size to match 2nd dimension of numpy array"
+                    obj,
+                    value,
+                    info=(
+                        f"filter_size ({filter_size}) to match 2nd dimension of "
+                        "numpy array"
+                    ),
                 )
 
             return pa.FixedSizeListArray.from_arrays(value.flatten("C"), filter_size)
@@ -252,7 +257,7 @@ class GetFilterValueAccessor(FixedErrorTraitType):
                     self.error(
                         obj,
                         value,
-                        info="arrow array to be a floating point type.",
+                        info="arrow array to be a floating point type",
                     )
 
                 return value.cast(pa.float32())
@@ -262,14 +267,17 @@ class GetFilterValueAccessor(FixedErrorTraitType):
                 self.error(
                     obj,
                     value,
-                    info="filter_size to match list size of FixedSizeList arrow array",
+                    info=(
+                        f"filter_size ({filter_size}) to match list size of "
+                        "FixedSizeList arrow array"
+                    ),
                 )
 
             if not pa.types.is_floating(value.type.value_type):
                 self.error(
                     obj,
                     value,
-                    info="arrow array to have floating point child type.",
+                    info="arrow array to have floating point child type",
                 )
 
             # Cast values to float32
