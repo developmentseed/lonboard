@@ -4,7 +4,7 @@ import pyarrow as pa
 import traitlets
 
 from lonboard._constants import EXTENSION_NAME
-from lonboard._layer import BaseLayer
+from lonboard._layer import BaseArrowLayer
 from lonboard.experimental.traits import PointAccessor
 from lonboard.traits import (
     ColorAccessor,
@@ -14,7 +14,7 @@ from lonboard.traits import (
 )
 
 
-class ArcLayer(BaseLayer):
+class ArcLayer(BaseArrowLayer):
     """Render raised arcs joining pairs of source and target coordinates."""
 
     _layer_type = traitlets.Unicode("arc").tag(sync=True)
@@ -135,7 +135,7 @@ class ArcLayer(BaseLayer):
         return proposal["value"]
 
 
-class TextLayer(BaseLayer):
+class TextLayer(BaseArrowLayer):
     """Render text labels at given coordinates."""
 
     _layer_type = traitlets.Unicode("text").tag(sync=True)
