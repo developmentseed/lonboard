@@ -24,6 +24,8 @@ def serialize_table_to_parquet(table: pa.Table, *, max_chunksize: int) -> List[b
     buffers: List[bytes] = []
     # NOTE: passing `max_chunksize=0` creates an infinite loop
     # https://github.com/apache/arrow/issues/39788
+    assert max_chunksize > 0
+
     for record_batch in table.to_batches(max_chunksize=max_chunksize):
         with BytesIO() as bio:
             with pq.ParquetWriter(
@@ -51,25 +53,13 @@ def serialize_pyarrow_column(data: pa.Array, *, max_chunksize: int) -> List[byte
     return serialize_table_to_parquet(pyarrow_table, max_chunksize=max_chunksize)
 
 
-def serialize_color_accessor(
-    data: Union[List[int], Tuple[int], NDArray[np.uint8]], obj
-):
+def serialize_accessor(data: Union[List[int], Tuple[int], NDArray[np.uint8]], obj):
     if data is None:
         return None
 
-    if isinstance(data, (list, tuple)):
-        return data
-
-    assert isinstance(data, (pa.ChunkedArray, pa.Array))
-    validate_accessor_length_matches_table(data, obj.table)
-    return serialize_pyarrow_column(data, max_chunksize=obj._rows_per_chunk)
-
-
-def serialize_float_accessor(data: Union[int, float, NDArray[np.floating]], obj):
-    if data is None:
-        return None
-
-    if isinstance(data, (str, int, float)):
+    # We assume data has already been validated to the right type for this accessor
+    # Allow any json-serializable type through
+    if isinstance(data, (str, int, float, list, tuple, bytes)):
         return data
 
     assert isinstance(data, (pa.ChunkedArray, pa.Array))
@@ -98,7 +88,5 @@ def validate_accessor_length_matches_table(accessor, table):
         raise TraitError("accessor must have same length as table")
 
 
-COLOR_SERIALIZATION = {"to_json": serialize_color_accessor}
-# TODO: rename as it's used for text as well
-FLOAT_SERIALIZATION = {"to_json": serialize_float_accessor}
+ACCESSOR_SERIALIZATION = {"to_json": serialize_accessor}
 TABLE_SERIALIZATION = {"to_json": serialize_table}
