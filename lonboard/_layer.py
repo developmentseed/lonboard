@@ -149,8 +149,12 @@ class BaseArrowLayer(BaseLayer):
 
     # Note: these class attributes are **not** serialized to JS
 
+    # Number of rows per chunk for serializing table and accessor columns.
+    #
+    # This is a _layer-level_ construct because we need to ensure the main table and all
+    # accessors have exactly the same chunking, because each chunk is rendered
+    # independently as a separate deck.gl layer
     _rows_per_chunk: int
-    """Number of rows per chunk for serializing table and accessor columns."""
 
     # The following traitlets **are** serialized to JS
 
