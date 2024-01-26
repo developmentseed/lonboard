@@ -160,12 +160,19 @@ class DataFilterExtension(BaseExtension):
 
     ## `filter_range`
 
-    The (min, max) bounds which defines whether an object should be rendered.
+    The bounds which defines whether an object should be rendered. If an object's
+    filtered value is within the bounds, the object will be rendered; otherwise it will
+    be hidden. This prop can be updated on user input or animation with very little
+    cost.
 
-    If an object's filtered value is within the bounds, the object will be rendered;
-    otherwise it will be hidden.
+    Format:
 
-    - Type: Tuple[float, float], optional
+    If `filter_size` is 1, provide a single tuple of `(min, max)`.
+
+    If `filter_size` is 2 to 4, provide a list of tuples: `[(min0, max0), (min1,
+    max1), ...]` for each filtered property, respectively.
+
+    - Type: either Tuple[float, float] or List[Tuple[float, float]], optional
     - Default: `(-1, 1)`
 
     ## `filter_soft_range`
@@ -210,8 +217,15 @@ class DataFilterExtension(BaseExtension):
 
     _layer_traits = {
         "filter_enabled": traitlets.Bool(True).tag(sync=True),
-        "filter_range": traitlets.Tuple(
-            traitlets.Float(), traitlets.Float(), default_value=(-1, 1)
+        "filter_range": traitlets.Union(
+            [
+                traitlets.List(traitlets.Float(), minlen=2, maxlen=2),
+                traitlets.List(
+                    traitlets.List(traitlets.Float(), minlen=2, maxlen=2),
+                    minlen=2,
+                    maxlen=4,
+                ),
+            ]
         ).tag(sync=True),
         "filter_soft_range": traitlets.Tuple(
             traitlets.Float(), traitlets.Float(), default_value=None, allow_none=True
