@@ -1,7 +1,7 @@
 import traitlets
 
 from lonboard._base import BaseExtension
-from lonboard.experimental.traits import PointAccessor
+from lonboard.experimental.traits import GetFilterValueAccessor, PointAccessor
 from lonboard.traits import FloatAccessor
 
 
@@ -199,8 +199,9 @@ class DataFilterExtension(BaseExtension):
 
     Accessor to retrieve the value for each object that it will be filtered by.
 
-    - Type: [FloatAccessor][lonboard.traits.FloatAccessor]
-        - If a number is provided, it is used as the value for all objects.
+    - Type:
+      [GetFilterValueAccessor][lonboard.experimental.traits.GetFilterValueAccessor]
+        - If a scalar value is provided, it is used as the value for all objects.
         - If an array is provided, each value in the array will be used as the value
           for the object at the same row index.
     """
@@ -217,14 +218,10 @@ class DataFilterExtension(BaseExtension):
         ).tag(sync=True),
         "filter_transform_size": traitlets.Bool(True).tag(sync=True),
         "filter_transform_color": traitlets.Bool(True).tag(sync=True),
-        "get_filter_value": FloatAccessor(None, allow_none=False),
+        "get_filter_value": GetFilterValueAccessor(None, allow_none=False),
     }
 
-    # TODO: support filterSize > 1
-    # In order to support filterSize > 1, we need to allow the get_filter_value accessor
-    # to be either a single float or a fixed size list of up to 4 floats.
-
-    # filter_size = traitlets.Int(1).tag(sync=True)
+    filter_size = traitlets.Int(1, min=1, max=4).tag(sync=True)
     """The size of the filter (number of columns to filter by).
 
     The data filter can show/hide data based on 1-4 numeric properties of each object.
