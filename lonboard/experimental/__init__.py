@@ -5,4 +5,8 @@ unexpected behavior when using them.
 """
 
 from ._layer import ArcLayer, TextLayer
-from .layer_extension import BrushingExtension, CollisionFilterExtension
+from .layer_extension import (
+    BrushingExtension,
+    CollisionFilterExtension,
+    DataFilterExtension,
+)

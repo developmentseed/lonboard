@@ -2,7 +2,7 @@ from __future__ import annotations
 
 import sys
 import warnings
-from typing import TYPE_CHECKING, Optional, Tuple
+from typing import TYPE_CHECKING, List, Optional, Sequence, Tuple
 
 import geopandas as gpd
 import ipywidgets
@@ -16,7 +16,7 @@ from lonboard._geoarrow.ops.bbox import Bbox, total_bounds
 from lonboard._geoarrow.ops.centroid import WeightedCentroid, weighted_centroid
 from lonboard._serialization import infer_rows_per_chunk
 from lonboard._utils import auto_downcast as _auto_downcast
-from lonboard._utils import get_geometry_column_index
+from lonboard._utils import get_geometry_column_index, remove_extension_kwargs
 from lonboard.traits import ColorAccessor, FloatAccessor, PyarrowTableTrait
 
 if TYPE_CHECKING:
@@ -32,9 +32,69 @@ class BaseLayer(BaseWidget):
     _weighted_centroid = WeightedCentroid()
 
     # The following traitlets **are** serialized to JS
+
+    def __init__(self, *, extensions: Sequence[BaseExtension] = (), **kwargs):
+        # We allow layer extensions to dynamically inject properties onto the layer
+        # widgets where the layer is defined. We wish to allow extensions and their
+        # properties to be passed in the layer constructor. _However_, if
+
+        extension_kwargs = remove_extension_kwargs(extensions, kwargs)
+
+        super().__init__(extensions=extensions, **kwargs)
+
+        # Dynamically set layer traits from extensions after calling __init__
+        self._add_extension_traits(extensions)
+
+        # Assign any extension properties that we took out before calling __init__
+        added_names: List[str] = []
+        for prop_name, prop_value in extension_kwargs.items():
+            self.set_trait(prop_name, prop_value)
+            added_names.append(prop_name)
+
+        self.send_state(added_names)
+
+    # TODO: validate that only one extension per type is included. E.g. you can't have
+    # two data filter extensions.
     extensions = traitlets.List(trait=traitlets.Instance(BaseExtension)).tag(
         sync=True, **ipywidgets.widget_serialization
     )
+    """
+    A list of [layer extension](https://developmentseed.org/lonboard/latest/api/layer-extensions/)
+    objects to add additional features to a layer.
+    """
+
+    # TODO: the extensions list is not observed; separately, the list object itself does
+    # not propagate events, so an append wouldn't work.
+
+    # @traitlets.observe("extensions")
+    # def _observe_extensions(self, change):
+    #     """When a new extension is assigned, add its layer props to this layer."""
+    #     new_extensions: List[BaseExtension] = change["new"]
+    #     for extension in new_extensions:
+    #         self.add_traits(**extension._layer_traits)
+
+    def _add_extension_traits(self, extensions: Sequence[BaseExtension]):
+        """Assign selected traits from the extension onto this Layer."""
+        for extension in extensions:
+            # NOTE: here it's important that we call `traitlets.HasTraits.add_traits`
+            # and not `self.add_traits`. This is because `add_traits` is originally
+            # defined on `HasTraits` but `ipywidgets.Widget` overrides that method to
+            # additionally call `send_state` for any trait that has `"sync"` tagged in
+            # its metadata. But this is incompatible with traits that don't have default
+            # values.
+            #
+            # For example, with the DataFilterExtension, we want to dynamically add the
+            # `get_filter_value` trait, but require that the user pass in a value. With
+            # the `Widget` implementation, `send_state` will fail, even if the user
+            # passes in a value, because `send_state` is called before we call
+            # `super().__init__()`
+            traitlets.HasTraits.add_traits(self, **extension._layer_traits)
+
+            # Note: This is part of `Widget.add_traits` (in the direct superclass) that
+            # we skip by calling `traitlets.HasTraits.add_traits`
+            for name, trait in extension._layer_traits.items():
+                if trait.get_metadata("sync"):
+                    self.keys.append(name)
 
     pickable = traitlets.Bool(True).tag(sync=True)
     """
