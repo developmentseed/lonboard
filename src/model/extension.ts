@@ -26,11 +26,6 @@ export class BrushingExtension extends BaseExtensionModel {
 
   extensionInstance: _BrushingExtension;
 
-  protected getBrushingTarget?: BrushingExtensionProps["getBrushingTarget"];
-  protected brushingEnabled?: BrushingExtensionProps["brushingEnabled"];
-  protected brushingTarget?: BrushingExtensionProps["brushingTarget"];
-  protected brushingRadius?: BrushingExtensionProps["brushingRadius"];
-
   constructor(
     model: WidgetModel,
     layerModel: BaseLayerModel,
@@ -64,11 +59,6 @@ export class CollisionFilterExtension extends BaseExtensionModel {
   static extensionType = "collision-filter";
 
   extensionInstance: _CollisionFilterExtension;
-
-  protected collisionEnabled?: CollisionFilterExtensionProps["collisionEnabled"];
-  protected collisionGroup?: CollisionFilterExtensionProps["collisionGroup"];
-  protected collisionTestProps?: CollisionFilterExtensionProps["collisionTestProps"];
-  protected getCollisionPriority?: CollisionFilterExtensionProps["getCollisionPriority"];
 
   constructor(
     model: WidgetModel,
@@ -107,22 +97,17 @@ export class DataFilterExtension extends BaseExtensionModel {
 
   extensionInstance: _DataFilterExtension;
 
-  protected getFilterValue?: DataFilterExtensionProps["getFilterValue"];
-
-  protected filterEnabled?: DataFilterExtensionProps["filterEnabled"];
-  protected filterRange?: DataFilterExtensionProps["filterRange"];
-  protected filterSoftRange?: DataFilterExtensionProps["filterSoftRange"];
-  protected filterTransformSize?: DataFilterExtensionProps["filterTransformSize"];
-  protected filterTransformColor?: DataFilterExtensionProps["filterTransformColor"];
-
   constructor(
     model: WidgetModel,
     layerModel: BaseLayerModel,
     updateStateCallback: () => void,
   ) {
     super(model, updateStateCallback);
+
     // TODO: set filterSize, fp64, countItems in constructor
-    this.extensionInstance = new _DataFilterExtension();
+    // TODO: should filter_size automatically update from python?
+    const filterSize = this.model.get("filter_size");
+    this.extensionInstance = new _DataFilterExtension({ filterSize });
 
     // Properties added by the extension onto the layer
     layerModel.initRegularAttribute("filter_enabled", "filterEnabled");
