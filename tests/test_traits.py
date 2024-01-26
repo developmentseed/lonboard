@@ -10,6 +10,9 @@ from lonboard.traits import ColorAccessor, FloatAccessor
 
 class ColorAccessorWidget(BaseLayer):
     _rows_per_chunk = 2
+    # Any tests that are intended to pass validation checks must also have 3 rows, since
+    # there's another length check in the serialization code.
+    table = pa.table({"data": [1, 2, 3]})
 
     color = ColorAccessor()
 
@@ -65,8 +68,12 @@ def test_color_accessor_validation_dim_shape_np_arr():
             color=np.array([1, 2, 3, 4, 5], dtype=np.uint8).reshape(-1, 5)
         )
 
-    ColorAccessorWidget(color=np.array([1, 2, 3], dtype=np.uint8).reshape(-1, 3))
-    ColorAccessorWidget(color=np.array([1, 2, 3, 255], dtype=np.uint8).reshape(-1, 4))
+    ColorAccessorWidget(
+        color=np.array([1, 2, 3], dtype=np.uint8).reshape(-1, 3).repeat(3, axis=0)
+    )
+    ColorAccessorWidget(
+        color=np.array([1, 2, 3, 255], dtype=np.uint8).reshape(-1, 4).repeat(3, axis=0)
+    )
 
 
 def test_color_accessor_validation_np_dtype():
@@ -74,7 +81,9 @@ def test_color_accessor_validation_np_dtype():
     with pytest.raises(TraitError):
         ColorAccessorWidget(color=np.array([1, 2, 3]).reshape(-1, 3))
 
-    ColorAccessorWidget(color=np.array([1, 2, 3], dtype=np.uint8).reshape(-1, 3))
+    ColorAccessorWidget(
+        color=np.array([1, 2, 3], dtype=np.uint8).reshape(-1, 3).repeat(3, axis=0)
+    )
 
 
 def test_color_accessor_validation_pyarrow_array_type():
@@ -82,10 +91,10 @@ def test_color_accessor_validation_pyarrow_array_type():
     with pytest.raises(TraitError):
         ColorAccessorWidget(color=pa.array(np.array([1, 2, 3], dtype=np.float64)))
 
-    np_arr = np.array([1, 2, 3], dtype=np.uint8)
+    np_arr = np.array([1, 2, 3], dtype=np.uint8).repeat(3, axis=0)
     ColorAccessorWidget(color=pa.FixedSizeListArray.from_arrays(np_arr, 3))
 
-    np_arr = np.array([1, 2, 3, 255], dtype=np.uint8)
+    np_arr = np.array([1, 2, 3, 255], dtype=np.uint8).repeat(3, axis=0)
     ColorAccessorWidget(color=pa.FixedSizeListArray.from_arrays(np_arr, 4))
 
     # array type must have uint8 child
@@ -117,6 +126,9 @@ def test_color_accessor_validation_string():
 
 class FloatAccessorWidget(BaseLayer):
     _rows_per_chunk = 2
+    # Any tests that are intended to pass validation checks must also have 3 rows, since
+    # there's another length check in the serialization code.
+    table = pa.table({"data": [1, 2, 3]})
 
     value = FloatAccessor()
 
