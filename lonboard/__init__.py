@@ -9,6 +9,7 @@ from ._layer import (
     BitmapTileLayer,
     HeatmapLayer,
     PathLayer,
+    PolygonLayer,
     ScatterplotLayer,
     SolidPolygonLayer,
 )

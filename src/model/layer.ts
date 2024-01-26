@@ -1,17 +1,21 @@
 import {
   GeoArrowArcLayer,
-  GeoArrowArcLayerProps,
   GeoArrowColumnLayer,
-  GeoArrowColumnLayerProps,
   GeoArrowHeatmapLayer,
-  GeoArrowHeatmapLayerProps,
   GeoArrowPathLayer,
-  GeoArrowPathLayerProps,
+  GeoArrowPolygonLayer,
   GeoArrowScatterplotLayer,
-  GeoArrowScatterplotLayerProps,
   GeoArrowSolidPolygonLayer,
-  GeoArrowSolidPolygonLayerProps,
   _GeoArrowTextLayer as GeoArrowTextLayer,
+} from "@geoarrow/deck.gl-layers";
+import type {
+  GeoArrowArcLayerProps,
+  GeoArrowColumnLayerProps,
+  GeoArrowHeatmapLayerProps,
+  GeoArrowPathLayerProps,
+  GeoArrowPolygonLayerProps,
+  GeoArrowScatterplotLayerProps,
+  GeoArrowSolidPolygonLayerProps,
   _GeoArrowTextLayerProps as GeoArrowTextLayerProps,
 } from "@geoarrow/deck.gl-layers";
 import type { WidgetModel } from "@jupyter-widgets/base";
@@ -457,6 +461,90 @@ export class PathModel extends BaseArrowLayerModel {
     });
   }
 }
+
+export class PolygonModel extends BaseArrowLayerModel {
+  static layerType = "polygon";
+
+  protected stroked: GeoArrowPolygonLayerProps["stroked"] | null;
+  protected filled: GeoArrowPolygonLayerProps["filled"] | null;
+  protected extruded: GeoArrowPolygonLayerProps["extruded"] | null;
+  protected wireframe: GeoArrowPolygonLayerProps["wireframe"] | null;
+  protected elevationScale: GeoArrowPolygonLayerProps["elevationScale"] | null;
+  protected lineWidthUnits: GeoArrowPolygonLayerProps["lineWidthUnits"] | null;
+  protected lineWidthScale: GeoArrowPolygonLayerProps["lineWidthScale"] | null;
+  protected lineWidthMinPixels:
+    | GeoArrowPolygonLayerProps["lineWidthMinPixels"]
+    | null;
+  protected lineWidthMaxPixels:
+    | GeoArrowPolygonLayerProps["lineWidthMaxPixels"]
+    | null;
+  protected lineJointRounded:
+    | GeoArrowPolygonLayerProps["lineJointRounded"]
+    | null;
+  protected lineMiterLimit: GeoArrowPolygonLayerProps["lineMiterLimit"] | null;
+
+  protected getFillColor: GeoArrowPolygonLayerProps["getFillColor"] | null;
+  protected getLineColor: GeoArrowPolygonLayerProps["getLineColor"] | null;
+  protected getLineWidth: GeoArrowPolygonLayerProps["getLineWidth"] | null;
+  protected getElevation: GeoArrowPolygonLayerProps["getElevation"] | null;
+
+  constructor(model: WidgetModel, updateStateCallback: () => void) {
+    super(model, updateStateCallback);
+
+    this.initRegularAttribute("stroked", "stroked");
+    this.initRegularAttribute("filled", "filled");
+    this.initRegularAttribute("extruded", "extruded");
+    this.initRegularAttribute("wireframe", "wireframe");
+    this.initRegularAttribute("elevation_scale", "elevationScale");
+    this.initRegularAttribute("line_width_units", "lineWidthUnits");
+    this.initRegularAttribute("line_width_scale", "lineWidthScale");
+    this.initRegularAttribute("line_width_min_pixels", "lineWidthMinPixels");
+    this.initRegularAttribute("line_width_max_pixels", "lineWidthMaxPixels");
+    this.initRegularAttribute("line_joint_rounded", "lineJointRounded");
+    this.initRegularAttribute("line_miter_limit", "lineMiterLimit");
+
+    this.initVectorizedAccessor("get_fill_color", "getFillColor");
+    this.initVectorizedAccessor("get_line_color", "getLineColor");
+    this.initVectorizedAccessor("get_line_width", "getLineWidth");
+    this.initVectorizedAccessor("get_elevation", "getElevation");
+  }
+
+  layerProps(): Omit<GeoArrowPolygonLayerProps, "id"> {
+    console.log("table", this.table);
+    console.log('filled', this.filled);
+
+    return {
+      data: this.table,
+      ...(this.stroked && { stroked: this.stroked }),
+      ...(this.filled && { filled: this.filled }),
+      ...(this.extruded && { extruded: this.extruded }),
+      ...(this.wireframe && { wireframe: this.wireframe }),
+      ...(this.elevationScale && { elevationScale: this.elevationScale }),
+      ...(this.lineWidthUnits && { lineWidthUnits: this.lineWidthUnits }),
+      ...(this.lineWidthScale && { lineWidthScale: this.lineWidthScale }),
+      ...(this.lineWidthMinPixels && {
+        lineWidthMinPixels: this.lineWidthMinPixels,
+      }),
+      ...(this.lineWidthMaxPixels && {
+        lineWidthMaxPixels: this.lineWidthMaxPixels,
+      }),
+      ...(this.lineJointRounded && { lineJointRounded: this.lineJointRounded }),
+      ...(this.lineMiterLimit && { lineMiterLimit: this.lineMiterLimit }),
+      ...(this.getFillColor && { getFillColor: this.getFillColor }),
+      ...(this.getLineColor && { getLineColor: this.getLineColor }),
+      ...(this.getLineWidth && { getLineWidth: this.getLineWidth }),
+      ...(this.getElevation && { getElevation: this.getElevation }),
+    };
+  }
+
+  render(): GeoArrowPolygonLayer {
+    return new GeoArrowPolygonLayer({
+      ...this.baseLayerProps(),
+      ...this.layerProps(),
+    });
+  }
+}
+
 export class ScatterplotModel extends BaseArrowLayerModel {
   static layerType = "scatterplot";
 
@@ -742,6 +830,10 @@ export async function initializeLayer(
 
     case PathModel.layerType:
       layerModel = new PathModel(model, updateStateCallback);
+      break;
+
+    case PolygonModel.layerType:
+      layerModel = new PolygonModel(model, updateStateCallback);
       break;
 
     case ScatterplotModel.layerType:
