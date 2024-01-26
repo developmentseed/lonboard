@@ -46,19 +46,26 @@ nav:
       - api/colormap.md
       - api/traits.md
       - Experimental:
-        - Layer Extensions:
-          - api/layer-extensions/brushing-extension.md
-          - api/layer-extensions/collision-filter-extension.md
-        - Layers:
-          - api/layers/arc-layer.md
-          - api/layers/text-layer.md
-        - api/experimental/traits.md
+          - Layer Extensions:
+              - api/layer-extensions/index.md
+              - api/layer-extensions/brushing-extension.md
+              - api/layer-extensions/collision-filter-extension.md
+              - api/layer-extensions/data-filter-extension.md
+          - Layers:
+              - api/layers/arc-layer.md
+              - api/layers/text-layer.md
+          - api/experimental/traits.md
 
   # - Caveats: caveats.md
   - Performance: performance.md
   - Changelog: CHANGELOG.md
   - Alternatives: alternatives.md
   - "How it works?": how-it-works.md
+
+  # - Ecosystem:
+  #     - ecosystem/index.md
+  #     - ecosystem/geopandas.md
+  #     - ecosystem/geoarrow.md
 
 watch:
   - lonboard

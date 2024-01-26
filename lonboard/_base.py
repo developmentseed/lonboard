@@ -1,3 +1,6 @@
+from typing import Dict
+
+import traitlets
 from anywidget import AnyWidget
 from ipywidgets import Widget
 
@@ -26,5 +29,6 @@ class BaseAnyWidget(AnyWidget):
         super().__init__(**kwargs)
 
 
-class BaseExtension(Widget):
-    pass
+class BaseExtension(BaseWidget):
+    _layer_traits: Dict[str, traitlets.TraitType] = {}
+    """Traits from this extension to dynamically assign onto a layer."""

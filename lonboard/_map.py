@@ -130,7 +130,7 @@ class Map(BaseAnyWidget):
     """
     A MapLibre-compatible basemap style.
 
-    Various styles are provided in [`lonboard.basemap`][lonboard.basemap].
+    Various styles are provided in [`lonboard.basemap`](https://developmentseed.org/lonboard/latest/api/basemap/).
 
     - Type: `str`
     - Default
