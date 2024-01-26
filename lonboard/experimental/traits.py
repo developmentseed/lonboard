@@ -7,9 +7,7 @@ import numpy as np
 import pyarrow as pa
 from traitlets.traitlets import TraitType
 
-from lonboard._serialization import (
-    COLOR_SERIALIZATION,
-)
+from lonboard._serialization import ACCESSOR_SERIALIZATION
 from lonboard.traits import FixedErrorTraitType
 
 
@@ -39,7 +37,7 @@ class PointAccessor(FixedErrorTraitType):
         **kwargs: Any,
     ) -> None:
         super().__init__(*args, **kwargs)
-        self.tag(sync=True, **COLOR_SERIALIZATION)
+        self.tag(sync=True, **ACCESSOR_SERIALIZATION)
 
     def validate(
         self, obj, value
