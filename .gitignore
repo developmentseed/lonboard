@@ -24,3 +24,5 @@ static
 .pnp.loader.mjs
 node_modules
 *.h5
+.env
+data.json

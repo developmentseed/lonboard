@@ -62,18 +62,16 @@ def serialize_float_accessor(data: Union[int, float, NDArray[np.floating]], obj)
     assert isinstance(data, (pa.ChunkedArray, pa.Array))
     return serialize_pyarrow_column(data, max_chunksize=obj._rows_per_chunk)
 
-def serialize_normal_accessor(
-        data: Union[List[Union[int,float]],np.ndarray],
-        obj
-    ):
+
+def serialize_normal_accessor(data: Union[List[Union[int, float]], np.ndarray], obj):
     if data is None:
         return None
-    
+
     if isinstance(data, list):
         return data
-    
+
     assert isinstance(data, (pa.ChunkedArray, pa.Array))
-    return serialize_pyarrow_column(data,max_chunksize=obj._rows_per_chunk)
+    return serialize_pyarrow_column(data, max_chunksize=obj._rows_per_chunk)
 
 
 def serialize_table(data, obj):

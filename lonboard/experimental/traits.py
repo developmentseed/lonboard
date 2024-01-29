@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+import warnings
 from typing import Any, List, Tuple, Union
 
 import matplotlib as mpl
@@ -7,10 +8,7 @@ import numpy as np
 import pyarrow as pa
 from traitlets.traitlets import TraitType
 
-from lonboard._serialization import (
-    COLOR_SERIALIZATION,
-    NORMAL_SERIALIZATION
-)
+from lonboard._serialization import COLOR_SERIALIZATION, NORMAL_SERIALIZATION
 from lonboard.traits import FixedErrorTraitType
 
 
@@ -106,14 +104,15 @@ class PointAccessor(FixedErrorTraitType):
 
 class NormalAccessor(Union[TraitType, FixedErrorTraitType]):
     """
-        A representation of a deck.gl normal accessor
-        
-        Acceptable inputs:
-        - A numpy ndarray with two dimensions: The size of the second dimension must be 3 i.e. `(N,3)`
-        - a pyarrow `FixedSizeListArray` or `ChunkedArray` containing `FixedSizeListArray`s 
-        where the size of the inner fixed size list 3.
+    A representation of a deck.gl normal accessor
+
+    Acceptable inputs:
+    - A numpy ndarray with two dimensions: The size of the second dimension must be 3 i.e. `(N,3)`
+    - a pyarrow `FixedSizeListArray` or `ChunkedArray` containing `FixedSizeListArray`s
+    where the size of the inner fixed size list 3.
     """
-    default_value = [0,0,1]
+
+    default_value = [0, 0, 1]
     info_text = (
         "List representing normal of each object, in [nx, ny, nz]. or numpy ndarray or "
         "pyarrow FixedSizeList representing the normal of each object, in [nx, ny, nz]"
@@ -126,37 +125,48 @@ class NormalAccessor(Union[TraitType, FixedErrorTraitType]):
     ) -> None:
         super().__init__(*args, **kwargs)
         self.tag(sync=True, **NORMAL_SERIALIZATION)
-        
+
     def validate(
         self, obj, value
     ) -> Union[Tuple[int, ...], List[int], pa.ChunkedArray, pa.FixedSizeListArray]:
-        
-        
-        # TODO Redundant logic?
-        list_size = value.shape[1]
-        if list_size != 3:
-            self.error(
-                obj,
-                value,
-                info="Point array must have 3 as its second dimension. I.e. (N,3)",
-            )
-        
+        """
+        Values in acceptable types must be contiguous (the same length for all values) and of floating point type
+        """
+
+        fixed_list_size = 3
+
+        if isinstance(value, List):
+            if len(value) != 3:
+                self.error("Normal array must have length 3, (x,y,z)")
+
+            if not all(isinstance(item, float) for item in value):
+                self.error("All elements of Normal array must be floating point type")
+
+            return pa.FixedSizeListArray.from_arrays(value, fixed_list_size)
+
         if isinstance(value, np.ndarray):
-            # values must be contiguous (the same length for all values)
             if value.ndim != 2 or value.shape[1] != 3:
                 self.error(obj, value, info="Normal array must be 2D with shape (N,3)")
-                
+
             if not np.any(value == 1):
-                self.error(obj, value, info="One of the normal vector elements must be 1.")
-                
-            return pa.FixedSizeListArray.from_arrays(value.flatten("C"), list_size)
-                
+                self.error(
+                    obj, value, info="One of the normal vector elements must be 1."
+                )
+
+            if not np.issubdtype(value.dtype, np.float32):
+                warnings.warn(
+                    "Warning: Numpy array should be floating point type. Converting to float32 point pyarrow array"
+                )
+                value = value.cast(pa.list_(pa.float32()))
+
+            return pa.FixedSizeListArray.from_arrays(value, fixed_list_size)
+
         if isinstance(value, (pa.ChunkedArray, pa.Array)):
             if not pa.types.is_fixed_size_list(value.type):
                 self.error(
                     obj, value, info="Point pyarrow array must be a FixedSizeList."
                 )
-                
+
             if value.type.list_size != 3:
                 self.error(
                     obj,
@@ -166,7 +176,17 @@ class NormalAccessor(Union[TraitType, FixedErrorTraitType]):
                     ),
                 )
 
-            return pa.FixedSizeListArray.from_arrays(value.flatten("C"), list_size)
-                
+            if not pa.types.is_floating(value.type.value_type):
+                try:
+                    value = value.cast(pa.list_(pa.float32()))
+                except:
+                    self.error(
+                        obj,
+                        value,
+                        info="Failed to convert array values to floating point type",
+                    )
+
+                return pa.FixedSizeListArray.from_arrays(value, fixed_list_size)
+
         self.error(obj, value)
         assert False
