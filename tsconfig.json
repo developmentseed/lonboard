@@ -2,7 +2,9 @@
   "include": ["src/**/*"],
   "exclude": ["node_modules"],
   "compilerOptions": {
+    // Note: setting these two to NodeNext this breaks typing for apache-arrow
     "moduleResolution": "node",
+    // "module": "NodeNext",
     "outDir": "./dist",
     "allowJs": true,
     "target": "ES2020",
@@ -12,8 +14,9 @@
     "esModuleInterop": true,
     "forceConsistentCasingInFileNames": true,
     "jsx": "react",
-    // "strict": true,
-    // "strictNullChecks": true,
+    "skipLibCheck": true,
+    "strict": true,
+    "strictNullChecks": true,
     // "lib": [
     //   "es2019.array", "es6", "dom"
     // ],

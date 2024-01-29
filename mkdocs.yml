@@ -24,25 +24,48 @@ nav:
   - Example Notebooks:
       - examples/internet-speeds.ipynb
       - examples/north-america-roads.ipynb
+      - examples/migration.ipynb
       - Integrations:
           - ColorPicker: examples/integrations/color-picker.ipynb
           - Sidecar: examples/integrations/sidecar.ipynb
       - 30 Day Map Challenge:
           - "Day 1: Points": examples/map_challenge/1-points.ipynb
+          - "Day 6: Asia": examples/map_challenge/6-asia.ipynb
   - API Reference:
       - api/viz.md
       - api/map.md
       - Layers:
-          - api/layers/scatterplot-layer.md
+          - api/layers/bitmap-layer.md
+          - api/layers/bitmap-tile-layer.md
+          - api/layers/heatmap-layer.md
           - api/layers/path-layer.md
+          - api/layers/scatterplot-layer.md
           - api/layers/solid-polygon-layer.md
+          - api/layers/base-layer.md
+      - api/basemap.md
       - api/colormap.md
       - api/traits.md
+      - Experimental:
+          - Layer Extensions:
+              - api/layer-extensions/index.md
+              - api/layer-extensions/brushing-extension.md
+              - api/layer-extensions/collision-filter-extension.md
+              - api/layer-extensions/data-filter-extension.md
+          - Layers:
+              - api/layers/arc-layer.md
+              - api/layers/text-layer.md
+          - api/experimental/traits.md
+
   # - Caveats: caveats.md
   - Performance: performance.md
   - Changelog: CHANGELOG.md
   - Alternatives: alternatives.md
   - "How it works?": how-it-works.md
+
+  # - Ecosystem:
+  #     - ecosystem/index.md
+  #     - ecosystem/geopandas.md
+  #     - ecosystem/geoarrow.md
 
 watch:
   - lonboard
@@ -52,21 +75,28 @@ theme:
   name: material
   custom_dir: docs/overrides
   palette:
+    # Palette toggle for automatic mode
+    - media: "(prefers-color-scheme)"
+      toggle:
+        icon: material/brightness-auto
+        name: Switch to light mode
+
     # Palette toggle for light mode
-    - scheme: default
+    - media: "(prefers-color-scheme: light)"
       primary: teal
       accent: indigo
       toggle:
-        icon: material/lightbulb
+        icon: material/brightness-7
         name: Switch to dark mode
 
     # Palette toggle for dark mode
-    - scheme: slate
+    - media: "(prefers-color-scheme: dark)"
+      scheme: slate
       primary: teal
       accent: indigo
       toggle:
-        icon: material/lightbulb-outline
-        name: Switch to light mode
+        icon: material/brightness-4
+        name: Switch to system preference
 
   font:
     text: Roboto
@@ -75,6 +105,9 @@ theme:
   # logo: img/geopolars_logo.svg
 
   features:
+    - content.code.annotate
+    - content.code.copy
+    - navigation.indexes
     - navigation.instant
     - navigation.tracking
     - search.suggest
@@ -108,6 +141,7 @@ plugins:
             - https://contextily.readthedocs.io/en/stable/objects.inv
             - https://docs.python.org/3/objects.inv
             - https://fiona.readthedocs.io/en/stable/objects.inv
+            - https://geoarrow.github.io/geoarrow-rs/python/latest/objects.inv
             - https://geopandas.org/en/stable/objects.inv
             - https://geopy.readthedocs.io/en/stable/objects.inv
             - https://matplotlib.org/stable/objects.inv

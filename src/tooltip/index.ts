@@ -1,5 +1,5 @@
-import { TooltipContent } from "@deck.gl/core/typed/lib/tooltip";
-import { GeoArrowPickingInfo } from "@geoarrow/deck.gl-layers/dist/types";
+import { TooltipContent } from "@deck.gl/core/typed/lib/tooltip.js";
+import type { GeoArrowPickingInfo } from "@geoarrow/deck.gl-layers";
 
 import "./index.css";
 
@@ -31,7 +31,8 @@ export function getTooltip({ object }: GeoArrowPickingInfo): TooltipContent {
     // Without this block, we end up showing a tooltip even when not hovering
     // over a point
     if (
-      !object[rowIndexSymbol] ||
+      object[rowIndexSymbol] === null ||
+      object[rowIndexSymbol] === undefined ||
       (object[rowIndexSymbol] && object[rowIndexSymbol] < 0)
     ) {
       return null;

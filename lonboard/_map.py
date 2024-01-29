@@ -1,15 +1,17 @@
 from __future__ import annotations
 
 from pathlib import Path
-from typing import Union
+from typing import Sequence, Union
 
 import ipywidgets
 import traitlets
 from ipywidgets.embed import embed_minimal_html
 
 from lonboard._base import BaseAnyWidget
+from lonboard._environment import DEFAULT_HEIGHT
 from lonboard._layer import BaseLayer
 from lonboard._viewport import compute_view
+from lonboard.basemap import CartoBasemap
 
 # bundler yields lonboard/static/{index.js,styles.css}
 bundler_output_dir = Path(__file__).parent / "static"
@@ -39,9 +41,26 @@ class Map(BaseAnyWidget):
         get_fill_color=[255, 0, 0],
     )
 
-    map_ = Map(layers=[point_layer, polygon_layer])
+    m = Map([point_layer, polygon_layer])
     ```
     """
+
+    def __init__(self, layers: Union[BaseLayer, Sequence[BaseLayer]], **kwargs) -> None:
+        """Create a new Map.
+
+        Aside from the `layers` argument, pass keyword arguments for any other attribute
+        defined in this class.
+
+        Args:
+            layers: One or more layers to render on this map.
+
+        Returns:
+            A Map object.
+        """
+        if isinstance(layers, BaseLayer):
+            layers = [layers]
+
+        super().__init__(layers=layers, **kwargs)
 
     _esm = bundler_output_dir / "index.js"
     _css = bundler_output_dir / "index.css"
@@ -74,7 +93,9 @@ class Map(BaseAnyWidget):
     This API is not yet stabilized and may change in the future.
     """
 
-    _height = traitlets.Int(500).tag(sync=True)
+    _height = traitlets.Int(default_value=DEFAULT_HEIGHT, allow_none=True).tag(
+        sync=True
+    )
     """Height of the map in pixels.
 
     This API is not yet stabilized and may change in the future.
@@ -105,6 +126,17 @@ class Map(BaseAnyWidget):
     - Default: `5`
     """
 
+    basemap_style = traitlets.Unicode(CartoBasemap.PositronNoLabels).tag(sync=True)
+    """
+    A MapLibre-compatible basemap style.
+
+    Various styles are provided in [`lonboard.basemap`](https://developmentseed.org/lonboard/latest/api/basemap/).
+
+    - Type: `str`
+    - Default
+      [`lonboard.basemap.CartoBasemap.PositronNoLabels`][lonboard.basemap.CartoBasemap.PositronNoLabels]
+    """
+
     def to_html(self, filename: Union[str, Path]) -> None:
         """Save the current map as a standalone HTML file.
 
@@ -115,8 +147,4 @@ class Map(BaseAnyWidget):
 
     @traitlets.default("_initial_view_state")
     def _default_initial_view_state(self):
-        tables = [layer.table for layer in self.layers if layer.table]
-        if tables:
-            return compute_view(tables)
-        else:
-            return {}
+        return compute_view(self.layers)

@@ -1,5 +1,52 @@
 # Changelog
 
+## [0.5.0] - 2023-12-01
+
+### New Features
+
+- Improve map height by @vgeorge in https://github.com/developmentseed/lonboard/pull/220
+- Add method to apply a categorical colormap by @kylebarron in https://github.com/developmentseed/lonboard/pull/251
+- Deduce environment and set map height in colab and vscode by @kylebarron in https://github.com/developmentseed/lonboard/pull/252
+- Add various carto basemaps as options by @kylebarron in https://github.com/developmentseed/lonboard/pull/268
+- Sync the clicked index back to Python by @kylebarron in https://github.com/developmentseed/lonboard/pull/270
+- Set `width_min_pixels` in PathLayer example by @kylebarron in https://github.com/developmentseed/lonboard/pull/276
+- Bump deck.gl layers for performance benefits by @kylebarron in https://github.com/developmentseed/lonboard/pull/277
+
+**Full Changelog**: https://github.com/developmentseed/lonboard/compare/v0.4.2...v0.5.0
+
+## [0.4.2] - 2023-11-13
+
+### Fixed
+
+- Fixed ScatterplotLayer rendering by @kylebarron in https://github.com/developmentseed/lonboard/pull/246
+
+**Full Changelog**: https://github.com/developmentseed/lonboard/compare/v0.4.1...v0.4.2
+
+## [0.4.1] - 2023-11-13
+
+### Fixed
+
+- Fixed Polygon rendering by @kylebarron in https://github.com/developmentseed/lonboard/pull/243
+
+**Full Changelog**: https://github.com/developmentseed/lonboard/compare/v0.4.0...v0.4.1
+
+## [0.4.0] - 2023-11-10
+
+### New Features
+
+- New `HeatmapLayer`
+- New `experimental` module, with new layers (`ArcLayer`, `TextLayer`) and "layer extensions" (`BrushingExtension`, `CollisionFilterExtension`).
+- New "migration" notebook using the experimental `ArcLayer`.
+
+### Fixed
+
+- Add pandas v2 requirement by @kylebarron in https://github.com/developmentseed/lonboard/pull/229
+- bump anywidget to 0.7.1 by @kylebarron in https://github.com/developmentseed/lonboard/pull/233
+
+  This should error when the JS files have not been included when packaging.
+
+**Full Changelog**: https://github.com/developmentseed/lonboard/compare/v0.3.0...v0.4.0
+
 ## [0.3.0] - 2023-11-07
 
 ### New Features

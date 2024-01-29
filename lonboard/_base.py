@@ -1,3 +1,6 @@
+from typing import Dict
+
+import traitlets
 from anywidget import AnyWidget
 from ipywidgets import Widget
 
@@ -24,3 +27,8 @@ class BaseAnyWidget(AnyWidget):
                 raise TypeError(f"unexpected keyword argument '{provided_trait_name}'")
 
         super().__init__(**kwargs)
+
+
+class BaseExtension(BaseWidget):
+    _layer_traits: Dict[str, traitlets.TraitType] = {}
+    """Traits from this extension to dynamically assign onto a layer."""
