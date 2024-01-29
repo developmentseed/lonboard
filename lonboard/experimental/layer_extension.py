@@ -1,7 +1,7 @@
 import traitlets
 
 from lonboard._base import BaseExtension
-from lonboard.experimental.traits import PointAccessor
+from lonboard.experimental.traits import GetFilterValueAccessor, PointAccessor
 from lonboard.traits import FloatAccessor
 
 
@@ -160,12 +160,19 @@ class DataFilterExtension(BaseExtension):
 
     ## `filter_range`
 
-    The (min, max) bounds which defines whether an object should be rendered.
+    The bounds which defines whether an object should be rendered. If an object's
+    filtered value is within the bounds, the object will be rendered; otherwise it will
+    be hidden. This prop can be updated on user input or animation with very little
+    cost.
 
-    If an object's filtered value is within the bounds, the object will be rendered;
-    otherwise it will be hidden.
+    Format:
 
-    - Type: Tuple[float, float], optional
+    If `filter_size` is 1, provide a single tuple of `(min, max)`.
+
+    If `filter_size` is 2 to 4, provide a list of tuples: `[(min0, max0), (min1,
+    max1), ...]` for each filtered property, respectively.
+
+    - Type: either Tuple[float, float] or List[Tuple[float, float]], optional
     - Default: `(-1, 1)`
 
     ## `filter_soft_range`
@@ -199,8 +206,9 @@ class DataFilterExtension(BaseExtension):
 
     Accessor to retrieve the value for each object that it will be filtered by.
 
-    - Type: [FloatAccessor][lonboard.traits.FloatAccessor]
-        - If a number is provided, it is used as the value for all objects.
+    - Type:
+      [GetFilterValueAccessor][lonboard.experimental.traits.GetFilterValueAccessor]
+        - If a scalar value is provided, it is used as the value for all objects.
         - If an array is provided, each value in the array will be used as the value
           for the object at the same row index.
     """
@@ -209,22 +217,25 @@ class DataFilterExtension(BaseExtension):
 
     _layer_traits = {
         "filter_enabled": traitlets.Bool(True).tag(sync=True),
-        "filter_range": traitlets.Tuple(
-            traitlets.Float(), traitlets.Float(), default_value=(-1, 1)
+        "filter_range": traitlets.Union(
+            [
+                traitlets.List(traitlets.Float(), minlen=2, maxlen=2),
+                traitlets.List(
+                    traitlets.List(traitlets.Float(), minlen=2, maxlen=2),
+                    minlen=2,
+                    maxlen=4,
+                ),
+            ]
         ).tag(sync=True),
         "filter_soft_range": traitlets.Tuple(
             traitlets.Float(), traitlets.Float(), default_value=None, allow_none=True
         ).tag(sync=True),
         "filter_transform_size": traitlets.Bool(True).tag(sync=True),
         "filter_transform_color": traitlets.Bool(True).tag(sync=True),
-        "get_filter_value": FloatAccessor(None, allow_none=False),
+        "get_filter_value": GetFilterValueAccessor(None, allow_none=False),
     }
 
-    # TODO: support filterSize > 1
-    # In order to support filterSize > 1, we need to allow the get_filter_value accessor
-    # to be either a single float or a fixed size list of up to 4 floats.
-
-    # filter_size = traitlets.Int(1).tag(sync=True)
+    filter_size = traitlets.Int(1, min=1, max=4).tag(sync=True)
     """The size of the filter (number of columns to filter by).
 
     The data filter can show/hide data based on 1-4 numeric properties of each object.
