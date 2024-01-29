@@ -10,7 +10,6 @@
 from __future__ import annotations
 
 import sys
-import warnings
 from typing import TYPE_CHECKING, List, Optional, Sequence, Tuple
 
 import geopandas as gpd
@@ -19,8 +18,9 @@ import pyarrow as pa
 import traitlets
 
 from lonboard._base import BaseExtension, BaseWidget
-from lonboard._constants import EPSG_4326, EXTENSION_NAME, OGC_84
+from lonboard._constants import EXTENSION_NAME, OGC_84
 from lonboard._geoarrow.geopandas_interop import geopandas_to_geoarrow
+from lonboard._geoarrow.ops import reproject_table
 from lonboard._geoarrow.ops.bbox import Bbox, total_bounds
 from lonboard._geoarrow.ops.centroid import WeightedCentroid, weighted_centroid
 from lonboard._serialization import infer_rows_per_chunk
@@ -182,9 +182,8 @@ def default_geoarrow_viewport(
 ) -> Optional[Tuple[Bbox, WeightedCentroid]]:
     # Note: in the ArcLayer we won't necessarily have a column with a geoarrow
     # extension type/metadata
-    try:
-        geom_col_idx = get_geometry_column_index(table.schema)
-    except ValueError:
+    geom_col_idx = get_geometry_column_index(table.schema)
+    if geom_col_idx is None:
         return None
 
     geom_field = table.schema.field(geom_col_idx)
@@ -232,6 +231,10 @@ class BaseArrowLayer(BaseLayer):
     def __init__(
         self, *, table: pa.Table, _rows_per_chunk: Optional[int] = None, **kwargs
     ):
+        # Reproject table to WGS84 if needed
+        # Note this must happen before calculating the default viewport
+        table = reproject_table(table, to_crs=OGC_84)
+
         default_viewport = default_geoarrow_viewport(table)
         if default_viewport is not None:
             self._bbox = default_viewport[0]
@@ -266,10 +269,6 @@ class BaseArrowLayer(BaseLayer):
         Returns:
             A Layer with the initialized data.
         """
-        if gdf.crs and gdf.crs not in [EPSG_4326, OGC_84]:
-            warnings.warn("GeoDataFrame being reprojected to EPSG:4326")
-            gdf = gdf.to_crs(OGC_84)  # type: ignore
-
         if auto_downcast:
             # Note: we don't deep copy because we don't need to clone geometries
             gdf = _auto_downcast(gdf.copy())  # type: ignore

@@ -1020,6 +1020,20 @@ files = [
 ]
 
 [[package]]
+name = "geodatasets"
+version = "2023.12.0"
+description = "Spatial data examples"
+optional = false
+python-versions = ">=3.8"
+files = [
+    {file = "geodatasets-2023.12.0-py3-none-any.whl", hash = "sha256:6abf6dc2b5ec930465b19c33a1ba4211bf8aebbd544495ae9a5e81d9ca3ca294"},
+    {file = "geodatasets-2023.12.0.tar.gz", hash = "sha256:8867fa6966aeae3fe854697c9fb7d429666ae7ae8edda9b77c87c8e616ba6c65"},
+]
+
+[package.dependencies]
+pooch = "*"
+
+[[package]]
 name = "geopandas"
 version = "0.13.2"
 description = "Geographic pandas extensions"
@@ -2375,8 +2389,8 @@ files = [
 [package.dependencies]
 numpy = [
     {version = ">=1.20.3", markers = "python_version < \"3.10\""},
-    {version = ">=1.21.0", markers = "python_version >= \"3.10\" and python_version < \"3.11\""},
     {version = ">=1.23.2", markers = "python_version >= \"3.11\""},
+    {version = ">=1.21.0", markers = "python_version >= \"3.10\" and python_version < \"3.11\""},
 ]
 python-dateutil = ">=2.8.2"
 pytz = ">=2020.1"
@@ -2586,6 +2600,27 @@ files = [
 [package.extras]
 dev = ["pre-commit", "tox"]
 testing = ["pytest", "pytest-benchmark"]
+
+[[package]]
+name = "pooch"
+version = "1.8.0"
+description = "\"Pooch manages your Python library's sample data files: it automatically downloads and stores them in a local directory, with support for versioning and corruption checks.\""
+optional = false
+python-versions = ">=3.7"
+files = [
+    {file = "pooch-1.8.0-py3-none-any.whl", hash = "sha256:1bfba436d9e2ad5199ccad3583cca8c241b8736b5bb23fe67c213d52650dbb66"},
+    {file = "pooch-1.8.0.tar.gz", hash = "sha256:f59981fd5b9b5d032dcde8f4a11eaa492c2ac6343fae3596a2fdae35fc54b0a0"},
+]
+
+[package.dependencies]
+packaging = ">=20.0"
+platformdirs = ">=2.5.0"
+requests = ">=2.19.0"
+
+[package.extras]
+progress = ["tqdm (>=4.41.0,<5.0.0)"]
+sftp = ["paramiko (>=2.7.0)"]
+xxhash = ["xxhash (>=1.4.3)"]
 
 [[package]]
 name = "pre-commit"
@@ -2824,6 +2859,51 @@ pyyaml = "*"
 
 [package.extras]
 extra = ["pygments (>=2.12)"]
+
+[[package]]
+name = "pyogrio"
+version = "0.7.2"
+description = "Vectorized spatial vector file format I/O using GDAL/OGR"
+optional = false
+python-versions = ">=3.8"
+files = [
+    {file = "pyogrio-0.7.2-cp310-cp310-macosx_10_9_x86_64.whl", hash = "sha256:ba386a02c9b5934c568b40acc95c9863f92075f6990167635e51368976569c66"},
+    {file = "pyogrio-0.7.2-cp310-cp310-macosx_11_0_arm64.whl", hash = "sha256:860b04ddf23b8c253ceb3621e4b0e0dc0f293eab66cb14f799a5c9f9fe0a882c"},
+    {file = "pyogrio-0.7.2-cp310-cp310-manylinux_2_17_x86_64.manylinux2014_x86_64.whl", hash = "sha256:caaf61d473ac207f170082e602ea57c096e8dd4c4be51de58fba96f1a5944096"},
+    {file = "pyogrio-0.7.2-cp310-cp310-manylinux_2_28_aarch64.whl", hash = "sha256:bee556ca305b7e8c68aada259d925c612131205074fb2373badafacbef610b77"},
+    {file = "pyogrio-0.7.2-cp310-cp310-win_amd64.whl", hash = "sha256:7e2c856961efdc6cb3809b97b49016cbbcee17c8a1e85fc4000b5fcb3cfcb9b1"},
+    {file = "pyogrio-0.7.2-cp311-cp311-macosx_10_9_x86_64.whl", hash = "sha256:5654e7c33442cbd98e7a56f705e160415d7503b2420d724d4f81b8cc88360b3e"},
+    {file = "pyogrio-0.7.2-cp311-cp311-macosx_11_0_arm64.whl", hash = "sha256:b9a8a4854c7af2c76683ce5666ee765b207901b362576465219d75deb6159821"},
+    {file = "pyogrio-0.7.2-cp311-cp311-manylinux_2_17_x86_64.manylinux2014_x86_64.whl", hash = "sha256:a23136d1bffa9d811263807b850c6e9854201710276f09de650131e89f2486aa"},
+    {file = "pyogrio-0.7.2-cp311-cp311-manylinux_2_28_aarch64.whl", hash = "sha256:234b0d1d22e9680229b0618c25077a0cb2428cbbc2939b4bb9bdd8ee77e0f3e0"},
+    {file = "pyogrio-0.7.2-cp311-cp311-win_amd64.whl", hash = "sha256:33ae5aafcf3a557e107a33f5b3e878750d2e467b8cc911dc4bf261c1a602b534"},
+    {file = "pyogrio-0.7.2-cp312-cp312-macosx_10_9_x86_64.whl", hash = "sha256:73577fecebeecf0d06e78c1a4bddd460a4d57c6d918affab7594c0bc72f5fa14"},
+    {file = "pyogrio-0.7.2-cp312-cp312-macosx_11_0_arm64.whl", hash = "sha256:f2ff58184020da39540a2f5d4a5412005a01b0c4cd03c7b8294bc670d1f3fe50"},
+    {file = "pyogrio-0.7.2-cp312-cp312-manylinux_2_17_x86_64.manylinux2014_x86_64.whl", hash = "sha256:31112bb0b6a4a3f80ec3252d7eeb7be81045860d49fd76e297c073759450652b"},
+    {file = "pyogrio-0.7.2-cp312-cp312-win_amd64.whl", hash = "sha256:1b7197c72f034ac7187da2a8d50a063a5f1256aab732b154f11f887a7652dc3d"},
+    {file = "pyogrio-0.7.2-cp38-cp38-macosx_10_9_x86_64.whl", hash = "sha256:7e39bb6bfdd74e63ae96acced7297bbe8a157f85c0107f1cbb395d2a937f3a38"},
+    {file = "pyogrio-0.7.2-cp38-cp38-macosx_11_0_arm64.whl", hash = "sha256:436de39f57e8f8cc41682981518b9490d64d3a1c48bf78d415e5747c296790dc"},
+    {file = "pyogrio-0.7.2-cp38-cp38-manylinux_2_17_x86_64.manylinux2014_x86_64.whl", hash = "sha256:5feeb7a0da7ee82580f6aa6508a80602413675b99c60c822929e0e8b925e0517"},
+    {file = "pyogrio-0.7.2-cp38-cp38-manylinux_2_28_aarch64.whl", hash = "sha256:429dcff4c36f0e0a15ba4a20f2d4478b9c6d095e70c4bcc007a536ea420a1a93"},
+    {file = "pyogrio-0.7.2-cp38-cp38-win_amd64.whl", hash = "sha256:f219c1edb010d0248891a3d27d15faf17c91cfe69daef84d7471e22e4ed4fcff"},
+    {file = "pyogrio-0.7.2-cp39-cp39-macosx_10_9_x86_64.whl", hash = "sha256:9cc6db2e5dc50dfe23554d10502920eafa0648c365725e552aaa523432a9bf35"},
+    {file = "pyogrio-0.7.2-cp39-cp39-macosx_11_0_arm64.whl", hash = "sha256:be46be43c4148a3ad09da38670411485ec544a51cbd6b7d004a0eca5035023fc"},
+    {file = "pyogrio-0.7.2-cp39-cp39-manylinux_2_17_x86_64.manylinux2014_x86_64.whl", hash = "sha256:3001efd5dfee36459d0cfdafbe91ed88fc5ae734353d771cdb75546ef1427735"},
+    {file = "pyogrio-0.7.2-cp39-cp39-manylinux_2_28_aarch64.whl", hash = "sha256:892fdab0e1c44c0125254d92928081c14f93ac553f371addc2c9a1d4bde41cad"},
+    {file = "pyogrio-0.7.2-cp39-cp39-win_amd64.whl", hash = "sha256:d5fc2304aeb927564f77caaa4da9a47e2d77a8ceb1c624ea84c505140886b221"},
+    {file = "pyogrio-0.7.2.tar.gz", hash = "sha256:33afb7d211c6434613f24174722347a5cb11d22a212f28c817f67c89d30d0c0d"},
+]
+
+[package.dependencies]
+certifi = "*"
+numpy = "*"
+packaging = "*"
+
+[package.extras]
+benchmark = ["pytest-benchmark"]
+dev = ["Cython"]
+geopandas = ["geopandas"]
+test = ["pytest", "pytest-cov"]
 
 [[package]]
 name = "pyparsing"
@@ -3973,4 +4053,4 @@ testing = ["big-O", "jaraco.functools", "jaraco.itertools", "more-itertools", "p
 [metadata]
 lock-version = "2.0"
 python-versions = "^3.8"
-content-hash = "858df8237eae70012ec8d588ca594ea3a6de20dd308a0ffdf13ffdf893381a83"
+content-hash = "d2fdd606f82bdd939406f154df928c9c9f208804508dee26a76ba9b8dfe63409"

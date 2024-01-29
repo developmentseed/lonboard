@@ -1,5 +1,6 @@
+import json
 from enum import Enum
-from typing import Optional
+from typing import Dict, Optional, Tuple
 
 import numpy as np
 import pyarrow as pa
@@ -279,8 +280,11 @@ class MultiPolygonType(BaseGeometryType):
 
 
 def construct_geometry_array(
-    shapely_arr: NDArray[np.object_], include_z: Optional[bool] = None
-):
+    shapely_arr: NDArray[np.object_],
+    include_z: Optional[bool] = None,
+    *,
+    crs_str: Optional[str] = None,
+) -> Tuple[pa.Field, pa.Array]:
     # NOTE: this implementation returns a (field, array) pair so that it can set the
     # extension metadata on the field without instantiating extension types into the
     # global pyarrow registry
@@ -295,13 +299,18 @@ def construct_geometry_array(
     else:
         raise ValueError(f"Unexpected coords dimensions: {coords.shape}")
 
+    extension_metadata: Dict[str, str] = {}
+    if crs_str is not None:
+        extension_metadata["ARROW:extension:metadata"] = json.dumps({"crs": crs_str})
+
     if geom_type == GeometryType.POINT:
         parr = pa.FixedSizeListArray.from_arrays(coords.flatten(), len(dims))
+        extension_metadata["ARROW:extension:name"] = "geoarrow.point"
         field = pa.field(
             "geometry",
             parr.type,
             nullable=True,
-            metadata={"ARROW:extension:name": "geoarrow.point"},
+            metadata=extension_metadata,
         )
         return field, parr
 
@@ -310,11 +319,12 @@ def construct_geometry_array(
         (geom_offsets,) = offsets
         _parr = pa.FixedSizeListArray.from_arrays(coords.flatten(), len(dims))
         parr = pa.ListArray.from_arrays(pa.array(geom_offsets), _parr)
+        extension_metadata["ARROW:extension:name"] = "geoarrow.linestring"
         field = pa.field(
             "geometry",
             parr.type,
             nullable=True,
-            metadata={"ARROW:extension:name": "geoarrow.linestring"},
+            metadata=extension_metadata,
         )
         return field, parr
 
@@ -324,11 +334,12 @@ def construct_geometry_array(
         _parr = pa.FixedSizeListArray.from_arrays(coords.flatten(), len(dims))
         _parr1 = pa.ListArray.from_arrays(pa.array(ring_offsets), _parr)
         parr = pa.ListArray.from_arrays(pa.array(geom_offsets), _parr1)
+        extension_metadata["ARROW:extension:name"] = "geoarrow.polygon"
         field = pa.field(
             "geometry",
             parr.type,
             nullable=True,
-            metadata={"ARROW:extension:name": "geoarrow.polygon"},
+            metadata=extension_metadata,
         )
         return field, parr
 
@@ -337,11 +348,12 @@ def construct_geometry_array(
         (geom_offsets,) = offsets
         _parr = pa.FixedSizeListArray.from_arrays(coords.flatten(), len(dims))
         parr = pa.ListArray.from_arrays(pa.array(geom_offsets), _parr)
+        extension_metadata["ARROW:extension:name"] = "geoarrow.multipoint"
         field = pa.field(
             "geometry",
             parr.type,
             nullable=True,
-            metadata={"ARROW:extension:name": "geoarrow.multipoint"},
+            metadata=extension_metadata,
         )
         return field, parr
 
@@ -351,11 +363,12 @@ def construct_geometry_array(
         _parr = pa.FixedSizeListArray.from_arrays(coords.flatten(), len(dims))
         _parr1 = pa.ListArray.from_arrays(pa.array(ring_offsets), _parr)
         parr = pa.ListArray.from_arrays(pa.array(geom_offsets), _parr1)
+        extension_metadata["ARROW:extension:name"] = "geoarrow.multilinestring"
         field = pa.field(
             "geometry",
             parr.type,
             nullable=True,
-            metadata={"ARROW:extension:name": "geoarrow.multilinestring"},
+            metadata=extension_metadata,
         )
         return field, parr
 
@@ -366,11 +379,12 @@ def construct_geometry_array(
         _parr1 = pa.ListArray.from_arrays(pa.array(ring_offsets), _parr)
         _parr2 = pa.ListArray.from_arrays(pa.array(polygon_offsets), _parr1)
         parr = pa.ListArray.from_arrays(pa.array(geom_offsets), _parr2)
+        extension_metadata["ARROW:extension:name"] = "geoarrow.multipolygon"
         field = pa.field(
             "geometry",
             parr.type,
             nullable=True,
-            metadata={"ARROW:extension:name": "geoarrow.multipolygon"},
+            metadata=extension_metadata,
         )
         return field, parr
 
