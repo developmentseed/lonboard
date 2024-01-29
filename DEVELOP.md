@@ -64,6 +64,14 @@ Anywidget and its dependency ipywidgets handles the serialization from Python in
 
 Push a new tag to the main branch of the format `v*`. A new version will be published to PyPI automatically.
 
+## Contribute
+
+We run linting and formating on all pull requests. You can perform that operation locally with `pre-commit`.
+```
+pip install -U pre-commit
+pre-commit run --all-files
+```
+
 ## Documentation website
 
 The documentation website is generated with `mkdocs` and [`mkdocs-material`](https://squidfunk.github.io/mkdocs-material). After `poetry install`, you can serve the docs website locally with
