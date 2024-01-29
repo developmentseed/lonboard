@@ -71,7 +71,7 @@ def reproject_column(
     crs_str = extension_metadata["crs"]
     existing_crs = CRS(crs_str)
 
-    if existing_crs.is_exact_same(to_crs):
+    if existing_crs == to_crs:
         return field, column
 
     # NOTE: Not sure the best place to put this warning
