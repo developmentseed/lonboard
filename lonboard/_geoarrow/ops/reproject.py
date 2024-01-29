@@ -1,6 +1,7 @@
 """Reproject a GeoArrow array
 """
 import json
+import warnings
 from concurrent.futures import ThreadPoolExecutor
 from functools import lru_cache, partial
 from typing import Callable, Optional, Tuple, Union
@@ -11,15 +12,45 @@ from pyproj import CRS, Transformer
 
 from lonboard._constants import EXTENSION_NAME, OGC_84
 from lonboard._geoarrow.extension_types import CoordinateDimension
+from lonboard._utils import get_geometry_column_index
 
 TransformerFromCRS = lru_cache(Transformer.from_crs)
 
 
-def reproject(
+def reproject_table(
+    table: pa.Table,
+    *,
+    to_crs: Union[str, CRS] = OGC_84,
+    max_workers: Optional[int] = None,
+) -> pa.Table:
+    """Reproject a GeoArrow table to a new CRS
+
+    Args:
+        table: The table to reproject.
+        to_crs: The target CRS. Defaults to OGC_84.
+        max_workers: The maximum number of threads to use. Defaults to None.
+
+    Returns:
+        A new table.
+    """
+    geom_col_idx = get_geometry_column_index(table.schema)
+    if geom_col_idx is None:
+        return table
+
+    geom_field = table.schema.field(geom_col_idx)
+    geom_column = table.column(geom_col_idx)
+
+    new_field, new_column = reproject_column(
+        field=geom_field, column=geom_column, to_crs=to_crs, max_workers=max_workers
+    )
+    return table.set_column(geom_col_idx, new_field, new_column)
+
+
+def reproject_column(
+    *,
     field: pa.Field,
     column: pa.ChunkedArray,
     to_crs: Union[str, CRS] = OGC_84,
-    *,
     max_workers: Optional[int] = None,
 ) -> Tuple[pa.Field, pa.ChunkedArray]:
     """Reproject a GeoArrow array to a new CRS
@@ -37,6 +68,9 @@ def reproject(
 
     if existing_crs.is_exact_same(to_crs):
         return field, column
+
+    # NOTE: Not sure the best place to put this warning
+    warnings.warn("Input being reprojected to EPSG:4326 CRS")
 
     transformer = TransformerFromCRS(existing_crs, to_crs, always_xy=True)
 
