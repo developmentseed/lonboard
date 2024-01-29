@@ -231,13 +231,14 @@ class BaseArrowLayer(BaseLayer):
     def __init__(
         self, *, table: pa.Table, _rows_per_chunk: Optional[int] = None, **kwargs
     ):
+        # Reproject table to WGS84 if needed
+        # Note this must happen before calculating the default viewport
+        table = reproject_table(table, to_crs=OGC_84)
+
         default_viewport = default_geoarrow_viewport(table)
         if default_viewport is not None:
             self._bbox = default_viewport[0]
             self._weighted_centroid = default_viewport[1]
-
-        # Reproject table to WGS84 if needed
-        table = reproject_table(table, to_crs=OGC_84)
 
         rows_per_chunk = _rows_per_chunk or infer_rows_per_chunk(table)
         if rows_per_chunk <= 0:
