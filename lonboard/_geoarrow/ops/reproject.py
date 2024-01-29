@@ -34,11 +34,16 @@ def reproject_table(
         A new table.
     """
     geom_col_idx = get_geometry_column_index(table.schema)
+    # No geometry column in table
     if geom_col_idx is None:
         return table
 
     geom_field = table.schema.field(geom_col_idx)
     geom_column = table.column(geom_col_idx)
+
+    # geometry column exists in table but is not assigned a CRS
+    if b"ARROW:extension:metadata" not in geom_field.metadata:
+        return table
 
     new_field, new_column = reproject_column(
         field=geom_field, column=geom_column, to_crs=to_crs, max_workers=max_workers
