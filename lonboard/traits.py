@@ -21,6 +21,7 @@ from lonboard._serialization import (
     ACCESSOR_SERIALIZATION,
     TABLE_SERIALIZATION,
 )
+from lonboard._utils import get_geometry_column_index
 
 
 # This is a custom subclass of traitlets.TraitType because its `error` method ignores
@@ -148,28 +149,14 @@ class PyarrowTableTrait(FixedErrorTraitType):
             self.error(obj, value)
 
         allowed_geometry_types = self.metadata.get("allowed_geometry_types")
+        # No restriction on the allowed geometry types in this table
         if not allowed_geometry_types:
             return value
 
-        field = value.schema.field("geometry")
-        if isinstance(field.type, pa.ExtensionType):
-            geometry_extension_type = field.type.extension_name.encode()
-            storage_type = field.type.storage_type
-            new_field = pa.field(
-                "geometry",
-                storage_type,
-                nullable=True,
-                metadata={"ARROW:extension:name": field.type.extension_name},
-            )
-            value = value.set_column(
-                value.schema.get_field_index("geometry"),
-                new_field,
-                value.column("geometry").cast(storage_type),
-            )
-        else:
-            geometry_extension_type = value.schema.field("geometry").metadata.get(
-                b"ARROW:extension:name"
-            )
+        geom_col_idx = get_geometry_column_index(value.schema)
+        geometry_extension_type = value.schema.field(geom_col_idx).metadata.get(
+            b"ARROW:extension:name"
+        )
 
         if (
             allowed_geometry_types
