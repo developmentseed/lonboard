@@ -21,6 +21,7 @@ from lonboard._serialization import (
     ACCESSOR_SERIALIZATION,
     TABLE_SERIALIZATION,
 )
+from lonboard._utils import get_geometry_column_index
 
 
 # This is a custom subclass of traitlets.TraitType because its `error` method ignores
@@ -139,21 +140,19 @@ class PyarrowTableTrait(FixedErrorTraitType):
         )
 
     def validate(self, obj: Self, value: Any):
-        # Check for Arrow PyCapsule Interface
-        # https://arrow.apache.org/docs/format/CDataInterface/PyCapsuleInterface.html
-        if not isinstance(value, pa.Table) and hasattr(value, "__arrow_c_stream__"):
-            value = pa.table(value)
-
         if not isinstance(value, pa.Table):
             self.error(obj, value)
 
         allowed_geometry_types = self.metadata.get("allowed_geometry_types")
+        # No restriction on the allowed geometry types in this table
         if not allowed_geometry_types:
             return value
 
-        geometry_extension_type = value.schema.field("geometry").metadata.get(
+        geom_col_idx = get_geometry_column_index(value.schema)
+        geometry_extension_type = value.schema.field(geom_col_idx).metadata.get(
             b"ARROW:extension:name"
         )
+
         if (
             allowed_geometry_types
             and geometry_extension_type not in allowed_geometry_types

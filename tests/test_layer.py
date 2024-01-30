@@ -1,5 +1,6 @@
 import geopandas as gpd
 import numpy as np
+import pyarrow as pa
 import pytest
 import shapely
 from traitlets import TraitError
@@ -58,3 +59,16 @@ def test_layer_outside_4326_range():
 
     with pytest.raises(ValueError, match="outside of WGS84 bounds"):
         _layer = ScatterplotLayer.from_geopandas(gdf)
+
+
+def test_layer_from_geoarrow_pyarrow():
+    ga = pytest.importorskip("geoarrow.pyarrow")
+
+    points = gpd.GeoSeries(shapely.points([1, 2], [3, 4]))
+
+    # convert to geoarrow.pyarrow Table (currently requires to ensure interleaved
+    # coordinates manually)
+    points = ga.with_coord_type(ga.as_geoarrow(points), ga.CoordType.INTERLEAVED)
+    table = pa.table({"geometry": points})
+
+    _layer = ScatterplotLayer(table=table)
