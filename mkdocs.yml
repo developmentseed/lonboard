@@ -145,6 +145,7 @@ plugins:
             - https://geoarrow.github.io/geoarrow-rs/python/latest/objects.inv
             - https://geopandas.org/en/stable/objects.inv
             - https://geopy.readthedocs.io/en/stable/objects.inv
+            - https://ipywidgets.readthedocs.io/en/stable/objects.inv
             - https://matplotlib.org/stable/objects.inv
             - https://numpy.org/doc/stable/objects.inv
             - https://pandas.pydata.org/pandas-docs/stable/objects.inv
