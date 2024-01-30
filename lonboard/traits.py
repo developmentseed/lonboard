@@ -140,11 +140,6 @@ class PyarrowTableTrait(FixedErrorTraitType):
         )
 
     def validate(self, obj: Self, value: Any):
-        # Check for Arrow PyCapsule Interface
-        # https://arrow.apache.org/docs/format/CDataInterface/PyCapsuleInterface.html
-        if not isinstance(value, pa.Table) and hasattr(value, "__arrow_c_stream__"):
-            value = pa.table(value)
-
         if not isinstance(value, pa.Table):
             self.error(obj, value)
 

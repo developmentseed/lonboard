@@ -11,12 +11,6 @@ def sanitize_table(table: pa.Table) -> pa.Table:
     """
     Convert any registered geoarrow.pyarrow extension fields and arrays to plain
     metadata
-
-    Args:
-        table: _description_
-
-    Returns:
-        _description_
     """
     for field_idx in range(len(table.schema)):
         field = table.field(field_idx)
