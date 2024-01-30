@@ -999,6 +999,102 @@ files = [
 ]
 
 [[package]]
+name = "geoarrow-c"
+version = "0.1.1"
+description = ""
+optional = false
+python-versions = ">=3.8"
+files = [
+    {file = "geoarrow-c-0.1.1.tar.gz", hash = "sha256:71ca8e779214769d8ddd28348a96a26ebe43203ba9a9c578e55d6bdab7494381"},
+    {file = "geoarrow_c-0.1.1-cp310-cp310-macosx_10_9_x86_64.whl", hash = "sha256:de4697cdfc588e1385bfc88a67a3860c3a95aff7cc85b70dc9845a1af8c21534"},
+    {file = "geoarrow_c-0.1.1-cp310-cp310-macosx_11_0_arm64.whl", hash = "sha256:4f63783a414860c234af00393d6e8dfec3be0cf5eb0fa5ed4ac592a5b091b540"},
+    {file = "geoarrow_c-0.1.1-cp310-cp310-manylinux_2_12_i686.manylinux2010_i686.manylinux_2_17_i686.manylinux2014_i686.whl", hash = "sha256:ee1716885afd4bcdbcb363abfd54952827aacf24014f45fcbabb4a0fe9ac9d5b"},
+    {file = "geoarrow_c-0.1.1-cp310-cp310-manylinux_2_17_aarch64.manylinux2014_aarch64.whl", hash = "sha256:04be90c455647ad99a535b05fdab8c5e263207e5efcd62308783754c79d0e947"},
+    {file = "geoarrow_c-0.1.1-cp310-cp310-manylinux_2_17_x86_64.manylinux2014_x86_64.whl", hash = "sha256:e7f60754999e2035a077aa9920e6f53d214ccfe46d0b723dc4cb7f515a6fb933"},
+    {file = "geoarrow_c-0.1.1-cp310-cp310-musllinux_1_1_aarch64.whl", hash = "sha256:a61cb8d25c2d2633691da3c210bd8f74e56336702999040f66c3f6d223524554"},
+    {file = "geoarrow_c-0.1.1-cp310-cp310-musllinux_1_1_i686.whl", hash = "sha256:8c198dad0bcb42ab0087f5ea76156b4139984864808151924c4548262c7746cd"},
+    {file = "geoarrow_c-0.1.1-cp310-cp310-musllinux_1_1_x86_64.whl", hash = "sha256:dbf26698a306bdd69f555e4341bb58fdaa338905caa31b0eeec86c08103d8c04"},
+    {file = "geoarrow_c-0.1.1-cp310-cp310-win32.whl", hash = "sha256:65c7dd45d4d2b59ab5a3b855d1be2630b81b5759da09f32cc7b0468b4db12426"},
+    {file = "geoarrow_c-0.1.1-cp310-cp310-win_amd64.whl", hash = "sha256:ca44b4cff9aca68d4029ac39c894b3332a6e5266462be96878ccc9887038d199"},
+    {file = "geoarrow_c-0.1.1-cp311-cp311-macosx_10_9_x86_64.whl", hash = "sha256:770924b97c329724e40cd48cf9b42c059e1069a4b05a60f3042229fa7e26545e"},
+    {file = "geoarrow_c-0.1.1-cp311-cp311-macosx_11_0_arm64.whl", hash = "sha256:40d2cb5f66a2fee696d20a99e3808b8c1b89c11943bce139d0680bea1e16daf6"},
+    {file = "geoarrow_c-0.1.1-cp311-cp311-manylinux_2_12_i686.manylinux2010_i686.manylinux_2_17_i686.manylinux2014_i686.whl", hash = "sha256:0b221e5589bd5c1dc25d8d9df9e1fafc3644c7e4c2655f6cb128220d305b6109"},
+    {file = "geoarrow_c-0.1.1-cp311-cp311-manylinux_2_17_aarch64.manylinux2014_aarch64.whl", hash = "sha256:76519097d16a22a5339239130273990851ee53710055fac8c0f1446da1f6e69b"},
+    {file = "geoarrow_c-0.1.1-cp311-cp311-manylinux_2_17_x86_64.manylinux2014_x86_64.whl", hash = "sha256:74e374b85aeba7de0d6f2cacaee27c4980222133d81a777ecde5004f307d6726"},
+    {file = "geoarrow_c-0.1.1-cp311-cp311-musllinux_1_1_aarch64.whl", hash = "sha256:e94206d037ecc92bbd1257a4983b0988238db30d228dbb6b420fa4385db335f6"},
+    {file = "geoarrow_c-0.1.1-cp311-cp311-musllinux_1_1_i686.whl", hash = "sha256:80ec6dc6eef9868e3b0df2be8f0683563a63ed47f6f3e0b341d0aea56b1fc75f"},
+    {file = "geoarrow_c-0.1.1-cp311-cp311-musllinux_1_1_x86_64.whl", hash = "sha256:7432a4e206f6b47d58c1cc1328d584b7c2eced71f288cc039a34f91460f981de"},
+    {file = "geoarrow_c-0.1.1-cp311-cp311-win32.whl", hash = "sha256:9be510889e9e42353a8b108a2a25a2506f8bd300f6ddad5eda3eadfb11f68c4b"},
+    {file = "geoarrow_c-0.1.1-cp311-cp311-win_amd64.whl", hash = "sha256:d773ca46b46e4f84ad4dec17e5ae47e92ddc218704b0f4e16f01f90983857832"},
+    {file = "geoarrow_c-0.1.1-cp312-cp312-macosx_10_9_x86_64.whl", hash = "sha256:573e039bb70c4f99bfe9169e29c257fedc84eec8dab0ba0f1e9d9dbcfd990563"},
+    {file = "geoarrow_c-0.1.1-cp312-cp312-macosx_11_0_arm64.whl", hash = "sha256:99d329d42b22ad47f9cf340513d309bced3e21ecb3abb4cab8f3b01e63636f6d"},
+    {file = "geoarrow_c-0.1.1-cp312-cp312-manylinux_2_12_i686.manylinux2010_i686.manylinux_2_17_i686.manylinux2014_i686.whl", hash = "sha256:4679efd318b97070040a0e2f9906b884f0fa97f309891884139c3d998710b27a"},
+    {file = "geoarrow_c-0.1.1-cp312-cp312-manylinux_2_17_aarch64.manylinux2014_aarch64.whl", hash = "sha256:2f4c7dd1a5b72f2799100877018cf595df2d27e84ecdf3985480efae723d1fed"},
+    {file = "geoarrow_c-0.1.1-cp312-cp312-manylinux_2_17_x86_64.manylinux2014_x86_64.whl", hash = "sha256:1888c25eef1991493272294b5f4e86504aa9cacc2a53b77aaa3231dcb22f530b"},
+    {file = "geoarrow_c-0.1.1-cp312-cp312-musllinux_1_1_aarch64.whl", hash = "sha256:96cf96d0d054ca777bd2d1400952ffbbc1a04a0d75808f3232bff04e71481a3d"},
+    {file = "geoarrow_c-0.1.1-cp312-cp312-musllinux_1_1_i686.whl", hash = "sha256:c670af3f8d9c6faba017909c88b13261b14f77ba4864b8fa19911a494937a58e"},
+    {file = "geoarrow_c-0.1.1-cp312-cp312-musllinux_1_1_x86_64.whl", hash = "sha256:8e6de3eae26b9ee06826bb3574475e82d1a939fa79117549fc21cfa1fca5715c"},
+    {file = "geoarrow_c-0.1.1-cp312-cp312-win32.whl", hash = "sha256:86b3bb4424b7b41b343daa7481475953567cc34cb242ea13c9b18fddcee2f054"},
+    {file = "geoarrow_c-0.1.1-cp312-cp312-win_amd64.whl", hash = "sha256:2d3c353ec788656a84ccad40d11639f9e72432263ac9d205189bc2d29544b71d"},
+    {file = "geoarrow_c-0.1.1-cp38-cp38-macosx_10_9_x86_64.whl", hash = "sha256:9ee5fa37854539d6960f8b723f0062a9d57ee6cb3b3121252b67332b86cfb60d"},
+    {file = "geoarrow_c-0.1.1-cp38-cp38-macosx_11_0_arm64.whl", hash = "sha256:f90029f74674623175969054d3ca990b91577e67d63c4532e343c618781b6e1e"},
+    {file = "geoarrow_c-0.1.1-cp38-cp38-manylinux_2_12_i686.manylinux2010_i686.manylinux_2_17_i686.manylinux2014_i686.whl", hash = "sha256:8843b3afc4a97583090640f399e78a6e0df6f54b284cc161db37c978a136bf29"},
+    {file = "geoarrow_c-0.1.1-cp38-cp38-manylinux_2_17_aarch64.manylinux2014_aarch64.whl", hash = "sha256:7482bee9566923cf5691814b0661c66b46bb02df6e8cc72469667e5a934760d7"},
+    {file = "geoarrow_c-0.1.1-cp38-cp38-manylinux_2_17_x86_64.manylinux2014_x86_64.whl", hash = "sha256:200b047e304712041c4150e0ecb4f8925396e4db2f0d0cb3619f27ab72995d7d"},
+    {file = "geoarrow_c-0.1.1-cp38-cp38-musllinux_1_1_aarch64.whl", hash = "sha256:4976ab2117fc1147cc994cbe4d9b52c6713c20442f3c72aaedc5bc606be8501c"},
+    {file = "geoarrow_c-0.1.1-cp38-cp38-musllinux_1_1_i686.whl", hash = "sha256:53b321673f2e35a68e8e2277d97530e28c1709a5a4199e93f1447a1685118e9a"},
+    {file = "geoarrow_c-0.1.1-cp38-cp38-musllinux_1_1_x86_64.whl", hash = "sha256:094ebd6b56f371caf17bfe7feee981f8fd5cc57b2ad0bc3af56b53db5775632e"},
+    {file = "geoarrow_c-0.1.1-cp38-cp38-win32.whl", hash = "sha256:c116065d93442ec4353d9e5592a8afc55f9ad55c4163d829113ede30ac09b34b"},
+    {file = "geoarrow_c-0.1.1-cp38-cp38-win_amd64.whl", hash = "sha256:b286e9ece6ba8c148ced3aab86f44694eacfb472a7dde8e9e53cfd37793277ed"},
+    {file = "geoarrow_c-0.1.1-cp39-cp39-macosx_10_9_x86_64.whl", hash = "sha256:bbdbf9740c54c77f0e0c1a3fef9cdf2bc5696c8519f53e23199db42d2dbb102c"},
+    {file = "geoarrow_c-0.1.1-cp39-cp39-macosx_11_0_arm64.whl", hash = "sha256:37d46a80783e3c02e9400d476b202748e9d656d4ae55607c67c78a6c19a4bd69"},
+    {file = "geoarrow_c-0.1.1-cp39-cp39-manylinux_2_12_i686.manylinux2010_i686.manylinux_2_17_i686.manylinux2014_i686.whl", hash = "sha256:7efaa8d4fd8a451ff7b431c690d3a89051eb42be5c0795e4466592dfaf12d016"},
+    {file = "geoarrow_c-0.1.1-cp39-cp39-manylinux_2_17_aarch64.manylinux2014_aarch64.whl", hash = "sha256:a37b95495df22b61dbbe65ae1a39056d8228ffefc7590745ddd9dcec732987be"},
+    {file = "geoarrow_c-0.1.1-cp39-cp39-manylinux_2_17_x86_64.manylinux2014_x86_64.whl", hash = "sha256:848b2e5376c63eddd5d93fd110e1aa99f752b295c169d67796a5f6e4a7fc190c"},
+    {file = "geoarrow_c-0.1.1-cp39-cp39-musllinux_1_1_aarch64.whl", hash = "sha256:bf6704564f6cf2955127a675bcbad7416c6f239bdcfe335eb3569a05ea70a0f2"},
+    {file = "geoarrow_c-0.1.1-cp39-cp39-musllinux_1_1_i686.whl", hash = "sha256:c0f69b7ba5e833d2746b322e7e4deb3bcb247ec2c77f76344cfb4e75875ec3f9"},
+    {file = "geoarrow_c-0.1.1-cp39-cp39-musllinux_1_1_x86_64.whl", hash = "sha256:4ff650602155a5fd2fd2dd4f56f3dfe9b936af98bf476d57a5dcf70a083f95fb"},
+    {file = "geoarrow_c-0.1.1-cp39-cp39-win32.whl", hash = "sha256:692e6ea12b47e3ddf274d6f3910d2a07a2153b52afe853460fff0882a412f4d7"},
+    {file = "geoarrow_c-0.1.1-cp39-cp39-win_amd64.whl", hash = "sha256:5fe7e2c15df11d24e475dee73e3083c753759c0709ebee621d97f934907f7256"},
+    {file = "geoarrow_c-0.1.1-pp310-pypy310_pp73-macosx_10_9_x86_64.whl", hash = "sha256:845220c8629e7af73dd0617ea3d14a5a0784f05590188f4b603423f6f5e349d4"},
+    {file = "geoarrow_c-0.1.1-pp310-pypy310_pp73-manylinux_2_12_i686.manylinux2010_i686.manylinux_2_17_i686.manylinux2014_i686.whl", hash = "sha256:01eb7174e6220ef88e5790066122b161ae46c7e45e14f80e19ea4279fbd1b5f8"},
+    {file = "geoarrow_c-0.1.1-pp310-pypy310_pp73-manylinux_2_17_aarch64.manylinux2014_aarch64.whl", hash = "sha256:e6c2796fef017b47c12b785f867ea8b239a9bbdc1f4ecc029db652eda7797950"},
+    {file = "geoarrow_c-0.1.1-pp310-pypy310_pp73-manylinux_2_17_x86_64.manylinux2014_x86_64.whl", hash = "sha256:47ac403013aee0bc79e9955d40a6560a2bae11e5317888c50d0ec9ef56427c60"},
+    {file = "geoarrow_c-0.1.1-pp310-pypy310_pp73-win_amd64.whl", hash = "sha256:d15c149c3f1db636880dd5058ffc15d87c195d0b170446636d4fe4dd3a5de71e"},
+    {file = "geoarrow_c-0.1.1-pp38-pypy38_pp73-macosx_10_9_x86_64.whl", hash = "sha256:9136f7935a03c1931c45db5f37d883ae9b59cf83e8ab6263abc03781936dd983"},
+    {file = "geoarrow_c-0.1.1-pp38-pypy38_pp73-manylinux_2_12_i686.manylinux2010_i686.manylinux_2_17_i686.manylinux2014_i686.whl", hash = "sha256:977500e416e4816e43b0037d1ea3323524939295bae7362a79e57ae312a52292"},
+    {file = "geoarrow_c-0.1.1-pp38-pypy38_pp73-manylinux_2_17_aarch64.manylinux2014_aarch64.whl", hash = "sha256:2cc4f44859cf15b1ebd4b2a648ba1f89fbd1994c2f5d56194dac2c77d5061251"},
+    {file = "geoarrow_c-0.1.1-pp38-pypy38_pp73-manylinux_2_17_x86_64.manylinux2014_x86_64.whl", hash = "sha256:26655d2d604a4b4fbaa8e441c91b1e7a1f08053e96340702274c5c663e2cff70"},
+    {file = "geoarrow_c-0.1.1-pp38-pypy38_pp73-win_amd64.whl", hash = "sha256:703a3291b1383c5f847317196e05e30cb90fb58b78136e6c1a58597d2f4965e4"},
+    {file = "geoarrow_c-0.1.1-pp39-pypy39_pp73-macosx_10_9_x86_64.whl", hash = "sha256:b8494a7aed984da6c6735f395b42e992edac297eabbbfffdd9c2a1396aa14c3a"},
+    {file = "geoarrow_c-0.1.1-pp39-pypy39_pp73-manylinux_2_12_i686.manylinux2010_i686.manylinux_2_17_i686.manylinux2014_i686.whl", hash = "sha256:45ce4edef95a29038fc07d02c7848d717f31bfc94c5737fb9cf33c676a867fd2"},
+    {file = "geoarrow_c-0.1.1-pp39-pypy39_pp73-manylinux_2_17_aarch64.manylinux2014_aarch64.whl", hash = "sha256:2d302a3c0574ed19386b172411ce8afbeec774a8e7debe2a616be41a6278ea9d"},
+    {file = "geoarrow_c-0.1.1-pp39-pypy39_pp73-manylinux_2_17_x86_64.manylinux2014_x86_64.whl", hash = "sha256:020323bb0f2422c427953216bfbda0c794418301b262f2a4e0bd125389b62417"},
+    {file = "geoarrow_c-0.1.1-pp39-pypy39_pp73-win_amd64.whl", hash = "sha256:6953283a0f538b325a76c82715d0c59465f7f80ad7c55dde00c6c6908b95f77e"},
+]
+
+[package.extras]
+test = ["numpy", "pyarrow", "pytest"]
+
+[[package]]
+name = "geoarrow-pyarrow"
+version = "0.1.1"
+description = ""
+optional = false
+python-versions = ">=3.8"
+files = [
+    {file = "geoarrow-pyarrow-0.1.1.tar.gz", hash = "sha256:dec429fac397f6d3616e224b9cae6229dfcc1be3c279bbe304da55bbd26e0407"},
+    {file = "geoarrow_pyarrow-0.1.1-py3-none-any.whl", hash = "sha256:83f0f17af59e0fdaa060f2a11aaa957d88a6788755fd688b9892a0ad66e5c8cf"},
+]
+
+[package.dependencies]
+geoarrow-c = "*"
+pyarrow = "*"
+
+[package.extras]
+test = ["geopandas", "numpy", "pandas", "pyogrio", "pyproj", "pytest"]
+
+[[package]]
 name = "geoarrow-rust-core"
 version = "0.1.0"
 description = "Efficient, vectorized geospatial operations in Python."
@@ -4053,4 +4149,4 @@ testing = ["big-O", "jaraco.functools", "jaraco.itertools", "more-itertools", "p
 [metadata]
 lock-version = "2.0"
 python-versions = "^3.8"
-content-hash = "d2fdd606f82bdd939406f154df928c9c9f208804508dee26a76ba9b8dfe63409"
+content-hash = "5034f7744c127c3119ed50940c21d6d28ab8651a75ccfd888a89009752daa691"
