@@ -148,6 +148,68 @@ class DataFilterExtension(BaseExtension):
     )
     ```
 
+    The `DataFilterExtension` allows filtering on 1 to 4 attributes at the same time. So
+    if you have four numeric columns of interest, you can filter on the intersection of
+    all of them.
+
+    For easy visualization, we suggest connecting the `DataFilterExtension` to an
+    interactive slider from `ipywidgets`.
+
+    ```py
+    from ipywidgets import FloatRangeSlider
+
+    slider = FloatRangeSlider(
+        value=(2, 5),
+        min=0,
+        max=10,
+        step=0.1,
+        description="Slider: "
+    )
+    slider
+
+    jsdlink(
+        (slider, "value"),
+        (layer, "filter_range")
+    )
+    ```
+
+    If you have 2 to 4 columns, use a
+    [`MultiRangeSlider`][lonboard.controls.MultiRangeSlider], which combines multiple
+    `FloatRangeSlider` objects in a form that the `DataFilterExtension` expects.
+
+    ```py
+    from ipywidgets import FloatRangeSlider, jsdlink
+
+    slider1 = FloatRangeSlider(
+        value=(2, 5),
+        min=0,
+        max=10,
+        step=0.1,
+        description="First slider: "
+    )
+    slider2 = FloatRangeSlider(
+        value=(30, 40),
+        min=0,
+        max=50,
+        step=1,
+        description="Second slider: "
+    )
+    multi_slider = MultiRangeSlider([slider1, slider2])
+    multi_slider
+
+    jsdlink(
+        (multi_slider, "value"),
+        (layer, "filter_range")
+    )
+    ```
+
+    # Important notes
+
+    - The DataFilterExtension only supports float32 data, so integer data will be casted
+      to float32.
+    - The DataFilterExtension copies all data referenced by `get_filter_value` to the
+      GPU, so it will increase memory pressure on the GPU.
+
     # Layer Properties
 
     ## `filter_enabled`
