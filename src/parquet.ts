@@ -1,11 +1,12 @@
 import { useEffect, useState } from "react";
-import _initParquetWasm, { readParquet } from "parquet-wasm/esm/arrow2";
+import _initParquetWasm, { readParquet, wasmMemory } from "parquet-wasm";
 import * as arrow from "apache-arrow";
+import { parseTable } from "arrow-js-ffi";
 
 // NOTE: this version must be synced exactly with the parquet-wasm version in
 // use.
-const PARQUET_WASM_VERSION = "0.5.0";
-const PARQUET_WASM_CDN_URL = `https://cdn.jsdelivr.net/npm/parquet-wasm@${PARQUET_WASM_VERSION}/esm/arrow2_bg.wasm`;
+const PARQUET_WASM_VERSION = "0.6.0-beta.2";
+const PARQUET_WASM_CDN_URL = `https://cdn.jsdelivr.net/npm/parquet-wasm@${PARQUET_WASM_VERSION}/esm/parquet_wasm_bg.wasm`;
 let WASM_READY: boolean = false;
 
 export async function initParquetWasm() {
@@ -28,10 +29,18 @@ export function parseParquet(dataView: DataView): arrow.Table {
   console.time("readParquet");
 
   // TODO: use arrow-js-ffi for more memory-efficient wasm --> js transfer
-  const arrowIPCBuffer = readParquet(
-    new Uint8Array(dataView.buffer),
-  ).intoIPCStream();
-  const arrowTable = arrow.tableFromIPC(arrowIPCBuffer);
+  const WASM_MEMORY = wasmMemory();
+  const wasmTable = readParquet(new Uint8Array(dataView.buffer));
+  const wasmFFITable = wasmTable.intoFFI();
+
+  console.time("arrow js ffi parseTable");
+  const arrowTable = parseTable(
+    WASM_MEMORY.buffer,
+    Array.from(wasmFFITable.arrayAddrs()),
+    wasmFFITable.schemaAddr(),
+    true,
+  );
+  console.timeEnd("arrow js ffi parseTable");
 
   console.timeEnd("readParquet");
 
