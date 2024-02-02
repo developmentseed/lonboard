@@ -85,7 +85,7 @@ class PointAccessor(FixedErrorTraitType):
         if isinstance(value, str):
             try:
                 c = mpl.colors.to_rgba(value)  # type: ignore
-            except ValueError:
+            except Exception:
                 self.error(
                     obj,
                     value,
@@ -94,7 +94,6 @@ class PointAccessor(FixedErrorTraitType):
                         "matplotlib.colors.to_rgba."
                     ),
                 )
-                return
 
             return tuple(map(int, (np.array(c) * 255).astype(np.uint8)))
 
@@ -102,13 +101,15 @@ class PointAccessor(FixedErrorTraitType):
         assert False
 
 
-class NormalAccessor(Union[TraitType, FixedErrorTraitType]):
+class NormalAccessor(FixedErrorTraitType):
     """
     A representation of a deck.gl normal accessor
 
     Acceptable inputs:
-    - A numpy ndarray with two dimensions: The size of the second dimension must be 3 i.e. `(N,3)`
-    - a pyarrow `FixedSizeListArray` or `ChunkedArray` containing `FixedSizeListArray`s
+    - A numpy ndarray with two dimensions: The size of the
+    second dimension must be 3 i.e. `(N,3)`
+    - a pyarrow `FixedSizeListArray` or
+    `ChunkedArray` containing `FixedSizeListArray`s
     where the size of the inner fixed size list 3.
     """
 
@@ -130,7 +131,8 @@ class NormalAccessor(Union[TraitType, FixedErrorTraitType]):
         self, obj, value
     ) -> Union[Tuple[int, ...], List[int], pa.ChunkedArray, pa.FixedSizeListArray]:
         """
-        Values in acceptable types must be contiguous (the same length for all values) and of floating point type
+        Values in acceptable types must be contiguous
+        (the same length for all values) and of floating point type
         """
 
         fixed_list_size = 3
@@ -155,7 +157,8 @@ class NormalAccessor(Union[TraitType, FixedErrorTraitType]):
 
             if not np.issubdtype(value.dtype, np.float32):
                 warnings.warn(
-                    "Warning: Numpy array should be floating point type. Converting to float32 point pyarrow array"
+                    """Warning: Numpy array should be floating point type.
+                    Converting to float32 point pyarrow array"""
                 )
                 value = value.cast(pa.list_(pa.float32()))
 
@@ -172,18 +175,20 @@ class NormalAccessor(Union[TraitType, FixedErrorTraitType]):
                     obj,
                     value,
                     info=(
-                        "Normal pyarrow array must have a FixedSizeList inner size of 3."
+                        """Normal pyarrow array must have a
+                        FixedSizeList inner size of 3."""
                     ),
                 )
 
             if not pa.types.is_floating(value.type.value_type):
                 try:
                     value = value.cast(pa.list_(pa.float32()))
-                except:
+                except Exception:
                     self.error(
                         obj,
                         value,
-                        info="Failed to convert array values to floating point type",
+                        info="""Failed to convert array
+                        values to floating point type""",
                     )
 
                 return pa.FixedSizeListArray.from_arrays(value, fixed_list_size)
