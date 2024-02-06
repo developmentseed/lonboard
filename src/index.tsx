@@ -1,7 +1,7 @@
 import * as React from "react";
 import { useState, useEffect } from "react";
 import { createRender, useModelState, useModel } from "@anywidget/react";
-import type { Initialize, InitializeProps, Render } from "@anywidget/types";
+import type { Initialize, Render } from "@anywidget/types";
 import Map from "react-map-gl/maplibre";
 import DeckGL from "@deck.gl/react/typed";
 import type { Layer } from "@deck.gl/core/typed";
@@ -11,6 +11,8 @@ import { initParquetWasm } from "./parquet.js";
 import { getTooltip } from "./tooltip/index.js";
 import { loadChildModels } from "./util.js";
 import { v4 as uuidv4 } from "uuid";
+
+await initParquetWasm();
 
 const DEFAULT_INITIAL_VIEW_STATE = {
   latitude: 10,
@@ -139,13 +141,8 @@ function App() {
   );
 }
 
-async function initialize({}: InitializeProps) {
-  await initParquetWasm();
-}
-
-const module: { render: Render; initialize: Initialize } = {
+const module: { render: Render; initialize?: Initialize } = {
   render: createRender(App),
-  initialize,
 };
 
 export default module;
