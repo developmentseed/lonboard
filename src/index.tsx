@@ -1,12 +1,13 @@
 import * as React from "react";
 import { useState, useEffect } from "react";
 import { createRender, useModelState, useModel } from "@anywidget/react";
+import type { Initialize, InitializeProps, Render } from "@anywidget/types";
 import Map from "react-map-gl/maplibre";
 import DeckGL from "@deck.gl/react/typed";
 import type { Layer } from "@deck.gl/core/typed";
 import { BaseLayerModel, initializeLayer } from "./model/index.js";
 import type { WidgetModel } from "@jupyter-widgets/base";
-import { useParquetWasm } from "./parquet.js";
+import { initParquetWasm } from "./parquet.js";
 import { getTooltip } from "./tooltip/index.js";
 import { loadChildModels } from "./util.js";
 import { v4 as uuidv4 } from "uuid";
@@ -57,7 +58,6 @@ async function getChildModelState(
 }
 
 function App() {
-  let [parquetWasmReady] = useParquetWasm();
   let [initialViewState] = useModelState<DataView>("_initial_view_state");
   let [mapStyle] = useModelState<string>("basemap_style");
   let [mapHeight] = useModelState<number>("_height");
@@ -75,15 +75,7 @@ function App() {
   let [stateCounter, setStateCounter] = useState<Date>(new Date());
 
   useEffect(() => {
-    if (!parquetWasmReady) {
-      return;
-    }
-
     const callback = async () => {
-      if (!parquetWasmReady) {
-        throw new Error("inside callback but parquetWasm not ready!");
-      }
-
       const childModels = await loadChildModels(
         model.widget_manager,
         childLayerIds,
@@ -97,7 +89,7 @@ function App() {
       setSubModelState(newSubModelState);
     };
     callback().catch(console.error);
-  }, [parquetWasmReady, childLayerIds]);
+  }, [childLayerIds]);
 
   const layers: Layer[] = [];
   for (const subModel of Object.values(subModelState)) {
@@ -147,4 +139,13 @@ function App() {
   );
 }
 
-export let render = createRender(App);
+async function initialize({}: InitializeProps) {
+  await initParquetWasm();
+}
+
+const module: { render: Render; initialize: Initialize } = {
+  render: createRender(App),
+  initialize,
+};
+
+export default module;

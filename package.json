@@ -17,6 +17,7 @@
   },
   "type": "module",
   "devDependencies": {
+    "@anywidget/types": "^0.1.5",
     "@jupyter-widgets/base": "^6.0.6",
     "@types/react": "^18.2.47",
     "@types/uuid": "^9.0.7",

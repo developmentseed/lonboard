@@ -58,19 +58,3 @@ export function parseParquetBuffers(dataViews: DataView[]): arrow.Table {
 
   return new arrow.Table(batches);
 }
-
-export function useParquetWasm(): [boolean] {
-  const [wasmReady, setWasmReady] = useState<boolean>(false);
-
-  // Init parquet wasm
-  useEffect(() => {
-    const callback = async () => {
-      await initParquetWasm();
-      setWasmReady(true);
-    };
-
-    callback();
-  }, []);
-
-  return [wasmReady];
-}
