@@ -1,6 +1,6 @@
 {
   "dependencies": {
-    "@anywidget/react": "^0.0.2",
+    "@anywidget/react": "^0.0.3",
     "@babel/runtime": "^7.23.8",
     "@deck.gl/core": "^8.9.33",
     "@deck.gl/extensions": "^8.9.33",
@@ -17,6 +17,7 @@
   },
   "type": "module",
   "devDependencies": {
+    "@anywidget/types": "^0.1.5",
     "@jupyter-widgets/base": "^6.0.6",
     "@types/react": "^18.2.47",
     "@types/uuid": "^9.0.7",
