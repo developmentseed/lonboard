@@ -1,11 +1,11 @@
 # Shiny
 
-[Shiny](https://shiny.posit.co/py/) is a tool to build interactive web applications using Python code. Shiny [integrates with Jupyter Widgets](https://shiny.posit.co/py/docs/jupyter-widgets.html), which means that Lonboard is supported out-of-the-box.
+[Shiny](https://shiny.posit.co/py/) is a tool to build interactive web applications and dashboards using Python code. Shiny [integrates with Jupyter Widgets](https://shiny.posit.co/py/docs/jupyter-widgets.html), which means that Lonboard is supported out-of-the-box.
 
 Pay attention to the ["Efficient updates"](https://shiny.posit.co/py/docs/jupyter-widgets.html#efficient-updates) section of the Shiny documentation. This is the most efficient way to create a reactive map. Take care to not recreate the `Map` widget from scratch on updates, as that will send data from Python to the browser anew.
 
 
-Example
+## Example
 
 ![](../assets/shiny-example.gif)
 
