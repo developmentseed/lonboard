@@ -5,7 +5,7 @@ import pytest
 import shapely
 from traitlets import TraitError
 
-from lonboard import ScatterplotLayer
+from lonboard import BitmapLayer, Map, ScatterplotLayer
 from lonboard.experimental import DataFilterExtension
 
 
@@ -72,3 +72,12 @@ def test_layer_from_geoarrow_pyarrow():
     table = pa.table({"geometry": points})
 
     _layer = ScatterplotLayer(table=table)
+
+
+# Test layer types
+def test_bitmap_layer():
+    layer = BitmapLayer(
+        image="https://raw.githubusercontent.com/visgl/deck.gl-data/master/website/sf-districts.png",
+        bounds=[-122.5190, 37.7045, -122.355, 37.829],
+    )
+    _m = Map(layer)
