@@ -6,6 +6,7 @@ Panel [has been reported to work](https://github.com/developmentseed/lonboard/is
 
 ## Example:
 
+This example was written by [@MarcSkovMadsen](https://github.com/MarcSkovMadsen) in [issue #262](https://github.com/developmentseed/lonboard/issues/262).
 
 ```py
 """Panel data app based on https://developmentseed.org/lonboard/latest/examples/north-america-roads/"""
