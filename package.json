@@ -6,7 +6,7 @@
     "@deck.gl/extensions": "^8.9.33",
     "@deck.gl/layers": "^8.9.33",
     "@deck.gl/react": "^8.9.33",
-    "@geoarrow/deck.gl-layers": "^0.3.0-beta.8",
+    "@geoarrow/deck.gl-layers": "^0.3.0-beta.11",
     "apache-arrow": "^15.0.0",
     "maplibre-gl": "^4.0.0",
     "parquet-wasm": "0.5.0",
