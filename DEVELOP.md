@@ -33,7 +33,7 @@ poetry run python -m ipykernel install --user --name "lonboard"
 JupyterLab is an included dev dependency, so to start JupyterLab you can run
 
 ```
-poetry run jupyter lab
+ANYWIDGET_HMR=1 poetry run jupyter lab
 ```
 
 Then you should see a tile on the home screen that lets you open a Jupyter Notebook in the `lonboard` environment. You should also be able to open up an example notebook from the `examples/` folder.
