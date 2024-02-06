@@ -61,7 +61,6 @@ nav:
       - ecosystem/geoarrow.md
       - ecosystem/geopandas.md
       - ecosystem/panel.md
-      - ecosystem/shapely.md
       - ecosystem/shiny.md
 
   # - Caveats: caveats.md
