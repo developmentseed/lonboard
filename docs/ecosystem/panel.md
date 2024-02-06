@@ -4,7 +4,7 @@
 
 Panel [has been reported to work](https://github.com/developmentseed/lonboard/issues/262) with Lonboard. However, it appears that Panel [does not support reactive updates](https://github.com/holoviz/panel/issues/5921) in the same way that [Shiny](./shiny) does, so the map will necessarily be recreated from scratch on every update.
 
-## Example:
+## Example
 
 This example was written by [@MarcSkovMadsen](https://github.com/MarcSkovMadsen) in [issue #262](https://github.com/developmentseed/lonboard/issues/262).
 

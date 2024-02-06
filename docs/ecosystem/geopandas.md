@@ -6,11 +6,14 @@ All relevant Lonboard layer classes have a [`from_geopandas`](../api/layers/base
 
 Some layer types, such as [`BitmapLayer`](../api/layers/bitmap-layer.md), don't have a `from_geopandas` method because the rendering isn't relevant to GeoPandas (i.e. GeoPandas doesn't store image data).
 
+## Example
+
 ```py
 import geodatasets
 import geopandas as gpd
 from lonboard import Map, SolidPolygonLayer
 
+# New York City boroughs
 gdf = gpd.read_file(geodatasets.get_path('nybb'))
 layer = SolidPolygonLayer.from_geopandas(
     gdf,
