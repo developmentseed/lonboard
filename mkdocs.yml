@@ -56,17 +56,18 @@ nav:
               - api/layers/arc-layer.md
               - api/layers/text-layer.md
           - api/experimental/traits.md
+  - Ecosystem:
+      - ecosystem/index.md
+      - ecosystem/geoarrow.md
+      - ecosystem/geopandas.md
+      - ecosystem/panel.md
+      - ecosystem/shiny.md
 
   # - Caveats: caveats.md
   - Performance: performance.md
   - Changelog: CHANGELOG.md
   - Alternatives: alternatives.md
   - "How it works?": how-it-works.md
-
-  # - Ecosystem:
-  #     - ecosystem/index.md
-  #     - ecosystem/geopandas.md
-  #     - ecosystem/geoarrow.md
 
 watch:
   - lonboard
@@ -121,7 +122,7 @@ plugins:
       alias_type: "copy"
       canonical_version: "latest"
   - mkdocs-jupyter:
-      include_source: True
+      include_source: true
       ignore: ["**/.ipynb_checkpoints/*.ipynb"]
   - mkdocstrings:
       enable_inventory: true
