@@ -2,9 +2,9 @@
 
 - When we pass a value of `None` as a default value to a trait, that value will be
   serialized to JS as `null` and will not be passed into the GeoArrow model (see the
-  lengthy assignments of type `..(this.param !== null && { param: this.param })`). Then
-  the default value in the JS GeoArrow layer (defined in `@geoarrow/deck.gl-layers`)
-  will be used.
+  lengthy assignments of type `..(isDefined(this.param) && { param: this.param })`).
+  Then the default value in the JS GeoArrow layer (defined in
+  `@geoarrow/deck.gl-layers`) will be used.
 """
 
 from __future__ import annotations
@@ -371,6 +371,7 @@ class BitmapLayer(BaseLayer):
 
         return Bbox(a, b, c, d)
 
+    @property
     def _weighted_centroid(self) -> WeightedCentroid:
         bbox = self._bbox
         center_x = (bbox.minx + bbox.maxx) / 2

@@ -20,6 +20,7 @@ import { parseParquetBuffers } from "../parquet.js";
 import { BaseLayerModel } from "./base-layer.js";
 import { BitmapLayer, BitmapLayerProps } from "@deck.gl/layers/typed";
 import { TileLayer, TileLayerProps } from "@deck.gl/geo-layers/typed";
+import { isDefined } from "../util.js";
 
 /**
  * An abstract base class for a layer that uses an Arrow Table as the data prop.
@@ -98,25 +99,25 @@ export class ArcModel extends BaseArrowLayerModel {
       // Always provided
       getSourcePosition: this.getSourcePosition,
       getTargetPosition: this.getTargetPosition,
-      ...(this.greatCircle !== null && { greatCircle: this.greatCircle }),
-      ...(this.numSegments !== null && { numSegments: this.numSegments }),
-      ...(this.widthUnits !== null && { widthUnits: this.widthUnits }),
-      ...(this.widthScale !== null && { widthScale: this.widthScale }),
-      ...(this.widthMinPixels !== null && {
+      ...(isDefined(this.greatCircle) && { greatCircle: this.greatCircle }),
+      ...(isDefined(this.numSegments) && { numSegments: this.numSegments }),
+      ...(isDefined(this.widthUnits) && { widthUnits: this.widthUnits }),
+      ...(isDefined(this.widthScale) && { widthScale: this.widthScale }),
+      ...(isDefined(this.widthMinPixels) && {
         widthMinPixels: this.widthMinPixels,
       }),
-      ...(this.widthMaxPixels !== null && {
+      ...(isDefined(this.widthMaxPixels) && {
         widthMaxPixels: this.widthMaxPixels,
       }),
-      ...(this.getSourceColor !== null && {
+      ...(isDefined(this.getSourceColor) && {
         getSourceColor: this.getSourceColor,
       }),
-      ...(this.getTargetColor !== null && {
+      ...(isDefined(this.getTargetColor) && {
         getTargetColor: this.getTargetColor,
       }),
-      ...(this.getWidth !== null && { getWidth: this.getWidth }),
-      ...(this.getHeight !== null && { getHeight: this.getHeight }),
-      ...(this.getTilt !== null && { getTilt: this.getTilt }),
+      ...(isDefined(this.getWidth) && { getWidth: this.getWidth }),
+      ...(isDefined(this.getHeight) && { getHeight: this.getHeight }),
+      ...(isDefined(this.getTilt) && { getTilt: this.getTilt }),
     };
   }
 
@@ -149,13 +150,13 @@ export class BitmapModel extends BaseLayerModel {
 
   layerProps(): Omit<BitmapLayerProps, "id" | "data"> {
     return {
-      ...(this.image !== null && { image: this.image }),
-      ...(this.bounds !== null && { bounds: this.bounds }),
-      ...(this.desaturate !== null && { desaturate: this.desaturate }),
-      ...(this.transparentColor !== null && {
+      ...(isDefined(this.image) && { image: this.image }),
+      ...(isDefined(this.bounds) && { bounds: this.bounds }),
+      ...(isDefined(this.desaturate) && { desaturate: this.desaturate }),
+      ...(isDefined(this.transparentColor) && {
         transparentColor: this.transparentColor,
       }),
-      ...(this.tintColor !== null && { tintColor: this.tintColor }),
+      ...(isDefined(this.tintColor) && { tintColor: this.tintColor }),
     };
   }
 
@@ -208,30 +209,30 @@ export class BitmapTileModel extends BaseLayerModel {
 
   bitmapLayerProps(): Omit<BitmapLayerProps, "id" | "data"> {
     return {
-      ...(this.desaturate !== null && { desaturate: this.desaturate }),
-      ...(this.transparentColor !== null && {
+      ...(isDefined(this.desaturate) && { desaturate: this.desaturate }),
+      ...(isDefined(this.transparentColor) && {
         transparentColor: this.transparentColor,
       }),
-      ...(this.tintColor !== null && { tintColor: this.tintColor }),
+      ...(isDefined(this.tintColor) && { tintColor: this.tintColor }),
     };
   }
 
   layerProps(): Omit<TileLayerProps, "id"> {
     return {
       data: this.data,
-      ...(this.tileSize !== null && { tileSize: this.tileSize }),
-      ...(this.zoomOffset !== null && { zoomOffset: this.zoomOffset }),
-      ...(this.maxZoom !== null && { maxZoom: this.maxZoom }),
-      ...(this.minZoom !== null && { minZoom: this.minZoom }),
-      ...(this.extent !== null && { extent: this.extent }),
-      ...(this.maxCacheSize !== null && { maxCacheSize: this.maxCacheSize }),
-      ...(this.maxCacheByteSize !== null && {
+      ...(isDefined(this.tileSize) && { tileSize: this.tileSize }),
+      ...(isDefined(this.zoomOffset) && { zoomOffset: this.zoomOffset }),
+      ...(isDefined(this.maxZoom) && { maxZoom: this.maxZoom }),
+      ...(isDefined(this.minZoom) && { minZoom: this.minZoom }),
+      ...(isDefined(this.extent) && { extent: this.extent }),
+      ...(isDefined(this.maxCacheSize) && { maxCacheSize: this.maxCacheSize }),
+      ...(isDefined(this.maxCacheByteSize) && {
         maxCacheByteSize: this.maxCacheByteSize,
       }),
-      ...(this.refinementStrategy !== null && {
+      ...(isDefined(this.refinementStrategy) && {
         refinementStrategy: this.refinementStrategy,
       }),
-      ...(this.maxRequests !== null && { maxRequests: this.maxRequests }),
+      ...(isDefined(this.maxRequests) && { maxRequests: this.maxRequests }),
     };
   }
 
@@ -324,42 +325,42 @@ export class ColumnModel extends BaseArrowLayerModel {
     // Ref https://github.com/visgl/deck.gl/pull/8453
     return {
       data: this.table,
-      ...(this.diskResolution !== null && {
+      ...(isDefined(this.diskResolution) && {
         diskResolution: this.diskResolution,
       }),
-      ...(this.radius !== null && { radius: this.radius }),
-      ...(this.angle !== null && { angle: this.angle }),
-      ...(this.vertices !== null &&
+      ...(isDefined(this.radius) && { radius: this.radius }),
+      ...(isDefined(this.angle) && { angle: this.angle }),
+      ...(isDefined(this.vertices) &&
         this.vertices !== undefined && { vertices: this.vertices }),
-      ...(this.offset !== null && { offset: this.offset }),
-      ...(this.coverage !== null && { coverage: this.coverage }),
-      ...(this.elevationScale !== null && {
+      ...(isDefined(this.offset) && { offset: this.offset }),
+      ...(isDefined(this.coverage) && { coverage: this.coverage }),
+      ...(isDefined(this.elevationScale) && {
         elevationScale: this.elevationScale,
       }),
-      ...(this.filled !== null && { filled: this.filled }),
-      ...(this.stroked !== null && { stroked: this.stroked }),
-      ...(this.extruded !== null && { extruded: this.extruded }),
-      ...(this.wireframe !== null && { wireframe: this.wireframe }),
-      ...(this.flatShading !== null && { flatShading: this.flatShading }),
-      ...(this.radiusUnits !== null && { radiusUnits: this.radiusUnits }),
-      ...(this.lineWidthUnits !== null && {
+      ...(isDefined(this.filled) && { filled: this.filled }),
+      ...(isDefined(this.stroked) && { stroked: this.stroked }),
+      ...(isDefined(this.extruded) && { extruded: this.extruded }),
+      ...(isDefined(this.wireframe) && { wireframe: this.wireframe }),
+      ...(isDefined(this.flatShading) && { flatShading: this.flatShading }),
+      ...(isDefined(this.radiusUnits) && { radiusUnits: this.radiusUnits }),
+      ...(isDefined(this.lineWidthUnits) && {
         lineWidthUnits: this.lineWidthUnits,
       }),
-      ...(this.lineWidthScale !== null && {
+      ...(isDefined(this.lineWidthScale) && {
         lineWidthScale: this.lineWidthScale,
       }),
-      ...(this.lineWidthMinPixels !== null && {
+      ...(isDefined(this.lineWidthMinPixels) && {
         lineWidthMinPixels: this.lineWidthMinPixels,
       }),
-      ...(this.lineWidthMaxPixels !== null && {
+      ...(isDefined(this.lineWidthMaxPixels) && {
         lineWidthMaxPixels: this.lineWidthMaxPixels,
       }),
-      ...(this.material !== null && { material: this.material }),
-      ...(this.getPosition !== null && { getPosition: this.getPosition }),
-      ...(this.getFillColor !== null && { getFillColor: this.getFillColor }),
-      ...(this.getLineColor !== null && { getLineColor: this.getLineColor }),
-      ...(this.getElevation !== null && { getElevation: this.getElevation }),
-      ...(this.getLineWidth !== null && { getLineWidth: this.getLineWidth }),
+      ...(isDefined(this.material) && { material: this.material }),
+      ...(isDefined(this.getPosition) && { getPosition: this.getPosition }),
+      ...(isDefined(this.getFillColor) && { getFillColor: this.getFillColor }),
+      ...(isDefined(this.getLineColor) && { getLineColor: this.getLineColor }),
+      ...(isDefined(this.getElevation) && { getElevation: this.getElevation }),
+      ...(isDefined(this.getLineWidth) && { getLineWidth: this.getLineWidth }),
     };
   }
 
@@ -408,20 +409,20 @@ export class HeatmapModel extends BaseArrowLayerModel {
   layerProps(): Omit<GeoArrowHeatmapLayerProps, "id"> {
     return {
       data: this.table,
-      ...(this.radiusPixels !== null && { radiusPixels: this.radiusPixels }),
-      ...(this.colorRange !== null && { colorRange: this.colorRange }),
-      ...(this.intensity !== null && { intensity: this.intensity }),
-      ...(this.threshold !== null && { threshold: this.threshold }),
-      ...(this.colorDomain !== null && { colorDomain: this.colorDomain }),
-      ...(this.aggregation !== null && { aggregation: this.aggregation }),
-      ...(this.weightsTextureSize !== null && {
+      ...(isDefined(this.radiusPixels) && { radiusPixels: this.radiusPixels }),
+      ...(isDefined(this.colorRange) && { colorRange: this.colorRange }),
+      ...(isDefined(this.intensity) && { intensity: this.intensity }),
+      ...(isDefined(this.threshold) && { threshold: this.threshold }),
+      ...(isDefined(this.colorDomain) && { colorDomain: this.colorDomain }),
+      ...(isDefined(this.aggregation) && { aggregation: this.aggregation }),
+      ...(isDefined(this.weightsTextureSize) && {
         weightsTextureSize: this.weightsTextureSize,
       }),
-      ...(this.debounceTimeout !== null && {
+      ...(isDefined(this.debounceTimeout) && {
         debounceTimeout: this.debounceTimeout,
       }),
-      ...(this.getPosition !== null && { getPosition: this.getPosition }),
-      ...(this.getWeight !== null && { getWeight: this.getWeight }),
+      ...(isDefined(this.getPosition) && { getPosition: this.getPosition }),
+      ...(isDefined(this.getWeight) && { getWeight: this.getWeight }),
     };
   }
 
@@ -466,20 +467,20 @@ export class PathModel extends BaseArrowLayerModel {
   layerProps(): Omit<GeoArrowPathLayerProps, "id"> {
     return {
       data: this.table,
-      ...(this.widthUnits !== null && { widthUnits: this.widthUnits }),
-      ...(this.widthScale !== null && { widthScale: this.widthScale }),
-      ...(this.widthMinPixels !== null && {
+      ...(isDefined(this.widthUnits) && { widthUnits: this.widthUnits }),
+      ...(isDefined(this.widthScale) && { widthScale: this.widthScale }),
+      ...(isDefined(this.widthMinPixels) && {
         widthMinPixels: this.widthMinPixels,
       }),
-      ...(this.widthMaxPixels !== null && {
+      ...(isDefined(this.widthMaxPixels) && {
         widthMaxPixels: this.widthMaxPixels,
       }),
-      ...(this.jointRounded !== null && { jointRounded: this.jointRounded }),
-      ...(this.capRounded !== null && { capRounded: this.capRounded }),
-      ...(this.miterLimit !== null && { miterLimit: this.miterLimit }),
-      ...(this.billboard !== null && { billboard: this.billboard }),
-      ...(this.getColor !== null && { getColor: this.getColor }),
-      ...(this.getWidth !== null && { getWidth: this.getWidth }),
+      ...(isDefined(this.jointRounded) && { jointRounded: this.jointRounded }),
+      ...(isDefined(this.capRounded) && { capRounded: this.capRounded }),
+      ...(isDefined(this.miterLimit) && { miterLimit: this.miterLimit }),
+      ...(isDefined(this.billboard) && { billboard: this.billboard }),
+      ...(isDefined(this.getColor) && { getColor: this.getColor }),
+      ...(isDefined(this.getWidth) && { getWidth: this.getWidth }),
     };
   }
 
@@ -547,34 +548,34 @@ export class ScatterplotModel extends BaseArrowLayerModel {
   layerProps(): Omit<GeoArrowScatterplotLayerProps, "id"> {
     return {
       data: this.table,
-      ...(this.radiusUnits !== null && { radiusUnits: this.radiusUnits }),
-      ...(this.radiusScale !== null && { radiusScale: this.radiusScale }),
-      ...(this.radiusMinPixels !== null && {
+      ...(isDefined(this.radiusUnits) && { radiusUnits: this.radiusUnits }),
+      ...(isDefined(this.radiusScale) && { radiusScale: this.radiusScale }),
+      ...(isDefined(this.radiusMinPixels) && {
         radiusMinPixels: this.radiusMinPixels,
       }),
-      ...(this.radiusMaxPixels !== null && {
+      ...(isDefined(this.radiusMaxPixels) && {
         radiusMaxPixels: this.radiusMaxPixels,
       }),
-      ...(this.lineWidthUnits !== null && {
+      ...(isDefined(this.lineWidthUnits) && {
         lineWidthUnits: this.lineWidthUnits,
       }),
-      ...(this.lineWidthScale !== null && {
+      ...(isDefined(this.lineWidthScale) && {
         lineWidthScale: this.lineWidthScale,
       }),
-      ...(this.lineWidthMinPixels !== null && {
+      ...(isDefined(this.lineWidthMinPixels) && {
         lineWidthMinPixels: this.lineWidthMinPixels,
       }),
-      ...(this.lineWidthMaxPixels !== null && {
+      ...(isDefined(this.lineWidthMaxPixels) && {
         lineWidthMaxPixels: this.lineWidthMaxPixels,
       }),
-      ...(this.stroked !== null && { stroked: this.stroked }),
-      ...(this.filled !== null && { filled: this.filled }),
-      ...(this.billboard !== null && { billboard: this.billboard }),
-      ...(this.antialiasing !== null && { antialiasing: this.antialiasing }),
-      ...(this.getRadius !== null && { getRadius: this.getRadius }),
-      ...(this.getFillColor !== null && { getFillColor: this.getFillColor }),
-      ...(this.getLineColor !== null && { getLineColor: this.getLineColor }),
-      ...(this.getLineWidth !== null && { getLineWidth: this.getLineWidth }),
+      ...(isDefined(this.stroked) && { stroked: this.stroked }),
+      ...(isDefined(this.filled) && { filled: this.filled }),
+      ...(isDefined(this.billboard) && { billboard: this.billboard }),
+      ...(isDefined(this.antialiasing) && { antialiasing: this.antialiasing }),
+      ...(isDefined(this.getRadius) && { getRadius: this.getRadius }),
+      ...(isDefined(this.getFillColor) && { getFillColor: this.getFillColor }),
+      ...(isDefined(this.getLineColor) && { getLineColor: this.getLineColor }),
+      ...(isDefined(this.getLineWidth) && { getLineWidth: this.getLineWidth }),
     };
   }
 
@@ -615,15 +616,15 @@ export class SolidPolygonModel extends BaseArrowLayerModel {
   layerProps(): Omit<GeoArrowSolidPolygonLayerProps, "id"> {
     return {
       data: this.table,
-      ...(this.filled !== null && { filled: this.filled }),
-      ...(this.extruded !== null && { extruded: this.extruded }),
-      ...(this.wireframe !== null && { wireframe: this.wireframe }),
-      ...(this.elevationScale !== null && {
+      ...(isDefined(this.filled) && { filled: this.filled }),
+      ...(isDefined(this.extruded) && { extruded: this.extruded }),
+      ...(isDefined(this.wireframe) && { wireframe: this.wireframe }),
+      ...(isDefined(this.elevationScale) && {
         elevationScale: this.elevationScale,
       }),
-      ...(this.getElevation !== null && { getElevation: this.getElevation }),
-      ...(this.getFillColor !== null && { getFillColor: this.getFillColor }),
-      ...(this.getLineColor !== null && { getLineColor: this.getLineColor }),
+      ...(isDefined(this.getElevation) && { getElevation: this.getElevation }),
+      ...(isDefined(this.getFillColor) && { getFillColor: this.getFillColor }),
+      ...(isDefined(this.getLineColor) && { getLineColor: this.getLineColor }),
     };
   }
 
@@ -713,43 +714,49 @@ export class TextModel extends BaseArrowLayerModel {
       data: this.table,
       // Always provided
       getText: this.getText,
-      ...(this.billboard !== null && { billboard: this.billboard }),
-      ...(this.sizeScale !== null && { sizeScale: this.sizeScale }),
-      ...(this.sizeUnits !== null && { sizeUnits: this.sizeUnits }),
-      ...(this.sizeMinPixels !== null && { sizeMinPixels: this.sizeMinPixels }),
-      ...(this.sizeMaxPixels !== null && { sizeMaxPixels: this.sizeMaxPixels }),
-      // ...(this.background !== null && {background: this.background}),
-      ...(this.backgroundPadding !== null && {
+      ...(isDefined(this.billboard) && { billboard: this.billboard }),
+      ...(isDefined(this.sizeScale) && { sizeScale: this.sizeScale }),
+      ...(isDefined(this.sizeUnits) && { sizeUnits: this.sizeUnits }),
+      ...(isDefined(this.sizeMinPixels) && {
+        sizeMinPixels: this.sizeMinPixels,
+      }),
+      ...(isDefined(this.sizeMaxPixels) && {
+        sizeMaxPixels: this.sizeMaxPixels,
+      }),
+      // ...(isDefined(this.background) && {background: this.background}),
+      ...(isDefined(this.backgroundPadding) && {
         backgroundPadding: this.backgroundPadding,
       }),
-      ...(this.characterSet !== null && { characterSet: this.characterSet }),
-      ...(this.fontFamily !== null && { fontFamily: this.fontFamily }),
-      ...(this.fontWeight !== null && { fontWeight: this.fontWeight }),
-      ...(this.lineHeight !== null && { lineHeight: this.lineHeight }),
-      ...(this.outlineWidth !== null && { outlineWidth: this.outlineWidth }),
-      ...(this.outlineColor !== null && { outlineColor: this.outlineColor }),
-      ...(this.fontSettings !== null && { fontSettings: this.fontSettings }),
-      ...(this.wordBreak !== null && { wordBreak: this.wordBreak }),
-      ...(this.maxWidth !== null && { maxWidth: this.maxWidth }),
+      ...(isDefined(this.characterSet) && { characterSet: this.characterSet }),
+      ...(isDefined(this.fontFamily) && { fontFamily: this.fontFamily }),
+      ...(isDefined(this.fontWeight) && { fontWeight: this.fontWeight }),
+      ...(isDefined(this.lineHeight) && { lineHeight: this.lineHeight }),
+      ...(isDefined(this.outlineWidth) && { outlineWidth: this.outlineWidth }),
+      ...(isDefined(this.outlineColor) && { outlineColor: this.outlineColor }),
+      ...(isDefined(this.fontSettings) && { fontSettings: this.fontSettings }),
+      ...(isDefined(this.wordBreak) && { wordBreak: this.wordBreak }),
+      ...(isDefined(this.maxWidth) && { maxWidth: this.maxWidth }),
 
-      ...(this.getBackgroundColor !== null && {
+      ...(isDefined(this.getBackgroundColor) && {
         getBackgroundColor: this.getBackgroundColor,
       }),
-      ...(this.getBorderColor !== null && {
+      ...(isDefined(this.getBorderColor) && {
         getBorderColor: this.getBorderColor,
       }),
-      ...(this.getBorderWidth !== null && {
+      ...(isDefined(this.getBorderWidth) && {
         getBorderWidth: this.getBorderWidth,
       }),
-      ...(this.getPosition !== null && { getPosition: this.getPosition }),
-      ...(this.getColor !== null && { getColor: this.getColor }),
-      ...(this.getSize !== null && { getSize: this.getSize }),
-      ...(this.getAngle !== null && { getAngle: this.getAngle }),
-      ...(this.getTextAnchor !== null && { getTextAnchor: this.getTextAnchor }),
-      ...(this.getAlignmentBaseline !== null && {
+      ...(isDefined(this.getPosition) && { getPosition: this.getPosition }),
+      ...(isDefined(this.getColor) && { getColor: this.getColor }),
+      ...(isDefined(this.getSize) && { getSize: this.getSize }),
+      ...(isDefined(this.getAngle) && { getAngle: this.getAngle }),
+      ...(isDefined(this.getTextAnchor) && {
+        getTextAnchor: this.getTextAnchor,
+      }),
+      ...(isDefined(this.getAlignmentBaseline) && {
         getAlignmentBaseline: this.getAlignmentBaseline,
       }),
-      ...(this.getPixelOffset !== null && {
+      ...(isDefined(this.getPixelOffset) && {
         getPixelOffset: this.getPixelOffset,
       }),
     };
