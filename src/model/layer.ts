@@ -545,29 +545,39 @@ export class PolygonModel extends BaseArrowLayerModel {
 
   layerProps(): Omit<GeoArrowPolygonLayerProps, "id"> {
     console.log("table", this.table);
-    console.log('filled', this.filled);
+    console.log("filled", this.filled);
 
     return {
       data: this.table,
-      ...(this.stroked && { stroked: this.stroked }),
-      ...(this.filled && { filled: this.filled }),
-      ...(this.extruded && { extruded: this.extruded }),
-      ...(this.wireframe && { wireframe: this.wireframe }),
-      ...(this.elevationScale && { elevationScale: this.elevationScale }),
-      ...(this.lineWidthUnits && { lineWidthUnits: this.lineWidthUnits }),
-      ...(this.lineWidthScale && { lineWidthScale: this.lineWidthScale }),
-      ...(this.lineWidthMinPixels && {
+      ...(isDefined(this.stroked) && { stroked: this.stroked }),
+      ...(isDefined(this.filled) && { filled: this.filled }),
+      ...(isDefined(this.extruded) && { extruded: this.extruded }),
+      ...(isDefined(this.wireframe) && { wireframe: this.wireframe }),
+      ...(isDefined(this.elevationScale) && {
+        elevationScale: this.elevationScale,
+      }),
+      ...(isDefined(this.lineWidthUnits) && {
+        lineWidthUnits: this.lineWidthUnits,
+      }),
+      ...(isDefined(this.lineWidthScale) && {
+        lineWidthScale: this.lineWidthScale,
+      }),
+      ...(isDefined(this.lineWidthMinPixels) && {
         lineWidthMinPixels: this.lineWidthMinPixels,
       }),
-      ...(this.lineWidthMaxPixels && {
+      ...(isDefined(this.lineWidthMaxPixels) && {
         lineWidthMaxPixels: this.lineWidthMaxPixels,
       }),
-      ...(this.lineJointRounded && { lineJointRounded: this.lineJointRounded }),
-      ...(this.lineMiterLimit && { lineMiterLimit: this.lineMiterLimit }),
-      ...(this.getFillColor && { getFillColor: this.getFillColor }),
-      ...(this.getLineColor && { getLineColor: this.getLineColor }),
-      ...(this.getLineWidth && { getLineWidth: this.getLineWidth }),
-      ...(this.getElevation && { getElevation: this.getElevation }),
+      ...(isDefined(this.lineJointRounded) && {
+        lineJointRounded: this.lineJointRounded,
+      }),
+      ...(isDefined(this.lineMiterLimit) && {
+        lineMiterLimit: this.lineMiterLimit,
+      }),
+      ...(isDefined(this.getFillColor) && { getFillColor: this.getFillColor }),
+      ...(isDefined(this.getLineColor) && { getLineColor: this.getLineColor }),
+      ...(isDefined(this.getLineWidth) && { getLineWidth: this.getLineWidth }),
+      ...(isDefined(this.getElevation) && { getElevation: this.getElevation }),
     };
   }
 
