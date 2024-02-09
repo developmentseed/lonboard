@@ -1,4 +1,4 @@
-from typing import Any, Dict, Sequence, TypeVar
+from typing import Any, Dict, Optional, Sequence, TypeVar
 
 import numpy as np
 import pandas as pd
@@ -12,7 +12,7 @@ DF = TypeVar("DF", bound=pd.DataFrame)
 GEOARROW_EXTENSION_TYPE_NAMES = {e.value for e in EXTENSION_NAME}
 
 
-def get_geometry_column_index(schema: pa.Schema) -> int:
+def get_geometry_column_index(schema: pa.Schema) -> Optional[int]:
     """Get the positional index of the geometry column in a pyarrow Schema"""
     for field_idx in range(len(schema)):
         field_metadata = schema.field(field_idx).metadata
@@ -23,7 +23,7 @@ def get_geometry_column_index(schema: pa.Schema) -> int:
         ):
             return field_idx
 
-    raise ValueError("No geometry column in table schema.")
+    return None
 
 
 def auto_downcast(df: DF) -> DF:

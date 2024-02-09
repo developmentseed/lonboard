@@ -1,6 +1,7 @@
 import traitlets
 
 from lonboard._base import BaseExtension
+from lonboard.experimental.traits import GetFilterValueAccessor, PointAccessor
 from lonboard.traits import FloatAccessor
 
 
@@ -8,6 +9,11 @@ class BrushingExtension(BaseExtension):
     """
     Adds GPU-based data brushing functionalities to layers. It allows the layer to
     show/hide objects based on the current pointer position.
+
+    # Example
+
+    An example is in the [County-to-County Migration
+    notebook](https://developmentseed.org/lonboard/latest/examples/migration/).
 
     # Layer Properties
 
@@ -23,13 +29,26 @@ class BrushingExtension(BaseExtension):
 
     ## `brushing_target`
 
-    The position used to filter each object by.
+    The position used to filter each object by. One of the following:
+
+    - `"source"`: Use the primary position for each object. This can mean different
+      things depending on the layer. It usually refers to the coordinates returned by
+      `getPosition` or `getSourcePosition` accessors.
+    - `"target"`: Use the secondary position for each object. This may not be available
+      in some layers. It usually refers to the coordinates returned by
+      `getTargetPosition` accessor.
+    - `"source_target"`: Use both the primary position and secondary position for each
+      object. Show object if either is in brushing range.
+    - `"custom"`: Some layers may not describe their data objects with one or two
+      coordinates, for example `PathLayer` and `PolygonLayer`. Use this option with the
+      `get_brushing_target` prop to provide a custom position that each object should be
+      filtered by.
 
     - Type: `str`, optional
 
-        One of: 'source' | 'target' | 'source_target' | 'custom'
+        One of: "source" | "target" | "source_target" | "custom"
 
-    - Default: `10000`
+    - Default: `"source"`
 
     ## `brushing_radius`
 
@@ -39,28 +58,27 @@ class BrushingExtension(BaseExtension):
     - Type: `float`, optional
     - Default: `10000`
 
-    An example is in the [County-to-County Migration
-    notebook](https://developmentseed.org/lonboard/latest/examples/migration/).
+    ## `get_brushing_target`
+
+    An arbitrary position for each object that it will be filtered by.
+
+    Only effective if `brushing_target` is set to `"custom"`.
+
+    - Type: [PointAccessor][lonboard.experimental.traits.PointAccessor], optional
+        - If a point is provided, it is used as the target for all rows.
+        - If an array of points is provided, each value in the array will be used as the
+          target for the row at the same row index.
+    - Default: `None`.
     """
 
     _extension_type = traitlets.Unicode("brushing").tag(sync=True)
 
     _layer_traits = {
         "brushing_enabled": traitlets.Bool(True).tag(sync=True),
-        "brushing_target": traitlets.Unicode("source", allow_none=True).tag(sync=True),
-        "brushing_radius": traitlets.Float(allow_none=True, min=0).tag(sync=True),
-        # TODO: Add trait and support
-        # "get_brushing_target": traitlets.Any(allow_none=True).tag(sync=True),
+        "brushing_target": traitlets.Unicode(None, allow_none=True).tag(sync=True),
+        "brushing_radius": traitlets.Float(None, allow_none=True, min=0).tag(sync=True),
+        "get_brushing_target": PointAccessor(None, allow_none=True),
     }
-
-    # TODO: update trait
-    # get_brushing_target = traitlets.Any(allow_none=True).tag(sync=True)
-    """
-    Called to retrieve an arbitrary position for each object that it will be filtered
-    by.
-
-    Only effective if `brushingTarget` is set to `"custom"`.
-    """
 
 
 class CollisionFilterExtension(BaseExtension):
@@ -103,8 +121,8 @@ class CollisionFilterExtension(BaseExtension):
 
     _layer_traits = {
         "collision_enabled": traitlets.Bool(True).tag(sync=True),
-        "collision_group": traitlets.Unicode().tag(sync=True),
-        "get_collision_priority": FloatAccessor(allow_none=True),
+        "collision_group": traitlets.Unicode(None, allow_none=True).tag(sync=True),
+        "get_collision_priority": FloatAccessor(None, allow_none=True),
     }
 
 
@@ -130,6 +148,68 @@ class DataFilterExtension(BaseExtension):
     )
     ```
 
+    The `DataFilterExtension` allows filtering on 1 to 4 attributes at the same time. So
+    if you have four numeric columns of interest, you can filter on the intersection of
+    all of them.
+
+    For easy visualization, we suggest connecting the `DataFilterExtension` to an
+    interactive slider from `ipywidgets`.
+
+    ```py
+    from ipywidgets import FloatRangeSlider
+
+    slider = FloatRangeSlider(
+        value=(2, 5),
+        min=0,
+        max=10,
+        step=0.1,
+        description="Slider: "
+    )
+    slider
+
+    jsdlink(
+        (slider, "value"),
+        (layer, "filter_range")
+    )
+    ```
+
+    If you have 2 to 4 columns, use a
+    [`MultiRangeSlider`][lonboard.controls.MultiRangeSlider], which combines multiple
+    `FloatRangeSlider` objects in a form that the `DataFilterExtension` expects.
+
+    ```py
+    from ipywidgets import FloatRangeSlider, jsdlink
+
+    slider1 = FloatRangeSlider(
+        value=(2, 5),
+        min=0,
+        max=10,
+        step=0.1,
+        description="First slider: "
+    )
+    slider2 = FloatRangeSlider(
+        value=(30, 40),
+        min=0,
+        max=50,
+        step=1,
+        description="Second slider: "
+    )
+    multi_slider = MultiRangeSlider([slider1, slider2])
+    multi_slider
+
+    jsdlink(
+        (multi_slider, "value"),
+        (layer, "filter_range")
+    )
+    ```
+
+    # Important notes
+
+    - The DataFilterExtension only supports float32 data, so integer data will be casted
+      to float32.
+    - The DataFilterExtension copies all data referenced by `get_filter_value` to the
+      GPU, so it will increase memory pressure on the GPU.
+
     # Layer Properties
 
     ## `filter_enabled`
@@ -142,12 +222,19 @@ class DataFilterExtension(BaseExtension):
 
     ## `filter_range`
 
-    The (min, max) bounds which defines whether an object should be rendered.
+    The bounds which defines whether an object should be rendered. If an object's
+    filtered value is within the bounds, the object will be rendered; otherwise it will
+    be hidden. This prop can be updated on user input or animation with very little
+    cost.
 
-    If an object's filtered value is within the bounds, the object will be rendered;
-    otherwise it will be hidden.
+    Format:
 
-    - Type: Tuple[float, float], optional
+    If `filter_size` is 1, provide a single tuple of `(min, max)`.
+
+    If `filter_size` is 2 to 4, provide a list of tuples: `[(min0, max0), (min1,
+    max1), ...]` for each filtered property, respectively.
+
+    - Type: either Tuple[float, float] or List[Tuple[float, float]], optional
     - Default: `(-1, 1)`
 
     ## `filter_soft_range`
@@ -181,8 +268,9 @@ class DataFilterExtension(BaseExtension):
 
     Accessor to retrieve the value for each object that it will be filtered by.
 
-    - Type: [FloatAccessor][lonboard.traits.FloatAccessor]
-        - If a number is provided, it is used as the value for all objects.
+    - Type:
+      [GetFilterValueAccessor][lonboard.experimental.traits.GetFilterValueAccessor]
+        - If a scalar value is provided, it is used as the value for all objects.
         - If an array is provided, each value in the array will be used as the value
           for the object at the same row index.
     """
@@ -191,22 +279,25 @@ class DataFilterExtension(BaseExtension):
 
     _layer_traits = {
         "filter_enabled": traitlets.Bool(True).tag(sync=True),
-        "filter_range": traitlets.Tuple(
-            traitlets.Float(), traitlets.Float(), default_value=(-1, 1)
+        "filter_range": traitlets.Union(
+            [
+                traitlets.List(traitlets.Float(), minlen=2, maxlen=2),
+                traitlets.List(
+                    traitlets.List(traitlets.Float(), minlen=2, maxlen=2),
+                    minlen=2,
+                    maxlen=4,
+                ),
+            ]
         ).tag(sync=True),
         "filter_soft_range": traitlets.Tuple(
             traitlets.Float(), traitlets.Float(), default_value=None, allow_none=True
         ).tag(sync=True),
         "filter_transform_size": traitlets.Bool(True).tag(sync=True),
         "filter_transform_color": traitlets.Bool(True).tag(sync=True),
-        "get_filter_value": FloatAccessor(None, allow_none=False),
+        "get_filter_value": GetFilterValueAccessor(None, allow_none=False),
     }
 
-    # TODO: support filterSize > 1
-    # In order to support filterSize > 1, we need to allow the get_filter_value accessor
-    # to be either a single float or a fixed size list of up to 4 floats.
-
-    # filter_size = traitlets.Int(1).tag(sync=True)
+    filter_size = traitlets.Int(1, min=1, max=4).tag(sync=True)
     """The size of the filter (number of columns to filter by).
 
     The data filter can show/hide data based on 1-4 numeric properties of each object.

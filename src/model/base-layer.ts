@@ -7,7 +7,7 @@ import type {
   PickingInfo,
 } from "@deck.gl/core/typed";
 import type { WidgetModel } from "@jupyter-widgets/base";
-import { loadChildModels } from "../util.js";
+import { isDefined, loadChildModels } from "../util.js";
 import { initializeExtension } from "./extension.js";
 import type { BaseExtensionModel } from "./extension.js";
 import { BaseModel } from "./base.js";
@@ -47,7 +47,7 @@ export abstract class BaseLayerModel extends BaseModel {
   extensionProps() {
     let props: Record<string, any> = {};
     for (const layerPropertyName of this.extensionLayerPropertyNames) {
-      if (this[layerPropertyName as keyof this] !== undefined) {
+      if (isDefined(this[layerPropertyName as keyof this])) {
         props[layerPropertyName] = this[layerPropertyName as keyof this];
       }
     }
@@ -91,14 +91,12 @@ export abstract class BaseLayerModel extends BaseModel {
   // experimental
   async initLayerExtensions() {
     const initExtensionsCallback = async () => {
-      console.log("initExtensionsCallback");
       const childModelIds = this.model.get("extensions");
       if (!childModelIds) {
         this.extensions = [];
         return;
       }
 
-      console.log(childModelIds);
       const childModels = await loadChildModels(
         this.model.widget_manager,
         childModelIds,
