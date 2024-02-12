@@ -60,6 +60,7 @@ nav:
       - ecosystem/index.md
       - ecosystem/geoarrow.md
       - ecosystem/geopandas.md
+      - ecosystem/jupyter-widgets.md
       - ecosystem/panel.md
       - ecosystem/shiny.md
 
