@@ -582,7 +582,7 @@ class PolygonLayer(BaseArrowLayer):
     [`from_geopandas`][lonboard.PolygonLayer.from_geopandas] instead.
     """
 
-    stroked = traitlets.Bool(allow_none=True).tag(sync=True)
+    stroked = traitlets.Bool(None, allow_none=True).tag(sync=True)
     """Whether to draw an outline around the polygon (solid fill).
 
     Note that both the outer polygon as well the outlines of any holes will be drawn.
@@ -591,7 +591,7 @@ class PolygonLayer(BaseArrowLayer):
     - Default: `True`
     """
 
-    filled = traitlets.Bool(allow_none=True).tag(sync=True)
+    filled = traitlets.Bool(None, allow_none=True).tag(sync=True)
     """Whether to draw a filled polygon (solid fill).
 
     Note that only the area between the outer polygon and any holes will be filled.
@@ -600,7 +600,7 @@ class PolygonLayer(BaseArrowLayer):
     - Default: `True`
     """
 
-    extruded = traitlets.Bool(allow_none=True).tag(sync=True)
+    extruded = traitlets.Bool(None, allow_none=True).tag(sync=True)
     """Whether to extrude the polygons.
 
     Based on the elevations provided by the `getElevation` accessor.
@@ -612,7 +612,7 @@ class PolygonLayer(BaseArrowLayer):
     - Default: `False`
     """
 
-    wireframe = traitlets.Bool(allow_none=True).tag(sync=True)
+    wireframe = traitlets.Bool(None, allow_none=True).tag(sync=True)
     """
     Whether to generate a line wireframe of the polygon. The outline will have
     "horizontal" lines closing the top and bottom polygons and a vertical line
@@ -628,7 +628,7 @@ class PolygonLayer(BaseArrowLayer):
       with the same data if you want a combined rendering effect.
     """
 
-    elevation_scale = traitlets.Float(allow_none=True, min=0).tag(sync=True)
+    elevation_scale = traitlets.Float(None, allow_none=True, min=0).tag(sync=True)
     """Elevation multiplier.
 
     The final elevation is calculated by `elevationScale * getElevation(d)`.
@@ -639,7 +639,7 @@ class PolygonLayer(BaseArrowLayer):
     - Default: `1`
     """
 
-    line_width_units = traitlets.Unicode("meters", allow_none=True).tag(sync=True)
+    line_width_units = traitlets.Unicode(None, allow_none=True).tag(sync=True)
     """
     The units of the line width, one of `'meters'`, `'common'`, and `'pixels'`. See
     [unit
@@ -649,7 +649,7 @@ class PolygonLayer(BaseArrowLayer):
     - Default: `'meters'`
     """
 
-    line_width_scale = traitlets.Float(allow_none=True, min=0).tag(sync=True)
+    line_width_scale = traitlets.Float(None, allow_none=True, min=0).tag(sync=True)
     """
     The line width multiplier that multiplied to all outlines of `Polygon` and
     `MultiPolygon` features if the `stroked` attribute is true.
@@ -658,7 +658,7 @@ class PolygonLayer(BaseArrowLayer):
     - Default: `1`
     """
 
-    line_width_min_pixels = traitlets.Float(allow_none=True, min=0).tag(sync=True)
+    line_width_min_pixels = traitlets.Float(None, allow_none=True, min=0).tag(sync=True)
     """
     The minimum line width in pixels. This can be used to prevent the line from getting
     too small when zoomed out.
@@ -667,7 +667,7 @@ class PolygonLayer(BaseArrowLayer):
     - Default: `0`
     """
 
-    line_width_max_pixels = traitlets.Float(allow_none=True, min=0).tag(sync=True)
+    line_width_max_pixels = traitlets.Float(None, allow_none=True, min=0).tag(sync=True)
     """
     The maximum line width in pixels. This can be used to prevent the line from getting
     too big when zoomed in.
@@ -676,14 +676,14 @@ class PolygonLayer(BaseArrowLayer):
     - Default: `None`
     """
 
-    line_joint_rounded = traitlets.Bool(allow_none=True).tag(sync=True)
+    line_joint_rounded = traitlets.Bool(None, allow_none=True).tag(sync=True)
     """Type of joint. If `true`, draw round joints. Otherwise draw miter joints.
 
     - Type: `bool`, optional
     - Default: `False`
     """
 
-    line_miter_limit = traitlets.Float(allow_none=True, min=0).tag(sync=True)
+    line_miter_limit = traitlets.Float(None, allow_none=True, min=0).tag(sync=True)
     """The maximum extent of a joint in ratio to the stroke width.
 
     Only works if `line_joint_rounded` is false.
@@ -692,7 +692,7 @@ class PolygonLayer(BaseArrowLayer):
     - Default: `4`
     """
 
-    get_fill_color = ColorAccessor()
+    get_fill_color = ColorAccessor(None, allow_none=True)
     """
     The fill color of each polygon in the format of `[r, g, b, [a]]`. Each channel is a
     number between 0-255 and `a` is 255 if not supplied.
@@ -705,7 +705,7 @@ class PolygonLayer(BaseArrowLayer):
     - Default: `[0, 0, 0, 255]`.
     """
 
-    get_line_color = ColorAccessor()
+    get_line_color = ColorAccessor(None, allow_none=True)
     """
     The line color of each polygon in the format of `[r, g, b, [a]]`. Each channel is a
     number between 0-255 and `a` is 255 if not supplied.
@@ -720,7 +720,7 @@ class PolygonLayer(BaseArrowLayer):
     - Default: `[0, 0, 0, 255]`.
     """
 
-    get_line_width = FloatAccessor()
+    get_line_width = FloatAccessor(None, allow_none=True)
     """
     The width of the outline of each polygon, in units specified by `line_width_units`
     (default `'meters'`).
@@ -732,7 +732,7 @@ class PolygonLayer(BaseArrowLayer):
     - Default: `1`.
     """
 
-    get_elevation = FloatAccessor()
+    get_elevation = FloatAccessor(None, allow_none=True)
     """
     The elevation to extrude each polygon with, in meters.
 
@@ -744,16 +744,6 @@ class PolygonLayer(BaseArrowLayer):
           the polygon at the same row index.
     - Default: `1000`.
     """
-
-    @traitlets.validate(
-        "get_fill_color", "get_line_color", "get_line_width", "get_elevation"
-    )
-    def _validate_accessor_length(self, proposal):
-        if isinstance(proposal["value"], (pa.ChunkedArray, pa.Array)):
-            if len(proposal["value"]) != len(self.table):
-                raise traitlets.TraitError("accessor must have same length as table")
-
-        return proposal["value"]
 
 
 class ScatterplotLayer(BaseArrowLayer):
