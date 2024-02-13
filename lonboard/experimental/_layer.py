@@ -9,10 +9,10 @@ import traitlets
 
 from lonboard._constants import EXTENSION_NAME
 from lonboard._layer import BaseArrowLayer
-from lonboard.experimental.traits import PointAccessor
 from lonboard.traits import (
     ColorAccessor,
     FloatAccessor,
+    PointAccessor,
     PyarrowTableTrait,
     TextAccessor,
 )
