@@ -1,8 +1,7 @@
 import traitlets
 
 from lonboard._base import BaseExtension
-from lonboard.experimental.traits import GetFilterValueAccessor, PointAccessor
-from lonboard.traits import FloatAccessor
+from lonboard.traits import FloatAccessor, GetFilterValueAccessor, PointAccessor
 
 
 class BrushingExtension(BaseExtension):

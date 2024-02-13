@@ -42,20 +42,19 @@ nav:
           - api/layers/scatterplot-layer.md
           - api/layers/solid-polygon-layer.md
           - api/layers/base-layer.md
+      - Layer Extensions:
+          - api/layer-extensions/index.md
+          - api/layer-extensions/brushing-extension.md
+          - api/layer-extensions/collision-filter-extension.md
+          - api/layer-extensions/data-filter-extension.md
       - api/basemap.md
       - api/colormap.md
       - api/controls.md
       - api/traits.md
       - Experimental:
-          - Layer Extensions:
-              - api/layer-extensions/index.md
-              - api/layer-extensions/brushing-extension.md
-              - api/layer-extensions/collision-filter-extension.md
-              - api/layer-extensions/data-filter-extension.md
           - Layers:
               - api/layers/arc-layer.md
               - api/layers/text-layer.md
-          - api/experimental/traits.md
   - Ecosystem:
       - ecosystem/index.md
       - ecosystem/geoarrow.md
