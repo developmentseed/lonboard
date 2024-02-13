@@ -80,23 +80,23 @@ class ArcLayer(BaseArrowLayer):
     - Default: `None`
     """
 
-    get_source_position = PointAccessor()
+    get_source_position = PointAccessor(None, allow_none=True)
     """Source position of each object
     """
 
-    get_target_position = PointAccessor()
+    get_target_position = PointAccessor(None, allow_none=True)
     """Target position of each object
     """
 
-    get_source_color = ColorAccessor()
+    get_source_color = ColorAccessor(None, allow_none=True)
     """Source color of each object
     """
 
-    get_target_color = ColorAccessor()
+    get_target_color = ColorAccessor(None, allow_none=True)
     """Target color of each object
     """
 
-    get_width = FloatAccessor()
+    get_width = FloatAccessor(None, allow_none=True)
     """The line width of each object, in units specified by `widthUnits`.
 
     - Type: [FloatAccessor][lonboard.traits.FloatAccessor], optional
@@ -106,11 +106,11 @@ class ArcLayer(BaseArrowLayer):
     - Default: `1`.
     """
 
-    get_height = FloatAccessor()
+    get_height = FloatAccessor(None, allow_none=True)
     """Height color of each object
     """
 
-    get_tilt = FloatAccessor()
+    get_tilt = FloatAccessor(None, allow_none=True)
     """
     Use to tilt the arc to the side if you have multiple arcs with the same source and
     target positions.
