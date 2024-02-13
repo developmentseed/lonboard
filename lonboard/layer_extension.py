@@ -63,7 +63,7 @@ class BrushingExtension(BaseExtension):
 
     Only effective if `brushing_target` is set to `"custom"`.
 
-    - Type: [PointAccessor][lonboard.experimental.traits.PointAccessor], optional
+    - Type: [PointAccessor][lonboard.traits.PointAccessor], optional
         - If a point is provided, it is used as the target for all rows.
         - If an array of points is provided, each value in the array will be used as the
           target for the row at the same row index.
@@ -135,7 +135,7 @@ class DataFilterExtension(BaseExtension):
     ```py
     from lonboard import Map, ScatterplotLayer
     from lonboard.colormap import apply_continuous_cmap
-    from lonboard.experimental import DataFilterExtension
+    from lonboard.layer_extension import DataFilterExtension
 
     gdf = gpd.GeoDataFrame(...)
     extension = DataFilterExtension()
@@ -268,7 +268,7 @@ class DataFilterExtension(BaseExtension):
     Accessor to retrieve the value for each object that it will be filtered by.
 
     - Type:
-      [GetFilterValueAccessor][lonboard.experimental.traits.GetFilterValueAccessor]
+      [GetFilterValueAccessor][lonboard.traits.GetFilterValueAccessor]
         - If a scalar value is provided, it is used as the value for all objects.
         - If an array is provided, each value in the array will be used as the value
           for the object at the same row index.

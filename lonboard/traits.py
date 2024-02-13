@@ -522,36 +522,36 @@ class PointAccessor(FixedErrorTraitType):
 class GetFilterValueAccessor(FixedErrorTraitType):
     """
     A trait to validate input for the `get_filter_value` accessor added by the
-    [`DataFilterExtension`][lonboard.experimental.DataFilterExtension], which can have
-    between 1 and 4 float values per row.
+    [`DataFilterExtension`][lonboard.layer_extension.DataFilterExtension], which can
+    have between 1 and 4 float values per row.
 
     Various input is allowed:
 
     - An `int` or `float`. This will be used as the value for all objects. The
       `filter_size` of the
-      [`DataFilterExtension`][lonboard.experimental.DataFilterExtension] instance must
-      be 1.
+      [`DataFilterExtension`][lonboard.layer_extension.DataFilterExtension] instance
+      must be 1.
     - A one-dimensional numpy `ndarray` with a numeric data type. This will be casted to
       an array of data type [`np.float32`][numpy.float32]. Each value in the array will
       be used as the value for the object at the same row index. The `filter_size` of
-      the [`DataFilterExtension`][lonboard.experimental.DataFilterExtension] instance
+      the [`DataFilterExtension`][lonboard.layer_extension.DataFilterExtension] instance
       must be 1.
     - A two-dimensional numpy `ndarray` with a numeric data type. This will be casted to
       an array of data type [`np.float32`][numpy.float32]. Each value in the array will
       be used as the value for the object at the same row index. The `filter_size` of
-      the [`DataFilterExtension`][lonboard.experimental.DataFilterExtension] instance
+      the [`DataFilterExtension`][lonboard.layer_extension.DataFilterExtension] instance
       must match the size of the second dimension of the array.
     - A pandas `Series` with a numeric data type. This will be casted to an array of
       data type [`np.float32`][numpy.float32]. Each value in the array will be used as
-      the value for the object at the same row index. The `filter_size` of
-      the [`DataFilterExtension`][lonboard.experimental.DataFilterExtension] instance
+      the value for the object at the same row index. The `filter_size` of the
+      [`DataFilterExtension`][lonboard.layer_extension.DataFilterExtension] instance
       must be 1.
     - A pyarrow [`FloatArray`][pyarrow.FloatArray], [`DoubleArray`][pyarrow.DoubleArray]
       or [`ChunkedArray`][pyarrow.ChunkedArray] containing either a `FloatArray` or
       `DoubleArray`. Each value in the array will be used as the value for the object at
       the same row index. The `filter_size` of the
-      [`DataFilterExtension`][lonboard.experimental.DataFilterExtension] instance must
-      be 1.
+      [`DataFilterExtension`][lonboard.layer_extension.DataFilterExtension] instance
+      must be 1.
 
       Alternatively, you can pass any corresponding Arrow data structure from a library
       that implements the [Arrow PyCapsule
@@ -559,7 +559,7 @@ class GetFilterValueAccessor(FixedErrorTraitType):
     - A pyarrow [`FixedSizeListArray`][pyarrow.FixedSizeListArray] or
       [`ChunkedArray`][pyarrow.ChunkedArray] containing `FixedSizeListArray`s. The child
       array of the fixed size list must be of floating point type. The `filter_size` of
-      the [`DataFilterExtension`][lonboard.experimental.DataFilterExtension] instance
+      the [`DataFilterExtension`][lonboard.layer_extension.DataFilterExtension] instance
       must match the list size.
 
       Alternatively, you can pass any corresponding Arrow data structure from a library

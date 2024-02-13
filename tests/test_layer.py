@@ -6,7 +6,7 @@ import shapely
 from traitlets import TraitError
 
 from lonboard import BitmapLayer, Map, ScatterplotLayer
-from lonboard.experimental import DataFilterExtension
+from lonboard.layer_extension import DataFilterExtension
 
 
 def test_accessor_length_validation():
