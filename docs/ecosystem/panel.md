@@ -52,7 +52,7 @@ def create_map(state="California", cmap=cc.fire, alpha=0.8):
     layer = PathLayer.from_geopandas(data, width_min_pixels=0.8)
     normalized_scale_rank = (data["scalerank"] - 3) / 9
     layer.get_color = apply_continuous_cmap(normalized_scale_rank, palette, alpha=alpha)
-    map_ = Map(layers=[layer], _height=650)
+    map_ = Map(layer, _height=650)
     return map_
 
 
