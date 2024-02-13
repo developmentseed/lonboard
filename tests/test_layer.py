@@ -6,7 +6,7 @@ import shapely
 from traitlets import TraitError
 
 from lonboard import BitmapLayer, Map, ScatterplotLayer
-from lonboard.experimental import DataFilterExtension
+from lonboard.layer_extension import DataFilterExtension
 
 
 def test_accessor_length_validation():
@@ -48,7 +48,7 @@ def test_layer_fails_with_unexpected_argument():
     points = shapely.points([1, 2], [3, 4])
     gdf = gpd.GeoDataFrame(geometry=points)
 
-    with pytest.raises(TypeError, match="unexpected keyword argument"):
+    with pytest.raises(TypeError, match="Unexpected keyword argument"):
         _layer = ScatterplotLayer.from_geopandas(gdf, unknown_keyword="foo")
 
 

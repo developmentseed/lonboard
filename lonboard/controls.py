@@ -13,7 +13,7 @@ class MultiRangeSlider(VBox):
     """A widget for multiple ranged sliders.
 
     This is designed to be used with the
-    [DataFilterExtension][lonboard.experimental.DataFilterExtension] when you want to
+    [DataFilterExtension][lonboard.layer_extension.DataFilterExtension] when you want to
     filter on 2 to 4 columns on the same time.
 
     If you have only a single filter, use an ipywidgets

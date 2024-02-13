@@ -4,7 +4,7 @@
 
 > Screen recording from [U.S. County-to-County Migration example](../../../examples/migration/).
 
-::: lonboard.experimental.BrushingExtension
+::: lonboard.layer_extension.BrushingExtension
     options:
       show_bases: false
       inherited_members: true
