@@ -1,5 +1,47 @@
 # Changelog
 
+## [0.6.0] - 2024-02-13
+
+### New! :sparkles:
+
+* DataFilterExtension by @kylebarron in https://github.com/developmentseed/lonboard/pull/278
+* Multi-range sliders for DataFilterExtension by @kylebarron in https://github.com/developmentseed/lonboard/pull/340
+* BitmapLayer and BitmapTileLayer by @kylebarron in https://github.com/developmentseed/lonboard/pull/288
+* Improved GeoArrow interop by @kylebarron in https://github.com/developmentseed/lonboard/pull/308
+* Allow passing a positional `layers` object into `Map` by @kylebarron in https://github.com/developmentseed/lonboard/pull/319
+* GeoArrow-based multithreaded coordinate reprojection by @kylebarron in https://github.com/developmentseed/lonboard/pull/337
+* Support `pyarrow.Table` with `geoarrow.pyarrow` extension types as geometry columns by @jorisvandenbossche in https://github.com/developmentseed/lonboard/pull/218
+* Add ecosystem/integrations documentation by @kylebarron in https://github.com/developmentseed/lonboard/pull/350
+
+### Fixes :bug:
+
+* Add font to index.css to fix static HTML export by @jtmiclat in https://github.com/developmentseed/lonboard/pull/284
+* Fix displaying tooltip for first row by @kylebarron in https://github.com/developmentseed/lonboard/pull/287
+* accept matplotlib colormap input to apply_cmap by @kylebarron in https://github.com/developmentseed/lonboard/pull/289
+* Use preferred OSM tile url by @kylebarron in https://github.com/developmentseed/lonboard/pull/290
+* set max zoom on osm layer by @kylebarron in https://github.com/developmentseed/lonboard/pull/291
+* Update contributor docs by @kylebarron in https://github.com/developmentseed/lonboard/pull/316
+* Check epsg:4326 bounds in layer creation by @kylebarron in https://github.com/developmentseed/lonboard/pull/317
+* add reference for installing from source by @kylebarron in https://github.com/developmentseed/lonboard/pull/318
+* Fix inferring number of rows per chunk by @kylebarron in https://github.com/developmentseed/lonboard/pull/327
+* Fix null checks by @kylebarron in https://github.com/developmentseed/lonboard/pull/331
+* Set max number of chunks per layer by @kylebarron in https://github.com/developmentseed/lonboard/pull/332
+* Move accessor length validation to serialization by @kylebarron in https://github.com/developmentseed/lonboard/pull/333
+* Deduplicate serialization for accessors by @kylebarron in https://github.com/developmentseed/lonboard/pull/334
+* Multi-dimensional GPU-based data filtering by @kylebarron in https://github.com/developmentseed/lonboard/pull/335
+* Bump anywidget to 0.9 & simplify Wasm initialization by @kylebarron in https://github.com/developmentseed/lonboard/pull/344
+* Fix null checks by @kylebarron in https://github.com/developmentseed/lonboard/pull/348
+* docs fixes by @kylebarron in https://github.com/developmentseed/lonboard/pull/354
+* Add `DataFilterExtension` example by @kylebarron in https://github.com/developmentseed/lonboard/pull/358
+* fix arc layer default arguments by @kylebarron in https://github.com/developmentseed/lonboard/pull/359
+
+## New Contributors
+
+* @jtmiclat made their first contribution in https://github.com/developmentseed/lonboard/pull/284
+* @jorisvandenbossche made their first contribution in https://github.com/developmentseed/lonboard/pull/218
+
+**Full Changelog**: https://github.com/developmentseed/lonboard/compare/v0.5.0...v0.6.0
+
 ## [0.5.0] - 2023-12-01
 
 ### New Features
