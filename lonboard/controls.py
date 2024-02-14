@@ -64,6 +64,13 @@ class MultiRangeSlider(VBox):
     value = TypedTuple(trait=TypedTuple(trait=traitlets.Float())).tag(sync=True)
 
     def __init__(self, children: Sequence[FloatRangeSlider], **kwargs):
+        if len(children) == 1:
+            raise ValueError(
+                "Expected more than one slider. "
+                "For filtering data from a single column, "
+                "use a FloatRangeSlider directly."
+            )
+
         # We manage a list of lists to match what deck.gl expects for the
         # DataFilterExtension
         def callback(change, *, i: int):
