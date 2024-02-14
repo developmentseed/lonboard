@@ -1,3 +1,6 @@
+.venv/
+*.venv
+.venv
 *.html
 *.zip
 *.geojson
