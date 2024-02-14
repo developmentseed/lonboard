@@ -67,8 +67,21 @@ def reproject_column(
         max_workers: The maximum number of threads to use. Defaults to None.
     """
     extension_type_name = field.metadata[b"ARROW:extension:name"]
-    extension_metadata = json.loads(field.metadata[b"ARROW:extension:metadata"])
+    extension_metadata_value = field.metadata[b"ARROW:extension:metadata"]
+
+    # Note: According to the spec, if the metadata key exists, its value should never be
+    # `null` or an empty dict, but we still check for those to be safe
+    if not extension_metadata_value:
+        return field, column
+
+    extension_metadata = json.loads(extension_metadata_value)
     crs_str = extension_metadata["crs"]
+
+    # Note: According to the spec, the CRS key should never be set to `null`, but we
+    # still check for it to be safe (and geoarrow-rs currently creates invalid metadata)
+    if crs_str is None:
+        return field, column
+
     existing_crs = CRS(crs_str)
 
     if existing_crs == to_crs:
