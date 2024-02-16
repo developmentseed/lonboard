@@ -7,7 +7,7 @@ import pyarrow as pa
 from pyproj import CRS
 
 
-def sanitize_table(table: pa.Table) -> pa.Table:
+def remove_extension_classes(table: pa.Table) -> pa.Table:
     """
     Convert any registered geoarrow.pyarrow extension fields and arrays to plain
     metadata

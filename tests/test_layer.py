@@ -1,11 +1,13 @@
+import geodatasets
 import geopandas as gpd
 import numpy as np
 import pyarrow as pa
 import pytest
 import shapely
+from pyogrio.raw import read_arrow
 from traitlets import TraitError
 
-from lonboard import BitmapLayer, Map, ScatterplotLayer
+from lonboard import BitmapLayer, Map, ScatterplotLayer, SolidPolygonLayer
 from lonboard.layer_extension import DataFilterExtension
 
 
@@ -72,6 +74,12 @@ def test_layer_from_geoarrow_pyarrow():
     table = pa.table({"geometry": points})
 
     _layer = ScatterplotLayer(table=table)
+
+
+def test_layer_wkb_geoarrow():
+    path = geodatasets.get_path("naturalearth.land")
+    meta, table = read_arrow(path)
+    _layer = SolidPolygonLayer(table=table)
 
 
 # Test layer types

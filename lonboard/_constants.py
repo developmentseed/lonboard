@@ -15,6 +15,8 @@ class EXTENSION_NAME(bytes, Enum):
     MULTIPOINT = b"geoarrow.multipoint"
     MULTILINESTRING = b"geoarrow.multilinestring"
     MULTIPOLYGON = b"geoarrow.multipolygon"
+    WKB = b"geoarrow.wkb"
+    OGC_WKB = b"ogc.wkb"
 
 
 class Environment(str, Enum):
