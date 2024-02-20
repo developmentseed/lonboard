@@ -6,8 +6,8 @@ documentation on how to define new traitlet types.
 
 from __future__ import annotations
 
-from typing import Any, List, Set, Tuple, Union
 import warnings
+from typing import Any, List, Set, Tuple, Union
 
 import matplotlib as mpl
 import numpy as np
@@ -707,6 +707,7 @@ class GetFilterValueAccessor(FixedErrorTraitType):
         self.error(obj, value)
         assert False
 
+
 class NormalAccessor(FixedErrorTraitType):
     """
     A representation of a deck.gl normal accessor
@@ -738,7 +739,7 @@ class NormalAccessor(FixedErrorTraitType):
     ) -> Union[Tuple[int, ...], List[int], pa.ChunkedArray, pa.FixedSizeListArray]:
         """
         Values in acceptable types must be contiguous
-        (the same length for all values) 
+        (the same length for all values)
         """
 
         fixed_list_size = 3
@@ -766,7 +767,7 @@ class NormalAccessor(FixedErrorTraitType):
                     """Warning: Numpy array should be floating point type.
                     Converting to float32 point pyarrow array"""
                 )
-                value = value.astype(np.float(pa.list_(pa.float32(),3)))
+                value = value.astype(np.float(pa.list_(pa.float32(), 3)))
 
             return pa.FixedSizeListArray.from_arrays(value, fixed_list_size)
 
@@ -788,7 +789,7 @@ class NormalAccessor(FixedErrorTraitType):
 
             if not pa.types.is_float32(value.type.value_type):
                 try:
-                    value = value.cast(pa.list_(pa.float32(),3))
+                    value = value.cast(pa.list_(pa.float32(), 3))
                 except ValueError:
                     self.error(
                         obj,
