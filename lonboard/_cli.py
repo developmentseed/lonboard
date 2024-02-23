@@ -43,7 +43,7 @@ def read_pyogrio(path: Path) -> pa.Table:
 
     new_field = field.with_name("geometry").with_metadata(metadata)
     new_schema = schema.set(geometry_column_index, new_field)
-    return pa.Table.from_arrays(table.columns, new_schema)
+    return pa.Table.from_arrays(table.columns, schema=new_schema)
 
 
 def read_geoparquet(path: Path):
@@ -52,11 +52,32 @@ def read_geoparquet(path: Path):
     Args:
         path: Path to GeoParquet file
     """
-    meta = pq.ParquetFile(path)
-    geo_meta = meta.metadata.metadata[b"geo"]
+    file = pq.ParquetFile(path)
+    geo_meta = file.metadata.metadata.get(b"geo")
+    if not geo_meta:
+        raise ValueError("Expected geo metadata in Parquet file")
 
-    table = pq.read_table(path)
-    pass
+    table = file.read()
+
+    geo_meta = json.loads(geo_meta)
+    geometry_column_name = geo_meta["primary_column"]
+    geometry_column_index = [
+        i for (i, name) in enumerate(table.schema.names) if name == geometry_column_name
+    ][0]
+
+    crs_dict = geo_meta["columns"][geometry_column_name]["crs"]
+
+    # Parse CRS and create PROJJSON
+    ext_meta = {"crs": crs_dict}
+
+    metadata = {
+        b"ARROW:extension:name": b"geoarrow.wkb",
+        b"ARROW:extension:metadata": json.dumps(ext_meta).encode(),
+    }
+
+    new_field = table.schema.field(geometry_column_index).with_metadata(metadata)
+    new_schema = table.schema.set(geometry_column_index, new_field)
+    return pa.Table.from_arrays(table.columns, schema=new_schema)
 
 
 @click.command()
