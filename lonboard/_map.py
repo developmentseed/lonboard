@@ -16,6 +16,25 @@ from lonboard.basemap import CartoBasemap
 # bundler yields lonboard/static/{index.js,styles.css}
 bundler_output_dir = Path(__file__).parent / "static"
 
+# HTML template to override exported map as 100% height
+_HTML_TEMPLATE = """<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>{title}</title>
+</head>
+<style>
+    html {{ height: 100%; }}
+    body {{ height: 100%; }}
+    .widget-subarea {{ height: 100%; }}
+    .jupyter-widgets-disconnected {{ height: 100%; }}
+</style>
+<body>
+{snippet}
+</body>
+</html>
+"""
+
 
 class Map(BaseAnyWidget):
     """
@@ -143,7 +162,9 @@ class Map(BaseAnyWidget):
         Args:
             filename: where to save the generated HTML file.
         """
-        embed_minimal_html(filename, views=[self], drop_defaults=False)
+        embed_minimal_html(
+            filename, views=[self], template=_HTML_TEMPLATE, drop_defaults=False
+        )
 
     @traitlets.default("_initial_view_state")
     def _default_initial_view_state(self):
