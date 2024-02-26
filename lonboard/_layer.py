@@ -23,7 +23,8 @@ from lonboard._geoarrow.geopandas_interop import geopandas_to_geoarrow
 from lonboard._geoarrow.ops import reproject_table
 from lonboard._geoarrow.ops.bbox import Bbox, total_bounds
 from lonboard._geoarrow.ops.centroid import WeightedCentroid, weighted_centroid
-from lonboard._geoarrow.sanitize import sanitize_table
+from lonboard._geoarrow.parse_wkb import parse_wkb_table
+from lonboard._geoarrow.sanitize import remove_extension_classes
 from lonboard._serialization import infer_rows_per_chunk
 from lonboard._utils import auto_downcast as _auto_downcast
 from lonboard._utils import get_geometry_column_index, remove_extension_kwargs
@@ -237,7 +238,8 @@ class BaseArrowLayer(BaseLayer):
         if not isinstance(table, pa.Table) and hasattr(table, "__arrow_c_stream__"):
             table = pa.table(table)
 
-        table = sanitize_table(table)
+        table = remove_extension_classes(table)
+        table = parse_wkb_table(table)
 
         # Reproject table to WGS84 if needed
         # Note this must happen before calculating the default viewport

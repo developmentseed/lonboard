@@ -3,7 +3,6 @@
 from __future__ import annotations
 
 import json
-import warnings
 from typing import (
     TYPE_CHECKING,
     Any,
@@ -22,11 +21,14 @@ import shapely.geometry
 import shapely.geometry.base
 from numpy.typing import NDArray
 
-from lonboard._constants import EPSG_4326, EXTENSION_NAME, OGC_84
+from lonboard._constants import EXTENSION_NAME
 from lonboard._geoarrow.extension_types import construct_geometry_array
 from lonboard._geoarrow.geopandas_interop import geopandas_to_geoarrow
+from lonboard._geoarrow.parse_wkb import parse_wkb_table
+from lonboard._geoarrow.sanitize import remove_extension_classes
 from lonboard._layer import PathLayer, ScatterplotLayer, SolidPolygonLayer
 from lonboard._map import Map
+from lonboard._utils import get_geometry_column_index
 
 if TYPE_CHECKING:
     import geopandas as gpd
@@ -129,7 +131,7 @@ def create_layer_from_data_input(
     # Anything with __arrow_c_stream__
     if hasattr(data, "__arrow_c_stream__"):
         data = cast(ArrowStreamExportable, data)
-        return _viz_geoarrow_table(pa.table(data.__arrow_c_stream__()), **kwargs)
+        return _viz_geoarrow_table(pa.table(data), **kwargs)
 
     # Anything with __geo_interface__
     if hasattr(data, "__geo_interface__"):
@@ -162,10 +164,6 @@ def create_layer_from_data_input(
 def _viz_geopandas_geodataframe(
     data: gpd.GeoDataFrame, **kwargs
 ) -> Union[ScatterplotLayer, PathLayer, SolidPolygonLayer]:
-    if data.crs and data.crs not in [EPSG_4326, OGC_84]:
-        warnings.warn("GeoDataFrame being reprojected to EPSG:4326")
-        data = data.to_crs(OGC_84)
-
     table = geopandas_to_geoarrow(data)
     return _viz_geoarrow_table(table, **kwargs)
 
@@ -174,10 +172,6 @@ def _viz_geopandas_geoseries(
     data: gpd.GeoSeries, **kwargs
 ) -> Union[ScatterplotLayer, PathLayer, SolidPolygonLayer]:
     import geopandas as gpd
-
-    if data.crs and data.crs not in [EPSG_4326, OGC_84]:
-        warnings.warn("GeoSeries being reprojected to EPSG:4326")
-        data = data.to_crs(OGC_84)
 
     gdf = gpd.GeoDataFrame(geometry=data)
     table = geopandas_to_geoarrow(gdf)
@@ -246,10 +240,12 @@ def _viz_geo_interface(
 def _viz_geoarrow_table(
     table: pa.Table, **kwargs
 ) -> Union[ScatterplotLayer, PathLayer, SolidPolygonLayer]:
-    # TODO: don't hard-code "geometry"
-    geometry_ext_type = table.schema.field("geometry").metadata.get(
-        b"ARROW:extension:name"
-    )
+    table = remove_extension_classes(table)
+    table = parse_wkb_table(table)
+
+    geometry_column_index = get_geometry_column_index(table.schema)
+    geometry_field = table.schema.field(geometry_column_index)
+    geometry_ext_type = geometry_field.metadata.get(b"ARROW:extension:name")
 
     if geometry_ext_type in [EXTENSION_NAME.POINT, EXTENSION_NAME.MULTIPOINT]:
         return ScatterplotLayer(table=table, **kwargs)

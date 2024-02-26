@@ -283,6 +283,7 @@ def construct_geometry_array(
     shapely_arr: NDArray[np.object_],
     include_z: Optional[bool] = None,
     *,
+    field_name: str = "geometry",
     crs_str: Optional[str] = None,
 ) -> Tuple[pa.Field, pa.Array]:
     # NOTE: this implementation returns a (field, array) pair so that it can set the
@@ -307,7 +308,7 @@ def construct_geometry_array(
         parr = pa.FixedSizeListArray.from_arrays(coords.flatten(), len(dims))
         extension_metadata["ARROW:extension:name"] = "geoarrow.point"
         field = pa.field(
-            "geometry",
+            field_name,
             parr.type,
             nullable=True,
             metadata=extension_metadata,
@@ -321,7 +322,7 @@ def construct_geometry_array(
         parr = pa.ListArray.from_arrays(pa.array(geom_offsets), _parr)
         extension_metadata["ARROW:extension:name"] = "geoarrow.linestring"
         field = pa.field(
-            "geometry",
+            field_name,
             parr.type,
             nullable=True,
             metadata=extension_metadata,
@@ -336,7 +337,7 @@ def construct_geometry_array(
         parr = pa.ListArray.from_arrays(pa.array(geom_offsets), _parr1)
         extension_metadata["ARROW:extension:name"] = "geoarrow.polygon"
         field = pa.field(
-            "geometry",
+            field_name,
             parr.type,
             nullable=True,
             metadata=extension_metadata,
@@ -350,7 +351,7 @@ def construct_geometry_array(
         parr = pa.ListArray.from_arrays(pa.array(geom_offsets), _parr)
         extension_metadata["ARROW:extension:name"] = "geoarrow.multipoint"
         field = pa.field(
-            "geometry",
+            field_name,
             parr.type,
             nullable=True,
             metadata=extension_metadata,
@@ -365,7 +366,7 @@ def construct_geometry_array(
         parr = pa.ListArray.from_arrays(pa.array(geom_offsets), _parr1)
         extension_metadata["ARROW:extension:name"] = "geoarrow.multilinestring"
         field = pa.field(
-            "geometry",
+            field_name,
             parr.type,
             nullable=True,
             metadata=extension_metadata,
@@ -381,7 +382,7 @@ def construct_geometry_array(
         parr = pa.ListArray.from_arrays(pa.array(geom_offsets), _parr2)
         extension_metadata["ARROW:extension:name"] = "geoarrow.multipolygon"
         field = pa.field(
-            "geometry",
+            field_name,
             parr.type,
             nullable=True,
             metadata=extension_metadata,

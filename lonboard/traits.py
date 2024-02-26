@@ -6,7 +6,7 @@ documentation on how to define new traitlet types.
 
 from __future__ import annotations
 
-from typing import Any, List, Set, Tuple, Union
+from typing import Any, List, Set, Tuple, Union, cast
 
 import matplotlib as mpl
 import numpy as np
@@ -148,6 +148,7 @@ class PyarrowTableTrait(FixedErrorTraitType):
         if not allowed_geometry_types:
             return value
 
+        allowed_geometry_types = cast(Set[bytes], allowed_geometry_types)
         geom_col_idx = get_geometry_column_index(value.schema)
         geometry_extension_type = value.schema.field(geom_col_idx).metadata.get(
             b"ARROW:extension:name"
@@ -157,10 +158,10 @@ class PyarrowTableTrait(FixedErrorTraitType):
             allowed_geometry_types
             and geometry_extension_type not in allowed_geometry_types
         ):
-            allowed_types_str = "\n".join(allowed_geometry_types)
+            allowed_types_str = ", ".join(map(str, allowed_geometry_types))
             msg = (
                 f"Expected one of {allowed_types_str} geometry types, "
-                "got {geometry_extension_type}."
+                f"got {geometry_extension_type}."
             )
             self.error(obj, value, info=msg)
 
