@@ -1,9 +1,10 @@
 ---
-name: BUG REPORT - A user story or overall goal for a subset of issues (tasks)
+name: BUG REPORT - A specific issue type to report a bug.
+about: A structured report to describe unexpected behavior.
 title: "[BUG] A short yet descriptive title for the bug you're reporting"
-labels: ""
-author: "The author of this issue"
-screenshots: "If applicable, add screenshots to help explain the bug"
+labels: "bug"
+author: "The author of this bug report"
+screenshots: "Screenshots to help explain the bug"
 ---
 
 ## Context
