@@ -7,7 +7,6 @@ from typing import Dict, List, Optional
 import click
 import pyarrow as pa
 import pyarrow.parquet as pq
-from pyogrio.raw import read_arrow
 from pyproj import CRS
 
 from lonboard import viz
@@ -22,6 +21,14 @@ def read_pyogrio(path: Path) -> pa.Table:
     Args:
         path: Path to file readable by pyogrio
     """
+    try:
+        from pyogrio.raw import read_arrow
+    except ImportError as e:
+        raise ImportError(
+            "pyogrio is a required dependency for the CLI. "
+            "Install with `pip install pyogrio`."
+        ) from e
+
     meta, table = read_arrow(path)
     # TODO: assert there are not two column names of wkb_geometry
 
