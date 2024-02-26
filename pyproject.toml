@@ -46,6 +46,9 @@ mkdocstrings = { version = "^0.23.0", extras = ["python"] }
 mkdocs-jupyter = { version = "^0.24.5", python = "^3.9" }
 mike = "^2"
 
+[tool.poetry.scripts]
+lonboard = "lonboard._cli:main"
+
 # Note: this is defined as a separate group so that it can be not installed in
 # CI. See:
 # https://github.com/developmentseed/lonboard/pull/234
