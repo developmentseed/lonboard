@@ -774,7 +774,7 @@ class NormalAccessor(FixedErrorTraitType):
         if isinstance(value, (pa.ChunkedArray, pa.Array)):
             if not pa.types.is_fixed_size_list(value.type):
                 self.error(
-                    obj, value, info="Point pyarrow array must be a FixedSizeList."
+                    obj, value, info="normal pyarrow array must be a FixedSizeList."
                 )
 
             if value.type.list_size != 3:
