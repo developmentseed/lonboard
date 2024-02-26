@@ -85,9 +85,10 @@ def test_layer_wkb_geoarrow():
 def test_layer_wkb_geoarrow_wrong_geom_type():
     path = geodatasets.get_path("naturalearth.land")
     meta, table = read_arrow(path)
+    # Use regex as set will have unknown ordering between multipoint and point
     with pytest.raises(
         TraitError,
-        match="Expected one of geoarrow.multipoint, geoarrow.point geometry types",
+        match=r"Expected one of geoarrow\..*point, geoarrow\..*point geometry types",
     ):
         _layer = ScatterplotLayer(table=table)
 
