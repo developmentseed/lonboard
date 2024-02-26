@@ -1,6 +1,7 @@
 import json
-import sys
+import webbrowser
 from pathlib import Path
+from tempfile import NamedTemporaryFile
 from typing import Dict, List, Optional
 
 import click
@@ -82,8 +83,9 @@ def read_geoparquet(path: Path):
 
 @click.command()
 @click.option("-o", "--output", type=click.Path(path_type=Path), default=None)
+@click.option("--open/--no-open", "open_browser", default=True)
 @click.argument("files", nargs=-1, type=click.Path(path_type=Path))
-def main(output: Optional[Path], files: List[Path]):
+def main(output: Optional[Path], open_browser: bool, files: List[Path]):
     """Interactively view geospatial data using kepler.gl"""
 
     tables = []
@@ -97,8 +99,12 @@ def main(output: Optional[Path], files: List[Path]):
 
     map_ = viz(tables)
 
-    # If -o flag passed, write to file; otherwise write to stdout
+    # If -o flag passed, write to file; otherwise write to temporary file
     if output:
         map_.to_html(output)
+        if open_browser:
+            webbrowser.open_new_tab(f"file://{output}")
     else:
-        map_.to_html(sys.stdout)
+        with NamedTemporaryFile("wt", suffix=".html", delete=False) as f:
+            map_.to_html(f)
+            webbrowser.open_new_tab(f"file://{f.name}")

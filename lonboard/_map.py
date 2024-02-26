@@ -1,7 +1,7 @@
 from __future__ import annotations
 
 from pathlib import Path
-from typing import Sequence, TextIO, Union
+from typing import IO, Sequence, TextIO, Union
 
 import ipywidgets
 import traitlets
@@ -156,7 +156,7 @@ class Map(BaseAnyWidget):
       [`lonboard.basemap.CartoBasemap.PositronNoLabels`][lonboard.basemap.CartoBasemap.PositronNoLabels]
     """
 
-    def to_html(self, filename: Union[str, Path, TextIO]) -> None:
+    def to_html(self, filename: Union[str, Path, TextIO, IO[str]]) -> None:
         """Save the current map as a standalone HTML file.
 
         Args:
