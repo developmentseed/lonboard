@@ -89,11 +89,33 @@ def read_geoparquet(path: Path):
 
 
 @click.command()
-@click.option("-o", "--output", type=click.Path(path_type=Path), default=None)
-@click.option("--open/--no-open", "open_browser", default=True)
+@click.option(
+    "-o",
+    "--output",
+    type=click.Path(path_type=Path),
+    default=None,
+    help=(
+        "The output path for the generated HTML file. "
+        "If not provided, will save to a temporary file."
+    ),
+)
+@click.option(
+    "--open/--no-open",
+    "open_browser",
+    default=None,
+    help=(
+        "Whether to open a web browser tab with the generated map. "
+        "By default, the web browser is not opened when --output is provided, "
+        "but is in other cases."
+    ),
+)
 @click.argument("files", nargs=-1, type=click.Path(path_type=Path))
-def main(output: Optional[Path], open_browser: bool, files: List[Path]):
-    """Interactively view geospatial data using kepler.gl"""
+def main(output: Optional[Path], open_browser: Optional[bool], files: List[Path]):
+    """Interactively visualize geospatial data using Lonboard.
+
+    This CLI can be used either to quickly view local files or to create static HTML
+    files.
+    """
 
     tables = []
     for path in files:
@@ -109,9 +131,14 @@ def main(output: Optional[Path], open_browser: bool, files: List[Path]):
     # If -o flag passed, write to file; otherwise write to temporary file
     if output:
         map_.to_html(output)
-        if open_browser:
-            webbrowser.open_new_tab(f"file://{output}")
+
+        # Default to not opening browser when None
+        if open_browser is True:
+            webbrowser.open_new_tab(f"file://{output.absolute()}")
     else:
         with NamedTemporaryFile("wt", suffix=".html", delete=False) as f:
             map_.to_html(f)
-            webbrowser.open_new_tab(f"file://{f.name}")
+
+            # Default to opening browser when None
+            if open_browser is not False:
+                webbrowser.open_new_tab(f"file://{f.name}")
