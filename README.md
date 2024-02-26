@@ -1,4 +1,4 @@
-# lonboard
+# Lonboard
 
 [![PyPI][pypi_badge]][pypi_link]
 [![Binder][binder_badge]][binder_jupyterlab_url]
