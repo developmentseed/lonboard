@@ -20,7 +20,7 @@ Include relevant **screenshots**, **error messages**, and **logs**:
 
 - OS: [e.g. Windows 10]
 - Browser: [e.g. Chrome, Safari]
-- Lonboard Version: [e.g. 22]
+- Lonboard Version: [e.g. 0.6.0]
 
 ## Steps to reproduce the bug
 
