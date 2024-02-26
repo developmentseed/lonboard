@@ -102,7 +102,3 @@ def main(output: Optional[Path], files: List[Path]):
         map_.to_html(output)
     else:
         map_.to_html(sys.stdout)
-
-
-if __name__ == "__main__":
-    main()
