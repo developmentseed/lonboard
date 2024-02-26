@@ -764,7 +764,7 @@ class NormalAccessor(FixedErrorTraitType):
 
             if not np.issubdtype(value.dtype, np.float32):
                 warnings.warn(
-                    """Warning: Numpy array should be floating point type.
+                    """Warning: Numpy array should be float32 type.
                     Converting to float32 point pyarrow array"""
                 )
                 value = value.astype(np.float(pa.list_(pa.float32(), 3)))
