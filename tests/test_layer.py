@@ -82,6 +82,16 @@ def test_layer_wkb_geoarrow():
     _layer = SolidPolygonLayer(table=table)
 
 
+def test_layer_wkb_geoarrow_wrong_geom_type():
+    path = geodatasets.get_path("naturalearth.land")
+    meta, table = read_arrow(path)
+    with pytest.raises(
+        TraitError,
+        match="Expected one of geoarrow.multipoint, geoarrow.point geometry types",
+    ):
+        _layer = ScatterplotLayer(table=table)
+
+
 # Test layer types
 def test_bitmap_layer():
     layer = BitmapLayer(

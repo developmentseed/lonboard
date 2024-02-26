@@ -18,6 +18,9 @@ class EXTENSION_NAME(bytes, Enum):
     WKB = b"geoarrow.wkb"
     OGC_WKB = b"ogc.wkb"
 
+    def __str__(self):
+        return self.value.decode()
+
 
 class Environment(str, Enum):
     Azure = "azure"
