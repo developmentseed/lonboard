@@ -722,7 +722,7 @@ class NormalAccessor(FixedErrorTraitType):
 
     default_value = [0, 0, 1]
     info_text = (
-        "List representing normal of each object, in [nx, ny, nz]. or numpy ndarray or "
+        "List representing normal of all objects in [nx, ny, nz] or numpy ndarray or "
         "pyarrow FixedSizeList representing the normal of each object, in [nx, ny, nz]"
     )
 
