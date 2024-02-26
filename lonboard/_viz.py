@@ -3,6 +3,7 @@
 from __future__ import annotations
 
 import json
+from random import shuffle
 from typing import (
     TYPE_CHECKING,
     Any,
@@ -29,6 +30,7 @@ from lonboard._geoarrow.sanitize import remove_extension_classes
 from lonboard._layer import PathLayer, ScatterplotLayer, SolidPolygonLayer
 from lonboard._map import Map
 from lonboard._utils import get_geometry_column_index
+from lonboard.basemap import CartoBasemap
 
 if TYPE_CHECKING:
     import geopandas as gpd
@@ -53,6 +55,23 @@ if TYPE_CHECKING:
         Dict[str, Any],
     ]
     """A type definition for allowed data inputs to the `viz` function."""
+
+
+# From mbview
+# https://github.com/mapbox/mbview/blob/e64bd86cfe4a63e6af4ea1d310bd49be4f162a43/views/vector.ejs#L75-L87
+COLORS = [
+    "#FC49A3",  # pink
+    "#CC66FF",  # purple-ish
+    "#66CCFF",  # sky blue
+    "#66FFCC",  # teal
+    "#00FF00",  # lime green
+    "#FFCC66",  # light orange
+    "#FF6666",  # salmon
+    "#FF0000",  # red
+    "#FF8000",  # orange
+    "#FFFF66",  # yellow
+    "#00FFFF",  # turquoise
+]
 
 
 def viz(
@@ -91,12 +110,22 @@ def viz(
     Returns:
         widget visualizing the provided data.
     """
-    if isinstance(data, (list, tuple)):
-        layers = [create_layer_from_data_input(item, **kwargs) for item in data]
-    else:
-        layers = [create_layer_from_data_input(data, **kwargs)]
+    color_ordering = COLORS.copy()
+    shuffle(color_ordering)
 
-    return Map(layers=layers)
+    if isinstance(data, (list, tuple)):
+        layers = [
+            create_layer_from_data_input(
+                item, _viz_color=color_ordering[i % len(color_ordering)], **kwargs
+            )
+            for i, item in enumerate(data)
+        ]
+    else:
+        layers = [
+            create_layer_from_data_input(data, _viz_color=color_ordering[0], **kwargs)
+        ]
+
+    return Map(layers=layers, basemap_style=CartoBasemap.DarkMatter)
 
 
 def create_layer_from_data_input(
@@ -248,15 +277,44 @@ def _viz_geoarrow_table(
     geometry_ext_type = geometry_field.metadata.get(b"ARROW:extension:name")
 
     if geometry_ext_type in [EXTENSION_NAME.POINT, EXTENSION_NAME.MULTIPOINT]:
+        if "get_fill_color" not in kwargs.keys():
+            kwargs["get_fill_color"] = kwargs.pop("_viz_color")
+        if "radius_min_pixels" not in kwargs.keys():
+            if len(table) <= 10_000:
+                kwargs["radius_min_pixels"] = 2
+            elif len(table) <= 100_000:
+                kwargs["radius_min_pixels"] = 1
+            elif len(table) <= 1_000_000:
+                kwargs["radius_min_pixels"] = 0.5
+            else:
+                kwargs["radius_min_pixels"] = 0.2
+
         return ScatterplotLayer(table=table, **kwargs)
 
     elif geometry_ext_type in [
         EXTENSION_NAME.LINESTRING,
         EXTENSION_NAME.MULTILINESTRING,
     ]:
+        if "get_color" not in kwargs.keys():
+            kwargs["get_color"] = kwargs.pop("_viz_color")
+        if "width_min_pixels" not in kwargs.keys():
+            if len(table) <= 1_000:
+                kwargs["width_min_pixels"] = 1.5
+            elif len(table) <= 10_000:
+                kwargs["width_min_pixels"] = 1
+            elif len(table) <= 100_000:
+                kwargs["width_min_pixels"] = 0.7
+            else:
+                kwargs["width_min_pixels"] = 0.5
+
         return PathLayer(table=table, **kwargs)
 
     elif geometry_ext_type in [EXTENSION_NAME.POLYGON, EXTENSION_NAME.MULTIPOLYGON]:
+        if "get_fill_color" not in kwargs.keys():
+            kwargs["get_fill_color"] = kwargs.pop("_viz_color")
+        if "opacity" not in kwargs.keys():
+            kwargs["opacity"] = 0.6
+
         return SolidPolygonLayer(table=table, **kwargs)
 
     raise ValueError(f"Unsupported extension type: '{geometry_ext_type}'.")

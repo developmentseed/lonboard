@@ -1,7 +1,7 @@
 from __future__ import annotations
 
 from pathlib import Path
-from typing import IO, Sequence, TextIO, Union
+from typing import IO, Optional, Sequence, TextIO, Union
 
 import ipywidgets
 import traitlets
@@ -156,14 +156,23 @@ class Map(BaseAnyWidget):
       [`lonboard.basemap.CartoBasemap.PositronNoLabels`][lonboard.basemap.CartoBasemap.PositronNoLabels]
     """
 
-    def to_html(self, filename: Union[str, Path, TextIO, IO[str]]) -> None:
+    def to_html(
+        self, filename: Union[str, Path, TextIO, IO[str]], title: Optional[str] = None
+    ) -> None:
         """Save the current map as a standalone HTML file.
 
         Args:
             filename: where to save the generated HTML file.
+
+        Other args:
+            title: A title for the exported map. This will show as the browser tab name.
         """
         embed_minimal_html(
-            filename, views=[self], template=_HTML_TEMPLATE, drop_defaults=False
+            filename,
+            views=[self],
+            title=title or "Lonboard export",
+            template=_HTML_TEMPLATE,
+            drop_defaults=False,
         )
 
     @traitlets.default("_initial_view_state")
