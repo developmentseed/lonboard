@@ -11,6 +11,7 @@ import pyarrow as pa
 from pyproj import CRS, Transformer
 
 from lonboard._constants import EXTENSION_NAME, OGC_84
+from lonboard._geoarrow.crs import get_field_crs
 from lonboard._geoarrow.extension_types import CoordinateDimension
 from lonboard._utils import get_geometry_column_index
 
@@ -67,18 +68,7 @@ def reproject_column(
         max_workers: The maximum number of threads to use. Defaults to None.
     """
     extension_type_name = field.metadata[b"ARROW:extension:name"]
-    extension_metadata_value = field.metadata[b"ARROW:extension:metadata"]
-
-    # Note: According to the spec, if the metadata key exists, its value should never be
-    # `null` or an empty dict, but we still check for those to be safe
-    if not extension_metadata_value:
-        return field, column
-
-    extension_metadata = json.loads(extension_metadata_value)
-    crs_str = extension_metadata["crs"]
-
-    # Note: According to the spec, the CRS key should never be set to `null`, but we
-    # still check for it to be safe (and geoarrow-rs currently creates invalid metadata)
+    crs_str = get_field_crs(field)
     if crs_str is None:
         return field, column
 
