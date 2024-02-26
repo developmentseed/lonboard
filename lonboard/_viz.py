@@ -3,7 +3,6 @@
 from __future__ import annotations
 
 import json
-import warnings
 from typing import (
     TYPE_CHECKING,
     Any,
@@ -22,7 +21,7 @@ import shapely.geometry
 import shapely.geometry.base
 from numpy.typing import NDArray
 
-from lonboard._constants import EPSG_4326, EXTENSION_NAME, OGC_84
+from lonboard._constants import EXTENSION_NAME
 from lonboard._geoarrow.extension_types import construct_geometry_array
 from lonboard._geoarrow.geopandas_interop import geopandas_to_geoarrow
 from lonboard._geoarrow.parse_wkb import parse_wkb_table
@@ -165,10 +164,6 @@ def create_layer_from_data_input(
 def _viz_geopandas_geodataframe(
     data: gpd.GeoDataFrame, **kwargs
 ) -> Union[ScatterplotLayer, PathLayer, SolidPolygonLayer]:
-    if data.crs and data.crs not in [EPSG_4326, OGC_84]:
-        warnings.warn("GeoDataFrame being reprojected to EPSG:4326")
-        data = data.to_crs(OGC_84)
-
     table = geopandas_to_geoarrow(data)
     return _viz_geoarrow_table(table, **kwargs)
 
@@ -177,10 +172,6 @@ def _viz_geopandas_geoseries(
     data: gpd.GeoSeries, **kwargs
 ) -> Union[ScatterplotLayer, PathLayer, SolidPolygonLayer]:
     import geopandas as gpd
-
-    if data.crs and data.crs not in [EPSG_4326, OGC_84]:
-        warnings.warn("GeoSeries being reprojected to EPSG:4326")
-        data = data.to_crs(OGC_84)
 
     gdf = gpd.GeoDataFrame(geometry=data)
     table = geopandas_to_geoarrow(gdf)
