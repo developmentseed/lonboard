@@ -3,7 +3,7 @@ name: BUG REPORT - A specific issue type to report a bug.
 about: A structured report to describe unexpected behavior.
 title: "[BUG] A short yet descriptive title for the bug you're reporting"
 labels: "bug"
-author: "The author of this but report"
+author: "The author of this bug report"
 screenshots: "Screenshots to help explain the bug"
 ---
 
