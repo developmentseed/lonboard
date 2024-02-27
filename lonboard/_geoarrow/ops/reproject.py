@@ -10,7 +10,7 @@ import numpy as np
 import pyarrow as pa
 from pyproj import CRS, Transformer
 
-from lonboard._constants import EXTENSION_NAME, OGC_84
+from lonboard._constants import EPSG_4326, EXTENSION_NAME, OGC_84
 from lonboard._geoarrow.crs import get_field_crs
 from lonboard._geoarrow.extension_types import CoordinateDimension
 from lonboard._utils import get_geometry_column_index
@@ -76,6 +76,12 @@ def reproject_column(
 
     if existing_crs == to_crs:
         return field, column
+
+    # If projecting to OGC_84, also check if existing CRS is EPSG_4326, which when
+    # passing always_xy is equivalent.
+    if to_crs == OGC_84:
+        if existing_crs == EPSG_4326:
+            return field, column
 
     # NOTE: Not sure the best place to put this warning
     warnings.warn("Input being reprojected to EPSG:4326 CRS")
