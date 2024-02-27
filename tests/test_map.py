@@ -11,8 +11,8 @@ def test_map_fails_with_unexpected_argument():
 
     layer = ScatterplotLayer.from_geopandas(gdf)
 
-    with pytest.raises(TypeError, match="unexpected keyword argument"):
-        _map = Map(layers=[layer], unknown_keyword="foo")
+    with pytest.raises(TypeError, match="Unexpected keyword argument"):
+        _map = Map(layer, unknown_keyword="foo")
 
 
 def allow_layers_positional_argument():

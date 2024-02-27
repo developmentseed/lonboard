@@ -1,6 +1,6 @@
 [tool.poetry]
 name = "lonboard"
-version = "0.6.0-beta.1"
+version = "0.6.0"
 description = "Python library for fast, interactive geospatial vector data visualization in Jupyter."
 authors = ["Kyle Barron <kyle@developmentseed.org>"]
 license = "MIT"
@@ -19,7 +19,11 @@ palettable = "^3.3.3"
 # future to remove the matplotlib dependency.
 matplotlib = "^3.7"
 shapely = "^2"
+click = { version = "^8.1.7", optional = true }
+pyogrio = { version = "^0.7.2", optional = true }
 
+[tool.poetry.extras]
+cli = ["click", "pyogrio"]
 
 [tool.poetry.group.dev.dependencies]
 # anywidget = { version = "^0.7.1", extras = ["dev"] }
@@ -37,10 +41,13 @@ geoarrow-pyarrow = "^0.1.1"
 [tool.poetry.group.docs.dependencies]
 mkdocs = "^1.4.3"
 mkdocs-material = { version = "^9.5", extras = ["imaging"] }
-mkdocstrings = {version = "^0.23.0", extras = ["python"]}
+mkdocstrings = { version = "^0.23.0", extras = ["python"] }
 # This version only on 3.9+. Ok because it's a dev dependency
-mkdocs-jupyter = {version = "^0.24.5", python = "^3.9"}
+mkdocs-jupyter = { version = "^0.24.5", python = "^3.9" }
 mike = "^2"
+
+[tool.poetry.scripts]
+lonboard = "lonboard._cli:main"
 
 # Note: this is defined as a separate group so that it can be not installed in
 # CI. See:
@@ -61,7 +68,7 @@ select = [
     "E",
     "W",
     # isort
-    "I"
+    "I",
 ]
 
 [tool.ruff.extend-per-file-ignores]
