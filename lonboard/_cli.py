@@ -11,9 +11,6 @@ from pyproj import CRS
 
 from lonboard import viz
 
-# path = Path("/Users/kyle/github/developmentseed/lonboard/DC_Wetlands.parquet")
-# path = Path("/Users/kyle/Downloads/UScounties.geojson")
-
 
 def read_pyogrio(path: Path) -> pa.Table:
     """Read path using pyogrio and convert field metadata to geoarrow
