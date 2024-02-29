@@ -178,7 +178,8 @@ class PyarrowTableTrait(FixedErrorTraitType):
 
             assert isinstance(typ, pa.FixedSizeListType)
             if typ.list_size not in allowed_dimensions:
-                self.error(obj, value, info=f"{allowed_dimensions}-dimension points")
+                msg = " or ".join(map(str, list(allowed_dimensions)))
+                self.error(obj, value, info=f"{msg}-dimensional points")
 
         return value
 

@@ -963,7 +963,7 @@ class PointCloudLayer(BaseArrowLayer):
     _layer_type = traitlets.Unicode("point-cloud").tag(sync=True)
 
     table = PyarrowTableTrait(
-        allowed_geometry_types={EXTENSION_NAME.POINT}, allowed_dimensions="3D"
+        allowed_geometry_types={EXTENSION_NAME.POINT}, allowed_dimensions={3}
     )
     """A GeoArrow table with a Point column.
 
