@@ -5,6 +5,7 @@ import warnings
 from concurrent.futures import ThreadPoolExecutor
 from functools import lru_cache, partial
 from typing import Callable, Optional, Tuple, Union
+from warnings import warn
 
 import numpy as np
 import pyarrow as pa
@@ -16,6 +17,13 @@ from lonboard._geoarrow.extension_types import CoordinateDimension
 from lonboard._utils import get_geometry_column_index
 
 TransformerFromCRS = lru_cache(Transformer.from_crs)
+
+
+def no_crs_warning():
+    warn(
+        "No CRS exists on data. "
+        "If no data is shown on the map, double check that your CRS is WGS84."
+    )
 
 
 def reproject_table(
@@ -44,6 +52,7 @@ def reproject_table(
 
     # geometry column exists in table but is not assigned a CRS
     if b"ARROW:extension:metadata" not in geom_field.metadata:
+        no_crs_warning()
         return table
 
     new_field, new_column = reproject_column(
@@ -70,6 +79,7 @@ def reproject_column(
     extension_type_name = field.metadata[b"ARROW:extension:name"]
     crs_str = get_field_crs(field)
     if crs_str is None:
+        no_crs_warning()
         return field, column
 
     existing_crs = CRS(crs_str)
