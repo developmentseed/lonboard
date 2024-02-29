@@ -359,59 +359,66 @@ class NormalAccessorWidget(BaseLayer):
 
 
 def test_normal_accessor_validation_list_length():
-    # tuple or list must have 3 elements
-    with pytest.raises(TraitError):
-        NormalAccessorWidget()
-
-    with pytest.raises(TraitError, match="expected 3 values if passed a tuple or list"):
+    with pytest.raises(TraitError, match="normal scalar to have length 3"):
         NormalAccessorWidget(value=(1, 2))
 
-    with pytest.raises(TraitError, match="expected 3 values if passed a tuple or list"):
+    with pytest.raises(TraitError, match="normal scalar to have length 3"):
         NormalAccessorWidget(value=(1, 2, 3, 4))
-    NormalAccessorWidget(value=(1, 2, 3))
+
     NormalAccessorWidget(value=(1, 2, 3))
 
 
 def test_normal_accessor_validation_list_type():
     # tuple or list must be of scalar type
-    with pytest.raises(TraitError, match="expected scalar values"):
+    with pytest.raises(
+        TraitError, match="all elements of normal scalar to be int or float type"
+    ):
         NormalAccessorWidget(value=["1.1", 2.2, 3.3])
-    NormalAccessorWidget(value=[1.1, 2.2, 3.3])
 
 
 def test_normal_accessor_validation_dim_shape_np_arr():
-    # expected value is a numpy ndarray with two dimensions
-    # And  size of the second dimension must be 3 i.e. `(N,3)`
-    with pytest.raises(TraitError, match="expected shape (N,3)"):
-        NormalAccessorWidget(value=np.array([1, 2], 3))
-    NormalAccessorWidget(value=np.array([1, 2, 3], 3))
+    arr_size3 = np.array([1, 2, 3, 4, 5, 6, 7, 8, 9]).reshape(-1, 3)
+    arr_size2 = np.array([1, 2, 3, 4, 5, 6]).reshape(-1, 2)
 
-    with pytest.raises(TraitError, match="expected shape (N,3)"):
-        NormalAccessorWidget(value=np.array([1, 2, 3], 2))
-    NormalAccessorWidget(value=np.array([1, 2, 3], 3))
+    NormalAccessorWidget(value=arr_size3)
 
-    with pytest.raises(TraitError, match="expected shape (N,3)"):
-        NormalAccessorWidget(value=np.array([1, 2, 3], 4))
-    NormalAccessorWidget(value=np.array([1, 2, 3], 3))
+    with pytest.raises(TraitError, match="normal array to be 2D with shape"):
+        NormalAccessorWidget(value=arr_size2)
 
 
 def test_normal_accessor_validation_np_dtype():
-    # acceptable data types within a numpy array are float32
-    with pytest.raises(TraitError):
-        NormalAccessorWidget(value=np.array([1, 2, 3]).reshape(-1, 3))
-
-    NormalAccessorWidget(
-        value=np.array([1, 2, 3], dtype=np.uint8).reshape(-1, 3).repeat(3, axis=0)
+    arr_size3_int = np.array([1, 2, 3, 4, 5, 6, 7, 8, 9]).reshape(-1, 3)
+    arr_size3_float = np.array([1, 2, 3, 4, 5, 6, 7, 8, 9], dtype=np.float64).reshape(
+        -1, 3
     )
+
+    NormalAccessorWidget(value=arr_size3_int)
+    NormalAccessorWidget(value=arr_size3_float)
+
+    arr_size3_str = np.array(["1", "2", "3", "4", "5", "6", "7", "8", "9"]).reshape(
+        -1, 3
+    )
+
+    # acceptable data types within a numpy array are float32
+    with pytest.raises(TraitError, match="expected normal array to have numeric type"):
+        NormalAccessorWidget(value=arr_size3_str)
 
 
 def test_normal_accessor_validation_pyarrow_array_type():
     # array type must be FixedSizeList, of length 3, of float32 type
-    with pytest.raises(TraitError):
+    with pytest.raises(
+        TraitError, match="expected normal pyarrow array to be a FixedSizeList"
+    ):
         NormalAccessorWidget(value=pa.array(np.array([1, 2, 3], dtype=np.float64)))
 
-    np_arr = np.array([1, 2, 3], dtype=np.uint8).repeat(3, axis=0)
+    np_arr = np.array([1, 2, 3], dtype=np.float32).repeat(3, axis=0)
     NormalAccessorWidget(value=pa.FixedSizeListArray.from_arrays(np_arr, 3))
 
-    np_arr = np.array([1, 2, 3, 255], dtype=np.uint8).repeat(3, axis=0)
-    NormalAccessorWidget(value=pa.FixedSizeListArray.from_arrays(np_arr, 4))
+    np_arr = np.array([1, 2, 3], dtype=np.float64).repeat(3, axis=0)
+    NormalAccessorWidget(value=pa.FixedSizeListArray.from_arrays(np_arr, 3))
+
+    np_arr = np.array([1, 2, 3], dtype=np.uint8).repeat(3, axis=0)
+    with pytest.raises(
+        TraitError, match="expected pyarrow array to be floating point type"
+    ):
+        NormalAccessorWidget(value=pa.FixedSizeListArray.from_arrays(np_arr, 3))
