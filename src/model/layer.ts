@@ -7,6 +7,8 @@ import {
   GeoArrowHeatmapLayerProps,
   GeoArrowPathLayer,
   GeoArrowPathLayerProps,
+  GeoArrowPointCloudLayer,
+  GeoArrowPointCloudLayerProps,
   GeoArrowScatterplotLayer,
   GeoArrowScatterplotLayerProps,
   GeoArrowSolidPolygonLayer,
@@ -491,6 +493,45 @@ export class PathModel extends BaseArrowLayerModel {
     });
   }
 }
+
+export class PointCloudModel extends BaseArrowLayerModel {
+  static layerType = "point-cloud";
+
+  protected sizeUnits: GeoArrowPointCloudLayerProps["sizeUnits"] | null;
+  protected pointSize: GeoArrowPointCloudLayerProps["pointSize"] | null;
+  // protected material: GeoArrowPointCloudLayerProps["material"] | null;
+
+  protected getColor: GeoArrowPointCloudLayerProps["getColor"] | null;
+  protected getNormal: GeoArrowPointCloudLayerProps["getNormal"] | null;
+
+  constructor(model: WidgetModel, updateStateCallback: () => void) {
+    super(model, updateStateCallback);
+
+    this.initRegularAttribute("size_units", "sizeUnits");
+    this.initRegularAttribute("point_size", "pointSize");
+
+    this.initVectorizedAccessor("get_color", "getColor");
+    this.initVectorizedAccessor("get_normal", "getNormal");
+  }
+
+  layerProps(): Omit<GeoArrowPointCloudLayerProps, "id"> {
+    return {
+      data: this.table,
+      ...(isDefined(this.sizeUnits) && { sizeUnits: this.sizeUnits }),
+      ...(isDefined(this.pointSize) && { pointSize: this.pointSize }),
+      ...(isDefined(this.getColor) && { getColor: this.getColor }),
+      ...(isDefined(this.getNormal) && { getNormal: this.getNormal }),
+    };
+  }
+
+  render(): GeoArrowPointCloudLayer {
+    return new GeoArrowPointCloudLayer({
+      ...this.baseLayerProps(),
+      ...this.layerProps(),
+    });
+  }
+}
+
 export class ScatterplotModel extends BaseArrowLayerModel {
   static layerType = "scatterplot";
 
@@ -799,6 +840,10 @@ export async function initializeLayer(
 
     case PathModel.layerType:
       layerModel = new PathModel(model, updateStateCallback);
+      break;
+
+    case PointCloudModel.layerType:
+      layerModel = new PointCloudModel(model, updateStateCallback);
       break;
 
     case ScatterplotModel.layerType:
