@@ -1,7 +1,7 @@
 from __future__ import annotations
 
 from pathlib import Path
-from typing import Sequence, Union
+from typing import IO, Optional, Sequence, TextIO, Union
 
 import ipywidgets
 import traitlets
@@ -15,6 +15,25 @@ from lonboard.basemap import CartoBasemap
 
 # bundler yields lonboard/static/{index.js,styles.css}
 bundler_output_dir = Path(__file__).parent / "static"
+
+# HTML template to override exported map as 100% height
+_HTML_TEMPLATE = """<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>{title}</title>
+</head>
+<style>
+    html {{ height: 100%; }}
+    body {{ height: 100%; }}
+    .widget-subarea {{ height: 100%; }}
+    .jupyter-widgets-disconnected {{ height: 100%; }}
+</style>
+<body>
+{snippet}
+</body>
+</html>
+"""
 
 
 class Map(BaseAnyWidget):
@@ -137,13 +156,24 @@ class Map(BaseAnyWidget):
       [`lonboard.basemap.CartoBasemap.PositronNoLabels`][lonboard.basemap.CartoBasemap.PositronNoLabels]
     """
 
-    def to_html(self, filename: Union[str, Path]) -> None:
+    def to_html(
+        self, filename: Union[str, Path, TextIO, IO[str]], title: Optional[str] = None
+    ) -> None:
         """Save the current map as a standalone HTML file.
 
         Args:
             filename: where to save the generated HTML file.
+
+        Other args:
+            title: A title for the exported map. This will show as the browser tab name.
         """
-        embed_minimal_html(filename, views=[self], drop_defaults=False)
+        embed_minimal_html(
+            filename,
+            views=[self],
+            title=title or "Lonboard export",
+            template=_HTML_TEMPLATE,
+            drop_defaults=False,
+        )
 
     @traitlets.default("_initial_view_state")
     def _default_initial_view_state(self):

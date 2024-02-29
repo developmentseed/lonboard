@@ -10,7 +10,8 @@ import numpy as np
 import pyarrow as pa
 from pyproj import CRS, Transformer
 
-from lonboard._constants import EXTENSION_NAME, OGC_84
+from lonboard._constants import EPSG_4326, EXTENSION_NAME, OGC_84
+from lonboard._geoarrow.crs import get_field_crs
 from lonboard._geoarrow.extension_types import CoordinateDimension
 from lonboard._utils import get_geometry_column_index
 
@@ -67,18 +68,7 @@ def reproject_column(
         max_workers: The maximum number of threads to use. Defaults to None.
     """
     extension_type_name = field.metadata[b"ARROW:extension:name"]
-    extension_metadata_value = field.metadata[b"ARROW:extension:metadata"]
-
-    # Note: According to the spec, if the metadata key exists, its value should never be
-    # `null` or an empty dict, but we still check for those to be safe
-    if not extension_metadata_value:
-        return field, column
-
-    extension_metadata = json.loads(extension_metadata_value)
-    crs_str = extension_metadata["crs"]
-
-    # Note: According to the spec, the CRS key should never be set to `null`, but we
-    # still check for it to be safe (and geoarrow-rs currently creates invalid metadata)
+    crs_str = get_field_crs(field)
     if crs_str is None:
         return field, column
 
@@ -86,6 +76,12 @@ def reproject_column(
 
     if existing_crs == to_crs:
         return field, column
+
+    # If projecting to OGC_84, also check if existing CRS is EPSG_4326, which when
+    # passing always_xy is equivalent.
+    if to_crs == OGC_84:
+        if existing_crs == EPSG_4326:
+            return field, column
 
     # NOTE: Not sure the best place to put this warning
     warnings.warn("Input being reprojected to EPSG:4326 CRS")
@@ -177,6 +173,19 @@ def _reproject_chunk_nest_3(arr: pa.ListArray, transformer: Transformer):
     return _map_coords_nest_3(arr, callback)
 
 
+def _copy_sliced_offsets(offsets: pa.Int32Array) -> pa.Int32Array:
+    """
+    When operating on _sliced_ input, the physical offsets are incorrect because the
+    current array points to a range not at the beginning of the array. So when creating
+    new arrays that are not sliced, we need to subtract off the original offset of the
+    first element.
+    """
+    if offsets[0].as_py() == 0:
+        return offsets
+    else:
+        return pa.array(offsets.to_numpy() - offsets[0].as_py())
+
+
 def _map_coords_nest_0(
     arr: pa.FixedSizeListArray,
     callback: Callable[[pa.FixedSizeListArray], pa.FixedSizeListArray],
@@ -189,7 +198,7 @@ def _map_coords_nest_1(
     arr: pa.ListArray,
     callback: Callable[[pa.FixedSizeListArray], pa.FixedSizeListArray],
 ):
-    geom_offsets = arr.offsets
+    geom_offsets = _copy_sliced_offsets(arr.offsets)
     coords = arr.flatten()
     new_coords = callback(coords)
     new_geometry_array = pa.ListArray.from_arrays(geom_offsets, new_coords)
@@ -200,8 +209,8 @@ def _map_coords_nest_2(
     arr: pa.ListArray,
     callback: Callable[[pa.FixedSizeListArray], pa.FixedSizeListArray],
 ):
-    geom_offsets = arr.offsets
-    ring_offsets = arr.flatten().offsets
+    geom_offsets = _copy_sliced_offsets(arr.offsets)
+    ring_offsets = _copy_sliced_offsets(arr.flatten().offsets)
     coords = arr.flatten().flatten()
     new_coords = callback(coords)
     new_ring_array = pa.ListArray.from_arrays(ring_offsets, new_coords)
@@ -213,9 +222,9 @@ def _map_coords_nest_3(
     arr: pa.ListArray,
     callback: Callable[[pa.FixedSizeListArray], pa.FixedSizeListArray],
 ):
-    geom_offsets = arr.offsets
-    polygon_offsets = arr.flatten().offsets
-    ring_offsets = arr.flatten().flatten().offsets
+    geom_offsets = _copy_sliced_offsets(arr.offsets)
+    polygon_offsets = _copy_sliced_offsets(arr.flatten().offsets)
+    ring_offsets = _copy_sliced_offsets(arr.flatten().flatten().offsets)
     coords = arr.flatten().flatten().flatten()
     new_coords = callback(coords)
     new_ring_array = pa.ListArray.from_arrays(ring_offsets, new_coords)
