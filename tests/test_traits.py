@@ -9,7 +9,12 @@ from traitlets import TraitError
 from lonboard._base import BaseExtension
 from lonboard._layer import BaseArrowLayer, BaseLayer
 from lonboard.layer_extension import DataFilterExtension
-from lonboard.traits import ColorAccessor, FloatAccessor, PyarrowTableTrait
+from lonboard.traits import (
+    ColorAccessor,
+    FloatAccessor,
+    NormalAccessor,
+    PyarrowTableTrait,
+)
 
 
 class ColorAccessorWidget(BaseLayer):
@@ -343,3 +348,77 @@ def test_filter_value_validation_filter_size_3():
             np.array([1, 2, 3, 4, 5, 6, 7, 8, 9], dtype=np.float64), 3
         ),
     )
+
+
+class NormalAccessorWidget(BaseLayer):
+    _rows_per_chunk = 2
+
+    table = pa.table({"data": [1, 2, 3]})
+
+    value = NormalAccessor()
+
+
+def test_normal_accessor_validation_list_length():
+    with pytest.raises(TraitError, match="normal scalar to have length 3"):
+        NormalAccessorWidget(value=(1, 2))
+
+    with pytest.raises(TraitError, match="normal scalar to have length 3"):
+        NormalAccessorWidget(value=(1, 2, 3, 4))
+
+    NormalAccessorWidget(value=(1, 2, 3))
+
+
+def test_normal_accessor_validation_list_type():
+    # tuple or list must be of scalar type
+    with pytest.raises(
+        TraitError, match="all elements of normal scalar to be int or float type"
+    ):
+        NormalAccessorWidget(value=["1.1", 2.2, 3.3])
+
+
+def test_normal_accessor_validation_dim_shape_np_arr():
+    arr_size3 = np.array([1, 2, 3, 4, 5, 6, 7, 8, 9]).reshape(-1, 3)
+    arr_size2 = np.array([1, 2, 3, 4, 5, 6]).reshape(-1, 2)
+
+    NormalAccessorWidget(value=arr_size3)
+
+    with pytest.raises(TraitError, match="normal array to be 2D with shape"):
+        NormalAccessorWidget(value=arr_size2)
+
+
+def test_normal_accessor_validation_np_dtype():
+    arr_size3_int = np.array([1, 2, 3, 4, 5, 6, 7, 8, 9]).reshape(-1, 3)
+    arr_size3_float = np.array([1, 2, 3, 4, 5, 6, 7, 8, 9], dtype=np.float64).reshape(
+        -1, 3
+    )
+
+    NormalAccessorWidget(value=arr_size3_int)
+    NormalAccessorWidget(value=arr_size3_float)
+
+    arr_size3_str = np.array(["1", "2", "3", "4", "5", "6", "7", "8", "9"]).reshape(
+        -1, 3
+    )
+
+    # acceptable data types within a numpy array are float32
+    with pytest.raises(TraitError, match="expected normal array to have numeric type"):
+        NormalAccessorWidget(value=arr_size3_str)
+
+
+def test_normal_accessor_validation_pyarrow_array_type():
+    # array type must be FixedSizeList, of length 3, of float32 type
+    with pytest.raises(
+        TraitError, match="expected normal pyarrow array to be a FixedSizeList"
+    ):
+        NormalAccessorWidget(value=pa.array(np.array([1, 2, 3], dtype=np.float64)))
+
+    np_arr = np.array([1, 2, 3], dtype=np.float32).repeat(3, axis=0)
+    NormalAccessorWidget(value=pa.FixedSizeListArray.from_arrays(np_arr, 3))
+
+    np_arr = np.array([1, 2, 3], dtype=np.float64).repeat(3, axis=0)
+    NormalAccessorWidget(value=pa.FixedSizeListArray.from_arrays(np_arr, 3))
+
+    np_arr = np.array([1, 2, 3], dtype=np.uint8).repeat(3, axis=0)
+    with pytest.raises(
+        TraitError, match="expected pyarrow array to be floating point type"
+    ):
+        NormalAccessorWidget(value=pa.FixedSizeListArray.from_arrays(np_arr, 3))
