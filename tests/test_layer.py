@@ -7,7 +7,8 @@ import shapely
 from pyogrio.raw import read_arrow
 from traitlets import TraitError
 
-from lonboard import BitmapLayer, Map, ScatterplotLayer, SolidPolygonLayer
+from lonboard import BitmapLayer, Map, ScatterplotLayer, SolidPolygonLayer, viz
+from lonboard._geoarrow.geopandas_interop import geopandas_to_geoarrow
 from lonboard.layer_extension import DataFilterExtension
 
 
@@ -91,6 +92,27 @@ def test_layer_wkb_geoarrow_wrong_geom_type():
         match=r"Expected one of geoarrow\..*point, geoarrow\..*point geometry types",
     ):
         _layer = ScatterplotLayer(table=table)
+
+
+def test_warning_no_crs_shapely():
+    points = shapely.points([0, 1, 2], [2, 3, 4])
+    with pytest.warns(match="No CRS exists on data"):
+        _ = viz(points)
+
+
+def test_warning_no_crs_geopandas():
+    points = shapely.points([0, 1, 2], [2, 3, 4])
+    gdf = gpd.GeoDataFrame(geometry=points)
+    with pytest.warns(match="No CRS exists on data"):
+        _ = viz(gdf)
+
+
+def test_warning_no_crs_arrow():
+    points = shapely.points([0, 1, 2], [2, 3, 4])
+    gdf = gpd.GeoDataFrame(geometry=points)
+    table = geopandas_to_geoarrow(gdf)
+    with pytest.warns(match="No CRS exists on data"):
+        _ = viz(table)
 
 
 # Test layer types
