@@ -7,7 +7,14 @@ import shapely
 from pyogrio.raw import read_arrow
 from traitlets import TraitError
 
-from lonboard import BitmapLayer, Map, ScatterplotLayer, SolidPolygonLayer, viz
+from lonboard import (
+    BitmapLayer,
+    Map,
+    PointCloudLayer,
+    ScatterplotLayer,
+    SolidPolygonLayer,
+    viz,
+)
 from lonboard._geoarrow.geopandas_interop import geopandas_to_geoarrow
 from lonboard.layer_extension import DataFilterExtension
 
@@ -122,3 +129,9 @@ def test_bitmap_layer():
         bounds=[-122.5190, 37.7045, -122.355, 37.829],
     )
     _m = Map(layer)
+
+
+def test_point_cloud_layer():
+    points = shapely.points([0, 1], [2, 3], [4, 5])
+    gdf = gpd.GeoDataFrame(geometry=points)
+    _layer = PointCloudLayer.from_geopandas(gdf)
