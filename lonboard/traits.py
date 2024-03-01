@@ -7,7 +7,7 @@ documentation on how to define new traitlet types.
 from __future__ import annotations
 
 import warnings
-from typing import Any, List, Set, Tuple, Union, cast
+from typing import Any, List, Optional, Set, Tuple, Union, cast
 
 import matplotlib as mpl
 import numpy as np
@@ -131,12 +131,14 @@ class PyarrowTableTrait(FixedErrorTraitType):
         self: TraitType,
         *args,
         allowed_geometry_types: Set[bytes] | None = None,
+        allowed_dimensions: Optional[Set[int]] = None,
         **kwargs: Any,
     ) -> None:
         super().__init__(*args, **kwargs)
         self.tag(
             sync=True,
             allowed_geometry_types=allowed_geometry_types,
+            allowed_dimensions=allowed_dimensions,
             **TABLE_SERIALIZATION,
         )
 
@@ -145,26 +147,39 @@ class PyarrowTableTrait(FixedErrorTraitType):
             self.error(obj, value)
 
         allowed_geometry_types = self.metadata.get("allowed_geometry_types")
-        # No restriction on the allowed geometry types in this table
-        if not allowed_geometry_types:
-            return value
+        allowed_geometry_types = cast(Optional[Set[bytes]], allowed_geometry_types)
 
-        allowed_geometry_types = cast(Set[bytes], allowed_geometry_types)
+        allowed_dimensions = self.metadata.get("allowed_dimensions")
+        allowed_dimensions = cast(Optional[Set[int]], allowed_dimensions)
+
         geom_col_idx = get_geometry_column_index(value.schema)
-        geometry_extension_type = value.schema.field(geom_col_idx).metadata.get(
-            b"ARROW:extension:name"
-        )
 
-        if (
-            allowed_geometry_types
-            and geometry_extension_type not in allowed_geometry_types
-        ):
-            allowed_types_str = ", ".join(map(str, allowed_geometry_types))
-            msg = (
-                f"Expected one of {allowed_types_str} geometry types, "
-                f"got {geometry_extension_type}."
+        # No restriction on the allowed geometry types in this table
+        if allowed_geometry_types:
+            geometry_extension_type = value.schema.field(geom_col_idx).metadata.get(
+                b"ARROW:extension:name"
             )
-            self.error(obj, value, info=msg)
+
+            if (
+                allowed_geometry_types
+                and geometry_extension_type not in allowed_geometry_types
+            ):
+                allowed_types_str = ", ".join(map(str, allowed_geometry_types))
+                msg = (
+                    f"Expected one of {allowed_types_str} geometry types, "
+                    f"got {geometry_extension_type}."
+                )
+                self.error(obj, value, info=msg)
+
+        if allowed_dimensions:
+            typ = value.column(geom_col_idx).type
+            while isinstance(typ, pa.ListType):
+                typ = typ.value_type
+
+            assert isinstance(typ, pa.FixedSizeListType)
+            if typ.list_size not in allowed_dimensions:
+                msg = " or ".join(map(str, list(allowed_dimensions)))
+                self.error(obj, value, info=f"{msg}-dimensional points")
 
         return value
 
@@ -189,7 +204,7 @@ class ColorAccessor(FixedErrorTraitType):
       PyCapsule
       Interface](https://arrow.apache.org/docs/format/CDataInterface/PyCapsuleInterface.html).
 
-    You can use helpers in the `lonboard.colormap` module (i.e.
+    You can use helpers in the [`lonboard.colormap`][lonboard.colormap] module (i.e.
     [`apply_continuous_cmap`][lonboard.colormap.apply_continuous_cmap]) to simplify
     constructing numpy arrays for color values.
     """
@@ -745,10 +760,6 @@ class NormalAccessor(FixedErrorTraitType):
     def validate(
         self, obj, value
     ) -> Union[Tuple[int, ...], List[int], pa.ChunkedArray, pa.FixedSizeListArray]:
-        """
-        Values in acceptable types must be contiguous
-        (the same length for all values)
-        """
         if isinstance(value, (tuple, list)):
             if len(value) != 3:
                 self.error(

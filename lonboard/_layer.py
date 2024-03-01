@@ -28,7 +28,12 @@ from lonboard._geoarrow.sanitize import remove_extension_classes
 from lonboard._serialization import infer_rows_per_chunk
 from lonboard._utils import auto_downcast as _auto_downcast
 from lonboard._utils import get_geometry_column_index, remove_extension_kwargs
-from lonboard.traits import ColorAccessor, FloatAccessor, PyarrowTableTrait
+from lonboard.traits import (
+    ColorAccessor,
+    FloatAccessor,
+    NormalAccessor,
+    PyarrowTableTrait,
+)
 
 if TYPE_CHECKING:
     if sys.version_info >= (3, 11):
@@ -923,6 +928,93 @@ class PathLayer(BaseArrowLayer):
         - If a number is provided, it is used as the width for all paths.
         - If an array is provided, each value in the array will be used as the width for
           the path at the same row index.
+    - Default: `1`.
+    """
+
+
+class PointCloudLayer(BaseArrowLayer):
+    """
+    The `PointCloudLayer` renders a point cloud with 3D positions, normals and colors.
+
+    The `PointCloudLayer` can be more efficient at rendering large quantities of points
+    than the [`ScatterplotLayer`][lonboard.ScatterplotLayer], but has fewer rendering
+    options. In particular, you can have only one point size across all points in your
+    data.
+
+    **Example:**
+
+    From GeoPandas:
+
+    ```py
+    import geopandas as gpd
+    from lonboard import Map, PointCloudLayer
+
+    # A GeoDataFrame with Point geometries
+    gdf = gpd.GeoDataFrame()
+    layer = PointCloudLayer.from_geopandas(
+        gdf,
+        get_color=[255, 0, 0],
+        point_size=2,
+    )
+    m = Map(layer)
+    ```
+    """
+
+    _layer_type = traitlets.Unicode("point-cloud").tag(sync=True)
+
+    table = PyarrowTableTrait(
+        allowed_geometry_types={EXTENSION_NAME.POINT}, allowed_dimensions={3}
+    )
+    """A GeoArrow table with a Point column.
+
+    This is the fastest way to plot data from an existing GeoArrow source, such as
+    [geoarrow-rust](https://geoarrow.github.io/geoarrow-rs/python/latest) or
+    [geoarrow-pyarrow](https://geoarrow.github.io/geoarrow-python/main/index.html).
+
+    If you have a GeoPandas `GeoDataFrame`, use
+    [`from_geopandas`][lonboard.PointCloudLayer.from_geopandas] instead.
+    """
+
+    size_units = traitlets.Unicode(None, allow_none=True).tag(sync=True)
+    """
+    The units of the line width, one of `'meters'`, `'common'`, and `'pixels'`. See
+    [unit
+    system](https://deck.gl/docs/developer-guide/coordinate-systems#supported-units).
+
+    - Type: `str`, optional
+    - Default: `'pixels'`
+    """
+
+    point_size = traitlets.Float(None, allow_none=True, min=0).tag(sync=True)
+    """
+    Global radius of all points, in units specified by `size_units`.
+
+    - Type: `float`, optional
+    - Default: `10`
+    """
+
+    get_color = ColorAccessor(None, allow_none=True)
+    """
+    The color of each path in the format of `[r, g, b, [a]]`. Each channel is a number
+    between 0-255 and `a` is 255 if not supplied.
+
+    - Type: [ColorAccessor][lonboard.traits.ColorAccessor], optional
+        - If a single `list` or `tuple` is provided, it is used as the color for all
+          paths.
+        - If a numpy or pyarrow array is provided, each value in the array will be used
+          as the color for the path at the same row index.
+    - Default: `[0, 0, 0, 255]`.
+    """
+
+    get_normal = NormalAccessor(None, allow_none=True)
+    """
+    The normal of each object, in `[nx, ny, nz]`.
+
+    - Type: [NormalAccessor][lonboard.traits.NormalAccessor], optional
+        - If a single `list` or `tuple` is provided, it is used as the normal for all
+          points.
+        - If a numpy or pyarrow array is provided, each value in the array will be used
+          as the normal for the point at the same row index.
     - Default: `1`.
     """
 
