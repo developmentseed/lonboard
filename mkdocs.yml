@@ -21,7 +21,8 @@ extra:
 
 nav:
   - "index.md"
-  - Example Notebooks:
+  - Examples:
+      - examples/index.md
       - examples/internet-speeds.ipynb
       - examples/north-america-roads.ipynb
       - examples/migration.ipynb
@@ -177,12 +178,15 @@ markdown_extensions:
       guess_lang: false
   - def_list
   - footnotes
+  - md_in_html
   - pymdownx.arithmatex
   - pymdownx.betterem
   - pymdownx.caret:
       insert: false
   - pymdownx.details
-  - pymdownx.emoji
+  - pymdownx.emoji:
+      emoji_index: !!python/name:material.extensions.emoji.twemoji
+      emoji_generator: !!python/name:material.extensions.emoji.to_svg
   - pymdownx.escapeall:
       hardbreak: true
       nbsp: true
