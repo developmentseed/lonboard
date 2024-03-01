@@ -1,12 +1,12 @@
 from __future__ import annotations
 
+import sys
 from typing import (
     List,
     Literal,
     Protocol,
     Sequence,
     Tuple,
-    TypedDict,
     Union,
 )
 
@@ -16,6 +16,11 @@ import pyarrow as pa
 from numpy.typing import NDArray
 
 from lonboard._base import BaseExtension
+
+if sys.version_info >= (3, 12):
+    from typing import TypedDict
+else:
+    from typing_extensions import TypedDict
 
 
 class ArrowArrayExportable(Protocol):
