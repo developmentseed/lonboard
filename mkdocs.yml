@@ -40,6 +40,7 @@ nav:
           - api/layers/bitmap-tile-layer.md
           - api/layers/heatmap-layer.md
           - api/layers/path-layer.md
+          - api/layers/point-cloud-layer.md
           - api/layers/scatterplot-layer.md
           - api/layers/solid-polygon-layer.md
           - api/layers/base-layer.md
