@@ -1,7 +1,8 @@
 from __future__ import annotations
 
+import sys
 from pathlib import Path
-from typing import IO, Optional, Sequence, TextIO, Union
+from typing import IO, TYPE_CHECKING, Optional, Sequence, TextIO, Union
 
 import ipywidgets
 import traitlets
@@ -12,6 +13,14 @@ from lonboard._environment import DEFAULT_HEIGHT
 from lonboard._layer import BaseLayer
 from lonboard._viewport import compute_view
 from lonboard.basemap import CartoBasemap
+from lonboard.types.map import MapKwargs
+
+if TYPE_CHECKING:
+    if sys.version_info >= (3, 12):
+        from typing import Unpack
+    else:
+        from typing_extensions import Unpack
+
 
 # bundler yields lonboard/static/{index.js,styles.css}
 bundler_output_dir = Path(__file__).parent / "static"
@@ -64,7 +73,9 @@ class Map(BaseAnyWidget):
     ```
     """
 
-    def __init__(self, layers: Union[BaseLayer, Sequence[BaseLayer]], **kwargs) -> None:
+    def __init__(
+        self, layers: Union[BaseLayer, Sequence[BaseLayer]], **kwargs: Unpack[MapKwargs]
+    ) -> None:
         """Create a new Map.
 
         Aside from the `layers` argument, pass keyword arguments for any other attribute

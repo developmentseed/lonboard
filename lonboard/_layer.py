@@ -10,7 +10,13 @@
 from __future__ import annotations
 
 import sys
-from typing import TYPE_CHECKING, List, Optional, Sequence, Tuple
+from typing import (
+    TYPE_CHECKING,
+    List,
+    Optional,
+    Sequence,
+    Tuple,
+)
 
 import geopandas as gpd
 import ipywidgets
@@ -34,12 +40,27 @@ from lonboard.traits import (
     NormalAccessor,
     PyarrowTableTrait,
 )
+from lonboard.types.layer import (
+    BaseLayerKwargs,
+    BitmapLayerKwargs,
+    BitmapTileLayerKwargs,
+    HeatmapLayerKwargs,
+    PathLayerKwargs,
+    PointCloudLayerKwargs,
+    ScatterplotLayerKwargs,
+    SolidPolygonLayerKwargs,
+)
 
 if TYPE_CHECKING:
     if sys.version_info >= (3, 11):
         from typing import Self
     else:
         from typing_extensions import Self
+
+    if sys.version_info >= (3, 12):
+        from typing import Unpack
+    else:
+        from typing_extensions import Unpack
 
 
 class BaseLayer(BaseWidget):
@@ -185,7 +206,7 @@ class BaseLayer(BaseWidget):
 
 
 def default_geoarrow_viewport(
-    table: pa.Table
+    table: pa.Table,
 ) -> Optional[Tuple[Bbox, WeightedCentroid]]:
     # Note: in the ArcLayer we won't necessarily have a column with a geoarrow
     # extension type/metadata
@@ -236,7 +257,11 @@ class BaseArrowLayer(BaseLayer):
     table: traitlets.TraitType
 
     def __init__(
-        self, *, table: pa.Table, _rows_per_chunk: Optional[int] = None, **kwargs
+        self,
+        *,
+        table: pa.Table,
+        _rows_per_chunk: Optional[int] = None,
+        **kwargs: Unpack[BaseLayerKwargs],
     ):
         # Check for Arrow PyCapsule Interface
         # https://arrow.apache.org/docs/format/CDataInterface/PyCapsuleInterface.html
@@ -265,7 +290,11 @@ class BaseArrowLayer(BaseLayer):
 
     @classmethod
     def from_geopandas(
-        cls, gdf: gpd.GeoDataFrame, *, auto_downcast: bool = True, **kwargs
+        cls,
+        gdf: gpd.GeoDataFrame,
+        *,
+        auto_downcast: bool = True,
+        **kwargs: Unpack[BaseLayerKwargs],
     ) -> Self:
         """Construct a Layer from a geopandas GeoDataFrame.
 
@@ -310,6 +339,9 @@ class BitmapLayer(BaseLayer):
     m
     ```
     """
+
+    def __init__(self, **kwargs: BitmapLayerKwargs):
+        super().__init__(**kwargs)  # type: ignore
 
     _layer_type = traitlets.Unicode("bitmap").tag(sync=True)
 
@@ -410,6 +442,9 @@ class BitmapTileLayer(BaseLayer):
     m = Map(layer)
     ```
     """
+
+    def __init__(self, **kwargs: BitmapTileLayerKwargs):
+        super().__init__(**kwargs)  # type: ignore
 
     _layer_type = traitlets.Unicode("bitmap-tile").tag(sync=True)
 
@@ -606,6 +641,25 @@ class ScatterplotLayer(BaseArrowLayer):
     m = Map(layer)
     ```
     """
+
+    def __init__(
+        self,
+        *,
+        table: pa.Table,
+        _rows_per_chunk: Optional[int] = None,
+        **kwargs: Unpack[ScatterplotLayerKwargs],
+    ):
+        super().__init__(table=table, _rows_per_chunk=_rows_per_chunk, **kwargs)
+
+    @classmethod
+    def from_geopandas(
+        cls,
+        gdf: gpd.GeoDataFrame,
+        *,
+        auto_downcast: bool = True,
+        **kwargs: Unpack[ScatterplotLayerKwargs],
+    ) -> Self:
+        return super().from_geopandas(gdf=gdf, auto_downcast=auto_downcast, **kwargs)
 
     _layer_type = traitlets.Unicode("scatterplot").tag(sync=True)
 
@@ -819,6 +873,25 @@ class PathLayer(BaseArrowLayer):
     ```
     """
 
+    def __init__(
+        self,
+        *,
+        table: pa.Table,
+        _rows_per_chunk: Optional[int] = None,
+        **kwargs: Unpack[PathLayerKwargs],
+    ):
+        super().__init__(table=table, _rows_per_chunk=_rows_per_chunk, **kwargs)
+
+    @classmethod
+    def from_geopandas(
+        cls,
+        gdf: gpd.GeoDataFrame,
+        *,
+        auto_downcast: bool = True,
+        **kwargs: Unpack[PathLayerKwargs],
+    ) -> Self:
+        return super().from_geopandas(gdf=gdf, auto_downcast=auto_downcast, **kwargs)
+
     _layer_type = traitlets.Unicode("path").tag(sync=True)
 
     table = PyarrowTableTrait(
@@ -960,6 +1033,25 @@ class PointCloudLayer(BaseArrowLayer):
     ```
     """
 
+    def __init__(
+        self,
+        *,
+        table: pa.Table,
+        _rows_per_chunk: Optional[int] = None,
+        **kwargs: Unpack[PointCloudLayerKwargs],
+    ):
+        super().__init__(table=table, _rows_per_chunk=_rows_per_chunk, **kwargs)
+
+    @classmethod
+    def from_geopandas(
+        cls,
+        gdf: gpd.GeoDataFrame,
+        *,
+        auto_downcast: bool = True,
+        **kwargs: Unpack[PointCloudLayerKwargs],
+    ) -> Self:
+        return super().from_geopandas(gdf=gdf, auto_downcast=auto_downcast, **kwargs)
+
     _layer_type = traitlets.Unicode("point-cloud").tag(sync=True)
 
     table = PyarrowTableTrait(
@@ -1055,6 +1147,25 @@ class SolidPolygonLayer(BaseArrowLayer):
     m = Map(layer)
     ```
     """
+
+    def __init__(
+        self,
+        *,
+        table: pa.Table,
+        _rows_per_chunk: Optional[int] = None,
+        **kwargs: Unpack[SolidPolygonLayerKwargs],
+    ):
+        super().__init__(table=table, _rows_per_chunk=_rows_per_chunk, **kwargs)
+
+    @classmethod
+    def from_geopandas(
+        cls,
+        gdf: gpd.GeoDataFrame,
+        *,
+        auto_downcast: bool = True,
+        **kwargs: Unpack[SolidPolygonLayerKwargs],
+    ) -> Self:
+        return super().from_geopandas(gdf=gdf, auto_downcast=auto_downcast, **kwargs)
 
     _layer_type = traitlets.Unicode("solid-polygon").tag(sync=True)
 
@@ -1193,10 +1304,20 @@ class HeatmapLayer(BaseArrowLayer):
 
     """
 
-    def __init__(self, *args, table: pa.Table, **kwargs):
+    def __init__(self, *, table: pa.Table, **kwargs: Unpack[HeatmapLayerKwargs]):
         # NOTE: we override the default for _rows_per_chunk because otherwise we render
         # one heatmap per _chunk_ not for the entire dataset.
-        super().__init__(*args, table=table, _rows_per_chunk=len(self.table), **kwargs)
+        super().__init__(table=table, _rows_per_chunk=len(table), **kwargs)
+
+    @classmethod
+    def from_geopandas(
+        cls,
+        gdf: gpd.GeoDataFrame,
+        *,
+        auto_downcast: bool = True,
+        **kwargs: Unpack[HeatmapLayerKwargs],
+    ) -> Self:
+        return super().from_geopandas(gdf=gdf, auto_downcast=auto_downcast, **kwargs)
 
     _layer_type = traitlets.Unicode("heatmap").tag(sync=True)
 

@@ -396,7 +396,7 @@ class TextAccessor(FixedErrorTraitType):
     Various input is allowed:
 
     - A `str`. This will be used as the value for all objects.
-    - A numpy `ndarray` with a string data type Each value in the array will be used as
+    - A numpy `ndarray` with a string data type. Each value in the array will be used as
       the value for the object at the same row index.
     - A pandas `Series` with a string data type. Each value in the array will be used as
       the value for the object at the same row index.
