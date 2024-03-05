@@ -62,7 +62,7 @@ def parse_geoparquet_table(table: pa.Table) -> pa.Table:
     if column_meta["encoding"] == "WKB":
         existing_field = table.schema.field(column_idx)
         existing_column = table.column(column_idx)
-        crs_metadata = {"crs": OGC_84.to_json_dict()}
+        crs_metadata = {"crs": column_meta.get("crs", OGC_84.to_json_dict())}
         metadata = {
             b"ARROW:extension:name": EXTENSION_NAME.WKB,
             b"ARROW:extension:metadata": json.dumps(crs_metadata),
