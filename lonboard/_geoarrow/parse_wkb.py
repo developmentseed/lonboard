@@ -1,13 +1,15 @@
-"""Handle GeoArrow tables with WKB-encoded geometry
-"""
+"""Handle GeoArrow tables with WKB-encoded geometry"""
+
+import json
 from typing import Tuple
 
 import pyarrow as pa
 import shapely
 
-from lonboard._constants import EXTENSION_NAME
+from lonboard._constants import EXTENSION_NAME, OGC_84
 from lonboard._geoarrow.crs import get_field_crs
 from lonboard._geoarrow.extension_types import construct_geometry_array
+from lonboard._utils import get_geometry_column_index
 
 
 def parse_wkb_table(table: pa.Table) -> pa.Table:
@@ -16,6 +18,8 @@ def parse_wkb_table(table: pa.Table) -> pa.Table:
     If no columns are WKB-encoded, returns the input. Note that WKB columns must be
     tagged with an extension name of `geoarrow.wkb` or `ogc.wkb`
     """
+    table = parse_geoparquet_table(table)
+
     wkb_names = {EXTENSION_NAME.WKB, EXTENSION_NAME.OGC_WKB}
     for field_idx in range(len(table.schema)):
         field = table.field(field_idx)
@@ -28,6 +32,43 @@ def parse_wkb_table(table: pa.Table) -> pa.Table:
         if extension_type_name in wkb_names:
             new_field, new_column = parse_wkb_column(field, column)
             table = table.set_column(field_idx, new_field, new_column)
+
+    return table
+
+
+def parse_geoparquet_table(table: pa.Table) -> pa.Table:
+    """Parse GeoParquet table metadata, assigning it to GeoArrow metadata"""
+    # If a column already has geoarrow metadata, don't parse from GeoParquet metadata
+    if get_geometry_column_index(table.schema) is not None:
+        return table
+
+    schema_metadata = table.schema.metadata or {}
+    geo_metadata = schema_metadata.get(b"geo")
+    if not geo_metadata:
+        return table
+
+    try:
+        geo_metadata = json.loads(geo_metadata)
+    except json.JSONDecodeError:
+        return table
+
+    primary_column = geo_metadata["primary_column"]
+    column_meta = geo_metadata["columns"][primary_column]
+    column_idx = [
+        idx for idx, name in enumerate(table.column_names) if name == primary_column
+    ]
+    assert len(column_idx) == 1, f"Expected one column with name {primary_column}"
+    column_idx = column_idx[0]
+    if column_meta["encoding"] == "WKB":
+        existing_field = table.schema.field(column_idx)
+        existing_column = table.column(column_idx)
+        crs_metadata = {"crs": OGC_84.to_json_dict()}
+        metadata = {
+            b"ARROW:extension:name": EXTENSION_NAME.WKB,
+            b"ARROW:extension:metadata": json.dumps(crs_metadata),
+        }
+        new_field = existing_field.with_metadata(metadata)
+        table = table.set_column(column_idx, new_field, existing_column)
 
     return table
 
