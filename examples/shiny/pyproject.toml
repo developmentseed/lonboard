@@ -1,0 +1,10 @@
+[tool.poetry]
+package-mode = false
+
+[tool.poetry.dependencies]
+python = "^3.9"
+shiny = "^0.8.0"
+shinywidgets = "^0.3.1"
+lonboard = "^0.6.0"
+pandas = "^2.2.1"
+plotly = "^5.19.0"
