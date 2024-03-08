@@ -4,7 +4,7 @@ import { parseAccessor } from "../accessor.js";
 import type { WidgetModel } from "@jupyter-widgets/base";
 
 export abstract class BaseModel {
-  protected model: WidgetModel;
+  model: WidgetModel;
   protected callbacks: Map<string, () => void>;
   protected updateStateCallback: () => void;
 
