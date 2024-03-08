@@ -70,15 +70,14 @@ def read_geoparquet(path: Path):
         i for (i, name) in enumerate(table.schema.names) if name == geometry_column_name
     ][0]
 
-    crs_dict = geo_meta["columns"][geometry_column_name]["crs"]
-
-    # Parse CRS and create PROJJSON
-    ext_meta = {"crs": crs_dict}
-
     metadata = {
         b"ARROW:extension:name": b"geoarrow.wkb",
-        b"ARROW:extension:metadata": json.dumps(ext_meta).encode(),
     }
+    crs_dict = geo_meta["columns"][geometry_column_name].get("crs")
+    if crs_dict:
+        # Parse CRS and create PROJJSON
+        ext_meta = {"crs": crs_dict}
+        metadata[b"ARROW:extension:metadata"] = json.dumps(ext_meta).encode()
 
     new_field = table.schema.field(geometry_column_index).with_metadata(metadata)
     new_schema = table.schema.set(geometry_column_index, new_field)
