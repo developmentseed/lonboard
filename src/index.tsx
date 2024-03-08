@@ -1,10 +1,10 @@
 import * as React from "react";
-import { useState, useEffect } from "react";
+import { useState, useEffect, useMemo } from "react";
 import { createRender, useModelState, useModel } from "@anywidget/react";
 import type { Initialize, Render } from "@anywidget/types";
 import Map from "react-map-gl/maplibre";
 import DeckGL from "@deck.gl/react/typed";
-import type { Layer } from "@deck.gl/core/typed";
+import type { Layer, PickingInfo } from "@deck.gl/core/typed";
 import { BaseLayerModel, initializeLayer } from "./model/index.js";
 import type { WidgetModel } from "@jupyter-widgets/base";
 import { initParquetWasm } from "./parquet.js";
@@ -119,6 +119,77 @@ function App() {
     }
   }, []);
 
+  const [selectionStart, setSelectionStart] = useState<
+    undefined | [[number, number], number[] | undefined]
+  >();
+  const [selectionEnd, setSelectionEnd] = useState<
+    undefined | [[number, number], number[] | undefined]
+  >();
+
+  function onClick(info: PickingInfo) {
+    if (selectionEnd !== undefined) {
+      setSelectionStart(undefined);
+      setSelectionEnd(undefined);
+    } else if (selectionStart !== undefined && selectionEnd === undefined) {
+      setSelectionEnd([[info.x, info.y], info.coordinate]);
+    } else {
+      setSelectionStart([[info.x, info.y], info.coordinate]);
+      setSelectionEnd(undefined);
+    }
+  }
+
+  const selectionIndicator = useMemo(() => {
+    // TODO: Recalculate this on layout change
+    // TODO: Recalculate this on deckgl viewport change -- should be geo references
+    if (selectionStart && selectionEnd) {
+      const width = Math.abs(selectionEnd[0][0] - selectionStart[0][0]);
+      const height = Math.abs(selectionEnd[0][1] - selectionStart[0][1]);
+      const left = Math.min(selectionStart[0][0], selectionEnd[0][0]);
+      const top = Math.min(selectionStart[0][1], selectionEnd[0][1]);
+
+      console.log(
+        `Selection made: left=${left} top=${top} width=${width} height=${height}`,
+      );
+      console.log(`Map coords: ${selectionStart[1]} ${selectionEnd[1]}`);
+
+      return (
+        <div
+          style={{
+            position: "relative",
+            left,
+            top,
+            width,
+            height,
+            // show selection area
+            borderColor: "black",
+            borderWidth: "1px",
+            backgroundColor: "rgba(0,0,1,0.5)",
+          }}
+        />
+      );
+    } else if (selectionStart) {
+      return (
+        <div
+          style={{
+            position: "relative",
+            left: selectionStart[0][0],
+            top: selectionStart[0][1],
+            width: 5,
+            height: 5,
+            // show selection area
+            borderColor: "black",
+            borderWidth: "1px",
+            backgroundColor: "rgba(0,0,1,0.5)",
+            // render as a circle
+            borderRadius: "2px",
+          }}
+        />
+      );
+    } else {
+      return undefined;
+    }
+  }, [selectionStart, selectionEnd]);
+
   return (
     <div id={`map-${mapId}`} style={{ height: mapHeight || "100%" }}>
       <DeckGL
@@ -134,8 +205,17 @@ function App() {
         // @ts-expect-error
         getTooltip={showTooltip && getTooltip}
         pickingRadius={pickingRadius}
+        onClick={onClick}
       >
         <Map mapStyle={mapStyle || DEFAULT_MAP_STYLE} />
+        <div
+          style={{
+            height: "100%",
+            width: "100%",
+          }}
+        >
+          {selectionIndicator}
+        </div>
       </DeckGL>
     </div>
   );
