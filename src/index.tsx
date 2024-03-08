@@ -165,7 +165,8 @@ function App() {
             // show selection area
             borderColor: "black",
             borderWidth: "1px",
-            backgroundColor: "rgba(0,0,1,0.5)",
+            borderStyle: "solid",
+            backgroundColor: "rgba(0,0,1,0.2)",
           }}
         />
       );
