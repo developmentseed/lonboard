@@ -119,6 +119,7 @@ function App() {
     }
   }, []);
 
+  // State is an array of: [screen coordinates, geographic coordinates]
   const [selectionStart, setSelectionStart] = useState<
     undefined | [[number, number], number[] | undefined]
   >();
@@ -142,6 +143,7 @@ function App() {
     // TODO: Recalculate this on layout change
     // TODO: Recalculate this on deckgl viewport change -- should be geo references
     if (selectionStart && selectionEnd) {
+      // Show the selected screen area
       const width = Math.abs(selectionEnd[0][0] - selectionStart[0][0]);
       const height = Math.abs(selectionEnd[0][1] - selectionStart[0][1]);
       const left = Math.min(selectionStart[0][0], selectionEnd[0][0]);
@@ -168,6 +170,7 @@ function App() {
         />
       );
     } else if (selectionStart) {
+      // Show the selection start point (note this does not show the proposed bounding box, but could be done)
       return (
         <div
           style={{
@@ -208,14 +211,7 @@ function App() {
         onClick={onClick}
       >
         <Map mapStyle={mapStyle || DEFAULT_MAP_STYLE} />
-        <div
-          style={{
-            height: "100%",
-            width: "100%",
-          }}
-        >
-          {selectionIndicator}
-        </div>
+        {selectionIndicator}
       </DeckGL>
     </div>
   );
