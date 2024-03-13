@@ -1,9 +1,9 @@
 import * as React from "react";
-import { useState, useEffect, useMemo } from "react";
+import { useState, useEffect, useMemo, useRef } from "react";
 import { createRender, useModelState, useModel } from "@anywidget/react";
 import type { Initialize, Render } from "@anywidget/types";
 import Map from "react-map-gl/maplibre";
-import DeckGL from "@deck.gl/react/typed";
+import DeckGL, { DeckGLRef } from "@deck.gl/react/typed";
 import { PolygonLayer, ScatterplotLayer } from "@deck.gl/layers/typed"; 
 import type { Layer, PickingInfo } from "@deck.gl/core/typed";
 import { BaseLayerModel, initializeLayer } from "./model/index.js";
@@ -12,7 +12,6 @@ import { initParquetWasm } from "./parquet.js";
 import { getTooltip } from "./tooltip/index.js";
 import { loadChildModels } from "./util.js";
 import { v4 as uuidv4 } from "uuid";
-import { RGBAImage } from "maplibre-gl";
 
 await initParquetWasm();
 
@@ -68,7 +67,7 @@ function App() {
   let [showTooltip] = useModelState<boolean>("show_tooltip");
   let [pickingRadius] = useModelState<number>("picking_radius");
   const [mapId] = useState(uuidv4());
-
+  let mapRef = useRef<DeckGLRef>(null);
   let [subModelState, setSubModelState] = useState<
     Record<string, BaseLayerModel>
   >({});
@@ -136,6 +135,17 @@ function App() {
       setSelectionEnd(undefined);
     } else if (selectionStart !== undefined && selectionEnd === undefined) {
       setSelectionEnd([[info.x, info.y], info.coordinate]);
+      const width = Math.abs(info.x - info.y);
+      const height = Math.abs(info.y - selectionStart[0][1]);
+      const left = Math.min(selectionStart[0][0], info.x);
+      const top = Math.min(selectionStart[0][1], info.y);
+      const selectedObjects = mapRef.current?.pickObjects({
+        x: left,
+        y: top,
+        width,
+        height
+      });
+      console.log('selected on map', selectedObjects);
     } else {
       setSelectionStart([[info.x, info.y], info.coordinate]);
       setSelectionEnd(undefined);
@@ -143,18 +153,8 @@ function App() {
   }
 
   const selectionIndicator = useMemo(() => {
-    // TODO: Recalculate this on layout change
-    // TODO: Recalculate this on deckgl viewport change -- should be geo references
-    if (selectionStart && selectionEnd) {
-      // Show the selected screen area
-      // const width = Math.abs(selectionEnd[0][0] - selectionStart[0][0]);
-      // const height = Math.abs(selectionEnd[0][1] - selectionStart[0][1]);
-      // const left = Math.min(selectionStart[0][0], selectionEnd[0][0]);
-      // const top = Math.min(selectionStart[0][1], selectionEnd[0][1]);
 
-      // console.log(
-      //   `Selection made: left=${left} top=${top} width=${width} height=${height}`,
-      // );
+    if (selectionStart && selectionEnd) {
       console.log(`Map coords: ${selectionStart[1]} ${selectionEnd[1]}`);
       const pt1 = selectionStart[1];
       const pt2 = selectionEnd[1];
@@ -219,6 +219,7 @@ function App() {
         getTooltip={showTooltip && getTooltip}
         pickingRadius={pickingRadius}
         onClick={onClick}
+        ref={mapRef}
       >
         <Map mapStyle={mapStyle || DEFAULT_MAP_STYLE} />
       </DeckGL>
