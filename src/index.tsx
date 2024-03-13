@@ -135,7 +135,7 @@ function App() {
       setSelectionEnd(undefined);
     } else if (selectionStart !== undefined && selectionEnd === undefined) {
       setSelectionEnd([[info.x, info.y], info.coordinate]);
-      const width = Math.abs(info.x - info.y);
+      const width = Math.abs(info.x - selectionStart[0][0]);
       const height = Math.abs(info.y - selectionStart[0][1]);
       const left = Math.min(selectionStart[0][0], info.x);
       const top = Math.min(selectionStart[0][1], info.y);
