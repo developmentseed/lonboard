@@ -287,8 +287,8 @@ class Map(BaseAnyWidget):
             longitude: The longitude of the new viewport.
             latitude: The latitude of the new viewport.
             zoom: The zoom of the new viewport.
-            pitch: The pitch of the new viewport.. Defaults to 0.
-            bearing: The bearing of the new viewport.. Defaults to 0.
+            pitch: The pitch of the new viewport. Defaults to 0.
+            bearing: The bearing of the new viewport. Defaults to 0.
             duration: The number of milliseconds for the viewport transition to take.
                 Defaults to 4000.
             curve: The zooming "curve" that will occur along the flight path. Default
