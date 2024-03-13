@@ -4,6 +4,7 @@ import { createRender, useModelState, useModel } from "@anywidget/react";
 import type { Initialize, Render } from "@anywidget/types";
 import Map from "react-map-gl/maplibre";
 import DeckGL from "@deck.gl/react/typed";
+import { PolygonLayer, ScatterplotLayer } from "@deck.gl/layers/typed"; 
 import type { Layer, PickingInfo } from "@deck.gl/core/typed";
 import { BaseLayerModel, initializeLayer } from "./model/index.js";
 import type { WidgetModel } from "@jupyter-widgets/base";
@@ -11,6 +12,7 @@ import { initParquetWasm } from "./parquet.js";
 import { getTooltip } from "./tooltip/index.js";
 import { loadChildModels } from "./util.js";
 import { v4 as uuidv4 } from "uuid";
+import { RGBAImage } from "maplibre-gl";
 
 await initParquetWasm();
 
@@ -128,6 +130,7 @@ function App() {
   >();
 
   function onClick(info: PickingInfo) {
+    console.log('onclick info', info);
     if (selectionEnd !== undefined) {
       setSelectionStart(undefined);
       setSelectionEnd(undefined);
@@ -144,55 +147,61 @@ function App() {
     // TODO: Recalculate this on deckgl viewport change -- should be geo references
     if (selectionStart && selectionEnd) {
       // Show the selected screen area
-      const width = Math.abs(selectionEnd[0][0] - selectionStart[0][0]);
-      const height = Math.abs(selectionEnd[0][1] - selectionStart[0][1]);
-      const left = Math.min(selectionStart[0][0], selectionEnd[0][0]);
-      const top = Math.min(selectionStart[0][1], selectionEnd[0][1]);
+      // const width = Math.abs(selectionEnd[0][0] - selectionStart[0][0]);
+      // const height = Math.abs(selectionEnd[0][1] - selectionStart[0][1]);
+      // const left = Math.min(selectionStart[0][0], selectionEnd[0][0]);
+      // const top = Math.min(selectionStart[0][1], selectionEnd[0][1]);
 
-      console.log(
-        `Selection made: left=${left} top=${top} width=${width} height=${height}`,
-      );
+      // console.log(
+      //   `Selection made: left=${left} top=${top} width=${width} height=${height}`,
+      // );
       console.log(`Map coords: ${selectionStart[1]} ${selectionEnd[1]}`);
-
-      return (
-        <div
-          style={{
-            position: "relative",
-            left,
-            top,
-            width,
-            height,
-            // show selection area
-            borderColor: "black",
-            borderWidth: "1px",
-            borderStyle: "solid",
-            backgroundColor: "rgba(0,0,1,0.2)",
-          }}
-        />
-      );
+      const pt1 = selectionStart[1];
+      const pt2 = selectionEnd[1];
+      if (!pt1 || !pt2) return undefined;
+      const data = [
+        {
+          polygon: [
+            pt1,
+            [pt1[0], pt2[1]],
+            pt2,
+            [pt2[0], pt1[1]],
+            pt1
+          ]
+        }
+      ];
+      console.log('selection data', data);
+      return new PolygonLayer({
+        id: 'selection-layer',
+        data,
+        filled: true,
+        getFillColor: [0,0,0,40],
+        stroked: true,
+        getLineWidth: 2,
+        lineWidthUnits: 'pixels',
+        getPolygon: d => d.polygon
+      });
     } else if (selectionStart) {
       // Show the selection start point (note this does not show the proposed bounding box, but could be done)
-      return (
-        <div
-          style={{
-            position: "relative",
-            left: selectionStart[0][0],
-            top: selectionStart[0][1],
-            width: 5,
-            height: 5,
-            // show selection area
-            borderColor: "black",
-            borderWidth: "1px",
-            backgroundColor: "rgba(0,0,1,0.5)",
-            // render as a circle
-            borderRadius: "2px",
-          }}
-        />
-      );
+      return new ScatterplotLayer({
+        id: 'select-point-layer',
+        data: [
+          {
+            'coordinates': selectionStart[1]
+          }
+        ],
+        getRadius: 2,
+        radiusUnits: 'pixels',
+        getPosition: d => d.coordinates
+      });
     } else {
       return undefined;
     }
   }, [selectionStart, selectionEnd]);
+
+  if (selectionIndicator) {
+    layers.push(selectionIndicator);
+  }
 
   return (
     <div id={`map-${mapId}`} style={{ height: mapHeight || "100%" }}>
@@ -212,7 +221,6 @@ function App() {
         onClick={onClick}
       >
         <Map mapStyle={mapStyle || DEFAULT_MAP_STYLE} />
-        {selectionIndicator}
       </DeckGL>
     </div>
   );
