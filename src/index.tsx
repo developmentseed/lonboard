@@ -66,6 +66,9 @@ function App() {
   let [mapHeight] = useModelState<number>("_height");
   let [showTooltip] = useModelState<boolean>("show_tooltip");
   let [pickingRadius] = useModelState<number>("picking_radius");
+  let [selectionMode, setSelectionMode] = useState<boolean | string>(false);
+  let [selectionObjectCount, setSelectionObjectCount] = useState<boolean | number>(false);
+  let [isSelecting, setIsSelecting] = useState(false);
   const [mapId] = useState(uuidv4());
   let mapRef = useRef<DeckGLRef>(null);
   let [subModelState, setSubModelState] = useState<
@@ -128,7 +131,19 @@ function App() {
     undefined | [[number, number], number[] | undefined]
   >();
 
-  function onClick(info: PickingInfo) {
+  function onSelectClick() {
+    if (!selectionMode) {
+      setSelectionMode('selecting');
+    }
+    if (selectionMode === 'selected') {
+      setSelectionMode(false);
+      setSelectionStart(undefined);
+      setSelectionEnd(undefined);
+    }
+  }
+
+  function onMapClick(info: PickingInfo) {
+    if (!selectionMode || selectionMode === 'selected') return;
     console.log('onclick info', info);
     if (selectionEnd !== undefined) {
       setSelectionStart(undefined);
@@ -145,7 +160,9 @@ function App() {
         width,
         height
       });
+      setSelectionMode('selected');
       console.log('selected on map', selectedObjects);
+      setSelectionObjectCount(selectedObjects ? selectedObjects.length : 0);
     } else {
       setSelectionStart([[info.x, info.y], info.coordinate]);
       setSelectionEnd(undefined);
@@ -153,7 +170,7 @@ function App() {
   }
 
   const selectionIndicator = useMemo(() => {
-
+    if (!selectionMode) return undefined;
     if (selectionStart && selectionEnd) {
       console.log(`Map coords: ${selectionStart[1]} ${selectionEnd[1]}`);
       const pt1 = selectionStart[1];
@@ -197,7 +214,7 @@ function App() {
     } else {
       return undefined;
     }
-  }, [selectionStart, selectionEnd]);
+  }, [selectionStart, selectionEnd, selectionMode]);
 
   if (selectionIndicator) {
     layers.push(selectionIndicator);
@@ -218,11 +235,26 @@ function App() {
         // @ts-expect-error
         getTooltip={showTooltip && getTooltip}
         pickingRadius={pickingRadius}
-        onClick={onClick}
+        onClick={onMapClick}
         ref={mapRef}
       >
         <Map mapStyle={mapStyle || DEFAULT_MAP_STYLE} />
+
       </DeckGL>
+      <div
+          style={{
+            position: "relative",
+            top: "2px",
+            right: "2px",
+            backgroundColor: '#fff',
+            padding: "2px"
+          }}
+          onClick={onSelectClick}
+        >
+          { !selectionMode ? 'Click to start selecting' : ''}
+          { selectionMode === 'selecting' ? 'Click two points on map to draw bounding box' : ''}
+          { selectionMode === 'selected' ? `${selectionObjectCount} objects selected. Click to Unselect.` : ''}
+      </div>
     </div>
   );
 }
