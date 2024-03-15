@@ -1,4 +1,5 @@
 import { AnyModel } from "@anywidget/types";
+import { v4 } from "uuid";
 
 type Message<T> = {
   id: string;
@@ -22,7 +23,7 @@ export function dispatch<T>(
   action: Action,
   { timeout = 3000 } = {},
 ) {
-  let id = Date.now().toString(36);
+  let id = v4();
   return new Promise((resolve, reject) => {
     let timer = setTimeout(() => {
       reject(new Error(`Promise timed out after ${timeout} ms`));
