@@ -273,14 +273,33 @@ export class BitmapTileModel extends BaseLayerModel {
   async getTileData(tile: TileLoadProps) {
     // const { data, getTileData, fetch } = this.props;
     const { signal } = tile;
+    const { x, y, z } = tile.index;
 
     console.log(tile);
     console.log("making dispatch");
     console.log("this");
     console.log(this);
-    const x = await dispatch(this.model, "getTileData");
-    console.log("received dispatch");
-    console.log(x);
+    const requestData = {
+      x,
+      y,
+      z,
+    };
+    const [msg, buffers] = await dispatch(this.model, {
+      type: "get-tile-data",
+      data: requestData,
+    });
+    const dataView: DataView = buffers[0];
+    console.log("dataView", dataView);
+    console.log("request:", requestData, "response:", msg);
+
+    const blob = new Blob([dataView.buffer], { type: "image/png" });
+    const imageBitmap = await createImageBitmap(blob);
+    return imageBitmap;
+
+    // console.log("received dispatch");
+    // console.log(tileData);
+    // createImageBitmap()
+    // new ImageBitmap()
 
     // // tile.url =
     // //   typeof data === "string" || Array.isArray(data)
