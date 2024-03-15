@@ -4,13 +4,15 @@ import { createRender, useModelState, useModel } from "@anywidget/react";
 import type { Initialize, Render } from "@anywidget/types";
 import Map from "react-map-gl/maplibre";
 import DeckGL from "@deck.gl/react/typed";
-import type { Layer } from "@deck.gl/core/typed";
+import { MapViewState, type Layer } from "@deck.gl/core/typed";
 import { BaseLayerModel, initializeLayer } from "./model/index.js";
 import type { WidgetModel } from "@jupyter-widgets/base";
 import { initParquetWasm } from "./parquet.js";
 import { getTooltip } from "./tooltip/index.js";
-import { loadChildModels } from "./util.js";
+import { isDefined, loadChildModels } from "./util.js";
 import { v4 as uuidv4 } from "uuid";
+import { Message } from "./types.js";
+import { flyTo } from "./actions/fly-to.js";
 
 await initParquetWasm();
 
@@ -60,17 +62,40 @@ async function getChildModelState(
 }
 
 function App() {
-  let [initialViewState] = useModelState<DataView>("_initial_view_state");
+  let model = useModel();
+
+  let [pythonInitialViewState] = useModelState<MapViewState>(
+    "_initial_view_state",
+  );
   let [mapStyle] = useModelState<string>("basemap_style");
   let [mapHeight] = useModelState<number>("_height");
   let [showTooltip] = useModelState<boolean>("show_tooltip");
   let [pickingRadius] = useModelState<number>("picking_radius");
+  let [useDevicePixels] = useModelState<number | boolean>("use_device_pixels");
+  let [parameters] = useModelState<object>("parameters");
+
+  let [initialViewState, setInitialViewState] = useState(
+    pythonInitialViewState,
+  );
+
+  // Handle custom messages
+  model.on("msg:custom", (msg: Message, buffers) => {
+    switch (msg.type) {
+      case "fly-to":
+        flyTo(msg, setInitialViewState);
+        break;
+
+      default:
+        break;
+    }
+  });
+
   const [mapId] = useState(uuidv4());
 
   let [subModelState, setSubModelState] = useState<
     Record<string, BaseLayerModel>
   >({});
-  let model = useModel();
+
   let [childLayerIds] = useModelState<string[]>("layers");
 
   // Fake state just to get react to re-render when a model callback is called
@@ -134,6 +159,13 @@ function App() {
         // @ts-expect-error
         getTooltip={showTooltip && getTooltip}
         pickingRadius={pickingRadius}
+        useDevicePixels={isDefined(useDevicePixels) ? useDevicePixels : true}
+        // https://deck.gl/docs/api-reference/core/deck#_typedarraymanagerprops
+        _typedArrayManagerProps={{
+          overAlloc: 1,
+          poolSize: 0,
+        }}
+        parameters={parameters || {}}
       >
         <Map mapStyle={mapStyle || DEFAULT_MAP_STYLE} />
       </DeckGL>
