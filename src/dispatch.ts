@@ -6,9 +6,20 @@ type Message<T> = {
   response: T;
 };
 
+type GetTileDataAction = {
+  type: "get-tile-data";
+  data: {
+    x: number;
+    y: number;
+    z: number;
+  };
+};
+
+type Action = GetTileDataAction;
+
 export function dispatch<T>(
   model: AnyModel,
-  action: any,
+  action: Action,
   { timeout = 3000 } = {},
 ) {
   let id = Date.now().toString(36);

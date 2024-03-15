@@ -16,7 +16,6 @@ from typing import (
     Optional,
     Sequence,
     Tuple,
-    Union,
 )
 
 import geopandas as gpd
@@ -446,28 +445,28 @@ class BitmapTileLayer(BaseLayer):
 
     called = 0
 
-    def __init__(self, **kwargs: BitmapTileLayerKwargs):
-        def _handle_anywidget_dispatch(
-            widget: ipywidgets.Widget, msg: Union[str, list, dict], buffers: List[bytes]
-        ) -> None:
-            self.called += 1
-            print(msg)
-            if not isinstance(msg, dict) or msg.get("kind") != "anywidget-dispatch":
-                return
+    # def __init__(self, **kwargs: BitmapTileLayerKwargs):
+    #     def _handle_anywidget_dispatch(
+    #         widget: ipywidgets.Widget, msg: Union[str, list, dict], buffers: List[bytes]
+    #     ) -> None:
+    #         self.called += 1
+    #         print(msg)
+    #         if not isinstance(msg, dict) or msg.get("kind") != "anywidget-dispatch":
+    #             return
 
-            print("test")
-            print(msg)
-            self.send(
-                {
-                    "id": msg["id"],
-                    "kind": "anywidget-dispatch-response",
-                    "response": "hello world",
-                }
-            )
+    #         print("test")
+    #         print(msg)
+    #         self.send(
+    #             {
+    #                 "id": msg["id"],
+    #                 "kind": "anywidget-dispatch-response",
+    #                 "response": "hello world",
+    #             }
+    #         )
 
-        print("before on msg")
-        self.on_msg(_handle_anywidget_dispatch)
-        super().__init__(**kwargs)  # type: ignore
+    #     print("before on msg")
+    #     self.on_msg(_handle_anywidget_dispatch)
+    #     super().__init__(**kwargs)  # type: ignore
 
     _layer_type = traitlets.Unicode("bitmap-tile").tag(sync=True)
 
@@ -627,6 +626,63 @@ class BitmapTileLayer(BaseLayer):
     - Type: `List[float]`, optional
     - Default: `[255, 255, 255]`
     """
+
+
+from IPython.display import Javascript
+from rio_tiler.io import Reader
+
+
+class RasterLayer(BitmapTileLayer):
+    _layer_type = traitlets.Unicode("bitmap-tile").tag(sync=True)
+
+    dataset: Reader
+    requests: list
+
+    def __init__(self, dataset, **kwargs: BitmapTileLayerKwargs):
+        self.dataset = dataset
+        self.requests = []
+
+        def _handle_anywidget_dispatch(
+            widget: ipywidgets.Widget, msg: dict, buffers: List[bytes]
+        ) -> None:
+            self.requests.append(msg)
+
+            js_print = f"console.log('{msg} from python')"
+            Javascript(js_print)
+            print(msg)
+
+            if not isinstance(msg, dict) or msg.get("kind") != "anywidget-dispatch":
+                return
+
+            action = msg["action"]
+            x = action["data"]["x"]
+            y = action["data"]["y"]
+            z = action["data"]["z"]
+
+            img = self.dataset.tile(
+                x,
+                y,
+                z,
+                tilesize=256,
+            )
+            buf = img.render()
+
+            print("test")
+            print(msg)
+            self.send(
+                {
+                    "id": msg["id"],
+                    "kind": "anywidget-dispatch-response",
+                    "response": {"x": x, "y": y, "z": z},
+                },
+                [buf],
+            )
+
+        print("before on msg")
+        self.on_msg(_handle_anywidget_dispatch)
+        super().__init__(**kwargs)  # type: ignore
+
+    pass
 
 
 class ScatterplotLayer(BaseArrowLayer):
