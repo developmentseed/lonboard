@@ -275,10 +275,6 @@ export class BitmapTileModel extends BaseLayerModel {
     const { signal } = tile;
     const { x, y, z } = tile.index;
 
-    console.log(tile);
-    console.log("making dispatch");
-    console.log("this");
-    console.log(this);
     const requestData = {
       x,
       y,
@@ -289,30 +285,10 @@ export class BitmapTileModel extends BaseLayerModel {
       data: requestData,
     });
     const dataView: DataView = buffers[0];
-    console.log("dataView", dataView);
-    console.log("request:", requestData, "response:", msg);
 
     const blob = new Blob([dataView.buffer], { type: "image/png" });
     const imageBitmap = await createImageBitmap(blob);
     return imageBitmap;
-
-    // console.log("received dispatch");
-    // console.log(tileData);
-    // createImageBitmap()
-    // new ImageBitmap()
-
-    // // tile.url =
-    // //   typeof data === "string" || Array.isArray(data)
-    // //     ? getURLFromTemplate(data, tile)
-    // //     : null;
-
-    // if (getTileData) {
-    //   return getTileData(tile);
-    // }
-    // if (fetch && tile.url) {
-    //   return fetch(tile.url, { propName: "data", layer: this, signal });
-    // }
-    return null;
   }
 
   render(): TileLayer {
