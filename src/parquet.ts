@@ -29,7 +29,7 @@ export function parseParquet(dataView: DataView): arrow.Table {
 
   // TODO: use arrow-js-ffi for more memory-efficient wasm --> js transfer
   const arrowIPCBuffer = readParquet(
-    new Uint8Array(dataView.buffer)
+    new Uint8Array(dataView.buffer),
   ).intoIPCStream();
   const arrowTable = arrow.tableFromIPC(arrowIPCBuffer);
 
@@ -57,20 +57,4 @@ export function parseParquetBuffers(dataViews: DataView[]): arrow.Table {
   }
 
   return new arrow.Table(batches);
-}
-
-export function useParquetWasm(): [boolean] {
-  const [wasmReady, setWasmReady] = useState<boolean>(false);
-
-  // Init parquet wasm
-  useEffect(() => {
-    const callback = async () => {
-      await initParquetWasm();
-      setWasmReady(true);
-    };
-
-    callback();
-  }, []);
-
-  return [wasmReady];
 }

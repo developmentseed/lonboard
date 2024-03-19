@@ -1,6 +1,7 @@
-import type { WidgetModel } from "@jupyter-widgets/base";
-import { parseAccessor } from "../accessor";
+// NOTE: the content of this file is isolated to avoid circular imports.
 
+import { parseAccessor } from "../accessor.js";
+import type { WidgetModel } from "@jupyter-widgets/base";
 
 export abstract class BaseModel {
   protected model: WidgetModel;
@@ -29,14 +30,14 @@ export abstract class BaseModel {
    * @param   {string}  pythonName  Name of attribute on Python model (usually snake-cased)
    * @param   {string}  jsName      Name of attribute in deck.gl (usually camel-cased)
    */
-  protected initRegularAttribute(pythonName: string, jsName: string) {
-    this[jsName] = this.model.get(pythonName);
+  initRegularAttribute(pythonName: string, jsName: string) {
+    this[jsName as keyof this] = this.model.get(pythonName);
 
     // Remove all existing change callbacks for this attribute
     this.model.off(`change:${pythonName}`);
 
     const callback = () => {
-      this[jsName] = this.model.get(pythonName);
+      this[jsName as keyof this] = this.model.get(pythonName);
     };
     this.model.on(`change:${pythonName}`, callback);
 
@@ -53,14 +54,14 @@ export abstract class BaseModel {
    * @param   {string}  pythonName  Name of attribute on Python model (usually snake-cased)
    * @param   {string}  jsName      Name of attribute in deck.gl (usually camel-cased)
    */
-  protected initVectorizedAccessor(pythonName: string, jsName: string) {
-    this[jsName] = parseAccessor(this.model.get(pythonName));
+  initVectorizedAccessor(pythonName: string, jsName: string) {
+    this[jsName as keyof this] = parseAccessor(this.model.get(pythonName));
 
     // Remove all existing change callbacks for this attribute
     this.model.off(`change:${pythonName}`);
 
     const callback = () => {
-      this[jsName] = parseAccessor(this.model.get(pythonName));
+      this[jsName as keyof this] = parseAccessor(this.model.get(pythonName));
     };
     this.model.on(`change:${pythonName}`, callback);
 

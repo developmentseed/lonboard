@@ -1,14 +1,14 @@
-export { BaseModel } from "./base";
+export { BaseModel } from "./base.js";
+export { BaseLayerModel } from "./base-layer.js";
 export {
-  BaseLayerModel,
   PathModel,
   ScatterplotModel,
   SolidPolygonModel,
   initializeLayer,
-} from "./layer";
+} from "./layer.js";
 export {
   BaseExtensionModel,
   BrushingExtension,
   CollisionFilterExtension,
   initializeExtension,
-} from "./extension";
+} from "./extension.js";

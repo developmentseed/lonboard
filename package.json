@@ -1,28 +1,42 @@
 {
+  "comment": {
+    "maplibre": "Upgrading maplibre to v4 broke the basemap in static HTML exports."
+  },
   "dependencies": {
-    "@anywidget/react": "^0.0.2",
-    "@babel/runtime": "^7.23.2",
-    "@deck.gl/core": "^8.9.32",
-    "@deck.gl/extensions": "^8.9.32",
-    "@deck.gl/layers": "^8.9.32",
-    "@deck.gl/react": "^8.9.32",
-    "@geoarrow/deck.gl-layers": "^0.3.0-beta.4",
-    "apache-arrow": "^13.0.0",
-    "maplibre-gl": "^3.5.2",
+    "@anywidget/react": "^0.0.4",
+    "@babel/runtime": "^7.24.0",
+    "@deck.gl/core": "^8.9.35",
+    "@deck.gl/extensions": "^8.9.35",
+    "@deck.gl/layers": "^8.9.35",
+    "@deck.gl/react": "^8.9.35",
+    "@geoarrow/deck.gl-layers": "^0.3.0-beta.15",
+    "apache-arrow": "^15.0.1",
+    "maplibre-gl": "^3.6.2",
     "parquet-wasm": "0.5.0",
     "react": "^18.2.0",
     "react-dom": "^18.2.0",
-    "react-map-gl": "^7.1.5"
+    "react-map-gl": "^7.1.7",
+    "uuid": "^9.0.1"
   },
+  "type": "module",
   "devDependencies": {
-    "@jupyter-widgets/base": "^6.0.6",
-    "@types/react": "^18.2.35",
-    "esbuild": "^0.19.5",
-    "nodemon": "^3.0.1"
+    "@anywidget/types": "^0.1.5",
+    "@jupyter-widgets/base": "^6.0.7",
+    "@types/react": "^18.2.66",
+    "@types/uuid": "^9.0.8",
+    "esbuild": "^0.20.2",
+    "nodemon": "^3.1.0",
+    "prettier": "^3.2.5",
+    "typescript": "^5.4.2",
+    "vitest": "^1.4.0"
   },
   "scripts": {
     "build": "node ./build.mjs",
-    "build:watch": "nodemon --watch src/ --exec \"npm run build\" --ext js,json,ts,tsx,css"
+    "build:watch": "nodemon --watch src/ --exec \"npm run build\" --ext js,json,ts,tsx,css",
+    "fmt:check": "prettier './src/**/*.{ts,tsx,css}' --check",
+    "fmt": "prettier './src/**/*.{ts,tsx,css}' --write",
+    "test": "vitest run",
+    "typecheck": "tsc --build"
   },
   "resolutions": {
     "@deck.gl/core": "8.9.30",
@@ -30,6 +44,7 @@
     "@deck.gl/react": "8.9.30"
   },
   "volta": {
-    "node": "18.18.2"
+    "node": "18.18.2",
+    "npm": "10.2.3"
   }
 }

@@ -1,4 +1,4 @@
-# lonboard
+# Lonboard
 
 [![PyPI][pypi_badge]][pypi_link]
 [![Conda Version][conda_version_badge]][conda_version]
@@ -17,7 +17,9 @@
 [conda_version_badge]: https://img.shields.io/conda/vn/conda-forge/lonboard.svg
 [conda_version]: https://anaconda.org/conda-forge/lonboard
 
-Python library for fast, interactive geospatial vector data visualization in Jupyter.
+A Python library for fast, interactive geospatial vector data visualization in Jupyter.
+
+Building on cutting-edge technologies like [GeoArrow](https://github.com/geoarrow/geoarrow) and [GeoParquet](https://github.com/opengeospatial/geoparquet) in conjunction with [GPU-based map rendering](https://deck.gl/), lonboard aims to enable visualizing large geospatial datasets interactively through a simple interface.
 
 ![](assets/hero-image.jpg)
 
@@ -31,11 +33,13 @@ To install lonboard using pip:
 pip install lonboard
 ```
 
-To install lonboard using conda:
+Lonboard is on [conda-forge](https://anaconda.org/conda-forge/lonboard) and can be installed using [conda](https://docs.conda.io), [mamba](https://mamba.readthedocs.io/), or [pixi](https://pixi.sh/). To install lonboard using conda:
 
 ```
 conda install -c conda-forge lonboard
 ```
+
+To install from source, refer to the [developer documentation](https://github.com/developmentseed/lonboard/blob/main/DEVELOP.md).
 
 ## Get Started
 

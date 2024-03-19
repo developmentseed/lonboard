@@ -22,6 +22,14 @@ Pydeck is tightly tied into the deck.gl [JSON renderer](https://deck.gl/docs/api
 
 Aside from this, pydeck and lonboard use different widget architectures. Pydeck is built on the historical ipywidget layout, using the [widget cookiecutter as inspiration](https://github.com/jupyter-widgets/widget-ts-cookiecutter) and having a separate Jupyter Widget package published to NPM. Lonboard takes a newer approach (unavailable at the time pydeck was created) that uses [Anywidget](https://anywidget.dev/), vastly simplifying the widget process.
 
+## Lonboard vs kepler.gl-jupyter
+
+[kepler.gl](https://kepler.gl/) is a JavaScript application focused on presenting a simple, high-level visualization and analysis toolkit to browser-based users. Just like Lonboard, it's built on top of [deck.gl](https://deck.gl). It also has Python bindings via [kepler.gl-jupyter](https://docs.kepler.gl/docs/keplergl-jupyter).
+
+kepler.gl is a very good tool for data analysis and exploration _in the browser_. On the contrary, Lonboard targets users who plan to do most analysis in Python, but want the best performance to visualize the maximum amount of data. Lonboard should have better rendering performance, but has no user interface to analyze data _in the browser_.
+
+kepler.gl-jupyter serializes to GeoJSON and kepler.gl uses GeoJSON-like JavaScript objects internally; it therefore has the downside of creating a large text string in Python and serializing that to JavaScript. kepler.gl-jupyter is great for creating standalone static HTML files containing a dataset, but those files tend to be very large, since they contain embedded GeoJSON.
+
 ## Lonboard vs datashader
 
 [Datashader](https://datashader.org/) is a truly _scalable_ rendering library. Datashader will re-render your data from scratch when panning around in a map. This allows datashader to _aggregate_ the source data before rendering. Datashader _minimizes the amount of data being rendered_ and thus, in theory, Datashader should perform well for datasets as large as your computer's memory.
