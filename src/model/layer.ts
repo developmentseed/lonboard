@@ -23,6 +23,7 @@ import { BaseLayerModel } from "./base-layer.js";
 import { BitmapLayer, BitmapLayerProps } from "@deck.gl/layers/typed";
 import { TileLayer, TileLayerProps } from "@deck.gl/geo-layers/typed";
 import { isDefined } from "../util.js";
+import { dispatch } from "../dispatch.js";
 
 /**
  * An abstract base class for a layer that uses an Arrow Table as the data prop.
@@ -172,6 +173,37 @@ export class BitmapModel extends BaseLayerModel {
   }
 }
 
+export type ZRange = [minZ: number, maxZ: number];
+
+export type Bounds = [minX: number, minY: number, maxX: number, maxY: number];
+
+export type GeoBoundingBox = {
+  west: number;
+  north: number;
+  east: number;
+  south: number;
+};
+export type NonGeoBoundingBox = {
+  left: number;
+  top: number;
+  right: number;
+  bottom: number;
+};
+
+export type TileBoundingBox = NonGeoBoundingBox | GeoBoundingBox;
+
+export type TileIndex = { x: number; y: number; z: number };
+
+export type TileLoadProps = {
+  index: TileIndex;
+  id: string;
+  bbox: TileBoundingBox;
+  url?: string | null;
+  signal?: AbortSignal;
+  userData?: Record<string, any>;
+  zoom?: number;
+};
+
 export class BitmapTileModel extends BaseLayerModel {
   static layerType = "bitmap-tile";
 
@@ -238,11 +270,37 @@ export class BitmapTileModel extends BaseLayerModel {
     };
   }
 
+  async getTileData(tile: TileLoadProps) {
+    // const { data, getTileData, fetch } = this.props;
+    const { signal } = tile;
+
+    console.log(tile);
+    console.log("making dispatch");
+    console.log("this");
+    console.log(this);
+    const x = await dispatch(this.model, "getTileData");
+    console.log("received dispatch");
+    console.log(x);
+
+    // // tile.url =
+    // //   typeof data === "string" || Array.isArray(data)
+    // //     ? getURLFromTemplate(data, tile)
+    // //     : null;
+
+    // if (getTileData) {
+    //   return getTileData(tile);
+    // }
+    // if (fetch && tile.url) {
+    //   return fetch(tile.url, { propName: "data", layer: this, signal });
+    // }
+    return null;
+  }
+
   render(): TileLayer {
     return new TileLayer({
       ...this.baseLayerProps(),
       ...this.layerProps(),
-
+      getTileData: this.getTileData.bind(this),
       renderSubLayers: (props) => {
         const [min, max] = props.tile.boundingBox;
 

@@ -16,6 +16,7 @@ from typing import (
     Optional,
     Sequence,
     Tuple,
+    Union,
 )
 
 import geopandas as gpd
@@ -443,7 +444,29 @@ class BitmapTileLayer(BaseLayer):
     ```
     """
 
+    called = 0
+
     def __init__(self, **kwargs: BitmapTileLayerKwargs):
+        def _handle_anywidget_dispatch(
+            widget: ipywidgets.Widget, msg: Union[str, list, dict], buffers: List[bytes]
+        ) -> None:
+            self.called += 1
+            print(msg)
+            if not isinstance(msg, dict) or msg.get("kind") != "anywidget-dispatch":
+                return
+
+            print("test")
+            print(msg)
+            self.send(
+                {
+                    "id": msg["id"],
+                    "kind": "anywidget-dispatch-response",
+                    "response": "hello world",
+                }
+            )
+
+        print("before on msg")
+        self.on_msg(_handle_anywidget_dispatch)
         super().__init__(**kwargs)  # type: ignore
 
     _layer_type = traitlets.Unicode("bitmap-tile").tag(sync=True)
