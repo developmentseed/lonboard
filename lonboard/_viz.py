@@ -47,6 +47,12 @@ if TYPE_CHECKING:
         def __geo_interface__(self) -> dict:
             ...
 
+    class ArrowArrayExportable(Protocol):
+        def __arrow_c_array__(
+            self, requested_schema: object | None = None
+        ) -> Tuple[object, object]:
+            ...
+
     class ArrowStreamExportable(Protocol):
         def __arrow_c_stream__(self, requested_schema: object | None = None) -> object:
             ...
@@ -187,6 +193,11 @@ def create_layer_from_data_input(
     if isinstance(data, shapely.geometry.base.BaseGeometry):
         return _viz_shapely_scalar(data, **kwargs)
 
+    # Anything with __arrow_c_array__
+    if hasattr(data, "__arrow_c_array__"):
+        data = cast("ArrowArrayExportable", data)
+        return _viz_geoarrow_array(data, **kwargs)
+
     # Anything with __arrow_c_stream__
     if hasattr(data, "__arrow_c_stream__"):
         data = cast("ArrowStreamExportable", data)
@@ -294,6 +305,42 @@ def _viz_geo_interface(
 
     geo_interface_type = data["type"]
     raise ValueError(f"type '{geo_interface_type}' not supported.")
+
+
+def _viz_geoarrow_array(
+    data: ArrowArrayExportable,
+    **kwargs,
+) -> Union[ScatterplotLayer, PathLayer, SolidPolygonLayer]:
+    schema_capsule, array_capsule = data.__arrow_c_array__()
+
+    # If the user doesn't have pyarrow extension types registered for geoarrow types,
+    # `pa.array()` will lose the extension metadata. Instead, we manually persist the
+    # extension metadata by extracting both the field and the array.
+    class SchemaHolder:
+        schema_capsule: object
+
+        def __init__(self, schema_capsule) -> None:
+            self.schema_capsule = schema_capsule
+
+        def __arrow_c_schema__(self):
+            return self.schema_capsule
+
+    class ArrayHolder:
+        schema_capsule: object
+        array_capsule: object
+
+        def __init__(self, schema_capsule, array_capsule) -> None:
+            self.schema_capsule = schema_capsule
+            self.array_capsule = array_capsule
+
+        def __arrow_c_array__(self, requested_schema):
+            return self.schema_capsule, self.array_capsule
+
+    field = pa.field(SchemaHolder(schema_capsule))
+    array = pa.array(ArrayHolder(field.__arrow_c_schema__(), array_capsule))
+    schema = pa.schema([field.with_name("geometry")])
+    table = pa.Table.from_arrays([array], schema=schema)
+    return _viz_geoarrow_table(table, **kwargs)
 
 
 def _viz_geoarrow_table(
