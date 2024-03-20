@@ -189,12 +189,12 @@ def create_layer_from_data_input(
 
     # Anything with __arrow_c_stream__
     if hasattr(data, "__arrow_c_stream__"):
-        data = cast(ArrowStreamExportable, data)
+        data = cast("ArrowStreamExportable", data)
         return _viz_geoarrow_table(pa.table(data), **kwargs)
 
     # Anything with __geo_interface__
     if hasattr(data, "__geo_interface__"):
-        data = cast(GeoInterfaceProtocol, data)
+        data = cast("GeoInterfaceProtocol", data)
         return _viz_geo_interface(data.__geo_interface__, **kwargs)
 
     # GeoJSON dict
