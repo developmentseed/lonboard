@@ -22,7 +22,7 @@ def layer():
 
 @render_widget
 def map():
-    return Map([])
+    return Map(layer.widget)
 
 
 @reactive.effect
