@@ -2,7 +2,7 @@
 
 Lonboard includes a command-line interface for quickly viewing local data files.
 
-The CLI is accessible either through the `lonboard` entry point or via `python -m lonboard`.
+The CLI is accessible either through the `lonboard` entry point or via `python -m lonboard` the latter can be useful to ensure that the `lonboard` instance you're calling is the same as your current `python` environment.
 
 ```
 > lonboard --help
