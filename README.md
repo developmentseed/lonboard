@@ -50,7 +50,7 @@ gdf = gpd.GeoDataFrame(...)
 viz(gdf)
 ```
 
-Under the hood, this delegates to a `ScatterplotLayer`, `PathLayer`, or `SolidPolygonLayer`. Refer to the [documentation](https://developmentseed.org/lonboard/) and [examples](https://developmentseed.org/lonboard/latest/examples/internet-speeds/) for more control over rendering.
+Under the hood, this delegates to a [`ScatterplotLayer`](https://developmentseed.org/lonboard/latest/api/layers/scatterplot-layer/), [`PathLayer`](https://developmentseed.org/lonboard/latest/api/layers/path-layer/), or [`SolidPolygonLayer`](https://developmentseed.org/lonboard/latest/api/layers/solid-polygon-layer/). Refer to the [documentation](https://developmentseed.org/lonboard/) and [examples](https://developmentseed.org/lonboard/latest/examples/internet-speeds/) for more control over rendering.
 
 ## Documentation
 
