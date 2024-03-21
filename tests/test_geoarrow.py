@@ -1,7 +1,9 @@
 import json
+from tempfile import NamedTemporaryFile
 
 import geodatasets
 import geopandas as gpd
+import pyarrow.parquet as pq
 from pyproj import CRS
 
 from lonboard import SolidPolygonLayer
@@ -61,3 +63,13 @@ def test_reproject_sliced_array():
     sliced_table = table.slice(2)
     # This should work even with a sliced array.
     _reprojected = reproject_table(sliced_table, to_crs=OGC_84)
+
+
+def test_geoparquet_metadata():
+    gdf = gpd.read_file(geodatasets.get_path("nybb"))
+
+    with NamedTemporaryFile("+wb", suffix=".parquet") as f:
+        gdf.to_parquet(f)
+        table = pq.read_table(f)
+
+    _layer = SolidPolygonLayer(table=table)
