@@ -111,13 +111,13 @@ def viz(
         data: a data object of any supported type.
 
     Other args:
-        - scatterplot_kwargs: a `dict` of parameters to pass down to all generated
+        scatterplot_kwargs: a `dict` of parameters to pass down to all generated
           [`ScatterplotLayer`][lonboard.ScatterplotLayer]s.
-        - path_kwargs: a `dict` of parameters to pass down to all generated
+        path_kwargs: a `dict` of parameters to pass down to all generated
           [`PathLayer`][lonboard.PathLayer]s.
-        - solid_polygon_kwargs: a `dict` of parameters to pass down to all generated
+        solid_polygon_kwargs: a `dict` of parameters to pass down to all generated
           [`SolidPolygonLayer`][lonboard.SolidPolygonLayer]s.
-        - map_kwargs: a `dict` of parameters to pass down to the generated
+        map_kwargs: a `dict` of parameters to pass down to the generated
           [`Map`][lonboard.Map].
 
     For more control over rendering, construct `Map` and `Layer` objects directly.
