@@ -34,7 +34,7 @@ pytest = "^7.4.2"
 # We use ruff format ourselves, but mkdocstrings requires black to be installed
 # to format signatures in the docs
 black = "^23.10.1"
-geoarrow-rust-core = "^0.1.0"
+geoarrow-rust-core = "^0.2.0"
 geodatasets = "^2023.12.0"
 pyogrio = "^0.7.2"
 geoarrow-pyarrow = "^0.1.1"
