@@ -10,7 +10,13 @@
 from __future__ import annotations
 
 import sys
-from typing import TYPE_CHECKING, List, Optional, Sequence, Tuple
+from typing import (
+    TYPE_CHECKING,
+    List,
+    Optional,
+    Sequence,
+    Tuple,
+)
 
 import geopandas as gpd
 import ipywidgets
@@ -23,17 +29,38 @@ from lonboard._geoarrow.geopandas_interop import geopandas_to_geoarrow
 from lonboard._geoarrow.ops import reproject_table
 from lonboard._geoarrow.ops.bbox import Bbox, total_bounds
 from lonboard._geoarrow.ops.centroid import WeightedCentroid, weighted_centroid
-from lonboard._geoarrow.sanitize import sanitize_table
+from lonboard._geoarrow.parse_wkb import parse_wkb_table
+from lonboard._geoarrow.sanitize import remove_extension_classes
 from lonboard._serialization import infer_rows_per_chunk
 from lonboard._utils import auto_downcast as _auto_downcast
 from lonboard._utils import get_geometry_column_index, remove_extension_kwargs
-from lonboard.traits import ColorAccessor, FloatAccessor, PyarrowTableTrait
+from lonboard.traits import (
+    ColorAccessor,
+    FloatAccessor,
+    NormalAccessor,
+    PyarrowTableTrait,
+)
+from lonboard.types.layer import (
+    BaseLayerKwargs,
+    BitmapLayerKwargs,
+    BitmapTileLayerKwargs,
+    HeatmapLayerKwargs,
+    PathLayerKwargs,
+    PointCloudLayerKwargs,
+    ScatterplotLayerKwargs,
+    SolidPolygonLayerKwargs,
+)
 
 if TYPE_CHECKING:
     if sys.version_info >= (3, 11):
         from typing import Self
     else:
         from typing_extensions import Self
+
+    if sys.version_info >= (3, 12):
+        from typing import Unpack
+    else:
+        from typing_extensions import Unpack
 
 
 class BaseLayer(BaseWidget):
@@ -179,7 +206,7 @@ class BaseLayer(BaseWidget):
 
 
 def default_geoarrow_viewport(
-    table: pa.Table
+    table: pa.Table,
 ) -> Optional[Tuple[Bbox, WeightedCentroid]]:
     # Note: in the ArcLayer we won't necessarily have a column with a geoarrow
     # extension type/metadata
@@ -230,14 +257,19 @@ class BaseArrowLayer(BaseLayer):
     table: traitlets.TraitType
 
     def __init__(
-        self, *, table: pa.Table, _rows_per_chunk: Optional[int] = None, **kwargs
+        self,
+        *,
+        table: pa.Table,
+        _rows_per_chunk: Optional[int] = None,
+        **kwargs: Unpack[BaseLayerKwargs],
     ):
         # Check for Arrow PyCapsule Interface
         # https://arrow.apache.org/docs/format/CDataInterface/PyCapsuleInterface.html
         if not isinstance(table, pa.Table) and hasattr(table, "__arrow_c_stream__"):
             table = pa.table(table)
 
-        table = sanitize_table(table)
+        table = remove_extension_classes(table)
+        table = parse_wkb_table(table)
 
         # Reproject table to WGS84 if needed
         # Note this must happen before calculating the default viewport
@@ -258,7 +290,11 @@ class BaseArrowLayer(BaseLayer):
 
     @classmethod
     def from_geopandas(
-        cls, gdf: gpd.GeoDataFrame, *, auto_downcast: bool = True, **kwargs
+        cls,
+        gdf: gpd.GeoDataFrame,
+        *,
+        auto_downcast: bool = True,
+        **kwargs: Unpack[BaseLayerKwargs],
     ) -> Self:
         """Construct a Layer from a geopandas GeoDataFrame.
 
@@ -303,6 +339,9 @@ class BitmapLayer(BaseLayer):
     m
     ```
     """
+
+    def __init__(self, **kwargs: BitmapLayerKwargs):
+        super().__init__(**kwargs)  # type: ignore
 
     _layer_type = traitlets.Unicode("bitmap").tag(sync=True)
 
@@ -403,6 +442,9 @@ class BitmapTileLayer(BaseLayer):
     m = Map(layer)
     ```
     """
+
+    def __init__(self, **kwargs: BitmapTileLayerKwargs):
+        super().__init__(**kwargs)  # type: ignore
 
     _layer_type = traitlets.Unicode("bitmap-tile").tag(sync=True)
 
@@ -782,6 +824,25 @@ class ScatterplotLayer(BaseArrowLayer):
     ```
     """
 
+    def __init__(
+        self,
+        *,
+        table: pa.Table,
+        _rows_per_chunk: Optional[int] = None,
+        **kwargs: Unpack[ScatterplotLayerKwargs],
+    ):
+        super().__init__(table=table, _rows_per_chunk=_rows_per_chunk, **kwargs)
+
+    @classmethod
+    def from_geopandas(
+        cls,
+        gdf: gpd.GeoDataFrame,
+        *,
+        auto_downcast: bool = True,
+        **kwargs: Unpack[ScatterplotLayerKwargs],
+    ) -> Self:
+        return super().from_geopandas(gdf=gdf, auto_downcast=auto_downcast, **kwargs)
+
     _layer_type = traitlets.Unicode("scatterplot").tag(sync=True)
 
     table = PyarrowTableTrait(
@@ -994,6 +1055,25 @@ class PathLayer(BaseArrowLayer):
     ```
     """
 
+    def __init__(
+        self,
+        *,
+        table: pa.Table,
+        _rows_per_chunk: Optional[int] = None,
+        **kwargs: Unpack[PathLayerKwargs],
+    ):
+        super().__init__(table=table, _rows_per_chunk=_rows_per_chunk, **kwargs)
+
+    @classmethod
+    def from_geopandas(
+        cls,
+        gdf: gpd.GeoDataFrame,
+        *,
+        auto_downcast: bool = True,
+        **kwargs: Unpack[PathLayerKwargs],
+    ) -> Self:
+        return super().from_geopandas(gdf=gdf, auto_downcast=auto_downcast, **kwargs)
+
     _layer_type = traitlets.Unicode("path").tag(sync=True)
 
     table = PyarrowTableTrait(
@@ -1107,6 +1187,112 @@ class PathLayer(BaseArrowLayer):
     """
 
 
+class PointCloudLayer(BaseArrowLayer):
+    """
+    The `PointCloudLayer` renders a point cloud with 3D positions, normals and colors.
+
+    The `PointCloudLayer` can be more efficient at rendering large quantities of points
+    than the [`ScatterplotLayer`][lonboard.ScatterplotLayer], but has fewer rendering
+    options. In particular, you can have only one point size across all points in your
+    data.
+
+    **Example:**
+
+    From GeoPandas:
+
+    ```py
+    import geopandas as gpd
+    from lonboard import Map, PointCloudLayer
+
+    # A GeoDataFrame with Point geometries
+    gdf = gpd.GeoDataFrame()
+    layer = PointCloudLayer.from_geopandas(
+        gdf,
+        get_color=[255, 0, 0],
+        point_size=2,
+    )
+    m = Map(layer)
+    ```
+    """
+
+    def __init__(
+        self,
+        *,
+        table: pa.Table,
+        _rows_per_chunk: Optional[int] = None,
+        **kwargs: Unpack[PointCloudLayerKwargs],
+    ):
+        super().__init__(table=table, _rows_per_chunk=_rows_per_chunk, **kwargs)
+
+    @classmethod
+    def from_geopandas(
+        cls,
+        gdf: gpd.GeoDataFrame,
+        *,
+        auto_downcast: bool = True,
+        **kwargs: Unpack[PointCloudLayerKwargs],
+    ) -> Self:
+        return super().from_geopandas(gdf=gdf, auto_downcast=auto_downcast, **kwargs)
+
+    _layer_type = traitlets.Unicode("point-cloud").tag(sync=True)
+
+    table = PyarrowTableTrait(
+        allowed_geometry_types={EXTENSION_NAME.POINT}, allowed_dimensions={3}
+    )
+    """A GeoArrow table with a Point column.
+
+    This is the fastest way to plot data from an existing GeoArrow source, such as
+    [geoarrow-rust](https://geoarrow.github.io/geoarrow-rs/python/latest) or
+    [geoarrow-pyarrow](https://geoarrow.github.io/geoarrow-python/main/index.html).
+
+    If you have a GeoPandas `GeoDataFrame`, use
+    [`from_geopandas`][lonboard.PointCloudLayer.from_geopandas] instead.
+    """
+
+    size_units = traitlets.Unicode(None, allow_none=True).tag(sync=True)
+    """
+    The units of the line width, one of `'meters'`, `'common'`, and `'pixels'`. See
+    [unit
+    system](https://deck.gl/docs/developer-guide/coordinate-systems#supported-units).
+
+    - Type: `str`, optional
+    - Default: `'pixels'`
+    """
+
+    point_size = traitlets.Float(None, allow_none=True, min=0).tag(sync=True)
+    """
+    Global radius of all points, in units specified by `size_units`.
+
+    - Type: `float`, optional
+    - Default: `10`
+    """
+
+    get_color = ColorAccessor(None, allow_none=True)
+    """
+    The color of each path in the format of `[r, g, b, [a]]`. Each channel is a number
+    between 0-255 and `a` is 255 if not supplied.
+
+    - Type: [ColorAccessor][lonboard.traits.ColorAccessor], optional
+        - If a single `list` or `tuple` is provided, it is used as the color for all
+          paths.
+        - If a numpy or pyarrow array is provided, each value in the array will be used
+          as the color for the path at the same row index.
+    - Default: `[0, 0, 0, 255]`.
+    """
+
+    get_normal = NormalAccessor(None, allow_none=True)
+    """
+    The normal of each object, in `[nx, ny, nz]`.
+
+    - Type: [NormalAccessor][lonboard.traits.NormalAccessor], optional
+        - If a single `list` or `tuple` is provided, it is used as the normal for all
+          points.
+        - If a numpy or pyarrow array is provided, each value in the array will be used
+          as the normal for the point at the same row index.
+    - Default: `1`.
+    """
+
+
 class SolidPolygonLayer(BaseArrowLayer):
     """
     The `SolidPolygonLayer` renders filled and/or extruded polygons.
@@ -1143,6 +1329,25 @@ class SolidPolygonLayer(BaseArrowLayer):
     m = Map(layer)
     ```
     """
+
+    def __init__(
+        self,
+        *,
+        table: pa.Table,
+        _rows_per_chunk: Optional[int] = None,
+        **kwargs: Unpack[SolidPolygonLayerKwargs],
+    ):
+        super().__init__(table=table, _rows_per_chunk=_rows_per_chunk, **kwargs)
+
+    @classmethod
+    def from_geopandas(
+        cls,
+        gdf: gpd.GeoDataFrame,
+        *,
+        auto_downcast: bool = True,
+        **kwargs: Unpack[SolidPolygonLayerKwargs],
+    ) -> Self:
+        return super().from_geopandas(gdf=gdf, auto_downcast=auto_downcast, **kwargs)
 
     _layer_type = traitlets.Unicode("solid-polygon").tag(sync=True)
 
@@ -1281,10 +1486,20 @@ class HeatmapLayer(BaseArrowLayer):
 
     """
 
-    def __init__(self, *args, table: pa.Table, **kwargs):
+    def __init__(self, *, table: pa.Table, **kwargs: Unpack[HeatmapLayerKwargs]):
         # NOTE: we override the default for _rows_per_chunk because otherwise we render
         # one heatmap per _chunk_ not for the entire dataset.
-        super().__init__(*args, table=table, _rows_per_chunk=len(self.table), **kwargs)
+        super().__init__(table=table, _rows_per_chunk=len(table), **kwargs)
+
+    @classmethod
+    def from_geopandas(
+        cls,
+        gdf: gpd.GeoDataFrame,
+        *,
+        auto_downcast: bool = True,
+        **kwargs: Unpack[HeatmapLayerKwargs],
+    ) -> Self:
+        return super().from_geopandas(gdf=gdf, auto_downcast=auto_downcast, **kwargs)
 
     _layer_type = traitlets.Unicode("heatmap").tag(sync=True)
 

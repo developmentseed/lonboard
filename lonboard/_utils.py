@@ -54,21 +54,30 @@ def auto_downcast(df: DF) -> DF:
     # errors='ignore' to return signed integer data types for columns with negative
     # integers.
     for col_name in df.select_dtypes(np.integer).columns:  # type: ignore
-        df[col_name] = pd.to_numeric(
-            df[col_name], errors="ignore", downcast="unsigned", dtype_backend="pyarrow"
-        )
+        try:
+            df[col_name] = pd.to_numeric(
+                df[col_name], downcast="unsigned", dtype_backend="pyarrow"
+            )
+        except Exception:
+            pass
 
     # For any integer columns that are still signed integer, downcast those to smaller
     # signed types
     for col_name in df.select_dtypes(np.signedinteger).columns:  # type: ignore
-        df[col_name] = pd.to_numeric(
-            df[col_name], errors="ignore", downcast="signed", dtype_backend="pyarrow"
-        )
+        try:
+            df[col_name] = pd.to_numeric(
+                df[col_name], downcast="signed", dtype_backend="pyarrow"
+            )
+        except Exception:
+            pass
 
     for col_name in df.select_dtypes(np.floating).columns:  # type: ignore
-        df[col_name] = pd.to_numeric(
-            df[col_name], errors="ignore", downcast="float", dtype_backend="pyarrow"
-        )
+        try:
+            df[col_name] = pd.to_numeric(
+                df[col_name], downcast="float", dtype_backend="pyarrow"
+            )
+        except Exception:
+            pass
 
     return df
 

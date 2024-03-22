@@ -1,12 +1,22 @@
+import geodatasets
 import geopandas as gpd
 import numpy as np
 import pyarrow as pa
 import pytest
 import shapely
+from pyogrio.raw import read_arrow
 from traitlets import TraitError
 
-from lonboard import BitmapLayer, Map, ScatterplotLayer
-from lonboard.experimental import DataFilterExtension
+from lonboard import (
+    BitmapLayer,
+    Map,
+    PointCloudLayer,
+    ScatterplotLayer,
+    SolidPolygonLayer,
+    viz,
+)
+from lonboard._geoarrow.geopandas_interop import geopandas_to_geoarrow
+from lonboard.layer_extension import DataFilterExtension
 
 
 def test_accessor_length_validation():
@@ -48,7 +58,7 @@ def test_layer_fails_with_unexpected_argument():
     points = shapely.points([1, 2], [3, 4])
     gdf = gpd.GeoDataFrame(geometry=points)
 
-    with pytest.raises(TypeError, match="unexpected keyword argument"):
+    with pytest.raises(TypeError, match="Unexpected keyword argument"):
         _layer = ScatterplotLayer.from_geopandas(gdf, unknown_keyword="foo")
 
 
@@ -74,6 +84,44 @@ def test_layer_from_geoarrow_pyarrow():
     _layer = ScatterplotLayer(table=table)
 
 
+def test_layer_wkb_geoarrow():
+    path = geodatasets.get_path("naturalearth.land")
+    meta, table = read_arrow(path)
+    _layer = SolidPolygonLayer(table=table)
+
+
+def test_layer_wkb_geoarrow_wrong_geom_type():
+    path = geodatasets.get_path("naturalearth.land")
+    meta, table = read_arrow(path)
+    # Use regex as set will have unknown ordering between multipoint and point
+    with pytest.raises(
+        TraitError,
+        match=r"Expected one of geoarrow\..*point, geoarrow\..*point geometry types",
+    ):
+        _layer = ScatterplotLayer(table=table)
+
+
+def test_warning_no_crs_shapely():
+    points = shapely.points([0, 1, 2], [2, 3, 4])
+    with pytest.warns(match="No CRS exists on data"):
+        _ = viz(points)
+
+
+def test_warning_no_crs_geopandas():
+    points = shapely.points([0, 1, 2], [2, 3, 4])
+    gdf = gpd.GeoDataFrame(geometry=points)
+    with pytest.warns(match="No CRS exists on data"):
+        _ = viz(gdf)
+
+
+def test_warning_no_crs_arrow():
+    points = shapely.points([0, 1, 2], [2, 3, 4])
+    gdf = gpd.GeoDataFrame(geometry=points)
+    table = geopandas_to_geoarrow(gdf)
+    with pytest.warns(match="No CRS exists on data"):
+        _ = viz(table)
+
+
 # Test layer types
 def test_bitmap_layer():
     layer = BitmapLayer(
@@ -81,3 +129,9 @@ def test_bitmap_layer():
         bounds=[-122.5190, 37.7045, -122.355, 37.829],
     )
     _m = Map(layer)
+
+
+def test_point_cloud_layer():
+    points = shapely.points([0, 1], [2, 3], [4, 5])
+    gdf = gpd.GeoDataFrame(geometry=points)
+    _layer = PointCloudLayer.from_geopandas(gdf)

@@ -2,7 +2,7 @@
 
 [Panel](https://panel.holoviz.org/) is a tool to build interactive web applications and dashboards using Python code.
 
-Panel [has been reported to work](https://github.com/developmentseed/lonboard/issues/262) with Lonboard. However, it appears that Panel [does not support reactive updates](https://github.com/holoviz/panel/issues/5921) in the same way that [Shiny](./shiny) does, so the map will necessarily be recreated from scratch on every update.
+Panel [has been reported to work](https://github.com/developmentseed/lonboard/issues/262) with Lonboard. However, it appears that Panel [does not support reactive updates](https://github.com/holoviz/panel/issues/5921) in the same way that [Shiny](./shiny.md) does, so the map will necessarily be recreated from scratch on every update.
 
 ## Example
 
@@ -52,7 +52,7 @@ def create_map(state="California", cmap=cc.fire, alpha=0.8):
     layer = PathLayer.from_geopandas(data, width_min_pixels=0.8)
     normalized_scale_rank = (data["scalerank"] - 3) / 9
     layer.get_color = apply_continuous_cmap(normalized_scale_rank, palette, alpha=alpha)
-    map_ = Map(layers=[layer], _height=650)
+    map_ = Map(layer, _height=650)
     return map_
 
 

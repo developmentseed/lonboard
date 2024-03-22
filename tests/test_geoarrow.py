@@ -1,12 +1,15 @@
 import json
+from tempfile import NamedTemporaryFile
 
 import geodatasets
 import geopandas as gpd
+import pyarrow.parquet as pq
 from pyproj import CRS
 
 from lonboard import SolidPolygonLayer
 from lonboard._constants import OGC_84
 from lonboard._geoarrow.geopandas_interop import geopandas_to_geoarrow
+from lonboard._geoarrow.ops.reproject import reproject_table
 from lonboard._utils import get_geometry_column_index
 
 
@@ -51,3 +54,22 @@ def test_geoarrow_table_reprojection():
     assert OGC_84 == CRS.from_json(
         reprojected_crs_str
     ), "layer should be reprojected to WGS84"
+
+
+def test_reproject_sliced_array():
+    """See https://github.com/developmentseed/lonboard/issues/390"""
+    gdf = gpd.read_file(geodatasets.get_path("nybb"))
+    table = geopandas_to_geoarrow(gdf)
+    sliced_table = table.slice(2)
+    # This should work even with a sliced array.
+    _reprojected = reproject_table(sliced_table, to_crs=OGC_84)
+
+
+def test_geoparquet_metadata():
+    gdf = gpd.read_file(geodatasets.get_path("nybb"))
+
+    with NamedTemporaryFile("+wb", suffix=".parquet") as f:
+        gdf.to_parquet(f)
+        table = pq.read_table(f)
+
+    _layer = SolidPolygonLayer(table=table)
