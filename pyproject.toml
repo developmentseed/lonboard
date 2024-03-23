@@ -1,12 +1,12 @@
 [tool.poetry]
 name = "lonboard"
-version = "0.7.0-beta.1"
+version = "0.7.0"
 description = "Python library for fast, interactive geospatial vector data visualization in Jupyter."
 authors = ["Kyle Barron <kyle@developmentseed.org>"]
 license = "MIT"
 readme = "README.md"
 packages = [{ include = "lonboard" }]
-include = ["lonboard/static/*.js", "lonboard/static/*.css"]
+include = ["lonboard/static/*.js", "lonboard/static/*.css", "MANIFEST.in"]
 
 [tool.poetry.dependencies]
 python = "^3.8"

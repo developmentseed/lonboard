@@ -111,13 +111,13 @@ def viz(
         data: a data object of any supported type.
 
     Other args:
-        - scatterplot_kwargs: a `dict` of parameters to pass down to all generated
+        scatterplot_kwargs: a `dict` of parameters to pass down to all generated
           [`ScatterplotLayer`][lonboard.ScatterplotLayer]s.
-        - path_kwargs: a `dict` of parameters to pass down to all generated
+        path_kwargs: a `dict` of parameters to pass down to all generated
           [`PathLayer`][lonboard.PathLayer]s.
-        - solid_polygon_kwargs: a `dict` of parameters to pass down to all generated
+        solid_polygon_kwargs: a `dict` of parameters to pass down to all generated
           [`SolidPolygonLayer`][lonboard.SolidPolygonLayer]s.
-        - map_kwargs: a `dict` of parameters to pass down to the generated
+        map_kwargs: a `dict` of parameters to pass down to the generated
           [`Map`][lonboard.Map].
 
     For more control over rendering, construct `Map` and `Layer` objects directly.
@@ -189,12 +189,12 @@ def create_layer_from_data_input(
 
     # Anything with __arrow_c_stream__
     if hasattr(data, "__arrow_c_stream__"):
-        data = cast(ArrowStreamExportable, data)
+        data = cast("ArrowStreamExportable", data)
         return _viz_geoarrow_table(pa.table(data), **kwargs)
 
     # Anything with __geo_interface__
     if hasattr(data, "__geo_interface__"):
-        data = cast(GeoInterfaceProtocol, data)
+        data = cast("GeoInterfaceProtocol", data)
         return _viz_geo_interface(data.__geo_interface__, **kwargs)
 
     # GeoJSON dict
