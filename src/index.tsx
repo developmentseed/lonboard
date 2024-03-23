@@ -4,7 +4,7 @@ import { createRender, useModelState, useModel } from "@anywidget/react";
 import type { Initialize, Render } from "@anywidget/types";
 import Map from "react-map-gl/maplibre";
 import DeckGL, { DeckGLRef } from "@deck.gl/react/typed";
-import { PolygonLayer, ScatterplotLayer } from "@deck.gl/layers/typed"; 
+import { PolygonLayer, ScatterplotLayer } from "@deck.gl/layers/typed";
 import type { PickingInfo } from "@deck.gl/core/typed";
 import { MapViewState, type Layer } from "@deck.gl/core/typed";
 import { BaseLayerModel, initializeLayer } from "./model/index.js";
@@ -74,7 +74,9 @@ function App() {
   let [showTooltip] = useModelState<boolean>("show_tooltip");
   let [pickingRadius] = useModelState<number>("picking_radius");
   let [selectionMode, setSelectionMode] = useState<boolean | string>(false);
-  let [selectionObjectCount, setSelectionObjectCount] = useState<boolean | number>(false);
+  let [selectionObjectCount, setSelectionObjectCount] = useState<
+    boolean | number
+  >(false);
   let [hoverBBoxLayer, setHoverBBoxLayer] = useState<any>(false);
   let [useDevicePixels] = useModelState<number | boolean>("use_device_pixels");
   let [parameters] = useModelState<object>("parameters");
@@ -160,9 +162,9 @@ function App() {
   function onSelectClick(e: React.SyntheticEvent) {
     e.stopPropagation();
     if (!selectionMode) {
-      setSelectionMode('selecting');
+      setSelectionMode("selecting");
     }
-    if (selectionMode === 'selected') {
+    if (selectionMode === "selected") {
       setSelectionMode(false);
       setSelectionStart(undefined);
       setSelectionEnd(undefined);
@@ -170,8 +172,8 @@ function App() {
   }
 
   function onMapClick(info: PickingInfo) {
-    if (!selectionMode || selectionMode === 'selected') return;
-    console.log('onclick info', info);
+    if (!selectionMode || selectionMode === "selected") return;
+    console.log("onclick info", info);
     if (selectionEnd !== undefined) {
       setSelectionStart(undefined);
       setSelectionEnd(undefined);
@@ -185,11 +187,11 @@ function App() {
         x: left,
         y: top,
         width,
-        height
+        height,
       });
-      setSelectionMode('selected');
+      setSelectionMode("selected");
       setHoverBBoxLayer(false);
-      console.log('selected on map', selectedObjects);
+      console.log("selected on map", selectedObjects);
       setSelectionObjectCount(selectedObjects ? selectedObjects.length : 0);
     } else {
       setSelectionStart([[info.x, info.y], info.coordinate]);
@@ -198,7 +200,7 @@ function App() {
   }
 
   function onMapHover(hoverInfo: PickingInfo) {
-    if (selectionMode !== 'selecting') return;
+    if (selectionMode !== "selecting") return;
     const hoverCoords = hoverInfo.coordinate;
     if (selectionStart && hoverCoords) {
       const pt1 = selectionStart[1];
@@ -206,30 +208,24 @@ function App() {
       if (!pt1 || !pt2) return;
       const data = [
         {
-          polygon: [
-            pt1,
-            [pt1[0], pt2[1]],
-            pt2,
-            [pt2[0], pt1[1]],
-            pt1          
-          ]
-        }
+          polygon: [pt1, [pt1[0], pt2[1]], pt2, [pt2[0], pt1[1]], pt1],
+        },
       ];
       const bboxLayer = new PolygonLayer({
-        id: 'selection-layer',
+        id: "selection-layer",
         data,
         filled: true,
-        getFillColor: [0,0,0,50],
+        getFillColor: [0, 0, 0, 50],
         stroked: true,
         getLineWidth: 2,
-        lineWidthUnits: 'pixels',
-        getPolygon: d => d.polygon
+        lineWidthUnits: "pixels",
+        getPolygon: (d) => d.polygon,
       });
       console.log(bboxLayer);
       setHoverBBoxLayer(bboxLayer);
     }
     return;
-  } 
+  }
 
   const selectionIndicator = useMemo(() => {
     if (!selectionMode) return undefined;
@@ -240,38 +236,32 @@ function App() {
       if (!pt1 || !pt2) return undefined;
       const data = [
         {
-          polygon: [
-            pt1,
-            [pt1[0], pt2[1]],
-            pt2,
-            [pt2[0], pt1[1]],
-            pt1
-          ]
-        }
+          polygon: [pt1, [pt1[0], pt2[1]], pt2, [pt2[0], pt1[1]], pt1],
+        },
       ];
-      console.log('selection data', data);
+      console.log("selection data", data);
       return new PolygonLayer({
-        id: 'selection-layer',
+        id: "selection-layer",
         data,
         filled: true,
-        getFillColor: [0,0,0,30],
+        getFillColor: [0, 0, 0, 30],
         stroked: true,
         getLineWidth: 2,
-        lineWidthUnits: 'pixels',
-        getPolygon: d => d.polygon
+        lineWidthUnits: "pixels",
+        getPolygon: (d) => d.polygon,
       });
     } else if (selectionStart) {
       // Show the selection start point (note this does not show the proposed bounding box, but could be done)
       return new ScatterplotLayer({
-        id: 'select-point-layer',
+        id: "select-point-layer",
         data: [
           {
-            'coordinates': selectionStart[1]
-          }
+            coordinates: selectionStart[1],
+          },
         ],
         getRadius: 2,
-        radiusUnits: 'pixels',
-        getPosition: d => d.coordinates
+        radiusUnits: "pixels",
+        getPosition: (d) => d.coordinates,
       });
     } else {
       return undefined;
@@ -289,20 +279,24 @@ function App() {
   return (
     <div id={`map-${mapId}`} style={{ height: "100%" }}>
       <div
-          style={{
-            position: "absolute",
-            top: "2px",
-            right: "2px",
-            backgroundColor: '#fff',
-            padding: "2px",
-            zIndex: "1000",
-            height: "12px"
-          }}
-          onClick={onSelectClick}
+        style={{
+          position: "absolute",
+          top: "2px",
+          right: "2px",
+          backgroundColor: "#fff",
+          padding: "2px",
+          zIndex: "1000",
+          height: "12px",
+        }}
+        onClick={onSelectClick}
       >
-          { !selectionMode ? 'Click to start selecting' : ''}
-          { selectionMode === 'selecting' ? 'Click two points on map to draw bounding box' : ''}
-          { selectionMode === 'selected' ? `${selectionObjectCount} objects selected. Click to Unselect.` : ''}
+        {!selectionMode ? "Click to start selecting" : ""}
+        {selectionMode === "selecting"
+          ? "Click two points on map to draw bounding box"
+          : ""}
+        {selectionMode === "selected"
+          ? `${selectionObjectCount} objects selected. Click to Unselect.`
+          : ""}
       </div>
       <DeckGL
         initialViewState={
@@ -329,9 +323,7 @@ function App() {
         parameters={parameters || {}}
       >
         <Map mapStyle={mapStyle || DEFAULT_MAP_STYLE} />
-
       </DeckGL>
-
     </div>
   );
 }
