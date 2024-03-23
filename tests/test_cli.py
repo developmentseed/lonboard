@@ -3,7 +3,7 @@ from pathlib import Path
 from lonboard import PathLayer, viz
 from lonboard._cli import read_pyogrio
 
-fixtures_dir = Path(__file__) / "fixtures"
+fixtures_dir = Path(__file__).parent / "fixtures"
 
 
 def test_viz_gpkg():
