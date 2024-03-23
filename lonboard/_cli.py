@@ -27,11 +27,13 @@ def read_pyogrio(path: Path) -> pa.Table:
         ) from e
 
     meta, table = read_arrow(path)
-    # TODO: assert there are not two column names of wkb_geometry
+    geometry_column_name = meta.get("geometry_name", "wkb_geometry")
+    # TODO: assert there are not two column names of wkb_geometry, nor an existing
+    # column named "geometry"
 
     # Rename wkb_geometry to geometry
     geometry_column_index = [
-        i for (i, name) in enumerate(table.column_names) if name == "wkb_geometry"
+        i for (i, name) in enumerate(table.column_names) if name == geometry_column_name
     ][0]
 
     schema = table.schema
