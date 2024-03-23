@@ -1,5 +1,13 @@
 # Changelog
 
+## [0.7.1] - 2024-03-22
+
+### Fixes :bug:
+
+* Fix CLI with geopackage files by @kylebarron in https://github.com/developmentseed/lonboard/pull/434
+
+**Full Changelog**: https://github.com/developmentseed/lonboard/compare/v0.7.0...v0.7.1
+
 ## [0.7.0] - 2024-03-21
 
 ### New! :sparkles:
