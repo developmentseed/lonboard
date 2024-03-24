@@ -26,8 +26,7 @@ else:
 class ArrowArrayExportable(Protocol):
     def __arrow_c_array__(
         self, requested_schema: object | None = None
-    ) -> Tuple[object, object]:
-        ...
+    ) -> Tuple[object, object]: ...
 
 
 IntFloat = Union[int, float]

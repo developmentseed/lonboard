@@ -1,5 +1,5 @@
-"""Remove custom geoarrow.pyarrow types from input geoarrow data
-"""
+"""Remove custom geoarrow.pyarrow types from input geoarrow data"""
+
 import json
 from typing import Tuple
 
