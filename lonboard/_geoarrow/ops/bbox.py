@@ -1,5 +1,4 @@
-"""Compute the total bounds of a geoarrow column
-"""
+"""Compute the total bounds of a geoarrow column"""
 
 from __future__ import annotations
 

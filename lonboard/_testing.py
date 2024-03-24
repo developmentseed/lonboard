@@ -1,5 +1,5 @@
-"""Utilities for exporting data to test in the JS @geoarrow/deck.gl-layers package
-"""
+"""Utilities for exporting data to test in the JS @geoarrow/deck.gl-layers package"""
+
 import pyarrow.feather as feather
 
 from lonboard._layer import BaseLayer

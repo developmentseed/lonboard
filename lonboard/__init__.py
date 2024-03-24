@@ -1,4 +1,6 @@
-"""Python library for fast, interactive geospatial vector data visualization in Jupyter."""
+"""
+Python library for fast, interactive geospatial vector data visualization in Jupyter.
+"""
 
 from . import colormap, controls, layer_extension, traits
 from ._layer import (

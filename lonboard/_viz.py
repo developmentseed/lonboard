@@ -44,12 +44,12 @@ if TYPE_CHECKING:
 
     class GeoInterfaceProtocol(Protocol):
         @property
-        def __geo_interface__(self) -> dict:
-            ...
+        def __geo_interface__(self) -> dict: ...
 
     class ArrowStreamExportable(Protocol):
-        def __arrow_c_stream__(self, requested_schema: object | None = None) -> object:
-            ...
+        def __arrow_c_stream__(
+            self, requested_schema: object | None = None
+        ) -> object: ...
 
     VizDataInput = Union[
         gpd.GeoDataFrame,
