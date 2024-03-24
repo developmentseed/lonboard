@@ -1,5 +1,5 @@
-"""Reproject a GeoArrow array
-"""
+"""Reproject a GeoArrow array"""
+
 import json
 import warnings
 from concurrent.futures import ThreadPoolExecutor
