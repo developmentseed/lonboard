@@ -2,8 +2,13 @@ import * as React from "react";
 import { useState, useEffect } from "react";
 import { createRender, useModelState, useModel } from "@anywidget/react";
 import type { Initialize, Render } from "@anywidget/types";
-import Map from "react-map-gl/maplibre";
-import DeckGL from "@deck.gl/react/typed";
+import { MapboxOverlay, MapboxOverlayProps } from "@deck.gl/mapbox/typed";
+import Map, {
+  FullscreenControl,
+  NavigationControl,
+  ScaleControl,
+  useControl,
+} from "react-map-gl/maplibre";
 import { MapViewState, type Layer } from "@deck.gl/core/typed";
 import { BaseLayerModel, initializeLayer } from "./model/index.js";
 import type { WidgetModel } from "@jupyter-widgets/base";
@@ -13,6 +18,8 @@ import { isDefined, loadChildModels } from "./util.js";
 import { v4 as uuidv4 } from "uuid";
 import { Message } from "./types.js";
 import { flyTo } from "./actions/fly-to.js";
+
+import "maplibre-gl/dist/maplibre-gl.css";
 
 await initParquetWasm();
 
@@ -26,6 +33,16 @@ const DEFAULT_INITIAL_VIEW_STATE = {
 
 const DEFAULT_MAP_STYLE =
   "https://basemaps.cartocdn.com/gl/positron-nolabels-gl-style/style.json";
+
+function DeckGLOverlay(
+  props: MapboxOverlayProps & {
+    interleaved?: boolean;
+  },
+) {
+  const overlay = useControl<MapboxOverlay>(() => new MapboxOverlay(props));
+  overlay.setProps(props);
+  return null;
+}
 
 async function getChildModelState(
   childModels: WidgetModel[],
@@ -146,7 +163,7 @@ function App() {
 
   return (
     <div id={`map-${mapId}`} style={{ height: mapHeight || "100%" }}>
-      <DeckGL
+      <Map
         initialViewState={
           ["longitude", "latitude", "zoom"].every((key) =>
             Object.keys(initialViewState).includes(key),
@@ -154,21 +171,25 @@ function App() {
             ? initialViewState
             : DEFAULT_INITIAL_VIEW_STATE
         }
-        controller={true}
-        layers={layers}
-        // @ts-expect-error
-        getTooltip={showTooltip && getTooltip}
-        pickingRadius={pickingRadius}
-        useDevicePixels={isDefined(useDevicePixels) ? useDevicePixels : true}
-        // https://deck.gl/docs/api-reference/core/deck#_typedarraymanagerprops
-        _typedArrayManagerProps={{
-          overAlloc: 1,
-          poolSize: 0,
-        }}
-        parameters={parameters || {}}
+        mapStyle={mapStyle || DEFAULT_MAP_STYLE}
       >
-        <Map mapStyle={mapStyle || DEFAULT_MAP_STYLE} />
-      </DeckGL>
+        <DeckGLOverlay
+          layers={layers}
+          // @ts-expect-error
+          getTooltip={showTooltip && getTooltip}
+          pickingRadius={pickingRadius}
+          useDevicePixels={isDefined(useDevicePixels) ? useDevicePixels : true}
+          // https://deck.gl/docs/api-reference/core/deck#_typedarraymanagerprops
+          _typedArrayManagerProps={{
+            overAlloc: 1,
+            poolSize: 0,
+          }}
+          parameters={parameters || {}}
+        />
+        <NavigationControl />
+        <ScaleControl />
+        <FullscreenControl />
+      </Map>
     </div>
   );
 }
