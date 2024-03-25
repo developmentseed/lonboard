@@ -47,6 +47,7 @@ from lonboard.types.layer import (
     HeatmapLayerKwargs,
     PathLayerKwargs,
     PointCloudLayerKwargs,
+    PolygonLayerKwargs,
     ScatterplotLayerKwargs,
     SolidPolygonLayerKwargs,
 )
@@ -607,7 +608,32 @@ class BitmapTileLayer(BaseLayer):
 
 
 class PolygonLayer(BaseArrowLayer):
-    """The `PolygonLayer` renders filled, stroked and/or extruded polygons."""
+    """The `PolygonLayer` renders filled, stroked and/or extruded polygons.
+
+    This layer is essentially a combination of a [`PathLayer`][lonboard.PathLayer] and a
+    [`SolidPolygonLayer`][lonboard.SolidPolygonLayer]. This has some overhead beyond a
+    `SolidPolygonLayer`, so if you're looking for the maximum performance with large
+    data, you may want to use a `SolidPolygonLayer` directly.
+    """
+
+    def __init__(
+        self,
+        *,
+        table: pa.Table,
+        _rows_per_chunk: Optional[int] = None,
+        **kwargs: Unpack[PolygonLayerKwargs],
+    ):
+        super().__init__(table=table, _rows_per_chunk=_rows_per_chunk, **kwargs)
+
+    @classmethod
+    def from_geopandas(
+        cls,
+        gdf: gpd.GeoDataFrame,
+        *,
+        auto_downcast: bool = True,
+        **kwargs: Unpack[PolygonLayerKwargs],
+    ) -> Self:
+        return super().from_geopandas(gdf=gdf, auto_downcast=auto_downcast, **kwargs)
 
     _layer_type = traitlets.Unicode("polygon").tag(sync=True)
 
