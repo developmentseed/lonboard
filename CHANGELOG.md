@@ -1,5 +1,62 @@
 # Changelog
 
+## [0.7.1] - 2024-03-22
+
+### Fixes :bug:
+
+* Fix CLI with geopackage files by @kylebarron in https://github.com/developmentseed/lonboard/pull/434
+
+**Full Changelog**: https://github.com/developmentseed/lonboard/compare/v0.7.0...v0.7.1
+
+## [0.7.0] - 2024-03-21
+
+### New! :sparkles:
+
+* There's a [new command-line interface (CLI)](https://developmentseed.org/lonboard/v0.7.0/cli)! Use the `lonboard` command to quickly visualize one or more data files readable by GDAL! For example: `lonboard admins.geojson features.gpkg`. By @kylebarron in https://github.com/developmentseed/lonboard/pull/379
+* Type hinting for constructors and `from_geopandas` method. This should make it easier to pass the correct parameters into layers. This has been tested to work in IDEs like VSCode, but unfortunately appears not to work in JupyterLab. By @kylebarron in https://github.com/developmentseed/lonboard/pull/399
+
+  ![Type hints are now supported in constructors.](assets/type-hints-constructor.jpg)
+* Warn on missing CRS. One of the most common reasons that you might see an empty map is from accidentally visualizing data that is not in EPSG 4326 (longitude-latitude). We now emit a warning for data that doesn't have a CRS defined on the data. By @kylebarron in https://github.com/developmentseed/lonboard/pull/395.
+* Lonboard is [now on `conda-forge`](https://prefix.dev/channels/conda-forge/packages/lonboard)! Install with `conda install -c conda-forge lonboard`. By @giswqs in https://github.com/developmentseed/lonboard/pull/223
+* Add [PointCloudLayer](https://developmentseed.org/lonboard/v0.7.0/api/layers/point-cloud-layer/). By @kylebarron in https://github.com/developmentseed/lonboard/pull/396
+* Add [fly-to map action](https://developmentseed.org/lonboard/v0.7.0/api/map/#lonboard.Map.fly_to) to "fly" the map to a new location. By @kylebarron in https://github.com/developmentseed/lonboard/pull/408
+* [Docs showcase page](https://developmentseed.org/lonboard/v0.7.0/examples/) by @kylebarron in https://github.com/developmentseed/lonboard/pull/401
+* Improve default colors in [`viz`](https://developmentseed.org/lonboard/v0.7.0/api/viz/). We now attempt to apply some basic styling onto data passed into `viz`. This will likely further improve in the future. By @kylebarron in https://github.com/developmentseed/lonboard/pull/389
+
+### Fixes :bug:
+
+* Set exported HTML height to 100% by @kylebarron in https://github.com/developmentseed/lonboard/pull/377
+* Raise error on single input to MultiRangeSlider by @kylebarron in https://github.com/developmentseed/lonboard/pull/367
+* Fix pandas `to_numeric` FutureWarning by @kylebarron in https://github.com/developmentseed/lonboard/pull/368
+* Fix viewing polygons in local html files by @kylebarron in https://github.com/developmentseed/lonboard/pull/387
+* Fix: fix sliced array input for reprojection by @kylebarron in https://github.com/developmentseed/lonboard/pull/391
+* Fix: Don't reproject for epsg:4326 input by @kylebarron in https://github.com/developmentseed/lonboard/pull/392
+* Fix: Fix weighted centroid calculation by @kylebarron in https://github.com/developmentseed/lonboard/pull/393
+* Fix `viz()` with `__geo_interface__` input by @kylebarron in https://github.com/developmentseed/lonboard/pull/426
+* Add DataFilterExtension notebook to website by @kylebarron in https://github.com/developmentseed/lonboard/pull/362
+* Allow non-compliant geoarrow CRS metadata by @kylebarron in https://github.com/developmentseed/lonboard/pull/369
+* Automatically parse geoarrow.wkb to native geoarrow by @kylebarron in https://github.com/developmentseed/lonboard/pull/372
+* Parse GeoParquet metadata by @kylebarron in https://github.com/developmentseed/lonboard/pull/407
+* CLI: 'crs' in geoparquet metadata should be optional. by @jwass in https://github.com/developmentseed/lonboard/pull/411
+
+### Other changes
+
+* Creating a new user bug report by @emmalu in https://github.com/developmentseed/lonboard/pull/386
+* Update epic template by @emmalu in https://github.com/developmentseed/lonboard/pull/382
+* NormalAccessor by @naomatheus in https://github.com/developmentseed/lonboard/pull/376
+* Conda: Try including `manifest.in` file for `static` folder inclusion by @kylebarron in https://github.com/developmentseed/lonboard/pull/421
+* Switch to animated hero image by @kylebarron in https://github.com/developmentseed/lonboard/pull/423
+* Add CRS to GeoDataFrame in notebook examples by @kylebarron in https://github.com/developmentseed/lonboard/pull/419
+
+## New Contributors
+
+* @emmalu made their first contribution in https://github.com/developmentseed/lonboard/pull/382
+* @naomatheus made their first contribution in https://github.com/developmentseed/lonboard/pull/376
+* @jwass made their first contribution in https://github.com/developmentseed/lonboard/pull/411
+* @giswqs made their first contribution in https://github.com/developmentseed/lonboard/pull/223
+
+**Full Changelog**: https://github.com/developmentseed/lonboard/compare/v0.6.0...v0.7.0
+
 ## [0.6.0] - 2024-02-13
 
 ### New! :sparkles:
