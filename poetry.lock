@@ -881,18 +881,18 @@ devel = ["colorama", "json-spec", "jsonschema", "pylint", "pytest", "pytest-benc
 
 [[package]]
 name = "filelock"
-version = "3.13.1"
+version = "3.13.2"
 description = "A platform independent file lock."
 optional = false
 python-versions = ">=3.8"
 files = [
-    {file = "filelock-3.13.1-py3-none-any.whl", hash = "sha256:57dbda9b35157b05fb3e58ee91448612eb674172fab98ee235ccb0b5bee19a1c"},
-    {file = "filelock-3.13.1.tar.gz", hash = "sha256:521f5f56c50f8426f5e03ad3b281b490a87ef15bc6c526f168290f0c7148d44e"},
+    {file = "filelock-3.13.2-py3-none-any.whl", hash = "sha256:e4c33bc026ace328551af557d4d34f59566c98acd4ed66c13b4335f114f04f7a"},
+    {file = "filelock-3.13.2.tar.gz", hash = "sha256:9e2106260b5f65600a31bc503721e3db7e64598bb406ebc5921aeaafe441ba34"},
 ]
 
 [package.extras]
-docs = ["furo (>=2023.9.10)", "sphinx (>=7.2.6)", "sphinx-autodoc-typehints (>=1.24)"]
-testing = ["covdefaults (>=2.3)", "coverage (>=7.3.2)", "diff-cover (>=8)", "pytest (>=7.4.3)", "pytest-cov (>=4.1)", "pytest-mock (>=3.12)", "pytest-timeout (>=2.2)"]
+docs = ["furo (>=2023.9.10)", "sphinx (>=7.2.6)", "sphinx-autodoc-typehints (>=1.25.2)"]
+testing = ["covdefaults (>=2.3)", "coverage (>=7.3.2)", "diff-cover (>=8.0.1)", "pytest (>=7.4.3)", "pytest-cov (>=4.1)", "pytest-mock (>=3.12)", "pytest-timeout (>=2.2)"]
 typing = ["typing-extensions (>=4.8)"]
 
 [[package]]
@@ -1131,6 +1131,17 @@ files = [
 
 [package.dependencies]
 pooch = "*"
+
+[[package]]
+name = "geographiclib"
+version = "2.0"
+description = "The geodesic routines from GeographicLib"
+optional = true
+python-versions = ">=3.7"
+files = [
+    {file = "geographiclib-2.0-py3-none-any.whl", hash = "sha256:6b7225248e45ff7edcee32becc4e0a1504c606ac5ee163a5656d482e0cd38734"},
+    {file = "geographiclib-2.0.tar.gz", hash = "sha256:f7f41c85dc3e1c2d3d935ec86660dc3b2c848c83e17f9a9e51ba9d5146a15859"},
+]
 
 [[package]]
 name = "geopandas"
@@ -2244,13 +2255,13 @@ pygments = ">2.12.0"
 
 [[package]]
 name = "mkdocs-material"
-version = "9.5.14"
+version = "9.5.15"
 description = "Documentation that simply works"
 optional = false
 python-versions = ">=3.8"
 files = [
-    {file = "mkdocs_material-9.5.14-py3-none-any.whl", hash = "sha256:a45244ac221fda46ecf8337f00ec0e5cb5348ab9ffb203ca2a0c313b0d4dbc27"},
-    {file = "mkdocs_material-9.5.14.tar.gz", hash = "sha256:2a1f8e67cda2587ab93ecea9ba42d0ca61d1d7b5fad8cf690eeaeb39dcd4b9af"},
+    {file = "mkdocs_material-9.5.15-py3-none-any.whl", hash = "sha256:e5c96dec3d19491de49ca643fc1dbb92b278e43cdb816c775bc47db77d9b62fb"},
+    {file = "mkdocs_material-9.5.15.tar.gz", hash = "sha256:39f03cca45e82bf54eb7456b5a18bd252eabfdd67f237a229471484a0a4d4635"},
 ]
 
 [package.dependencies]
@@ -3732,21 +3743,21 @@ files = [
 
 [[package]]
 name = "rtree"
-version = "1.1.0"
+version = "1.2.0"
 description = "R-Tree spatial index for Python GIS"
 optional = true
 python-versions = ">=3.8"
 files = [
-    {file = "Rtree-1.1.0-py3-none-macosx_10_9_x86_64.whl", hash = "sha256:5dc612959233cf07f31c8f1a4cf1587eea86dc2fc6d6938f35f28d312bbbbd3e"},
-    {file = "Rtree-1.1.0-py3-none-macosx_11_0_arm64.whl", hash = "sha256:eac35fc095e36f5e5678f7777f296b6a076332c65cfbe00e5cd54b0518f6d71f"},
-    {file = "Rtree-1.1.0-py3-none-manylinux2014_aarch64.manylinux_2_17_aarch64.whl", hash = "sha256:91d3e4b19efa77fc3c09fbbbed48c588bfa056c8b73b5bd084fb0d2d37654775"},
-    {file = "Rtree-1.1.0-py3-none-manylinux2014_i686.manylinux_2_17_i686.whl", hash = "sha256:f1787187b7d74845484e2da029775928ac6af2d453d401e0082022c6552c49b1"},
-    {file = "Rtree-1.1.0-py3-none-manylinux2014_x86_64.manylinux_2_17_x86_64.whl", hash = "sha256:96307058e0149b6124b5af1d48a145b3c1e0086db44de50b435f173e934fc510"},
-    {file = "Rtree-1.1.0-py3-none-musllinux_1_1_aarch64.whl", hash = "sha256:22c670ed503de4f42789a7ca1554b219d5820133edaf2a28a051bad2ac90bbca"},
-    {file = "Rtree-1.1.0-py3-none-musllinux_1_1_i686.whl", hash = "sha256:818dde0ef54166edfb438a3bbf97bcc2eb0b984ab9ec5e7d20779479e456bfad"},
-    {file = "Rtree-1.1.0-py3-none-musllinux_1_1_x86_64.whl", hash = "sha256:696a5f3ecf8b622ab5827e107e762ecffa0555944433f2824dd7f46b4afc410b"},
-    {file = "Rtree-1.1.0-py3-none-win_amd64.whl", hash = "sha256:d346ab57eabee139890a51bf7e02c17c5bcbff68db84e1571ed5247fe108b8e7"},
-    {file = "Rtree-1.1.0.tar.gz", hash = "sha256:6f8ee504dde5d005b25b08aaf5be0b3404af3ad5fece6e1ddcde35908a798a95"},
+    {file = "Rtree-1.2.0-py3-none-macosx_10_9_x86_64.whl", hash = "sha256:80813bb1a66e65033e6601e54fded428a5b710b41948c83a298943587b3c3e4f"},
+    {file = "Rtree-1.2.0-py3-none-macosx_11_0_arm64.whl", hash = "sha256:6d6d1c63d97920e4cd1fa25ee0c911be3f79a34850d19166cc27bbb8ac119001"},
+    {file = "Rtree-1.2.0-py3-none-manylinux2014_aarch64.manylinux_2_17_aarch64.whl", hash = "sha256:5faf8752763258014a10feab67fe68f79eff62f7cfaadb5c338129b3e6d6a657"},
+    {file = "Rtree-1.2.0-py3-none-manylinux2014_i686.manylinux_2_17_i686.whl", hash = "sha256:460c40d246adea80291a406a30e3e0815a1d3a6d514c0438a4235090ba8cd832"},
+    {file = "Rtree-1.2.0-py3-none-manylinux2014_x86_64.manylinux_2_17_x86_64.whl", hash = "sha256:613f2158aeba6fcb5e4aa4c076bb6de85e20c4f9fb0a8b426a71d6ff5846795b"},
+    {file = "Rtree-1.2.0-py3-none-musllinux_1_1_aarch64.whl", hash = "sha256:0b4ba127dfdbdc9e415d2bb578f6e6dff92082117722d8703b740231f7a0b1c3"},
+    {file = "Rtree-1.2.0-py3-none-musllinux_1_1_i686.whl", hash = "sha256:cd8653f0e961dcd3f3ab09e10a831885ea9feceb45be6bc761a773c314518b49"},
+    {file = "Rtree-1.2.0-py3-none-musllinux_1_1_x86_64.whl", hash = "sha256:3038f6d96bb66adb40d1cbb366a8a0676342102bc67ca5492f5734e70f38d9cd"},
+    {file = "Rtree-1.2.0-py3-none-win_amd64.whl", hash = "sha256:008d86fd8990f3ca15c06834ae597e16209b3e0a3d6512f0a3489c201011390f"},
+    {file = "Rtree-1.2.0.tar.gz", hash = "sha256:f5145f7852bf7f95c126fb16bf1a4c2ca9300ae151b07f8a0f7083ea47912675"},
 ]
 
 [[package]]
@@ -4307,11 +4318,9 @@ testing = ["big-O", "jaraco.functools", "jaraco.itertools", "more-itertools", "p
 
 [extras]
 cli = ["click", "pyogrio"]
-
-[extras]
 movingpandas = ["movingpandas"]
 
 [metadata]
 lock-version = "2.0"
 python-versions = "^3.8"
-content-hash = "98ac30b1f25b47790628dfe736947061f55378030c8ef4a096b9279aee3214ae"
+content-hash = "aafaaa8ce35cdc264c48ea5f40cc799023f42c020bb46f6441316e6965819ad0"
