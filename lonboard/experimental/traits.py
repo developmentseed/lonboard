@@ -12,16 +12,13 @@ from lonboard.traits import FixedErrorTraitType
 class TimestampAccessor(FixedErrorTraitType):
     """A representation of a deck.gl coordinate-timestamp accessor.
 
-    - A pyarrow [`ListArray`][pyarrow.ListArray] containing either a `FloatArray` or
-      `DoubleArray`. Each value in the array will be used as the value for the object at
-      the same row index.
+    - A pyarrow [`ListArray`][pyarrow.ListArray] containing either a numeric array. Each
+        value in the array will be used as the value for the object at the same row
+        index.
     """
 
     default_value = None
-    info_text = (
-        "a float value or numpy ndarray or pyarrow array representing an array"
-        " of floats"
-    )
+    info_text = "a pyarrow ListArray representing a nested array of timestamps"
 
     def __init__(
         self: TraitType,
