@@ -133,7 +133,6 @@ class BaseLayer(BaseWidget):
                 if trait.get_metadata("sync"):
                     self.keys.append(name)
 
-
     pickable = traitlets.Bool(True).tag(sync=True)
     """
     Whether the layer responds to mouse pointer picking events.
@@ -204,12 +203,6 @@ class BaseLayer(BaseWidget):
     [here](https://ipywidgets.readthedocs.io/en/stable/examples/Widget%20Events.html#signatures)
     for an example.
     """
-
-    selected_indexes = traitlets.List(trait=traitlets.Int, default_value=[]).tag(sync=True)
-    """
-    Positional indexes of all items selected by the user by drawing a bbox
-    """
-
 
 
 def default_geoarrow_viewport(

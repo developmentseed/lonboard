@@ -156,6 +156,21 @@ class Map(BaseAnyWidget):
     - Default: `5`
     """
 
+    selected_bounds = traitlets.List(
+        trait=traitlets.Float(allow_none=False),
+        allow_none=True,
+        default_value=None,
+        sync=True,
+    )
+    """
+    Bounds selected by the user, represented as a list of floats
+     representing [minx, miny, maxx, maxy]
+    This tries to copy Shapely in representing bounds:
+     https://shapely.readthedocs.io/en/stable/manual.html#object.bounds
+
+    QUESTION: is this how we should represent bounds for the python object?
+    """
+
     basemap_style = traitlets.Unicode(CartoBasemap.PositronNoLabels).tag(sync=True)
     """
     A MapLibre-compatible basemap style.
