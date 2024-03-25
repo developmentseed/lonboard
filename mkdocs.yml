@@ -21,10 +21,12 @@ extra:
 
 nav:
   - "index.md"
-  - Example Notebooks:
+  - Examples:
+      - examples/index.md
       - examples/internet-speeds.ipynb
       - examples/north-america-roads.ipynb
       - examples/migration.ipynb
+      - examples/data-filter-extension.ipynb
       - Integrations:
           - ColorPicker: examples/integrations/color-picker.ipynb
           - Sidecar: examples/integrations/sidecar.ipynb
@@ -35,21 +37,35 @@ nav:
       - api/viz.md
       - api/map.md
       - Layers:
+          - api/layers/bitmap-layer.md
+          - api/layers/bitmap-tile-layer.md
           - api/layers/heatmap-layer.md
           - api/layers/path-layer.md
+          - api/layers/point-cloud-layer.md
           - api/layers/scatterplot-layer.md
           - api/layers/solid-polygon-layer.md
-      - api/basemap.md
-      - api/colormap.md
-      - api/traits.md
-      - Experimental:
-        - Layer Extensions:
+          - api/layers/base-layer.md
+      - Layer Extensions:
+          - api/layer-extensions/index.md
           - api/layer-extensions/brushing-extension.md
           - api/layer-extensions/collision-filter-extension.md
-        - Layers:
-          - api/layers/arc-layer.md
-          - api/layers/text-layer.md
-        - api/experimental/traits.md
+          - api/layer-extensions/data-filter-extension.md
+      - api/basemap.md
+      - api/colormap.md
+      - api/controls.md
+      - api/traits.md
+      - Experimental:
+          - Layers:
+              - api/layers/arc-layer.md
+              - api/layers/text-layer.md
+  - cli.md
+  - Ecosystem:
+      - ecosystem/index.md
+      - ecosystem/geoarrow.md
+      - ecosystem/geopandas.md
+      - ecosystem/jupyter-widgets.md
+      - ecosystem/panel.md
+      - ecosystem/shiny.md
 
   # - Caveats: caveats.md
   - Performance: performance.md
@@ -65,21 +81,28 @@ theme:
   name: material
   custom_dir: docs/overrides
   palette:
+    # Palette toggle for automatic mode
+    - media: "(prefers-color-scheme)"
+      toggle:
+        icon: material/brightness-auto
+        name: Switch to light mode
+
     # Palette toggle for light mode
-    - scheme: default
+    - media: "(prefers-color-scheme: light)"
       primary: teal
       accent: indigo
       toggle:
-        icon: material/lightbulb
+        icon: material/brightness-7
         name: Switch to dark mode
 
     # Palette toggle for dark mode
-    - scheme: slate
+    - media: "(prefers-color-scheme: dark)"
+      scheme: slate
       primary: teal
       accent: indigo
       toggle:
-        icon: material/lightbulb-outline
-        name: Switch to light mode
+        icon: material/brightness-4
+        name: Switch to system preference
 
   font:
     text: Roboto
@@ -88,6 +111,9 @@ theme:
   # logo: img/geopolars_logo.svg
 
   features:
+    - content.code.annotate
+    - content.code.copy
+    - navigation.indexes
     - navigation.instant
     - navigation.tracking
     - search.suggest
@@ -100,7 +126,7 @@ plugins:
       alias_type: "copy"
       canonical_version: "latest"
   - mkdocs-jupyter:
-      include_source: True
+      include_source: true
       ignore: ["**/.ipynb_checkpoints/*.ipynb"]
   - mkdocstrings:
       enable_inventory: true
@@ -121,8 +147,10 @@ plugins:
             - https://contextily.readthedocs.io/en/stable/objects.inv
             - https://docs.python.org/3/objects.inv
             - https://fiona.readthedocs.io/en/stable/objects.inv
+            - https://geoarrow.github.io/geoarrow-rs/python/latest/objects.inv
             - https://geopandas.org/en/stable/objects.inv
             - https://geopy.readthedocs.io/en/stable/objects.inv
+            - https://ipywidgets.readthedocs.io/en/stable/objects.inv
             - https://matplotlib.org/stable/objects.inv
             - https://numpy.org/doc/stable/objects.inv
             - https://pandas.pydata.org/pandas-docs/stable/objects.inv
@@ -150,12 +178,15 @@ markdown_extensions:
       guess_lang: false
   - def_list
   - footnotes
+  - md_in_html
   - pymdownx.arithmatex
   - pymdownx.betterem
   - pymdownx.caret:
       insert: false
   - pymdownx.details
-  - pymdownx.emoji
+  - pymdownx.emoji:
+      emoji_index: !!python/name:material.extensions.emoji.twemoji
+      emoji_generator: !!python/name:material.extensions.emoji.to_svg
   - pymdownx.escapeall:
       hardbreak: true
       nbsp: true

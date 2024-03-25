@@ -1,16 +1,16 @@
 [tool.poetry]
 name = "lonboard"
-version = "0.5.0"
+version = "0.7.1"
 description = "Python library for fast, interactive geospatial vector data visualization in Jupyter."
 authors = ["Kyle Barron <kyle@developmentseed.org>"]
 license = "MIT"
 readme = "README.md"
 packages = [{ include = "lonboard" }]
-include = ["lonboard/static/*.js", "lonboard/static/*.css"]
+include = ["lonboard/static/*.js", "lonboard/static/*.css", "MANIFEST.in"]
 
 [tool.poetry.dependencies]
 python = "^3.8"
-anywidget = "^0.7.1"
+anywidget = "^0.9.0"
 pyarrow = ">=14.0.1"
 geopandas = ">=0.13"
 pandas = "^2"
@@ -19,9 +19,13 @@ palettable = "^3.3.3"
 # future to remove the matplotlib dependency.
 matplotlib = "^3.7"
 shapely = "^2"
-movingpandas = {version = ">=0.17", optional = true}
+movingpandas = { version = ">=0.17", optional = true }
+click = { version = "^8.1.7", optional = true }
+pyogrio = { version = "^0.7.2", optional = true }
+typing-extensions = { version = "^4.6.0", python = "<3.12" }
 
 [tool.poetry.extras]
+cli = ["click", "pyogrio"]
 movingpandas = ["movingpandas"]
 
 [tool.poetry.group.dev.dependencies]
@@ -32,14 +36,21 @@ pytest = "^7.4.2"
 # We use ruff format ourselves, but mkdocstrings requires black to be installed
 # to format signatures in the docs
 black = "^23.10.1"
+geoarrow-rust-core = "^0.2.0"
+geodatasets = "^2023.12.0"
+pyogrio = "^0.7.2"
+geoarrow-pyarrow = "^0.1.1"
 
 [tool.poetry.group.docs.dependencies]
 mkdocs = "^1.4.3"
-mkdocs-material = { version = "^9.1.16", extras = ["imaging"] }
-mkdocstrings = {version = "^0.23.0", extras = ["python"]}
+mkdocs-material = { version = "^9.5", extras = ["imaging"] }
+mkdocstrings = { version = "^0.23.0", extras = ["python"] }
 # This version only on 3.9+. Ok because it's a dev dependency
-mkdocs-jupyter = {version = "^0.24.5", python = "^3.9"}
+mkdocs-jupyter = { version = "^0.24.5", python = "^3.9" }
 mike = "^2"
+
+[tool.poetry.scripts]
+lonboard = "lonboard._cli:main"
 
 # Note: this is defined as a separate group so that it can be not installed in
 # CI. See:
@@ -60,7 +71,7 @@ select = [
     "E",
     "W",
     # isort
-    "I"
+    "I",
 ]
 
 [tool.ruff.extend-per-file-ignores]

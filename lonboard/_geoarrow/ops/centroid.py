@@ -1,5 +1,5 @@
-"""Compute the weighted centroid of geometries
-"""
+"""Compute the weighted centroid of geometries"""
+
 from __future__ import annotations
 
 from dataclasses import dataclass
@@ -73,7 +73,7 @@ class WeightedCentroid:
         new_chunk_modifier = new_chunk_len / (self.num_items + new_chunk_len)
 
         new_chunk_avg_x = np.mean(np_arr[:, 0])
-        new_chunk_avg_y = np.mean(np_arr[:, 0])
+        new_chunk_avg_y = np.mean(np_arr[:, 1])
 
         existing_x_avg = self.x
         existing_y_avg = self.y

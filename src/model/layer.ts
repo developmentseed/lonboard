@@ -1,10 +1,3 @@
-import type {
-  Layer,
-  LayerExtension,
-  LayerProps,
-  PickingInfo,
-  Texture,
-} from "@deck.gl/core/typed";
 import {
   GeoArrowArcLayer,
   GeoArrowArcLayerProps,
@@ -14,6 +7,8 @@ import {
   GeoArrowHeatmapLayerProps,
   GeoArrowPathLayer,
   GeoArrowPathLayerProps,
+  GeoArrowPointCloudLayer,
+  GeoArrowPointCloudLayerProps,
   GeoArrowScatterplotLayer,
   GeoArrowScatterplotLayerProps,
   GeoArrowSolidPolygonLayer,
@@ -26,118 +21,10 @@ import {
 import type { WidgetModel } from "@jupyter-widgets/base";
 import * as arrow from "apache-arrow";
 import { parseParquetBuffers } from "../parquet.js";
-import { loadChildModels } from "../util.js";
-import { BaseModel } from "./base.js";
-import { BaseExtensionModel, initializeExtension } from "./extension.js";
+import { BaseLayerModel } from "./base-layer.js";
 import { BitmapLayer, BitmapLayerProps } from "@deck.gl/layers/typed";
 import { TileLayer, TileLayerProps } from "@deck.gl/geo-layers/typed";
-
-export abstract class BaseLayerModel extends BaseModel {
-  protected pickable: LayerProps["pickable"];
-  protected visible: LayerProps["visible"];
-  protected opacity: LayerProps["opacity"];
-  protected autoHighlight: LayerProps["autoHighlight"];
-
-  protected extensions: BaseExtensionModel[];
-
-  constructor(model: WidgetModel, updateStateCallback: () => void) {
-    super(model, updateStateCallback);
-
-    this.initRegularAttribute("pickable", "pickable");
-    this.initRegularAttribute("visible", "visible");
-    this.initRegularAttribute("opacity", "opacity");
-    this.initRegularAttribute("auto_highlight", "autoHighlight");
-
-    this.extensions = [];
-  }
-
-  async loadSubModels() {
-    await this.initLayerExtensions();
-  }
-
-  extensionInstances(): LayerExtension[] {
-    return this.extensions.map((extension) => extension.extensionInstance);
-  }
-
-  extensionProps() {
-    let props = {};
-    for (const extension of this.extensions) {
-      props = { ...props, ...extension.extensionProps() };
-    }
-    return props;
-  }
-
-  onClick(pickingInfo: PickingInfo) {
-    if (!pickingInfo.index) return;
-
-    this.model.set("selected_index", pickingInfo.index);
-    this.model.save_changes();
-  }
-
-  baseLayerProps(): LayerProps {
-    // console.log("extensions", this.extensionInstances());
-    // console.log("extensionprops", this.extensionProps());
-    return {
-      extensions: this.extensionInstances(),
-      ...this.extensionProps(),
-      id: this.model.model_id,
-      pickable: this.pickable,
-      visible: this.visible,
-      opacity: this.opacity,
-      autoHighlight: this.autoHighlight,
-      onClick: this.onClick.bind(this),
-    };
-  }
-
-  /**
-   * Layer properties for this layer
-   */
-  abstract layerProps(): Omit<LayerProps, "id">;
-
-  /**
-   * Generate a deck.gl layer from this model description.
-   */
-  abstract render(): Layer;
-
-  // NOTE: this is flaky, especially when changing extensions
-  // This is the main place where extensions should still be considered
-  // experimental
-  async initLayerExtensions() {
-    const initExtensionsCallback = async () => {
-      console.log("initExtensionsCallback");
-      const childModelIds = this.model.get("extensions");
-      if (!childModelIds) {
-        this.extensions = [];
-        return;
-      }
-
-      console.log(childModelIds);
-      const childModels = await loadChildModels(
-        this.model.widget_manager,
-        childModelIds,
-      );
-
-      const extensions: BaseExtensionModel[] = [];
-      for (const childModel of childModels) {
-        const extension = await initializeExtension(
-          childModel,
-          this.updateStateCallback,
-        );
-        extensions.push(extension);
-      }
-
-      this.extensions = extensions;
-    };
-    await initExtensionsCallback();
-
-    // Remove all existing change callbacks for this attribute
-    this.model.off(`change:extensions`);
-
-    this.model.on(`change:extensions`, initExtensionsCallback);
-
-    this.callbacks.set(`change:extensions`, initExtensionsCallback);
-  }
-}
+import { isDefined } from "../util.js";
 
 /**
  * An abstract base class for a layer that uses an Arrow Table as the data prop.
@@ -213,23 +100,28 @@ export class ArcModel extends BaseArrowLayerModel {
   layerProps(): Omit<GeoArrowArcLayerProps, "id"> {
     return {
       data: this.table,
-      ...(this.greatCircle && { greatCircle: this.greatCircle }),
-      ...(this.numSegments && { numSegments: this.numSegments }),
-      ...(this.widthUnits && { widthUnits: this.widthUnits }),
-      ...(this.widthScale && { widthScale: this.widthScale }),
-      ...(this.widthMinPixels && { widthMinPixels: this.widthMinPixels }),
-      ...(this.widthMaxPixels && { widthMaxPixels: this.widthMaxPixels }),
-      ...(this.getSourcePosition && {
-        getSourcePosition: this.getSourcePosition,
+      // Always provided
+      getSourcePosition: this.getSourcePosition,
+      getTargetPosition: this.getTargetPosition,
+      ...(isDefined(this.greatCircle) && { greatCircle: this.greatCircle }),
+      ...(isDefined(this.numSegments) && { numSegments: this.numSegments }),
+      ...(isDefined(this.widthUnits) && { widthUnits: this.widthUnits }),
+      ...(isDefined(this.widthScale) && { widthScale: this.widthScale }),
+      ...(isDefined(this.widthMinPixels) && {
+        widthMinPixels: this.widthMinPixels,
       }),
-      ...(this.getTargetPosition && {
-        getTargetPosition: this.getTargetPosition,
+      ...(isDefined(this.widthMaxPixels) && {
+        widthMaxPixels: this.widthMaxPixels,
       }),
-      ...(this.getSourceColor && { getSourceColor: this.getSourceColor }),
-      ...(this.getTargetColor && { getTargetColor: this.getTargetColor }),
-      ...(this.getWidth && { getWidth: this.getWidth }),
-      ...(this.getHeight && { getHeight: this.getHeight }),
-      ...(this.getTilt && { getTilt: this.getTilt }),
+      ...(isDefined(this.getSourceColor) && {
+        getSourceColor: this.getSourceColor,
+      }),
+      ...(isDefined(this.getTargetColor) && {
+        getTargetColor: this.getTargetColor,
+      }),
+      ...(isDefined(this.getWidth) && { getWidth: this.getWidth }),
+      ...(isDefined(this.getHeight) && { getHeight: this.getHeight }),
+      ...(isDefined(this.getTilt) && { getTilt: this.getTilt }),
     };
   }
 
@@ -262,11 +154,13 @@ export class BitmapModel extends BaseLayerModel {
 
   layerProps(): Omit<BitmapLayerProps, "id" | "data"> {
     return {
-      ...(this.image && { image: this.image }),
-      ...(this.bounds && { bounds: this.bounds }),
-      ...(this.desaturate && { desaturate: this.desaturate }),
-      ...(this.transparentColor && { transparentColor: this.transparentColor }),
-      ...(this.tintColor && { tintColor: this.tintColor }),
+      ...(isDefined(this.image) && { image: this.image }),
+      ...(isDefined(this.bounds) && { bounds: this.bounds }),
+      ...(isDefined(this.desaturate) && { desaturate: this.desaturate }),
+      ...(isDefined(this.transparentColor) && {
+        transparentColor: this.transparentColor,
+      }),
+      ...(isDefined(this.tintColor) && { tintColor: this.tintColor }),
     };
   }
 
@@ -319,26 +213,30 @@ export class BitmapTileModel extends BaseLayerModel {
 
   bitmapLayerProps(): Omit<BitmapLayerProps, "id" | "data"> {
     return {
-      ...(this.desaturate && { desaturate: this.desaturate }),
-      ...(this.transparentColor && { transparentColor: this.transparentColor }),
-      ...(this.tintColor && { tintColor: this.tintColor }),
+      ...(isDefined(this.desaturate) && { desaturate: this.desaturate }),
+      ...(isDefined(this.transparentColor) && {
+        transparentColor: this.transparentColor,
+      }),
+      ...(isDefined(this.tintColor) && { tintColor: this.tintColor }),
     };
   }
 
   layerProps(): Omit<TileLayerProps, "id"> {
     return {
       data: this.data,
-      ...(this.tileSize && { tileSize: this.tileSize }),
-      ...(this.zoomOffset && { zoomOffset: this.zoomOffset }),
-      ...(this.maxZoom && { maxZoom: this.maxZoom }),
-      ...(this.minZoom && { minZoom: this.minZoom }),
-      ...(this.extent && { extent: this.extent }),
-      ...(this.maxCacheSize && { maxCacheSize: this.maxCacheSize }),
-      ...(this.maxCacheByteSize && { maxCacheByteSize: this.maxCacheByteSize }),
-      ...(this.refinementStrategy && {
+      ...(isDefined(this.tileSize) && { tileSize: this.tileSize }),
+      ...(isDefined(this.zoomOffset) && { zoomOffset: this.zoomOffset }),
+      ...(isDefined(this.maxZoom) && { maxZoom: this.maxZoom }),
+      ...(isDefined(this.minZoom) && { minZoom: this.minZoom }),
+      ...(isDefined(this.extent) && { extent: this.extent }),
+      ...(isDefined(this.maxCacheSize) && { maxCacheSize: this.maxCacheSize }),
+      ...(isDefined(this.maxCacheByteSize) && {
+        maxCacheByteSize: this.maxCacheByteSize,
+      }),
+      ...(isDefined(this.refinementStrategy) && {
         refinementStrategy: this.refinementStrategy,
       }),
-      ...(this.maxRequests && { maxRequests: this.maxRequests }),
+      ...(isDefined(this.maxRequests) && { maxRequests: this.maxRequests }),
     };
   }
 
@@ -367,7 +265,11 @@ export class ColumnModel extends BaseArrowLayerModel {
   protected diskResolution: GeoArrowColumnLayerProps["diskResolution"] | null;
   protected radius: GeoArrowColumnLayerProps["radius"] | null;
   protected angle: GeoArrowColumnLayerProps["angle"] | null;
-  protected vertices!: GeoArrowColumnLayerProps["vertices"];
+
+  // @ts-expect-error Property 'vertices' has no initializer and is not
+  // definitely assigned in the constructor
+  // Ref https://github.com/visgl/deck.gl/pull/8453
+  protected vertices: GeoArrowColumnLayerProps["vertices"] | null;
   protected offset: GeoArrowColumnLayerProps["offset"] | null;
   protected coverage: GeoArrowColumnLayerProps["coverage"] | null;
   protected elevationScale: GeoArrowColumnLayerProps["elevationScale"] | null;
@@ -422,35 +324,47 @@ export class ColumnModel extends BaseArrowLayerModel {
   }
 
   layerProps(): Omit<GeoArrowColumnLayerProps, "id"> {
+    // @ts-expect-error Type 'Position[] | undefined' is not assignable to type
+    // 'Position[] | null'.
+    // Ref https://github.com/visgl/deck.gl/pull/8453
     return {
       data: this.table,
-      ...(this.diskResolution && { diskResolution: this.diskResolution }),
-      ...(this.radius && { radius: this.radius }),
-      ...(this.angle && { angle: this.angle }),
-      ...(this.vertices! && { vertices: this.vertices }),
-      ...(this.offset && { offset: this.offset }),
-      ...(this.coverage && { coverage: this.coverage }),
-      ...(this.elevationScale && { elevationScale: this.elevationScale }),
-      ...(this.filled && { filled: this.filled }),
-      ...(this.stroked && { stroked: this.stroked }),
-      ...(this.extruded && { extruded: this.extruded }),
-      ...(this.wireframe && { wireframe: this.wireframe }),
-      ...(this.flatShading && { flatShading: this.flatShading }),
-      ...(this.radiusUnits && { radiusUnits: this.radiusUnits }),
-      ...(this.lineWidthUnits && { lineWidthUnits: this.lineWidthUnits }),
-      ...(this.lineWidthScale && { lineWidthScale: this.lineWidthScale }),
-      ...(this.lineWidthMinPixels && {
+      ...(isDefined(this.diskResolution) && {
+        diskResolution: this.diskResolution,
+      }),
+      ...(isDefined(this.radius) && { radius: this.radius }),
+      ...(isDefined(this.angle) && { angle: this.angle }),
+      ...(isDefined(this.vertices) &&
+        this.vertices !== undefined && { vertices: this.vertices }),
+      ...(isDefined(this.offset) && { offset: this.offset }),
+      ...(isDefined(this.coverage) && { coverage: this.coverage }),
+      ...(isDefined(this.elevationScale) && {
+        elevationScale: this.elevationScale,
+      }),
+      ...(isDefined(this.filled) && { filled: this.filled }),
+      ...(isDefined(this.stroked) && { stroked: this.stroked }),
+      ...(isDefined(this.extruded) && { extruded: this.extruded }),
+      ...(isDefined(this.wireframe) && { wireframe: this.wireframe }),
+      ...(isDefined(this.flatShading) && { flatShading: this.flatShading }),
+      ...(isDefined(this.radiusUnits) && { radiusUnits: this.radiusUnits }),
+      ...(isDefined(this.lineWidthUnits) && {
+        lineWidthUnits: this.lineWidthUnits,
+      }),
+      ...(isDefined(this.lineWidthScale) && {
+        lineWidthScale: this.lineWidthScale,
+      }),
+      ...(isDefined(this.lineWidthMinPixels) && {
         lineWidthMinPixels: this.lineWidthMinPixels,
       }),
-      ...(this.lineWidthMaxPixels && {
+      ...(isDefined(this.lineWidthMaxPixels) && {
         lineWidthMaxPixels: this.lineWidthMaxPixels,
       }),
-      ...(this.material && { material: this.material }),
-      ...(this.getPosition && { getPosition: this.getPosition }),
-      ...(this.getFillColor && { getFillColor: this.getFillColor }),
-      ...(this.getLineColor && { getLineColor: this.getLineColor }),
-      ...(this.getElevation && { getElevation: this.getElevation }),
-      ...(this.getLineWidth && { getLineWidth: this.getLineWidth }),
+      ...(isDefined(this.material) && { material: this.material }),
+      ...(isDefined(this.getPosition) && { getPosition: this.getPosition }),
+      ...(isDefined(this.getFillColor) && { getFillColor: this.getFillColor }),
+      ...(isDefined(this.getLineColor) && { getLineColor: this.getLineColor }),
+      ...(isDefined(this.getElevation) && { getElevation: this.getElevation }),
+      ...(isDefined(this.getLineWidth) && { getLineWidth: this.getLineWidth }),
     };
   }
 
@@ -499,18 +413,20 @@ export class HeatmapModel extends BaseArrowLayerModel {
   layerProps(): Omit<GeoArrowHeatmapLayerProps, "id"> {
     return {
       data: this.table,
-      ...(this.radiusPixels && { radiusPixels: this.radiusPixels }),
-      ...(this.colorRange && { colorRange: this.colorRange }),
-      ...(this.intensity && { intensity: this.intensity }),
-      ...(this.threshold && { threshold: this.threshold }),
-      ...(this.colorDomain && { colorDomain: this.colorDomain }),
-      ...(this.aggregation && { aggregation: this.aggregation }),
-      ...(this.weightsTextureSize && {
+      ...(isDefined(this.radiusPixels) && { radiusPixels: this.radiusPixels }),
+      ...(isDefined(this.colorRange) && { colorRange: this.colorRange }),
+      ...(isDefined(this.intensity) && { intensity: this.intensity }),
+      ...(isDefined(this.threshold) && { threshold: this.threshold }),
+      ...(isDefined(this.colorDomain) && { colorDomain: this.colorDomain }),
+      ...(isDefined(this.aggregation) && { aggregation: this.aggregation }),
+      ...(isDefined(this.weightsTextureSize) && {
         weightsTextureSize: this.weightsTextureSize,
       }),
-      ...(this.debounceTimeout && { debounceTimeout: this.debounceTimeout }),
-      ...(this.getPosition && { getPosition: this.getPosition }),
-      ...(this.getWeight && { getWeight: this.getWeight }),
+      ...(isDefined(this.debounceTimeout) && {
+        debounceTimeout: this.debounceTimeout,
+      }),
+      ...(isDefined(this.getPosition) && { getPosition: this.getPosition }),
+      ...(isDefined(this.getWeight) && { getWeight: this.getWeight }),
     };
   }
 
@@ -555,16 +471,20 @@ export class PathModel extends BaseArrowLayerModel {
   layerProps(): Omit<GeoArrowPathLayerProps, "id"> {
     return {
       data: this.table,
-      ...(this.widthUnits && { widthUnits: this.widthUnits }),
-      ...(this.widthScale && { widthScale: this.widthScale }),
-      ...(this.widthMinPixels && { widthMinPixels: this.widthMinPixels }),
-      ...(this.widthMaxPixels && { widthMaxPixels: this.widthMaxPixels }),
-      ...(this.jointRounded && { jointRounded: this.jointRounded }),
-      ...(this.capRounded && { capRounded: this.capRounded }),
-      ...(this.miterLimit && { miterLimit: this.miterLimit }),
-      ...(this.billboard && { billboard: this.billboard }),
-      ...(this.getColor && { getColor: this.getColor }),
-      ...(this.getWidth && { getWidth: this.getWidth }),
+      ...(isDefined(this.widthUnits) && { widthUnits: this.widthUnits }),
+      ...(isDefined(this.widthScale) && { widthScale: this.widthScale }),
+      ...(isDefined(this.widthMinPixels) && {
+        widthMinPixels: this.widthMinPixels,
+      }),
+      ...(isDefined(this.widthMaxPixels) && {
+        widthMaxPixels: this.widthMaxPixels,
+      }),
+      ...(isDefined(this.jointRounded) && { jointRounded: this.jointRounded }),
+      ...(isDefined(this.capRounded) && { capRounded: this.capRounded }),
+      ...(isDefined(this.miterLimit) && { miterLimit: this.miterLimit }),
+      ...(isDefined(this.billboard) && { billboard: this.billboard }),
+      ...(isDefined(this.getColor) && { getColor: this.getColor }),
+      ...(isDefined(this.getWidth) && { getWidth: this.getWidth }),
     };
   }
 
@@ -575,6 +495,45 @@ export class PathModel extends BaseArrowLayerModel {
     });
   }
 }
+
+export class PointCloudModel extends BaseArrowLayerModel {
+  static layerType = "point-cloud";
+
+  protected sizeUnits: GeoArrowPointCloudLayerProps["sizeUnits"] | null;
+  protected pointSize: GeoArrowPointCloudLayerProps["pointSize"] | null;
+  // protected material: GeoArrowPointCloudLayerProps["material"] | null;
+
+  protected getColor: GeoArrowPointCloudLayerProps["getColor"] | null;
+  protected getNormal: GeoArrowPointCloudLayerProps["getNormal"] | null;
+
+  constructor(model: WidgetModel, updateStateCallback: () => void) {
+    super(model, updateStateCallback);
+
+    this.initRegularAttribute("size_units", "sizeUnits");
+    this.initRegularAttribute("point_size", "pointSize");
+
+    this.initVectorizedAccessor("get_color", "getColor");
+    this.initVectorizedAccessor("get_normal", "getNormal");
+  }
+
+  layerProps(): Omit<GeoArrowPointCloudLayerProps, "id"> {
+    return {
+      data: this.table,
+      ...(isDefined(this.sizeUnits) && { sizeUnits: this.sizeUnits }),
+      ...(isDefined(this.pointSize) && { pointSize: this.pointSize }),
+      ...(isDefined(this.getColor) && { getColor: this.getColor }),
+      ...(isDefined(this.getNormal) && { getNormal: this.getNormal }),
+    };
+  }
+
+  render(): GeoArrowPointCloudLayer {
+    return new GeoArrowPointCloudLayer({
+      ...this.baseLayerProps(),
+      ...this.layerProps(),
+    });
+  }
+}
+
 export class ScatterplotModel extends BaseArrowLayerModel {
   static layerType = "scatterplot";
 
@@ -632,26 +591,34 @@ export class ScatterplotModel extends BaseArrowLayerModel {
   layerProps(): Omit<GeoArrowScatterplotLayerProps, "id"> {
     return {
       data: this.table,
-      ...(this.radiusUnits && { radiusUnits: this.radiusUnits }),
-      ...(this.radiusScale && { radiusScale: this.radiusScale }),
-      ...(this.radiusMinPixels && { radiusMinPixels: this.radiusMinPixels }),
-      ...(this.radiusMaxPixels && { radiusMaxPixels: this.radiusMaxPixels }),
-      ...(this.lineWidthUnits && { lineWidthUnits: this.lineWidthUnits }),
-      ...(this.lineWidthScale && { lineWidthScale: this.lineWidthScale }),
-      ...(this.lineWidthMinPixels && {
+      ...(isDefined(this.radiusUnits) && { radiusUnits: this.radiusUnits }),
+      ...(isDefined(this.radiusScale) && { radiusScale: this.radiusScale }),
+      ...(isDefined(this.radiusMinPixels) && {
+        radiusMinPixels: this.radiusMinPixels,
+      }),
+      ...(isDefined(this.radiusMaxPixels) && {
+        radiusMaxPixels: this.radiusMaxPixels,
+      }),
+      ...(isDefined(this.lineWidthUnits) && {
+        lineWidthUnits: this.lineWidthUnits,
+      }),
+      ...(isDefined(this.lineWidthScale) && {
+        lineWidthScale: this.lineWidthScale,
+      }),
+      ...(isDefined(this.lineWidthMinPixels) && {
         lineWidthMinPixels: this.lineWidthMinPixels,
       }),
-      ...(this.lineWidthMaxPixels && {
+      ...(isDefined(this.lineWidthMaxPixels) && {
         lineWidthMaxPixels: this.lineWidthMaxPixels,
       }),
-      ...(this.stroked && { stroked: this.stroked }),
-      ...(this.filled && { filled: this.filled }),
-      ...(this.billboard && { billboard: this.billboard }),
-      ...(this.antialiasing && { antialiasing: this.antialiasing }),
-      ...(this.getRadius && { getRadius: this.getRadius }),
-      ...(this.getFillColor && { getFillColor: this.getFillColor }),
-      ...(this.getLineColor && { getLineColor: this.getLineColor }),
-      ...(this.getLineWidth && { getLineWidth: this.getLineWidth }),
+      ...(isDefined(this.stroked) && { stroked: this.stroked }),
+      ...(isDefined(this.filled) && { filled: this.filled }),
+      ...(isDefined(this.billboard) && { billboard: this.billboard }),
+      ...(isDefined(this.antialiasing) && { antialiasing: this.antialiasing }),
+      ...(isDefined(this.getRadius) && { getRadius: this.getRadius }),
+      ...(isDefined(this.getFillColor) && { getFillColor: this.getFillColor }),
+      ...(isDefined(this.getLineColor) && { getLineColor: this.getLineColor }),
+      ...(isDefined(this.getLineWidth) && { getLineWidth: this.getLineWidth }),
     };
   }
 
@@ -692,13 +659,15 @@ export class SolidPolygonModel extends BaseArrowLayerModel {
   layerProps(): Omit<GeoArrowSolidPolygonLayerProps, "id"> {
     return {
       data: this.table,
-      ...(this.filled && { filled: this.filled }),
-      ...(this.extruded && { extruded: this.extruded }),
-      ...(this.wireframe && { wireframe: this.wireframe }),
-      ...(this.elevationScale && { elevationScale: this.elevationScale }),
-      ...(this.getElevation && { getElevation: this.getElevation }),
-      ...(this.getFillColor && { getFillColor: this.getFillColor }),
-      ...(this.getLineColor && { getLineColor: this.getLineColor }),
+      ...(isDefined(this.filled) && { filled: this.filled }),
+      ...(isDefined(this.extruded) && { extruded: this.extruded }),
+      ...(isDefined(this.wireframe) && { wireframe: this.wireframe }),
+      ...(isDefined(this.elevationScale) && {
+        elevationScale: this.elevationScale,
+      }),
+      ...(isDefined(this.getElevation) && { getElevation: this.getElevation }),
+      ...(isDefined(this.getFillColor) && { getFillColor: this.getFillColor }),
+      ...(isDefined(this.getLineColor) && { getLineColor: this.getLineColor }),
     };
   }
 
@@ -786,40 +755,53 @@ export class TextModel extends BaseArrowLayerModel {
   layerProps(): Omit<GeoArrowTextLayerProps, "id"> {
     return {
       data: this.table,
-      ...(this.billboard && { billboard: this.billboard }),
-      ...(this.sizeScale && { sizeScale: this.sizeScale }),
-      ...(this.sizeUnits && { sizeUnits: this.sizeUnits }),
-      ...(this.sizeMinPixels && { sizeMinPixels: this.sizeMinPixels }),
-      ...(this.sizeMaxPixels && { sizeMaxPixels: this.sizeMaxPixels }),
-      // ...(this.background && {background: this.background}),
-      ...(this.backgroundPadding && {
+      // Always provided
+      getText: this.getText,
+      ...(isDefined(this.billboard) && { billboard: this.billboard }),
+      ...(isDefined(this.sizeScale) && { sizeScale: this.sizeScale }),
+      ...(isDefined(this.sizeUnits) && { sizeUnits: this.sizeUnits }),
+      ...(isDefined(this.sizeMinPixels) && {
+        sizeMinPixels: this.sizeMinPixels,
+      }),
+      ...(isDefined(this.sizeMaxPixels) && {
+        sizeMaxPixels: this.sizeMaxPixels,
+      }),
+      // ...(isDefined(this.background) && {background: this.background}),
+      ...(isDefined(this.backgroundPadding) && {
         backgroundPadding: this.backgroundPadding,
       }),
-      ...(this.characterSet && { characterSet: this.characterSet }),
-      ...(this.fontFamily && { fontFamily: this.fontFamily }),
-      ...(this.fontWeight && { fontWeight: this.fontWeight }),
-      ...(this.lineHeight && { lineHeight: this.lineHeight }),
-      ...(this.outlineWidth && { outlineWidth: this.outlineWidth }),
-      ...(this.outlineColor && { outlineColor: this.outlineColor }),
-      ...(this.fontSettings && { fontSettings: this.fontSettings }),
-      ...(this.wordBreak && { wordBreak: this.wordBreak }),
-      ...(this.maxWidth && { maxWidth: this.maxWidth }),
+      ...(isDefined(this.characterSet) && { characterSet: this.characterSet }),
+      ...(isDefined(this.fontFamily) && { fontFamily: this.fontFamily }),
+      ...(isDefined(this.fontWeight) && { fontWeight: this.fontWeight }),
+      ...(isDefined(this.lineHeight) && { lineHeight: this.lineHeight }),
+      ...(isDefined(this.outlineWidth) && { outlineWidth: this.outlineWidth }),
+      ...(isDefined(this.outlineColor) && { outlineColor: this.outlineColor }),
+      ...(isDefined(this.fontSettings) && { fontSettings: this.fontSettings }),
+      ...(isDefined(this.wordBreak) && { wordBreak: this.wordBreak }),
+      ...(isDefined(this.maxWidth) && { maxWidth: this.maxWidth }),
 
-      ...(this.getBackgroundColor && {
+      ...(isDefined(this.getBackgroundColor) && {
         getBackgroundColor: this.getBackgroundColor,
       }),
-      ...(this.getBorderColor && { getBorderColor: this.getBorderColor }),
-      ...(this.getBorderWidth && { getBorderWidth: this.getBorderWidth }),
-      ...(this.getText && { getText: this.getText }),
-      ...(this.getPosition && { getPosition: this.getPosition }),
-      ...(this.getColor && { getColor: this.getColor }),
-      ...(this.getSize && { getSize: this.getSize }),
-      ...(this.getAngle && { getAngle: this.getAngle }),
-      ...(this.getTextAnchor && { getTextAnchor: this.getTextAnchor }),
-      ...(this.getAlignmentBaseline && {
+      ...(isDefined(this.getBorderColor) && {
+        getBorderColor: this.getBorderColor,
+      }),
+      ...(isDefined(this.getBorderWidth) && {
+        getBorderWidth: this.getBorderWidth,
+      }),
+      ...(isDefined(this.getPosition) && { getPosition: this.getPosition }),
+      ...(isDefined(this.getColor) && { getColor: this.getColor }),
+      ...(isDefined(this.getSize) && { getSize: this.getSize }),
+      ...(isDefined(this.getAngle) && { getAngle: this.getAngle }),
+      ...(isDefined(this.getTextAnchor) && {
+        getTextAnchor: this.getTextAnchor,
+      }),
+      ...(isDefined(this.getAlignmentBaseline) && {
         getAlignmentBaseline: this.getAlignmentBaseline,
       }),
-      ...(this.getPixelOffset && { getPixelOffset: this.getPixelOffset }),
+      ...(isDefined(this.getPixelOffset) && {
+        getPixelOffset: this.getPixelOffset,
+      }),
     };
   }
 
@@ -928,6 +910,10 @@ export async function initializeLayer(
 
     case PathModel.layerType:
       layerModel = new PathModel(model, updateStateCallback);
+      break;
+
+    case PointCloudModel.layerType:
+      layerModel = new PointCloudModel(model, updateStateCallback);
       break;
 
     case ScatterplotModel.layerType:

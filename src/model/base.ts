@@ -1,5 +1,7 @@
-import type { WidgetModel } from "@jupyter-widgets/base";
+// NOTE: the content of this file is isolated to avoid circular imports.
+
 import { parseAccessor } from "../accessor.js";
+import type { WidgetModel } from "@jupyter-widgets/base";
 
 export abstract class BaseModel {
   protected model: WidgetModel;
@@ -28,7 +30,7 @@ export abstract class BaseModel {
    * @param   {string}  pythonName  Name of attribute on Python model (usually snake-cased)
    * @param   {string}  jsName      Name of attribute in deck.gl (usually camel-cased)
    */
-  protected initRegularAttribute(pythonName: string, jsName: string) {
+  initRegularAttribute(pythonName: string, jsName: string) {
     this[jsName as keyof this] = this.model.get(pythonName);
 
     // Remove all existing change callbacks for this attribute
@@ -52,7 +54,7 @@ export abstract class BaseModel {
    * @param   {string}  pythonName  Name of attribute on Python model (usually snake-cased)
    * @param   {string}  jsName      Name of attribute in deck.gl (usually camel-cased)
    */
-  protected initVectorizedAccessor(pythonName: string, jsName: string) {
+  initVectorizedAccessor(pythonName: string, jsName: string) {
     this[jsName as keyof this] = parseAccessor(this.model.get(pythonName));
 
     // Remove all existing change callbacks for this attribute

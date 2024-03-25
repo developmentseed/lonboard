@@ -5,4 +5,3 @@ unexpected behavior when using them.
 """
 
 from ._layer import ArcLayer, TextLayer, TripsLayer
-from .layer_extension import BrushingExtension, CollisionFilterExtension

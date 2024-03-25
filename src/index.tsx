@@ -1,15 +1,20 @@
 import * as React from "react";
 import { useState, useEffect } from "react";
 import { createRender, useModelState, useModel } from "@anywidget/react";
+import type { Initialize, Render } from "@anywidget/types";
 import Map from "react-map-gl/maplibre";
 import DeckGL from "@deck.gl/react/typed";
-import type { Layer } from "@deck.gl/core/typed";
+import { MapViewState, type Layer } from "@deck.gl/core/typed";
 import { BaseLayerModel, initializeLayer } from "./model/index.js";
 import type { WidgetModel } from "@jupyter-widgets/base";
-import { useParquetWasm } from "./parquet.js";
+import { initParquetWasm } from "./parquet.js";
 import { getTooltip } from "./tooltip/index.js";
-import { loadChildModels } from "./util.js";
+import { isDefined, loadChildModels } from "./util.js";
 import { v4 as uuidv4 } from "uuid";
+import { Message } from "./types.js";
+import { flyTo } from "./actions/fly-to.js";
+
+await initParquetWasm();
 
 const DEFAULT_INITIAL_VIEW_STATE = {
   latitude: 10,
@@ -57,33 +62,47 @@ async function getChildModelState(
 }
 
 function App() {
-  let [parquetWasmReady] = useParquetWasm();
-  let [initialViewState] = useModelState<DataView>("_initial_view_state");
+  let model = useModel();
+
+  let [pythonInitialViewState] = useModelState<MapViewState>(
+    "_initial_view_state",
+  );
   let [mapStyle] = useModelState<string>("basemap_style");
   let [mapHeight] = useModelState<number>("_height");
   let [showTooltip] = useModelState<boolean>("show_tooltip");
   let [pickingRadius] = useModelState<number>("picking_radius");
+  let [useDevicePixels] = useModelState<number | boolean>("use_device_pixels");
+  let [parameters] = useModelState<object>("parameters");
+
+  let [initialViewState, setInitialViewState] = useState(
+    pythonInitialViewState,
+  );
+
+  // Handle custom messages
+  model.on("msg:custom", (msg: Message, buffers) => {
+    switch (msg.type) {
+      case "fly-to":
+        flyTo(msg, setInitialViewState);
+        break;
+
+      default:
+        break;
+    }
+  });
+
   const [mapId] = useState(uuidv4());
 
   let [subModelState, setSubModelState] = useState<
     Record<string, BaseLayerModel>
   >({});
-  let model = useModel();
+
   let [childLayerIds] = useModelState<string[]>("layers");
 
   // Fake state just to get react to re-render when a model callback is called
   let [stateCounter, setStateCounter] = useState<Date>(new Date());
 
   useEffect(() => {
-    if (!parquetWasmReady) {
-      return;
-    }
-
     const callback = async () => {
-      if (!parquetWasmReady) {
-        throw new Error("inside callback but parquetWasm not ready!");
-      }
-
       const childModels = await loadChildModels(
         model.widget_manager,
         childLayerIds,
@@ -97,7 +116,7 @@ function App() {
       setSubModelState(newSubModelState);
     };
     callback().catch(console.error);
-  }, [parquetWasmReady, childLayerIds]);
+  }, [childLayerIds]);
 
   const layers: Layer[] = [];
   for (const subModel of Object.values(subModelState)) {
@@ -140,6 +159,13 @@ function App() {
         // @ts-expect-error
         getTooltip={showTooltip && getTooltip}
         pickingRadius={pickingRadius}
+        useDevicePixels={isDefined(useDevicePixels) ? useDevicePixels : true}
+        // https://deck.gl/docs/api-reference/core/deck#_typedarraymanagerprops
+        _typedArrayManagerProps={{
+          overAlloc: 1,
+          poolSize: 0,
+        }}
+        parameters={parameters || {}}
       >
         <Map mapStyle={mapStyle || DEFAULT_MAP_STYLE} />
       </DeckGL>
@@ -147,4 +173,8 @@ function App() {
   );
 }
 
-export let render = createRender(App);
+const module: { render: Render; initialize?: Initialize } = {
+  render: createRender(App),
+};
+
+export default module;

@@ -1,14 +1,15 @@
-"""High-level, super-simple API for visualizing GeoDataFrames
-"""
+"""High-level, super-simple API for visualizing GeoDataFrames"""
+
 from __future__ import annotations
 
 import json
-import warnings
+from random import shuffle
 from typing import (
     TYPE_CHECKING,
     Any,
     Dict,
     List,
+    Optional,
     Protocol,
     Tuple,
     Union,
@@ -22,19 +23,33 @@ import shapely.geometry
 import shapely.geometry.base
 from numpy.typing import NDArray
 
-from lonboard._constants import EPSG_4326, EXTENSION_NAME, OGC_84
+from lonboard._constants import EXTENSION_NAME
 from lonboard._geoarrow.extension_types import construct_geometry_array
 from lonboard._geoarrow.geopandas_interop import geopandas_to_geoarrow
+from lonboard._geoarrow.parse_wkb import parse_wkb_table
+from lonboard._geoarrow.sanitize import remove_extension_classes
 from lonboard._layer import PathLayer, ScatterplotLayer, SolidPolygonLayer
 from lonboard._map import Map
+from lonboard._utils import get_geometry_column_index
+from lonboard.basemap import CartoBasemap
+from lonboard.types.layer import (
+    PathLayerKwargs,
+    ScatterplotLayerKwargs,
+    SolidPolygonLayerKwargs,
+)
+from lonboard.types.map import MapKwargs
 
 if TYPE_CHECKING:
     import geopandas as gpd
 
     class GeoInterfaceProtocol(Protocol):
         @property
-        def __geo_interface__(self) -> dict:
-            ...
+        def __geo_interface__(self) -> dict: ...
+
+    class ArrowStreamExportable(Protocol):
+        def __arrow_c_stream__(
+            self, requested_schema: object | None = None
+        ) -> object: ...
 
     VizDataInput = Union[
         gpd.GeoDataFrame,
@@ -42,15 +57,37 @@ if TYPE_CHECKING:
         pa.Table,
         NDArray[np.object_],
         shapely.geometry.base.BaseGeometry,
+        ArrowStreamExportable,
         GeoInterfaceProtocol,
         Dict[str, Any],
     ]
     """A type definition for allowed data inputs to the `viz` function."""
 
 
+# From mbview
+# https://github.com/mapbox/mbview/blob/e64bd86cfe4a63e6af4ea1d310bd49be4f162a43/views/vector.ejs#L75-L87
+COLORS = [
+    "#FC49A3",  # pink
+    "#CC66FF",  # purple-ish
+    "#66CCFF",  # sky blue
+    "#66FFCC",  # teal
+    "#00FF00",  # lime green
+    "#FFCC66",  # light orange
+    "#FF6666",  # salmon
+    "#FF0000",  # red
+    "#FF8000",  # orange
+    "#FFFF66",  # yellow
+    "#00FFFF",  # turquoise
+]
+
+
 def viz(
     data: Union[VizDataInput, List[VizDataInput], Tuple[VizDataInput, ...]],
-    **kwargs,
+    *,
+    scatterplot_kwargs: Optional[ScatterplotLayerKwargs] = None,
+    path_kwargs: Optional[PathLayerKwargs] = None,
+    solid_polygon_kwargs: Optional[SolidPolygonLayerKwargs] = None,
+    map_kwargs: Optional[MapKwargs] = None,
 ) -> Map:
     """A high-level function to plot your data easily.
 
@@ -73,23 +110,52 @@ def viz(
     Args:
         data: a data object of any supported type.
 
-    Named args:
-        Any other keyword arguments will be passed onto the relevant layer, either a
-        `ScatterplotLayer`, `PathLayer`, or `SolidPolygonLayer`.
+    Other args:
+        scatterplot_kwargs: a `dict` of parameters to pass down to all generated
+          [`ScatterplotLayer`][lonboard.ScatterplotLayer]s.
+        path_kwargs: a `dict` of parameters to pass down to all generated
+          [`PathLayer`][lonboard.PathLayer]s.
+        solid_polygon_kwargs: a `dict` of parameters to pass down to all generated
+          [`SolidPolygonLayer`][lonboard.SolidPolygonLayer]s.
+        map_kwargs: a `dict` of parameters to pass down to the generated
+          [`Map`][lonboard.Map].
 
-        If you pass a `list` or `tuple` of data objects, `kwargs` will be passed to
-        _all_ layers. For more control over rendering, construct `Map` and `Layer`
-        objects directly.
+    For more control over rendering, construct `Map` and `Layer` objects directly.
 
     Returns:
         widget visualizing the provided data.
     """
-    if isinstance(data, (list, tuple)):
-        layers = [create_layer_from_data_input(item, **kwargs) for item in data]
-    else:
-        layers = [create_layer_from_data_input(data, **kwargs)]
+    color_ordering = COLORS.copy()
+    shuffle(color_ordering)
 
-    return Map(layers=layers)
+    if isinstance(data, (list, tuple)):
+        layers = [
+            create_layer_from_data_input(
+                item,
+                _viz_color=color_ordering[i % len(color_ordering)],
+                scatterplot_kwargs=scatterplot_kwargs,
+                path_kwargs=path_kwargs,
+                solid_polygon_kwargs=solid_polygon_kwargs,
+            )
+            for i, item in enumerate(data)
+        ]
+    else:
+        layers = [
+            create_layer_from_data_input(
+                data,
+                _viz_color=color_ordering[0],
+                scatterplot_kwargs=scatterplot_kwargs,
+                path_kwargs=path_kwargs,
+                solid_polygon_kwargs=solid_polygon_kwargs,
+            )
+        ]
+
+    map_kwargs = {} if not map_kwargs else map_kwargs
+
+    if "basemap_style" not in map_kwargs.keys():
+        map_kwargs["basemap_style"] = CartoBasemap.DarkMatter
+
+    return Map(layers=layers, **map_kwargs)
 
 
 def create_layer_from_data_input(
@@ -121,9 +187,14 @@ def create_layer_from_data_input(
     if isinstance(data, shapely.geometry.base.BaseGeometry):
         return _viz_shapely_scalar(data, **kwargs)
 
+    # Anything with __arrow_c_stream__
+    if hasattr(data, "__arrow_c_stream__"):
+        data = cast("ArrowStreamExportable", data)
+        return _viz_geoarrow_table(pa.table(data), **kwargs)
+
     # Anything with __geo_interface__
     if hasattr(data, "__geo_interface__"):
-        data = cast(GeoInterfaceProtocol, data)
+        data = cast("GeoInterfaceProtocol", data)
         return _viz_geo_interface(data.__geo_interface__, **kwargs)
 
     # GeoJSON dict
@@ -152,10 +223,6 @@ def create_layer_from_data_input(
 def _viz_geopandas_geodataframe(
     data: gpd.GeoDataFrame, **kwargs
 ) -> Union[ScatterplotLayer, PathLayer, SolidPolygonLayer]:
-    if data.crs and data.crs not in [EPSG_4326, OGC_84]:
-        warnings.warn("GeoDataFrame being reprojected to EPSG:4326")
-        data = data.to_crs(OGC_84)
-
     table = geopandas_to_geoarrow(data)
     return _viz_geoarrow_table(table, **kwargs)
 
@@ -164,10 +231,6 @@ def _viz_geopandas_geoseries(
     data: gpd.GeoSeries, **kwargs
 ) -> Union[ScatterplotLayer, PathLayer, SolidPolygonLayer]:
     import geopandas as gpd
-
-    if data.crs and data.crs not in [EPSG_4326, OGC_84]:
-        warnings.warn("GeoSeries being reprojected to EPSG:4326")
-        data = data.to_crs(OGC_84)
 
     gdf = gpd.GeoDataFrame(geometry=data)
     table = geopandas_to_geoarrow(gdf)
@@ -234,22 +297,68 @@ def _viz_geo_interface(
 
 
 def _viz_geoarrow_table(
-    table: pa.Table, **kwargs
+    table: pa.Table,
+    *,
+    _viz_color: Optional[str] = None,
+    scatterplot_kwargs: Optional[ScatterplotLayerKwargs] = None,
+    path_kwargs: Optional[PathLayerKwargs] = None,
+    solid_polygon_kwargs: Optional[SolidPolygonLayerKwargs] = None,
 ) -> Union[ScatterplotLayer, PathLayer, SolidPolygonLayer]:
-    geometry_ext_type = table.schema.field("geometry").metadata.get(
-        b"ARROW:extension:name"
-    )
+    table = remove_extension_classes(table)
+    table = parse_wkb_table(table)
+
+    geometry_column_index = get_geometry_column_index(table.schema)
+    geometry_field = table.schema.field(geometry_column_index)
+    geometry_ext_type = geometry_field.metadata.get(b"ARROW:extension:name")
 
     if geometry_ext_type in [EXTENSION_NAME.POINT, EXTENSION_NAME.MULTIPOINT]:
-        return ScatterplotLayer(table=table, **kwargs)
+        scatterplot_kwargs = {} if not scatterplot_kwargs else scatterplot_kwargs
+
+        if "get_fill_color" not in scatterplot_kwargs.keys():
+            scatterplot_kwargs["get_fill_color"] = _viz_color
+
+        if "radius_min_pixels" not in scatterplot_kwargs.keys():
+            if len(table) <= 10_000:
+                scatterplot_kwargs["radius_min_pixels"] = 2
+            elif len(table) <= 100_000:
+                scatterplot_kwargs["radius_min_pixels"] = 1
+            elif len(table) <= 1_000_000:
+                scatterplot_kwargs["radius_min_pixels"] = 0.5
+            else:
+                scatterplot_kwargs["radius_min_pixels"] = 0.2
+
+        return ScatterplotLayer(table=table, **scatterplot_kwargs)
 
     elif geometry_ext_type in [
         EXTENSION_NAME.LINESTRING,
         EXTENSION_NAME.MULTILINESTRING,
     ]:
-        return PathLayer(table=table, **kwargs)
+        path_kwargs = {} if not path_kwargs else path_kwargs
+
+        if "get_color" not in path_kwargs.keys():
+            path_kwargs["get_color"] = _viz_color
+
+        if "width_min_pixels" not in path_kwargs.keys():
+            if len(table) <= 1_000:
+                path_kwargs["width_min_pixels"] = 1.5
+            elif len(table) <= 10_000:
+                path_kwargs["width_min_pixels"] = 1
+            elif len(table) <= 100_000:
+                path_kwargs["width_min_pixels"] = 0.7
+            else:
+                path_kwargs["width_min_pixels"] = 0.5
+
+        return PathLayer(table=table, **path_kwargs)
 
     elif geometry_ext_type in [EXTENSION_NAME.POLYGON, EXTENSION_NAME.MULTIPOLYGON]:
-        return SolidPolygonLayer(table=table, **kwargs)
+        solid_polygon_kwargs = {} if not solid_polygon_kwargs else solid_polygon_kwargs
+
+        if "get_fill_color" not in solid_polygon_kwargs.keys():
+            solid_polygon_kwargs["get_fill_color"] = _viz_color
+
+        if "opacity" not in solid_polygon_kwargs.keys():
+            solid_polygon_kwargs["opacity"] = 0.6
+
+        return SolidPolygonLayer(table=table, **solid_polygon_kwargs)
 
     raise ValueError(f"Unsupported extension type: '{geometry_ext_type}'.")

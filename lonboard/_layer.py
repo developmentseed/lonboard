@@ -1,24 +1,54 @@
+"""Notes:
+
+- When we pass a value of `None` as a default value to a trait, that value will be
+  serialized to JS as `null` and will not be passed into the GeoArrow model (see the
+  lengthy assignments of type `..(isDefined(this.param) && { param: this.param })`).
+  Then the default value in the JS GeoArrow layer (defined in
+  `@geoarrow/deck.gl-layers`) will be used.
+"""
+
 from __future__ import annotations
 
 import sys
-import warnings
-from typing import TYPE_CHECKING
+from typing import (
+    TYPE_CHECKING,
+    List,
+    Optional,
+    Sequence,
+    Tuple,
+)
 
 import geopandas as gpd
 import ipywidgets
 import pyarrow as pa
 import traitlets
-from shapely.geometry import box
 
 from lonboard._base import BaseExtension, BaseWidget
-from lonboard._constants import EPSG_4326, EXTENSION_NAME, OGC_84
+from lonboard._constants import EXTENSION_NAME, OGC_84
 from lonboard._geoarrow.geopandas_interop import geopandas_to_geoarrow
+from lonboard._geoarrow.ops import reproject_table
+from lonboard._geoarrow.ops.bbox import Bbox, total_bounds
+from lonboard._geoarrow.ops.centroid import WeightedCentroid, weighted_centroid
+from lonboard._geoarrow.parse_wkb import parse_wkb_table
+from lonboard._geoarrow.sanitize import remove_extension_classes
 from lonboard._serialization import infer_rows_per_chunk
 from lonboard._utils import auto_downcast as _auto_downcast
+from lonboard._utils import get_geometry_column_index, remove_extension_kwargs
 from lonboard.traits import (
     ColorAccessor,
     FloatAccessor,
+    NormalAccessor,
     PyarrowTableTrait,
+)
+from lonboard.types.layer import (
+    BaseLayerKwargs,
+    BitmapLayerKwargs,
+    BitmapTileLayerKwargs,
+    HeatmapLayerKwargs,
+    PathLayerKwargs,
+    PointCloudLayerKwargs,
+    ScatterplotLayerKwargs,
+    SolidPolygonLayerKwargs,
 )
 
 if TYPE_CHECKING:
@@ -27,11 +57,81 @@ if TYPE_CHECKING:
     else:
         from typing_extensions import Self
 
+    if sys.version_info >= (3, 12):
+        from typing import Unpack
+    else:
+        from typing_extensions import Unpack
+
 
 class BaseLayer(BaseWidget):
+    # Note: these class attributes are **not** serialized to JS
+    _bbox = Bbox()
+    _weighted_centroid = WeightedCentroid()
+
+    # The following traitlets **are** serialized to JS
+
+    def __init__(self, *, extensions: Sequence[BaseExtension] = (), **kwargs):
+        # We allow layer extensions to dynamically inject properties onto the layer
+        # widgets where the layer is defined. We wish to allow extensions and their
+        # properties to be passed in the layer constructor. _However_, if
+
+        extension_kwargs = remove_extension_kwargs(extensions, kwargs)
+
+        super().__init__(extensions=extensions, **kwargs)
+
+        # Dynamically set layer traits from extensions after calling __init__
+        self._add_extension_traits(extensions)
+
+        # Assign any extension properties that we took out before calling __init__
+        added_names: List[str] = []
+        for prop_name, prop_value in extension_kwargs.items():
+            self.set_trait(prop_name, prop_value)
+            added_names.append(prop_name)
+
+        self.send_state(added_names)
+
+    # TODO: validate that only one extension per type is included. E.g. you can't have
+    # two data filter extensions.
     extensions = traitlets.List(trait=traitlets.Instance(BaseExtension)).tag(
         sync=True, **ipywidgets.widget_serialization
     )
+    """
+    A list of [layer extension](https://developmentseed.org/lonboard/latest/api/layer-extensions/)
+    objects to add additional features to a layer.
+    """
+
+    # TODO: the extensions list is not observed; separately, the list object itself does
+    # not propagate events, so an append wouldn't work.
+
+    # @traitlets.observe("extensions")
+    # def _observe_extensions(self, change):
+    #     """When a new extension is assigned, add its layer props to this layer."""
+    #     new_extensions: List[BaseExtension] = change["new"]
+    #     for extension in new_extensions:
+    #         self.add_traits(**extension._layer_traits)
+
+    def _add_extension_traits(self, extensions: Sequence[BaseExtension]):
+        """Assign selected traits from the extension onto this Layer."""
+        for extension in extensions:
+            # NOTE: here it's important that we call `traitlets.HasTraits.add_traits`
+            # and not `self.add_traits`. This is because `add_traits` is originally
+            # defined on `HasTraits` but `ipywidgets.Widget` overrides that method to
+            # additionally call `send_state` for any trait that has `"sync"` tagged in
+            # its metadata. But this is incompatible with traits that don't have default
+            # values.
+            #
+            # For example, with the DataFilterExtension, we want to dynamically add the
+            # `get_filter_value` trait, but require that the user pass in a value. With
+            # the `Widget` implementation, `send_state` will fail, even if the user
+            # passes in a value, because `send_state` is called before we call
+            # `super().__init__()`
+            traitlets.HasTraits.add_traits(self, **extension._layer_traits)
+
+            # Note: This is part of `Widget.add_traits` (in the direct superclass) that
+            # we skip by calling `traitlets.HasTraits.add_traits`
+            for name, trait in extension._layer_traits.items():
+                if trait.get_metadata("sync"):
+                    self.keys.append(name)
 
     pickable = traitlets.Bool(True).tag(sync=True)
     """
@@ -104,20 +204,97 @@ class BaseLayer(BaseWidget):
     for an example.
     """
 
-    _rows_per_chunk = traitlets.Int()
-    """Number of rows per chunk for serializing table and accessor columns."""
+
+def default_geoarrow_viewport(
+    table: pa.Table,
+) -> Optional[Tuple[Bbox, WeightedCentroid]]:
+    # Note: in the ArcLayer we won't necessarily have a column with a geoarrow
+    # extension type/metadata
+    geom_col_idx = get_geometry_column_index(table.schema)
+    if geom_col_idx is None:
+        return None
+
+    geom_field = table.schema.field(geom_col_idx)
+    geom_col = table.column(geom_col_idx)
+
+    table_bbox = total_bounds(geom_field, geom_col)
+    table_centroid = weighted_centroid(geom_field, geom_col)
+
+    # Check each layer's data _individually_ to ensure that no layer is outside of
+    # epsg:4326 bounds
+    if table_centroid.num_items > 0:
+        if table_centroid.x is not None and (
+            table_centroid.x < -180 or table_centroid.x > 180
+        ):
+            msg = "Longitude of data's center is outside of WGS84 bounds.\n"
+            msg += "Is data in WGS84 projection?"
+            raise ValueError(msg)
+
+        if table_centroid.y is not None and (
+            table_centroid.y < -90 or table_centroid.y > 90
+        ):
+            msg = "Latitude of data's center is outside of WGS84 bounds.\n"
+            msg += "Is data in WGS84 projection?"
+            raise ValueError(msg)
+
+    return table_bbox, table_centroid
 
 
 class BaseArrowLayer(BaseLayer):
+    """Any Arrow-based layer should subclass from BaseArrowLayer"""
+
+    # Note: these class attributes are **not** serialized to JS
+
+    # Number of rows per chunk for serializing table and accessor columns.
+    #
+    # This is a _layer-level_ construct because we need to ensure the main table and all
+    # accessors have exactly the same chunking, because each chunk is rendered
+    # independently as a separate deck.gl layer
+    _rows_per_chunk: int
+
+    # The following traitlets **are** serialized to JS
+
     table: traitlets.TraitType
 
-    @traitlets.default("_rows_per_chunk")
-    def _default_rows_per_chunk(self):
-        return infer_rows_per_chunk(self.table)
+    def __init__(
+        self,
+        *,
+        table: pa.Table,
+        _rows_per_chunk: Optional[int] = None,
+        **kwargs: Unpack[BaseLayerKwargs],
+    ):
+        # Check for Arrow PyCapsule Interface
+        # https://arrow.apache.org/docs/format/CDataInterface/PyCapsuleInterface.html
+        if not isinstance(table, pa.Table) and hasattr(table, "__arrow_c_stream__"):
+            table = pa.table(table)
+
+        table = remove_extension_classes(table)
+        table = parse_wkb_table(table)
+
+        # Reproject table to WGS84 if needed
+        # Note this must happen before calculating the default viewport
+        table = reproject_table(table, to_crs=OGC_84)
+
+        default_viewport = default_geoarrow_viewport(table)
+        if default_viewport is not None:
+            self._bbox = default_viewport[0]
+            self._weighted_centroid = default_viewport[1]
+
+        rows_per_chunk = _rows_per_chunk or infer_rows_per_chunk(table)
+        if rows_per_chunk <= 0:
+            raise ValueError("Cannot serialize table with 0 rows per chunk.")
+
+        self._rows_per_chunk = rows_per_chunk
+
+        super().__init__(table=table, **kwargs)
 
     @classmethod
     def from_geopandas(
-        cls, gdf: gpd.GeoDataFrame, *, auto_downcast: bool = True, **kwargs
+        cls,
+        gdf: gpd.GeoDataFrame,
+        *,
+        auto_downcast: bool = True,
+        **kwargs: Unpack[BaseLayerKwargs],
     ) -> Self:
         """Construct a Layer from a geopandas GeoDataFrame.
 
@@ -136,10 +313,6 @@ class BaseArrowLayer(BaseLayer):
         Returns:
             A Layer with the initialized data.
         """
-        if gdf.crs and gdf.crs not in [EPSG_4326, OGC_84]:
-            warnings.warn("GeoDataFrame being reprojected to EPSG:4326")
-            gdf = gdf.to_crs(OGC_84)  # type: ignore
-
         if auto_downcast:
             # Note: we don't deep copy because we don't need to clone geometries
             gdf = _auto_downcast(gdf.copy())  # type: ignore
@@ -162,10 +335,13 @@ class BitmapLayer(BaseLayer):
         image='https://raw.githubusercontent.com/visgl/deck.gl-data/master/website/sf-districts.png',
         bounds=[-122.5190, 37.7045, -122.355, 37.829]
     )
-    m = Map(layers=[layer])
+    m = Map(layer)
     m
     ```
     """
+
+    def __init__(self, **kwargs: BitmapLayerKwargs):
+        super().__init__(**kwargs)  # type: ignore
 
     _layer_type = traitlets.Unicode("bitmap").tag(sync=True)
 
@@ -219,12 +395,29 @@ class BitmapLayer(BaseLayer):
     - Default: `[255, 255, 255]`
     """
 
-    # hack to get initial view state to consider bounds/image
     @property
-    def table(self):
-        gdf = gpd.GeoDataFrame(geometry=[box(*self.bounds)])  # type: ignore
-        table = geopandas_to_geoarrow(gdf)
-        return table
+    def _bbox(self) -> Bbox:
+        a, b, c, d = self.bounds
+
+        # Four corners
+        if isinstance(a, tuple):
+            bbox = Bbox()
+            bbox.update(Bbox(a[0], a[1], a[0], a[1]))
+            bbox.update(Bbox(b[0], b[1], b[0], b[1]))
+            bbox.update(Bbox(c[0], c[1], c[0], c[1]))
+            bbox.update(Bbox(d[0], d[1], d[0], d[1]))
+            return bbox
+
+        return Bbox(a, b, c, d)
+
+    @property
+    def _weighted_centroid(self) -> WeightedCentroid:
+        bbox = self._bbox
+        center_x = (bbox.minx + bbox.maxx) / 2
+        center_y = (bbox.miny + bbox.maxy) / 2
+        # no idea what weight to put on this; we don't know how many "objects" this
+        # image should represent.
+        return WeightedCentroid(x=center_x, y=center_y, num_items=100)
 
 
 class BitmapTileLayer(BaseLayer):
@@ -246,9 +439,12 @@ class BitmapTileLayer(BaseLayer):
         min_zoom=0,
         max_zoom=19,
     )
-    m = Map(layers=[layer])
+    m = Map(layer)
     ```
     """
+
+    def __init__(self, **kwargs: BitmapTileLayerKwargs):
+        super().__init__(**kwargs)  # type: ignore
 
     _layer_type = traitlets.Unicode("bitmap-tile").tag(sync=True)
 
@@ -415,27 +611,72 @@ class ScatterplotLayer(BaseArrowLayer):
 
     **Example:**
 
+    From GeoPandas:
+
     ```py
     import geopandas as gpd
     from lonboard import Map, ScatterplotLayer
 
-    # A GeoDataFrame with Point geometries
+    # A GeoDataFrame with Point or MultiPoint geometries
     gdf = gpd.GeoDataFrame()
     layer = ScatterplotLayer.from_geopandas(
         gdf,
         get_fill_color=[255, 0, 0],
     )
-    m = Map(layers=[layer])
+    m = Map(layer)
+    ```
+
+    From [geoarrow-rust](https://geoarrow.github.io/geoarrow-rs/python/latest):
+
+    ```py
+    from geoarrow.rust.core import read_parquet
+    from lonboard import Map, ScatterplotLayer
+
+    # Example: A GeoParquet file with Point or MultiPoint geometries
+    table = read_parquet("path/to/file.parquet")
+    layer = ScatterplotLayer(
+        table=table,
+        get_fill_color=[255, 0, 0],
+    )
+    m = Map(layer)
     ```
     """
+
+    def __init__(
+        self,
+        *,
+        table: pa.Table,
+        _rows_per_chunk: Optional[int] = None,
+        **kwargs: Unpack[ScatterplotLayerKwargs],
+    ):
+        super().__init__(table=table, _rows_per_chunk=_rows_per_chunk, **kwargs)
+
+    @classmethod
+    def from_geopandas(
+        cls,
+        gdf: gpd.GeoDataFrame,
+        *,
+        auto_downcast: bool = True,
+        **kwargs: Unpack[ScatterplotLayerKwargs],
+    ) -> Self:
+        return super().from_geopandas(gdf=gdf, auto_downcast=auto_downcast, **kwargs)
 
     _layer_type = traitlets.Unicode("scatterplot").tag(sync=True)
 
     table = PyarrowTableTrait(
         allowed_geometry_types={EXTENSION_NAME.POINT, EXTENSION_NAME.MULTIPOINT}
     )
+    """A GeoArrow table with a Point or MultiPoint column.
 
-    radius_units = traitlets.Unicode("meters", allow_none=True).tag(sync=True)
+    This is the fastest way to plot data from an existing GeoArrow source, such as
+    [geoarrow-rust](https://geoarrow.github.io/geoarrow-rs/python/latest) or
+    [geoarrow-pyarrow](https://geoarrow.github.io/geoarrow-python/main/index.html).
+
+    If you have a GeoPandas `GeoDataFrame`, use
+    [`from_geopandas`][lonboard.ScatterplotLayer.from_geopandas] instead.
+    """
+
+    radius_units = traitlets.Unicode(None, allow_none=True).tag(sync=True)
     """
     The units of the radius, one of `'meters'`, `'common'`, and `'pixels'`. See [unit
     system](https://deck.gl/docs/developer-guide/coordinate-systems#supported-units).
@@ -444,7 +685,7 @@ class ScatterplotLayer(BaseArrowLayer):
     - Default: `'meters'`
     """
 
-    radius_scale = traitlets.Float(allow_none=True, min=0).tag(sync=True)
+    radius_scale = traitlets.Float(None, allow_none=True, min=0).tag(sync=True)
     """
     A global radius multiplier for all points.
 
@@ -452,7 +693,7 @@ class ScatterplotLayer(BaseArrowLayer):
     - Default: `1`
     """
 
-    radius_min_pixels = traitlets.Float(allow_none=True, min=0).tag(sync=True)
+    radius_min_pixels = traitlets.Float(None, allow_none=True, min=0).tag(sync=True)
     """
     The minimum radius in pixels. This can be used to prevent the circle from getting
     too small when zoomed out.
@@ -461,7 +702,7 @@ class ScatterplotLayer(BaseArrowLayer):
     - Default: `0`
     """
 
-    radius_max_pixels = traitlets.Float(allow_none=True, min=0).tag(sync=True)
+    radius_max_pixels = traitlets.Float(None, allow_none=True, min=0).tag(sync=True)
     """
     The maximum radius in pixels. This can be used to prevent the circle from getting
     too big when zoomed in.
@@ -470,7 +711,7 @@ class ScatterplotLayer(BaseArrowLayer):
     - Default: `None`
     """
 
-    line_width_units = traitlets.Unicode("meters", allow_none=True).tag(sync=True)
+    line_width_units = traitlets.Unicode(None, allow_none=True).tag(sync=True)
     """
     The units of the line width, one of `'meters'`, `'common'`, and `'pixels'`. See
     [unit
@@ -480,7 +721,7 @@ class ScatterplotLayer(BaseArrowLayer):
     - Default: `'meters'`
     """
 
-    line_width_scale = traitlets.Float(allow_none=True, min=0).tag(sync=True)
+    line_width_scale = traitlets.Float(None, allow_none=True, min=0).tag(sync=True)
     """
     A global line width multiplier for all points.
 
@@ -488,7 +729,7 @@ class ScatterplotLayer(BaseArrowLayer):
     - Default: `1`
     """
 
-    line_width_min_pixels = traitlets.Float(allow_none=True, min=0).tag(sync=True)
+    line_width_min_pixels = traitlets.Float(None, allow_none=True, min=0).tag(sync=True)
     """
     The minimum line width in pixels. This can be used to prevent the stroke from
     getting too thin when zoomed out.
@@ -497,7 +738,7 @@ class ScatterplotLayer(BaseArrowLayer):
     - Default: `0`
     """
 
-    line_width_max_pixels = traitlets.Float(allow_none=True, min=0).tag(sync=True)
+    line_width_max_pixels = traitlets.Float(None, allow_none=True, min=0).tag(sync=True)
     """
     The maximum line width in pixels. This can be used to prevent the stroke from
     getting too thick when zoomed in.
@@ -506,7 +747,7 @@ class ScatterplotLayer(BaseArrowLayer):
     - Default: `None`
     """
 
-    stroked = traitlets.Bool(allow_none=True).tag(sync=True)
+    stroked = traitlets.Bool(None, allow_none=True).tag(sync=True)
     """
     Draw the outline of points.
 
@@ -514,7 +755,7 @@ class ScatterplotLayer(BaseArrowLayer):
     - Default: `False`
     """
 
-    filled = traitlets.Bool(allow_none=True).tag(sync=True)
+    filled = traitlets.Bool(None, allow_none=True).tag(sync=True)
     """
     Draw the filled area of points.
 
@@ -522,7 +763,7 @@ class ScatterplotLayer(BaseArrowLayer):
     - Default: `True`
     """
 
-    billboard = traitlets.Bool(allow_none=True).tag(sync=True)
+    billboard = traitlets.Bool(None, allow_none=True).tag(sync=True)
     """
     If `True`, rendered circles always face the camera. If `False` circles face up (i.e.
     are parallel with the ground plane).
@@ -531,7 +772,7 @@ class ScatterplotLayer(BaseArrowLayer):
     - Default: `False`
     """
 
-    antialiasing = traitlets.Bool(allow_none=True).tag(sync=True)
+    antialiasing = traitlets.Bool(None, allow_none=True).tag(sync=True)
     """
     If `True`, circles are rendered with smoothed edges. If `False`, circles are
     rendered with rough edges. Antialiasing can cause artifacts on edges of overlapping
@@ -541,7 +782,7 @@ class ScatterplotLayer(BaseArrowLayer):
     - Default: `True`
     """
 
-    get_radius = FloatAccessor()
+    get_radius = FloatAccessor(None, allow_none=True)
     """
     The radius of each object, in units specified by `radius_units` (default
     `'meters'`).
@@ -553,7 +794,7 @@ class ScatterplotLayer(BaseArrowLayer):
     - Default: `1`.
     """
 
-    get_fill_color = ColorAccessor()
+    get_fill_color = ColorAccessor(None, allow_none=True)
     """
     The filled color of each object in the format of `[r, g, b, [a]]`. Each channel is a
     number between 0-255 and `a` is 255 if not supplied.
@@ -566,7 +807,7 @@ class ScatterplotLayer(BaseArrowLayer):
     - Default: `[0, 0, 0, 255]`.
     """
 
-    get_line_color = ColorAccessor()
+    get_line_color = ColorAccessor(None, allow_none=True)
     """
     The outline color of each object in the format of `[r, g, b, [a]]`. Each channel is
     a number between 0-255 and `a` is 255 if not supplied.
@@ -579,7 +820,7 @@ class ScatterplotLayer(BaseArrowLayer):
     - Default: `[0, 0, 0, 255]`.
     """
 
-    get_line_width = FloatAccessor()
+    get_line_width = FloatAccessor(None, allow_none=True)
     """
     The width of the outline of each object, in units specified by `line_width_units`
     (default `'meters'`).
@@ -591,16 +832,6 @@ class ScatterplotLayer(BaseArrowLayer):
     - Default: `1`.
     """
 
-    @traitlets.validate(
-        "get_radius", "get_fill_color", "get_line_color", "get_line_width"
-    )
-    def _validate_accessor_length(self, proposal):
-        if isinstance(proposal["value"], (pa.ChunkedArray, pa.Array)):
-            if len(proposal["value"]) != len(self.table):
-                raise traitlets.TraitError("accessor must have same length as table")
-
-        return proposal["value"]
-
 
 class PathLayer(BaseArrowLayer):
     """
@@ -609,20 +840,57 @@ class PathLayer(BaseArrowLayer):
 
     **Example:**
 
+    From GeoPandas:
+
     ```py
     import geopandas as gpd
     from lonboard import Map, PathLayer
 
-    # A GeoDataFrame with LineString geometries
+    # A GeoDataFrame with LineString or MultiLineString geometries
     gdf = gpd.GeoDataFrame()
     layer = PathLayer.from_geopandas(
         gdf,
         get_color=[255, 0, 0],
         width_min_pixels=2,
     )
-    m = Map(layers=[layer])
+    m = Map(layer)
+    ```
+
+    From [geoarrow-rust](https://geoarrow.github.io/geoarrow-rs/python/latest):
+
+    ```py
+    from geoarrow.rust.core import read_parquet
+    from lonboard import Map, PathLayer
+
+    # Example: A GeoParquet file with LineString or MultiLineString geometries
+    table = read_parquet("path/to/file.parquet")
+    layer = PathLayer(
+        table=table,
+        get_color=[255, 0, 0],
+        width_min_pixels=2,
+    )
+    m = Map(layer)
     ```
     """
+
+    def __init__(
+        self,
+        *,
+        table: pa.Table,
+        _rows_per_chunk: Optional[int] = None,
+        **kwargs: Unpack[PathLayerKwargs],
+    ):
+        super().__init__(table=table, _rows_per_chunk=_rows_per_chunk, **kwargs)
+
+    @classmethod
+    def from_geopandas(
+        cls,
+        gdf: gpd.GeoDataFrame,
+        *,
+        auto_downcast: bool = True,
+        **kwargs: Unpack[PathLayerKwargs],
+    ) -> Self:
+        return super().from_geopandas(gdf=gdf, auto_downcast=auto_downcast, **kwargs)
 
     _layer_type = traitlets.Unicode("path").tag(sync=True)
 
@@ -632,8 +900,17 @@ class PathLayer(BaseArrowLayer):
             EXTENSION_NAME.MULTILINESTRING,
         }
     )
+    """A GeoArrow table with a LineString or MultiLineString column.
 
-    width_units = traitlets.Unicode(allow_none=True).tag(sync=True)
+    This is the fastest way to plot data from an existing GeoArrow source, such as
+    [geoarrow-rust](https://geoarrow.github.io/geoarrow-rs/python/latest) or
+    [geoarrow-pyarrow](https://geoarrow.github.io/geoarrow-python/main/index.html).
+
+    If you have a GeoPandas `GeoDataFrame`, use
+    [`from_geopandas`][lonboard.PathLayer.from_geopandas] instead.
+    """
+
+    width_units = traitlets.Unicode(None, allow_none=True).tag(sync=True)
     """
     The units of the line width, one of `'meters'`, `'common'`, and `'pixels'`. See
     [unit
@@ -643,7 +920,7 @@ class PathLayer(BaseArrowLayer):
     - Default: `'meters'`
     """
 
-    width_scale = traitlets.Float(allow_none=True, min=0).tag(sync=True)
+    width_scale = traitlets.Float(None, allow_none=True, min=0).tag(sync=True)
     """
     The path width multiplier that multiplied to all paths.
 
@@ -651,7 +928,7 @@ class PathLayer(BaseArrowLayer):
     - Default: `1`
     """
 
-    width_min_pixels = traitlets.Float(allow_none=True, min=0).tag(sync=True)
+    width_min_pixels = traitlets.Float(None, allow_none=True, min=0).tag(sync=True)
     """
     The minimum path width in pixels. This prop can be used to prevent the path from
     getting too thin when zoomed out.
@@ -660,7 +937,7 @@ class PathLayer(BaseArrowLayer):
     - Default: `0`
     """
 
-    width_max_pixels = traitlets.Float(allow_none=True, min=0).tag(sync=True)
+    width_max_pixels = traitlets.Float(None, allow_none=True, min=0).tag(sync=True)
     """
     The maximum path width in pixels. This prop can be used to prevent the path from
     getting too thick when zoomed in.
@@ -669,7 +946,7 @@ class PathLayer(BaseArrowLayer):
     - Default: `None`
     """
 
-    joint_rounded = traitlets.Bool(allow_none=True).tag(sync=True)
+    joint_rounded = traitlets.Bool(None, allow_none=True).tag(sync=True)
     """
     Type of joint. If `True`, draw round joints. Otherwise draw miter joints.
 
@@ -677,7 +954,7 @@ class PathLayer(BaseArrowLayer):
     - Default: `False`
     """
 
-    cap_rounded = traitlets.Bool(allow_none=True).tag(sync=True)
+    cap_rounded = traitlets.Bool(None, allow_none=True).tag(sync=True)
     """
     Type of caps. If `True`, draw round caps. Otherwise draw square caps.
 
@@ -685,7 +962,7 @@ class PathLayer(BaseArrowLayer):
     - Default: `False`
     """
 
-    miter_limit = traitlets.Int(allow_none=True).tag(sync=True)
+    miter_limit = traitlets.Int(None, allow_none=True).tag(sync=True)
     """
     The maximum extent of a joint in ratio to the stroke width.
     Only works if `jointRounded` is `False`.
@@ -694,7 +971,7 @@ class PathLayer(BaseArrowLayer):
     - Default: `4`
     """
 
-    billboard = traitlets.Bool(allow_none=True).tag(sync=True)
+    billboard = traitlets.Bool(None, allow_none=True).tag(sync=True)
     """
     If `True`, extrude the path in screen space (width always faces the camera).
     If `False`, the width always faces up.
@@ -703,7 +980,7 @@ class PathLayer(BaseArrowLayer):
     - Default: `False`
     """
 
-    get_color = ColorAccessor()
+    get_color = ColorAccessor(None, allow_none=True)
     """
     The color of each path in the format of `[r, g, b, [a]]`. Each channel is a number
     between 0-255 and `a` is 255 if not supplied.
@@ -716,7 +993,7 @@ class PathLayer(BaseArrowLayer):
     - Default: `[0, 0, 0, 255]`.
     """
 
-    get_width = FloatAccessor()
+    get_width = FloatAccessor(None, allow_none=True)
     """
     The width of each path, in units specified by `width_units` (default `'meters'`).
 
@@ -727,13 +1004,111 @@ class PathLayer(BaseArrowLayer):
     - Default: `1`.
     """
 
-    @traitlets.validate("get_color", "get_width")
-    def _validate_accessor_length(self, proposal):
-        if isinstance(proposal["value"], (pa.ChunkedArray, pa.Array)):
-            if len(proposal["value"]) != len(self.table):
-                raise traitlets.TraitError("accessor must have same length as table")
 
-        return proposal["value"]
+class PointCloudLayer(BaseArrowLayer):
+    """
+    The `PointCloudLayer` renders a point cloud with 3D positions, normals and colors.
+
+    The `PointCloudLayer` can be more efficient at rendering large quantities of points
+    than the [`ScatterplotLayer`][lonboard.ScatterplotLayer], but has fewer rendering
+    options. In particular, you can have only one point size across all points in your
+    data.
+
+    **Example:**
+
+    From GeoPandas:
+
+    ```py
+    import geopandas as gpd
+    from lonboard import Map, PointCloudLayer
+
+    # A GeoDataFrame with Point geometries
+    gdf = gpd.GeoDataFrame()
+    layer = PointCloudLayer.from_geopandas(
+        gdf,
+        get_color=[255, 0, 0],
+        point_size=2,
+    )
+    m = Map(layer)
+    ```
+    """
+
+    def __init__(
+        self,
+        *,
+        table: pa.Table,
+        _rows_per_chunk: Optional[int] = None,
+        **kwargs: Unpack[PointCloudLayerKwargs],
+    ):
+        super().__init__(table=table, _rows_per_chunk=_rows_per_chunk, **kwargs)
+
+    @classmethod
+    def from_geopandas(
+        cls,
+        gdf: gpd.GeoDataFrame,
+        *,
+        auto_downcast: bool = True,
+        **kwargs: Unpack[PointCloudLayerKwargs],
+    ) -> Self:
+        return super().from_geopandas(gdf=gdf, auto_downcast=auto_downcast, **kwargs)
+
+    _layer_type = traitlets.Unicode("point-cloud").tag(sync=True)
+
+    table = PyarrowTableTrait(
+        allowed_geometry_types={EXTENSION_NAME.POINT}, allowed_dimensions={3}
+    )
+    """A GeoArrow table with a Point column.
+
+    This is the fastest way to plot data from an existing GeoArrow source, such as
+    [geoarrow-rust](https://geoarrow.github.io/geoarrow-rs/python/latest) or
+    [geoarrow-pyarrow](https://geoarrow.github.io/geoarrow-python/main/index.html).
+
+    If you have a GeoPandas `GeoDataFrame`, use
+    [`from_geopandas`][lonboard.PointCloudLayer.from_geopandas] instead.
+    """
+
+    size_units = traitlets.Unicode(None, allow_none=True).tag(sync=True)
+    """
+    The units of the line width, one of `'meters'`, `'common'`, and `'pixels'`. See
+    [unit
+    system](https://deck.gl/docs/developer-guide/coordinate-systems#supported-units).
+
+    - Type: `str`, optional
+    - Default: `'pixels'`
+    """
+
+    point_size = traitlets.Float(None, allow_none=True, min=0).tag(sync=True)
+    """
+    Global radius of all points, in units specified by `size_units`.
+
+    - Type: `float`, optional
+    - Default: `10`
+    """
+
+    get_color = ColorAccessor(None, allow_none=True)
+    """
+    The color of each path in the format of `[r, g, b, [a]]`. Each channel is a number
+    between 0-255 and `a` is 255 if not supplied.
+
+    - Type: [ColorAccessor][lonboard.traits.ColorAccessor], optional
+        - If a single `list` or `tuple` is provided, it is used as the color for all
+          paths.
+        - If a numpy or pyarrow array is provided, each value in the array will be used
+          as the color for the path at the same row index.
+    - Default: `[0, 0, 0, 255]`.
+    """
+
+    get_normal = NormalAccessor(None, allow_none=True)
+    """
+    The normal of each object, in `[nx, ny, nz]`.
+
+    - Type: [NormalAccessor][lonboard.traits.NormalAccessor], optional
+        - If a single `list` or `tuple` is provided, it is used as the normal for all
+          points.
+        - If a numpy or pyarrow array is provided, each value in the array will be used
+          as the normal for the point at the same row index.
+    - Default: `1`.
+    """
 
 
 class SolidPolygonLayer(BaseArrowLayer):
@@ -742,27 +1117,72 @@ class SolidPolygonLayer(BaseArrowLayer):
 
     **Example:**
 
+    From GeoPandas:
+
     ```py
     import geopandas as gpd
     from lonboard import Map, SolidPolygonLayer
 
-    # A GeoDataFrame with Polygon geometries
+    # A GeoDataFrame with Polygon or MultiPolygon geometries
     gdf = gpd.GeoDataFrame()
     layer = SolidPolygonLayer.from_geopandas(
         gdf,
         get_fill_color=[255, 0, 0],
     )
-    m = Map(layers=[layer])
+    m = Map(layer)
+    ```
+
+    From [geoarrow-rust](https://geoarrow.github.io/geoarrow-rs/python/latest):
+
+    ```py
+    from geoarrow.rust.core import read_parquet
+    from lonboard import Map, SolidPolygonLayer
+
+    # Example: A GeoParquet file with Polygon or MultiPolygon geometries
+    table = read_parquet("path/to/file.parquet")
+    layer = SolidPolygonLayer(
+        table=table,
+        get_fill_color=[255, 0, 0],
+    )
+    m = Map(layer)
     ```
     """
+
+    def __init__(
+        self,
+        *,
+        table: pa.Table,
+        _rows_per_chunk: Optional[int] = None,
+        **kwargs: Unpack[SolidPolygonLayerKwargs],
+    ):
+        super().__init__(table=table, _rows_per_chunk=_rows_per_chunk, **kwargs)
+
+    @classmethod
+    def from_geopandas(
+        cls,
+        gdf: gpd.GeoDataFrame,
+        *,
+        auto_downcast: bool = True,
+        **kwargs: Unpack[SolidPolygonLayerKwargs],
+    ) -> Self:
+        return super().from_geopandas(gdf=gdf, auto_downcast=auto_downcast, **kwargs)
 
     _layer_type = traitlets.Unicode("solid-polygon").tag(sync=True)
 
     table = PyarrowTableTrait(
         allowed_geometry_types={EXTENSION_NAME.POLYGON, EXTENSION_NAME.MULTIPOLYGON}
     )
+    """A GeoArrow table with a Polygon or MultiPolygon column.
 
-    filled = traitlets.Bool(allow_none=True).tag(sync=True)
+    This is the fastest way to plot data from an existing GeoArrow source, such as
+    [geoarrow-rust](https://geoarrow.github.io/geoarrow-rs/python/latest) or
+    [geoarrow-pyarrow](https://geoarrow.github.io/geoarrow-python/main/index.html).
+
+    If you have a GeoPandas `GeoDataFrame`, use
+    [`from_geopandas`][lonboard.SolidPolygonLayer.from_geopandas] instead.
+    """
+
+    filled = traitlets.Bool(None, allow_none=True).tag(sync=True)
     """
     Whether to fill the polygons (based on the color provided by the
     `get_fill_color` accessor).
@@ -771,7 +1191,7 @@ class SolidPolygonLayer(BaseArrowLayer):
     - Default: `True`
     """
 
-    extruded = traitlets.Bool(allow_none=True).tag(sync=True)
+    extruded = traitlets.Bool(None, allow_none=True).tag(sync=True)
     """
     Whether to extrude the polygons (based on the elevations provided by the
     `get_elevation` accessor'). If set to `False`, all polygons will be flat, this
@@ -782,7 +1202,7 @@ class SolidPolygonLayer(BaseArrowLayer):
     - Default: `False`
     """
 
-    wireframe = traitlets.Bool(allow_none=True).tag(sync=True)
+    wireframe = traitlets.Bool(None, allow_none=True).tag(sync=True)
     """
     Whether to generate a line wireframe of the polygon. The outline will have
     "horizontal" lines closing the top and bottom polygons and a vertical line
@@ -792,7 +1212,7 @@ class SolidPolygonLayer(BaseArrowLayer):
     - Default: `False`
     """
 
-    elevation_scale = traitlets.Float(allow_none=True, min=0).tag(sync=True)
+    elevation_scale = traitlets.Float(None, allow_none=True, min=0).tag(sync=True)
     """
     Elevation multiplier. The final elevation is calculated by `elevation_scale *
     get_elevation(d)`. `elevation_scale` is a handy property to scale all elevation
@@ -808,7 +1228,7 @@ class SolidPolygonLayer(BaseArrowLayer):
       with the same data if you want a combined rendering effect.
     """
 
-    get_elevation = FloatAccessor()
+    get_elevation = FloatAccessor(None, allow_none=True)
     """
     The elevation to extrude each polygon with, in meters.
 
@@ -821,7 +1241,7 @@ class SolidPolygonLayer(BaseArrowLayer):
     - Default: `1000`.
     """
 
-    get_fill_color = ColorAccessor()
+    get_fill_color = ColorAccessor(None, allow_none=True)
     """
     The fill color of each polygon in the format of `[r, g, b, [a]]`. Each channel is a
     number between 0-255 and `a` is 255 if not supplied.
@@ -834,7 +1254,7 @@ class SolidPolygonLayer(BaseArrowLayer):
     - Default: `[0, 0, 0, 255]`.
     """
 
-    get_line_color = ColorAccessor()
+    get_line_color = ColorAccessor(None, allow_none=True)
     """
     The line color of each polygon in the format of `[r, g, b, [a]]`. Each channel is a
     number between 0-255 and `a` is 255 if not supplied.
@@ -849,19 +1269,13 @@ class SolidPolygonLayer(BaseArrowLayer):
     - Default: `[0, 0, 0, 255]`.
     """
 
-    @traitlets.validate("get_elevation", "get_fill_color", "get_line_color")
-    def _validate_accessor_length(self, proposal):
-        if isinstance(proposal["value"], (pa.ChunkedArray, pa.Array)):
-            if len(proposal["value"]) != len(self.table):
-                raise traitlets.TraitError("accessor must have same length as table")
-
-        return proposal["value"]
-
 
 class HeatmapLayer(BaseArrowLayer):
     """The `HeatmapLayer` visualizes the spatial distribution of data.
 
-    **Example:**
+    **Example**
+
+    From GeoPandas:
 
     ```py
     import geopandas as gpd
@@ -869,23 +1283,56 @@ class HeatmapLayer(BaseArrowLayer):
 
     # A GeoDataFrame with Point geometries
     gdf = gpd.GeoDataFrame()
-    layer = HeatmapLayer.from_geopandas(gdf,)
-    m = Map(layers=[layer])
+    layer = HeatmapLayer.from_geopandas(gdf)
+    m = Map(layer)
     ```
+
+    From [geoarrow-rust](https://geoarrow.github.io/geoarrow-rs/python/latest):
+
+    ```py
+    from geoarrow.rust.core import read_parquet
+    from lonboard import Map, HeatmapLayer
+
+    # Example: A GeoParquet file with Point geometries
+    table = read_parquet("path/to/file.parquet")
+    layer = HeatmapLayer(
+        table=table,
+        get_fill_color=[255, 0, 0],
+    )
+    m = Map(layer)
+    ```
+
     """
+
+    def __init__(self, *, table: pa.Table, **kwargs: Unpack[HeatmapLayerKwargs]):
+        # NOTE: we override the default for _rows_per_chunk because otherwise we render
+        # one heatmap per _chunk_ not for the entire dataset.
+        super().__init__(table=table, _rows_per_chunk=len(table), **kwargs)
+
+    @classmethod
+    def from_geopandas(
+        cls,
+        gdf: gpd.GeoDataFrame,
+        *,
+        auto_downcast: bool = True,
+        **kwargs: Unpack[HeatmapLayerKwargs],
+    ) -> Self:
+        return super().from_geopandas(gdf=gdf, auto_downcast=auto_downcast, **kwargs)
 
     _layer_type = traitlets.Unicode("heatmap").tag(sync=True)
 
-    # NOTE: we override the default for _rows_per_chunk because otherwise we render one
-    # heatmap per _chunk_ not for the entire dataset.
-    # TODO: on the JS side, rechunk the table into a single contiguous chunk.
-    @traitlets.default("_rows_per_chunk")
-    def _default_rows_per_chunk(self):
-        return len(self.table)
-
     table = PyarrowTableTrait(allowed_geometry_types={EXTENSION_NAME.POINT})
+    """A GeoArrow table with a Point column.
 
-    radius_pixels = traitlets.Float(allow_none=True).tag(sync=True)
+    This is the fastest way to plot data from an existing GeoArrow source, such as
+    [geoarrow-rust](https://geoarrow.github.io/geoarrow-rs/python/latest) or
+    [geoarrow-pyarrow](https://geoarrow.github.io/geoarrow-python/main/index.html).
+
+    If you have a GeoPandas `GeoDataFrame`, use
+    [`from_geopandas`][lonboard.HeatmapLayer.from_geopandas] instead.
+    """
+
+    radius_pixels = traitlets.Float(None, allow_none=True).tag(sync=True)
     """Radius of the circle in pixels, to which the weight of an object is distributed.
 
     - Type: `float`, optional
@@ -899,7 +1346,7 @@ class HeatmapLayer(BaseArrowLayer):
     # - Default: `6-class YlOrRd` - [colorbrewer](http://colorbrewer2.org/#type=sequential&scheme=YlOrRd&n=6)
     # """
 
-    intensity = traitlets.Float(allow_none=True).tag(sync=True)
+    intensity = traitlets.Float(None, allow_none=True).tag(sync=True)
     """
     Value that is multiplied with the total weight at a pixel to obtain the final
     weight.
@@ -908,7 +1355,7 @@ class HeatmapLayer(BaseArrowLayer):
     - Default: `1`
     """
 
-    threshold = traitlets.Float(allow_none=True, min=0, max=1).tag(sync=True)
+    threshold = traitlets.Float(None, allow_none=True, min=0, max=1).tag(sync=True)
     """Ratio of the fading weight to the max weight, between `0` and `1`.
 
     For example, `0.1` affects all pixels with weight under 10% of the max.
@@ -930,7 +1377,7 @@ class HeatmapLayer(BaseArrowLayer):
     # - Default: `None`
     # """
 
-    aggregation = traitlets.Unicode(allow_none=True).tag(sync=True)
+    aggregation = traitlets.Unicode(None, allow_none=True).tag(sync=True)
     """Defines the type of aggregation operation
 
     Valid values are 'SUM', 'MEAN'.
@@ -939,14 +1386,14 @@ class HeatmapLayer(BaseArrowLayer):
     - Default: `"SUM"`
     """
 
-    weights_texture_size = traitlets.Int(allow_none=True).tag(sync=True)
+    weights_texture_size = traitlets.Int(None, allow_none=True).tag(sync=True)
     """Specifies the size of weight texture.
 
     - Type: `int`, optional
     - Default: `2048`
     """
 
-    debounce_timeout = traitlets.Int(allow_none=True).tag(sync=True)
+    debounce_timeout = traitlets.Int(None, allow_none=True).tag(sync=True)
     """
     Interval in milliseconds during which changes to the viewport don't trigger
     aggregation.
@@ -955,7 +1402,7 @@ class HeatmapLayer(BaseArrowLayer):
     - Default: `500`
     """
 
-    get_weight = FloatAccessor()
+    get_weight = FloatAccessor(None, allow_none=True)
     """The weight of each object.
 
     - Type: [FloatAccessor][lonboard.traits.FloatAccessor], optional
@@ -964,11 +1411,3 @@ class HeatmapLayer(BaseArrowLayer):
           width for the object at the same row index.
     - Default: `1`.
     """
-
-    @traitlets.validate("get_weight")
-    def _validate_accessor_length(self, proposal):
-        if isinstance(proposal["value"], (pa.ChunkedArray, pa.Array)):
-            if len(proposal["value"]) != len(self.table):
-                raise traitlets.TraitError("accessor must have same length as table")
-
-        return proposal["value"]
