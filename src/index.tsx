@@ -11,7 +11,7 @@ import { BaseLayerModel, initializeLayer } from "./model/index.js";
 import type { WidgetModel } from "@jupyter-widgets/base";
 import { initParquetWasm } from "./parquet.js";
 import { getTooltip } from "./tooltip/index.js";
-import { isDefined, loadChildModels } from "./util.js";
+import { getPolygon, isDefined, loadChildModels } from "./util.js";
 import { v4 as uuidv4 } from "uuid";
 import { Message } from "./types.js";
 import { flyTo } from "./actions/fly-to.js";
@@ -163,8 +163,7 @@ function App() {
     undefined | [[number, number], number[] | undefined]
   >();
 
-  function onSelectClick(e: React.SyntheticEvent) {
-    e.stopPropagation();
+  function onSelectClick() {
     if (!selectionMode) {
       setSelectionMode("selecting");
     }
@@ -177,19 +176,15 @@ function App() {
 
   function onMapClick(info: PickingInfo) {
     if (!selectionMode || selectionMode === "selected") return;
-    console.log("onclick info", info);
-    if (selectionEnd !== undefined) {
-      setSelectionStart(undefined);
-      setSelectionEnd(undefined);
-    } else if (selectionStart !== undefined && selectionEnd === undefined) {
+    if (selectionStart !== undefined && selectionEnd === undefined) {
       setSelectionEnd([[info.x, info.y], info.coordinate]);
       const pt1 = selectionStart[0];
       const pt2 = [info.x, info.y];
 
-      const width = Math.abs(info.x - selectionStart[0][0]);
-      const height = Math.abs(info.y - selectionStart[0][1]);
-      const left = Math.min(selectionStart[0][0], info.x);
-      const top = Math.min(selectionStart[0][1], info.y);
+      const width = Math.abs(pt2[0] - pt1[0]);
+      const height = Math.abs(pt2[1] - pt1[1]);
+      const left = Math.min(pt1[0], pt2[0]);
+      const top = Math.min(pt1[1], pt2[1]);
       const selectedObjects = mapRef.current?.pickObjects({
         x: left,
         y: top,
@@ -198,7 +193,6 @@ function App() {
       });
       setSelectionMode("selected");
       setHoverBBoxLayer(false);
-      console.log("selected on map", selectedObjects);
       setSelectionObjectCount(selectedObjects ? selectedObjects.length : 0);
 
       // set this to what Shapely uses to represent Bounds
@@ -223,7 +217,7 @@ function App() {
       if (!pt1 || !pt2) return;
       const data = [
         {
-          polygon: [pt1, [pt1[0], pt2[1]], pt2, [pt2[0], pt1[1]], pt1],
+          polygon: getPolygon(pt1, pt2),
         },
       ];
       const bboxLayer = new PolygonLayer({
@@ -245,16 +239,14 @@ function App() {
   const selectionIndicator = useMemo(() => {
     if (!selectionMode) return undefined;
     if (selectionStart && selectionEnd) {
-      console.log(`Map coords: ${selectionStart[1]} ${selectionEnd[1]}`);
       const pt1 = selectionStart[1];
       const pt2 = selectionEnd[1];
       if (!pt1 || !pt2) return undefined;
       const data = [
         {
-          polygon: [pt1, [pt1[0], pt2[1]], pt2, [pt2[0], pt1[1]], pt1],
+          polygon: getPolygon(pt1, pt2),
         },
       ];
-      console.log("selection data", data);
       return new PolygonLayer({
         id: "selection-layer",
         data,
