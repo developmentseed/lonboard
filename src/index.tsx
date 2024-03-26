@@ -64,26 +64,28 @@ async function getChildModelState(
 }
 
 function App() {
-  let model = useModel();
+  const model = useModel();
 
-  let [pythonInitialViewState] = useModelState<MapViewState>(
+  const [pythonInitialViewState] = useModelState<MapViewState>(
     "_initial_view_state",
   );
-  let [mapStyle] = useModelState<string>("basemap_style");
-  let [mapHeight] = useModelState<number>("_height");
-  let [showTooltip] = useModelState<boolean>("show_tooltip");
-  let [pickingRadius] = useModelState<number>("picking_radius");
-  let [boundsModel, setBoundsModel] =
+  const [mapStyle] = useModelState<string>("basemap_style");
+  const [mapHeight] = useModelState<number>("_height");
+  const [showTooltip] = useModelState<boolean>("show_tooltip");
+  const [pickingRadius] = useModelState<number>("picking_radius");
+  const [boundsModel, setBoundsModel] =
     useModelState<Array<number>>("selected_bounds");
-  let [selectionMode, setSelectionMode] = useState<boolean | string>(false);
-  let [selectionObjectCount, setSelectionObjectCount] = useState<
+  const [selectionMode, setSelectionMode] = useState<boolean | string>(false);
+  const [selectionObjectCount, setSelectionObjectCount] = useState<
     boolean | number
   >(false);
-  let [hoverBBoxLayer, setHoverBBoxLayer] = useState<any>(false);
-  let [useDevicePixels] = useModelState<number | boolean>("use_device_pixels");
-  let [parameters] = useModelState<object>("parameters");
+  const [hoverBBoxLayer, setHoverBBoxLayer] = useState<any>(false);
+  const [useDevicePixels] = useModelState<number | boolean>(
+    "use_device_pixels",
+  );
+  const [parameters] = useModelState<object>("parameters");
 
-  let [initialViewState, setInitialViewState] = useState(
+  const [initialViewState, setInitialViewState] = useState(
     pythonInitialViewState,
   );
 
@@ -100,15 +102,15 @@ function App() {
   });
 
   const [mapId] = useState(uuidv4());
-  let mapRef = useRef<DeckGLRef>(null);
-  let [subModelState, setSubModelState] = useState<
+  const mapRef = useRef<DeckGLRef>(null);
+  const [subModelState, setSubModelState] = useState<
     Record<string, BaseLayerModel>
   >({});
 
-  let [childLayerIds] = useModelState<string[]>("layers");
+  const [childLayerIds] = useModelState<string[]>("layers");
 
   // Fake state just to get react to re-render when a model callback is called
-  let [stateCounter, setStateCounter] = useState<Date>(new Date());
+  const [stateCounter, setStateCounter] = useState<Date>(new Date());
 
   useEffect(() => {
     const callback = async () => {
