@@ -73,7 +73,8 @@ function App() {
   let [mapHeight] = useModelState<number>("_height");
   let [showTooltip] = useModelState<boolean>("show_tooltip");
   let [pickingRadius] = useModelState<number>("picking_radius");
-  let [boundsModel, setBoundsModel] = useModelState<Array<number>>("selected_bounds");
+  let [boundsModel, setBoundsModel] =
+    useModelState<Array<number>>("selected_bounds");
   let [selectionMode, setSelectionMode] = useState<boolean | string>(false);
   let [selectionObjectCount, setSelectionObjectCount] = useState<
     boolean | number
@@ -201,7 +202,7 @@ function App() {
         Math.min(pt1[0], pt2[0]),
         Math.min(pt1[1], pt2[1]),
         Math.max(pt1[0], pt2[0]),
-        Math.max(pt1[1], pt2[1])
+        Math.max(pt1[1], pt2[1]),
       ]);
     } else {
       setSelectionStart([[info.x, info.y], info.coordinate]);
