@@ -200,6 +200,8 @@ function App() {
       setHoverBBoxLayer(false);
       console.log("selected on map", selectedObjects);
       setSelectionObjectCount(selectedObjects ? selectedObjects.length : 0);
+
+      // set this to what Shapely uses to represent Bounds
       setBoundsModel([
         Math.min(pt1[0], pt2[0]),
         Math.min(pt1[1], pt2[1]),
@@ -262,19 +264,6 @@ function App() {
         getLineWidth: 2,
         lineWidthUnits: "pixels",
         getPolygon: (d) => d.polygon,
-      });
-    } else if (selectionStart) {
-      // Show the selection start point (note this does not show the proposed bounding box, but could be done)
-      return new ScatterplotLayer({
-        id: "select-point-layer",
-        data: [
-          {
-            coordinates: selectionStart[1],
-          },
-        ],
-        getRadius: 2,
-        radiusUnits: "pixels",
-        getPosition: (d) => d.coordinates,
       });
     } else {
       return undefined;
