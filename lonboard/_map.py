@@ -1,7 +1,8 @@
 from __future__ import annotations
 
+import sys
 from pathlib import Path
-from typing import IO, Optional, Sequence, TextIO, Union
+from typing import IO, TYPE_CHECKING, Optional, Sequence, TextIO, Union
 
 import ipywidgets
 import traitlets
@@ -12,6 +13,14 @@ from lonboard._environment import DEFAULT_HEIGHT
 from lonboard._layer import BaseLayer
 from lonboard._viewport import compute_view
 from lonboard.basemap import CartoBasemap
+from lonboard.types.map import MapKwargs
+
+if TYPE_CHECKING:
+    if sys.version_info >= (3, 12):
+        from typing import Unpack
+    else:
+        from typing_extensions import Unpack
+
 
 # bundler yields lonboard/static/{index.js,styles.css}
 bundler_output_dir = Path(__file__).parent / "static"
@@ -64,7 +73,9 @@ class Map(BaseAnyWidget):
     ```
     """
 
-    def __init__(self, layers: Union[BaseLayer, Sequence[BaseLayer]], **kwargs) -> None:
+    def __init__(
+        self, layers: Union[BaseLayer, Sequence[BaseLayer]], **kwargs: Unpack[MapKwargs]
+    ) -> None:
         """Create a new Map.
 
         Aside from the `layers` argument, pass keyword arguments for any other attribute
@@ -155,6 +166,153 @@ class Map(BaseAnyWidget):
     - Default
       [`lonboard.basemap.CartoBasemap.PositronNoLabels`][lonboard.basemap.CartoBasemap.PositronNoLabels]
     """
+
+    # TODO: We'd prefer a "Strict union of bool and float" but that doesn't
+    # work here because `Union[bool, float]` would coerce `1` to `True`, which we don't
+    # want, and `Union[float, bool]` would coerce `True` to `1`, which we also don't
+    # want.
+    # In the future we could create a custom trait for this if asked for.
+    use_device_pixels = traitlets.Any(allow_none=True, default_value=None).tag(
+        sync=True
+    )
+    """Controls the resolution of the drawing buffer used for rendering.
+
+    Setting this to `false` or a number <= 1 will improve performance on high resolution
+    displays.
+
+    **Note**: This parameter must be passed to the `Map()` constructor. It cannot be
+    changed once the map has been created.
+
+    The available options are:
+
+    - `true`: Device (physical) pixels resolution is used for rendering, this resolution
+      is defined by `window.devicePixelRatio`. On Retina/HD systems this resolution is
+      usually twice as big as CSS pixels resolution.
+    - `false`: CSS pixels resolution (equal to the canvas size) is used for rendering.
+    - `Number` (Experimental): Specified Number is used as a custom ratio (drawing
+      buffer resolution to CSS pixel resolution) to determine drawing buffer size, a
+      value less than one uses resolution smaller than CSS pixels, gives better
+      performance but produces blurry images, a value greater than one uses resolution
+      bigger than CSS pixels resolution (canvas size), produces sharp images but at a
+      lower performance.
+
+    - Type: `float`, `int` or `bool`
+    - Default: `true`
+    """
+
+    parameters = traitlets.Any(allow_none=True, default_value=None).tag(sync=True)
+    """GPU parameters to pass to deck.gl.
+
+    **This is an advanced API. The vast majority of users should not need to touch this
+    setting.**
+
+    !!! Note
+
+        The docstring below is copied from upstream deck.gl documentation. Any usage of
+        `GL` refers to the constants defined in [`@luma.gl/constants`
+        here](https://github.com/visgl/luma.gl/blob/master/modules/constants/src/webgl-constants.ts),
+        which comes from the [MDN docs
+        here](https://developer.mozilla.org/en-US/docs/Web/API/WebGL_API/Constants).
+
+        In place of any `GL` constant, you can use the underlying integer it represents.
+        For example, instead of the JS
+
+        ```
+        depthFunc: GL.LEQUAL
+        ```
+
+        referring to the [MDN
+        docs](https://developer.mozilla.org/en-US/docs/Web/API/WebGL_API/Constants#depth_or_stencil_tests),
+        you should use
+
+        ```
+        depthFunc: 0x0203
+        ```
+
+        Note that these parameters do not yet work with integer keys. If you would like
+        to use integer keys, open an issue.
+
+    Expects an object with GPU parameters. Before each frame is rendered, this object
+    will be passed to luma.gl's `setParameters` function to reset the GPU context
+    parameters, e.g. to disable depth testing, change blending modes etc. The default
+    parameters set by `Deck` on initialization are the following:
+
+    ```js
+    {
+      blend: true,
+      blendFunc: [GL.SRC_ALPHA, GL.ONE_MINUS_SRC_ALPHA, GL.ONE, GL.ONE_MINUS_SRC_ALPHA],
+      polygonOffsetFill: true,
+      depthTest: true,
+      depthFunc: GL.LEQUAL
+    }
+    ```
+
+    Refer to the luma.gl
+    [setParameters](https://github.com/visgl/luma.gl/blob/8.5-release/modules/gltools/docs/api-reference/parameter-setting.md)
+    API for documentation on supported parameters and values.
+
+    ```js
+    import GL from '@luma.gl/constants';
+    new Deck({
+      // ...
+      parameters: {
+        blendFunc: [GL.ONE, GL.ONE, GL.ONE, GL.ONE],
+        depthTest: false
+      }
+    });
+    ```
+
+    Notes:
+
+    - Any GPU `parameters` prop supplied to individual layers will still override the
+      global `parameters` when that layer is rendered.
+    """
+
+    def fly_to(
+        self,
+        *,
+        longitude: Union[int, float],
+        latitude: Union[int, float],
+        zoom: int,
+        duration: int = 4000,
+        pitch: Union[int, float] = 0,
+        bearing: Union[int, float] = 0,
+        curve: Optional[Union[int, float]] = None,
+        speed: Optional[Union[int, float]] = None,
+        screen_speed: Optional[Union[int, float]] = None,
+    ):
+        """ "Fly" the map to a new location.
+
+        Args:
+            longitude: The longitude of the new viewport.
+            latitude: The latitude of the new viewport.
+            zoom: The zoom of the new viewport.
+            pitch: The pitch of the new viewport. Defaults to 0.
+            bearing: The bearing of the new viewport. Defaults to 0.
+            duration: The number of milliseconds for the viewport transition to take.
+                Defaults to 4000.
+            curve: The zooming "curve" that will occur along the flight path. Default
+                `1.414`.
+            speed: The average speed of the animation defined in relation to
+                `curve`, it linearly affects the duration, higher speed returns smaller
+                durations and vice versa. Default `1.2`.
+            screen_speed: The average speed of the animation measured in screenfuls per
+                second. Similar to speed it linearly affects the duration, when
+                specified speed is ignored.
+        """
+        data = {
+            "type": "fly-to",
+            "longitude": longitude,
+            "latitude": latitude,
+            "zoom": zoom,
+            "pitch": pitch,
+            "bearing": bearing,
+            "transitionDuration": duration,
+            "curve": curve,
+            "speed": speed,
+            "screenSpeed": screen_speed,
+        }
+        self.send(data)
 
     def to_html(
         self, filename: Union[str, Path, TextIO, IO[str]], title: Optional[str] = None

@@ -6,7 +6,8 @@ documentation on how to define new traitlet types.
 
 from __future__ import annotations
 
-from typing import Any, List, Set, Tuple, Union, cast
+import warnings
+from typing import Any, List, Optional, Set, Tuple, Union, cast
 
 import matplotlib as mpl
 import numpy as np
@@ -130,12 +131,14 @@ class PyarrowTableTrait(FixedErrorTraitType):
         self: TraitType,
         *args,
         allowed_geometry_types: Set[bytes] | None = None,
+        allowed_dimensions: Optional[Set[int]] = None,
         **kwargs: Any,
     ) -> None:
         super().__init__(*args, **kwargs)
         self.tag(
             sync=True,
             allowed_geometry_types=allowed_geometry_types,
+            allowed_dimensions=allowed_dimensions,
             **TABLE_SERIALIZATION,
         )
 
@@ -144,26 +147,39 @@ class PyarrowTableTrait(FixedErrorTraitType):
             self.error(obj, value)
 
         allowed_geometry_types = self.metadata.get("allowed_geometry_types")
-        # No restriction on the allowed geometry types in this table
-        if not allowed_geometry_types:
-            return value
+        allowed_geometry_types = cast(Optional[Set[bytes]], allowed_geometry_types)
 
-        allowed_geometry_types = cast(Set[bytes], allowed_geometry_types)
+        allowed_dimensions = self.metadata.get("allowed_dimensions")
+        allowed_dimensions = cast(Optional[Set[int]], allowed_dimensions)
+
         geom_col_idx = get_geometry_column_index(value.schema)
-        geometry_extension_type = value.schema.field(geom_col_idx).metadata.get(
-            b"ARROW:extension:name"
-        )
 
-        if (
-            allowed_geometry_types
-            and geometry_extension_type not in allowed_geometry_types
-        ):
-            allowed_types_str = ", ".join(map(str, allowed_geometry_types))
-            msg = (
-                f"Expected one of {allowed_types_str} geometry types, "
-                f"got {geometry_extension_type}."
+        # No restriction on the allowed geometry types in this table
+        if allowed_geometry_types:
+            geometry_extension_type = value.schema.field(geom_col_idx).metadata.get(
+                b"ARROW:extension:name"
             )
-            self.error(obj, value, info=msg)
+
+            if (
+                allowed_geometry_types
+                and geometry_extension_type not in allowed_geometry_types
+            ):
+                allowed_types_str = ", ".join(map(str, allowed_geometry_types))
+                msg = (
+                    f"Expected one of {allowed_types_str} geometry types, "
+                    f"got {geometry_extension_type}."
+                )
+                self.error(obj, value, info=msg)
+
+        if allowed_dimensions:
+            typ = value.column(geom_col_idx).type
+            while isinstance(typ, pa.ListType):
+                typ = typ.value_type
+
+            assert isinstance(typ, pa.FixedSizeListType)
+            if typ.list_size not in allowed_dimensions:
+                msg = " or ".join(map(str, list(allowed_dimensions)))
+                self.error(obj, value, info=f"{msg}-dimensional points")
 
         return value
 
@@ -188,7 +204,7 @@ class ColorAccessor(FixedErrorTraitType):
       PyCapsule
       Interface](https://arrow.apache.org/docs/format/CDataInterface/PyCapsuleInterface.html).
 
-    You can use helpers in the `lonboard.colormap` module (i.e.
+    You can use helpers in the [`lonboard.colormap`][lonboard.colormap] module (i.e.
     [`apply_continuous_cmap`][lonboard.colormap.apply_continuous_cmap]) to simplify
     constructing numpy arrays for color values.
     """
@@ -380,7 +396,7 @@ class TextAccessor(FixedErrorTraitType):
     Various input is allowed:
 
     - A `str`. This will be used as the value for all objects.
-    - A numpy `ndarray` with a string data type Each value in the array will be used as
+    - A numpy `ndarray` with a string data type. Each value in the array will be used as
       the value for the object at the same row index.
     - A pandas `Series` with a string data type. Each value in the array will be used as
       the value for the object at the same row index.
@@ -703,6 +719,106 @@ class GetFilterValueAccessor(FixedErrorTraitType):
 
             # Cast values to float32
             return value.cast(pa.list_(pa.float32(), value.type.list_size))
+
+        self.error(obj, value)
+        assert False
+
+
+class NormalAccessor(FixedErrorTraitType):
+    """
+    A representation of a deck.gl "normal" accessor
+
+    This is primarily used in the [lonboard.PointCloudLayer].
+
+    Acceptable inputs:
+    - A `list` or `tuple` with three `int` or `float` values. This will be used as the
+      normal for all objects.
+    - A numpy ndarray with two dimensions and floating point type. The size of the
+      second dimension must be 3, i.e. its shape must be `(N, 3)`.
+    - a pyarrow `FixedSizeListArray` or `ChunkedArray` containing `FixedSizeListArray`s
+      where the size of the inner fixed size list 3. The child array must have type
+      float32.
+    - Any Arrow array that matches the above restrictions from a library that implements
+      the [Arrow PyCapsule
+      Interface](https://arrow.apache.org/docs/format/CDataInterface/PyCapsuleInterface.html).
+    """
+
+    default_value = (0, 0, 1)
+    info_text = (
+        "List representing normal of all objects in [nx, ny, nz] or numpy ndarray or "
+        "pyarrow FixedSizeList representing the normal of each object, in [nx, ny, nz]"
+    )
+
+    def __init__(
+        self: TraitType,
+        *args,
+        **kwargs: Any,
+    ) -> None:
+        super().__init__(*args, **kwargs)
+        self.tag(sync=True, **ACCESSOR_SERIALIZATION)
+
+    def validate(
+        self, obj, value
+    ) -> Union[Tuple[int, ...], List[int], pa.ChunkedArray, pa.FixedSizeListArray]:
+        if isinstance(value, (tuple, list)):
+            if len(value) != 3:
+                self.error(
+                    obj, value, info="normal scalar to have length 3, (nx, ny, nz)"
+                )
+
+            if not all(isinstance(item, (int, float)) for item in value):
+                self.error(
+                    obj,
+                    value,
+                    info="all elements of normal scalar to be int or float type",
+                )
+
+            return value
+
+        if isinstance(value, np.ndarray):
+            if not np.issubdtype(value.dtype, np.number):
+                self.error(obj, value, info="normal array to have numeric type")
+
+            if value.ndim != 2 or value.shape[1] != 3:
+                self.error(obj, value, info="normal array to be 2D with shape (N, 3)")
+
+            if not np.issubdtype(value.dtype, np.float32):
+                warnings.warn(
+                    """Warning: Numpy array should be float32 type.
+                    Converting to float32 point pyarrow array"""
+                )
+                value = value.astype(np.float32)
+
+            return pa.FixedSizeListArray.from_arrays(value.flatten("C"), 3)
+
+        # Check for Arrow PyCapsule Interface
+        # https://arrow.apache.org/docs/format/CDataInterface/PyCapsuleInterface.html
+        # TODO: with pyarrow v16 also import chunked array from stream
+        if not isinstance(value, (pa.ChunkedArray, pa.Array)):
+            if hasattr(value, "__arrow_c_array__"):
+                value = pa.array(value)
+
+        if isinstance(value, (pa.ChunkedArray, pa.Array)):
+            if not pa.types.is_fixed_size_list(value.type):
+                self.error(
+                    obj, value, info="normal pyarrow array to be a FixedSizeList."
+                )
+
+            if value.type.list_size != 3:
+                self.error(
+                    obj,
+                    value,
+                    info=("normal pyarrow array to have an inner size of 3."),
+                )
+
+            if not pa.types.is_floating(value.type.value_type):
+                self.error(
+                    obj,
+                    value,
+                    info="pyarrow array to be floating point type",
+                )
+
+            return value.cast(pa.list_(pa.float32(), 3))
 
         self.error(obj, value)
         assert False

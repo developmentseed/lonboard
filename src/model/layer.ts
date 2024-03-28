@@ -1,17 +1,23 @@
 import {
   GeoArrowArcLayer,
-  GeoArrowArcLayerProps,
   GeoArrowColumnLayer,
-  GeoArrowColumnLayerProps,
   GeoArrowHeatmapLayer,
-  GeoArrowHeatmapLayerProps,
   GeoArrowPathLayer,
-  GeoArrowPathLayerProps,
+  GeoArrowPolygonLayer,
+  GeoArrowPointCloudLayer,
+  GeoArrowPointCloudLayerProps,
   GeoArrowScatterplotLayer,
-  GeoArrowScatterplotLayerProps,
   GeoArrowSolidPolygonLayer,
-  GeoArrowSolidPolygonLayerProps,
   _GeoArrowTextLayer as GeoArrowTextLayer,
+} from "@geoarrow/deck.gl-layers";
+import type {
+  GeoArrowArcLayerProps,
+  GeoArrowColumnLayerProps,
+  GeoArrowHeatmapLayerProps,
+  GeoArrowPathLayerProps,
+  GeoArrowPolygonLayerProps,
+  GeoArrowScatterplotLayerProps,
+  GeoArrowSolidPolygonLayerProps,
   _GeoArrowTextLayerProps as GeoArrowTextLayerProps,
 } from "@geoarrow/deck.gl-layers";
 import type { WidgetModel } from "@jupyter-widgets/base";
@@ -491,6 +497,138 @@ export class PathModel extends BaseArrowLayerModel {
     });
   }
 }
+
+export class PointCloudModel extends BaseArrowLayerModel {
+  static layerType = "point-cloud";
+
+  protected sizeUnits: GeoArrowPointCloudLayerProps["sizeUnits"] | null;
+  protected pointSize: GeoArrowPointCloudLayerProps["pointSize"] | null;
+  // protected material: GeoArrowPointCloudLayerProps["material"] | null;
+
+  protected getColor: GeoArrowPointCloudLayerProps["getColor"] | null;
+  protected getNormal: GeoArrowPointCloudLayerProps["getNormal"] | null;
+
+  constructor(model: WidgetModel, updateStateCallback: () => void) {
+    super(model, updateStateCallback);
+
+    this.initRegularAttribute("size_units", "sizeUnits");
+    this.initRegularAttribute("point_size", "pointSize");
+
+    this.initVectorizedAccessor("get_color", "getColor");
+    this.initVectorizedAccessor("get_normal", "getNormal");
+  }
+
+  layerProps(): Omit<GeoArrowPointCloudLayerProps, "id"> {
+    return {
+      data: this.table,
+      ...(isDefined(this.sizeUnits) && { sizeUnits: this.sizeUnits }),
+      ...(isDefined(this.pointSize) && { pointSize: this.pointSize }),
+      ...(isDefined(this.getColor) && { getColor: this.getColor }),
+      ...(isDefined(this.getNormal) && { getNormal: this.getNormal }),
+    };
+  }
+
+  render(): GeoArrowPointCloudLayer {
+    return new GeoArrowPointCloudLayer({
+      ...this.baseLayerProps(),
+      ...this.layerProps(),
+    });
+  }
+}
+
+export class PolygonModel extends BaseArrowLayerModel {
+  static layerType = "polygon";
+
+  protected stroked: GeoArrowPolygonLayerProps["stroked"] | null;
+  protected filled: GeoArrowPolygonLayerProps["filled"] | null;
+  protected extruded: GeoArrowPolygonLayerProps["extruded"] | null;
+  protected wireframe: GeoArrowPolygonLayerProps["wireframe"] | null;
+  protected elevationScale: GeoArrowPolygonLayerProps["elevationScale"] | null;
+  protected lineWidthUnits: GeoArrowPolygonLayerProps["lineWidthUnits"] | null;
+  protected lineWidthScale: GeoArrowPolygonLayerProps["lineWidthScale"] | null;
+  protected lineWidthMinPixels:
+    | GeoArrowPolygonLayerProps["lineWidthMinPixels"]
+    | null;
+  protected lineWidthMaxPixels:
+    | GeoArrowPolygonLayerProps["lineWidthMaxPixels"]
+    | null;
+  protected lineJointRounded:
+    | GeoArrowPolygonLayerProps["lineJointRounded"]
+    | null;
+  protected lineMiterLimit: GeoArrowPolygonLayerProps["lineMiterLimit"] | null;
+
+  protected getFillColor: GeoArrowPolygonLayerProps["getFillColor"] | null;
+  protected getLineColor: GeoArrowPolygonLayerProps["getLineColor"] | null;
+  protected getLineWidth: GeoArrowPolygonLayerProps["getLineWidth"] | null;
+  protected getElevation: GeoArrowPolygonLayerProps["getElevation"] | null;
+
+  constructor(model: WidgetModel, updateStateCallback: () => void) {
+    super(model, updateStateCallback);
+
+    this.initRegularAttribute("stroked", "stroked");
+    this.initRegularAttribute("filled", "filled");
+    this.initRegularAttribute("extruded", "extruded");
+    this.initRegularAttribute("wireframe", "wireframe");
+    this.initRegularAttribute("elevation_scale", "elevationScale");
+    this.initRegularAttribute("line_width_units", "lineWidthUnits");
+    this.initRegularAttribute("line_width_scale", "lineWidthScale");
+    this.initRegularAttribute("line_width_min_pixels", "lineWidthMinPixels");
+    this.initRegularAttribute("line_width_max_pixels", "lineWidthMaxPixels");
+    this.initRegularAttribute("line_joint_rounded", "lineJointRounded");
+    this.initRegularAttribute("line_miter_limit", "lineMiterLimit");
+
+    this.initVectorizedAccessor("get_fill_color", "getFillColor");
+    this.initVectorizedAccessor("get_line_color", "getLineColor");
+    this.initVectorizedAccessor("get_line_width", "getLineWidth");
+    this.initVectorizedAccessor("get_elevation", "getElevation");
+  }
+
+  layerProps(): Omit<GeoArrowPolygonLayerProps, "id"> {
+    console.log("table", this.table);
+    console.log("filled", this.filled);
+
+    return {
+      data: this.table,
+      ...(isDefined(this.stroked) && { stroked: this.stroked }),
+      ...(isDefined(this.filled) && { filled: this.filled }),
+      ...(isDefined(this.extruded) && { extruded: this.extruded }),
+      ...(isDefined(this.wireframe) && { wireframe: this.wireframe }),
+      ...(isDefined(this.elevationScale) && {
+        elevationScale: this.elevationScale,
+      }),
+      ...(isDefined(this.lineWidthUnits) && {
+        lineWidthUnits: this.lineWidthUnits,
+      }),
+      ...(isDefined(this.lineWidthScale) && {
+        lineWidthScale: this.lineWidthScale,
+      }),
+      ...(isDefined(this.lineWidthMinPixels) && {
+        lineWidthMinPixels: this.lineWidthMinPixels,
+      }),
+      ...(isDefined(this.lineWidthMaxPixels) && {
+        lineWidthMaxPixels: this.lineWidthMaxPixels,
+      }),
+      ...(isDefined(this.lineJointRounded) && {
+        lineJointRounded: this.lineJointRounded,
+      }),
+      ...(isDefined(this.lineMiterLimit) && {
+        lineMiterLimit: this.lineMiterLimit,
+      }),
+      ...(isDefined(this.getFillColor) && { getFillColor: this.getFillColor }),
+      ...(isDefined(this.getLineColor) && { getLineColor: this.getLineColor }),
+      ...(isDefined(this.getLineWidth) && { getLineWidth: this.getLineWidth }),
+      ...(isDefined(this.getElevation) && { getElevation: this.getElevation }),
+    };
+  }
+
+  render(): GeoArrowPolygonLayer {
+    return new GeoArrowPolygonLayer({
+      ...this.baseLayerProps(),
+      ...this.layerProps(),
+    });
+  }
+}
+
 export class ScatterplotModel extends BaseArrowLayerModel {
   static layerType = "scatterplot";
 
@@ -799,6 +937,14 @@ export async function initializeLayer(
 
     case PathModel.layerType:
       layerModel = new PathModel(model, updateStateCallback);
+      break;
+
+    case PointCloudModel.layerType:
+      layerModel = new PointCloudModel(model, updateStateCallback);
+      break;
+
+    case PolygonModel.layerType:
+      layerModel = new PolygonModel(model, updateStateCallback);
       break;
 
     case ScatterplotModel.layerType:

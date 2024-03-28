@@ -1,5 +1,5 @@
-"""Compute the weighted centroid of geometries
-"""
+"""Compute the weighted centroid of geometries"""
+
 from __future__ import annotations
 
 from dataclasses import dataclass

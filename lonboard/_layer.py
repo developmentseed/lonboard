@@ -10,7 +10,13 @@
 from __future__ import annotations
 
 import sys
-from typing import TYPE_CHECKING, List, Optional, Sequence, Tuple
+from typing import (
+    TYPE_CHECKING,
+    List,
+    Optional,
+    Sequence,
+    Tuple,
+)
 
 import geopandas as gpd
 import ipywidgets
@@ -28,13 +34,34 @@ from lonboard._geoarrow.sanitize import remove_extension_classes
 from lonboard._serialization import infer_rows_per_chunk
 from lonboard._utils import auto_downcast as _auto_downcast
 from lonboard._utils import get_geometry_column_index, remove_extension_kwargs
-from lonboard.traits import ColorAccessor, FloatAccessor, PyarrowTableTrait
+from lonboard.traits import (
+    ColorAccessor,
+    FloatAccessor,
+    NormalAccessor,
+    PyarrowTableTrait,
+)
+from lonboard.types.layer import (
+    BaseLayerKwargs,
+    BitmapLayerKwargs,
+    BitmapTileLayerKwargs,
+    HeatmapLayerKwargs,
+    PathLayerKwargs,
+    PointCloudLayerKwargs,
+    PolygonLayerKwargs,
+    ScatterplotLayerKwargs,
+    SolidPolygonLayerKwargs,
+)
 
 if TYPE_CHECKING:
     if sys.version_info >= (3, 11):
         from typing import Self
     else:
         from typing_extensions import Self
+
+    if sys.version_info >= (3, 12):
+        from typing import Unpack
+    else:
+        from typing_extensions import Unpack
 
 
 class BaseLayer(BaseWidget):
@@ -180,7 +207,7 @@ class BaseLayer(BaseWidget):
 
 
 def default_geoarrow_viewport(
-    table: pa.Table
+    table: pa.Table,
 ) -> Optional[Tuple[Bbox, WeightedCentroid]]:
     # Note: in the ArcLayer we won't necessarily have a column with a geoarrow
     # extension type/metadata
@@ -231,7 +258,11 @@ class BaseArrowLayer(BaseLayer):
     table: traitlets.TraitType
 
     def __init__(
-        self, *, table: pa.Table, _rows_per_chunk: Optional[int] = None, **kwargs
+        self,
+        *,
+        table: pa.Table,
+        _rows_per_chunk: Optional[int] = None,
+        **kwargs: Unpack[BaseLayerKwargs],
     ):
         # Check for Arrow PyCapsule Interface
         # https://arrow.apache.org/docs/format/CDataInterface/PyCapsuleInterface.html
@@ -260,7 +291,11 @@ class BaseArrowLayer(BaseLayer):
 
     @classmethod
     def from_geopandas(
-        cls, gdf: gpd.GeoDataFrame, *, auto_downcast: bool = True, **kwargs
+        cls,
+        gdf: gpd.GeoDataFrame,
+        *,
+        auto_downcast: bool = True,
+        **kwargs: Unpack[BaseLayerKwargs],
     ) -> Self:
         """Construct a Layer from a geopandas GeoDataFrame.
 
@@ -305,6 +340,9 @@ class BitmapLayer(BaseLayer):
     m
     ```
     """
+
+    def __init__(self, **kwargs: BitmapLayerKwargs):
+        super().__init__(**kwargs)  # type: ignore
 
     _layer_type = traitlets.Unicode("bitmap").tag(sync=True)
 
@@ -405,6 +443,9 @@ class BitmapTileLayer(BaseLayer):
     m = Map(layer)
     ```
     """
+
+    def __init__(self, **kwargs: BitmapTileLayerKwargs):
+        super().__init__(**kwargs)  # type: ignore
 
     _layer_type = traitlets.Unicode("bitmap-tile").tag(sync=True)
 
@@ -566,6 +607,249 @@ class BitmapTileLayer(BaseLayer):
     """
 
 
+class PolygonLayer(BaseArrowLayer):
+    """The `PolygonLayer` renders filled, stroked and/or extruded polygons.
+
+    !!! note
+
+        This layer is essentially a combination of a [`PathLayer`][lonboard.PathLayer]
+        and a [`SolidPolygonLayer`][lonboard.SolidPolygonLayer]. This has some overhead
+        beyond a `SolidPolygonLayer`, so if you're looking for the maximum performance
+        with large data, you may want to use a `SolidPolygonLayer` directly.
+
+    **Example:**
+
+    From GeoPandas:
+
+    ```py
+    import geopandas as gpd
+    from lonboard import Map, PolygonLayer
+
+    # A GeoDataFrame with Polygon or MultiPolygon geometries
+    gdf = gpd.GeoDataFrame()
+    layer = PolygonLayer.from_geopandas(
+        gdf,
+        get_fill_color=[255, 0, 0],
+        get_line_color=[0, 100, 100, 150],
+    )
+    m = Map(layer)
+    ```
+
+    From [geoarrow-rust](https://geoarrow.github.io/geoarrow-rs/python/latest):
+
+    ```py
+    from geoarrow.rust.core import read_parquet
+    from lonboard import Map, PolygonLayer
+
+    # Example: A GeoParquet file with Polygon or MultiPolygon geometries
+    table = read_parquet("path/to/file.parquet")
+    layer = PolygonLayer(
+        table=table,
+        get_fill_color=[255, 0, 0],
+        get_line_color=[0, 100, 100, 150],
+    )
+    m = Map(layer)
+    ```
+    """
+
+    def __init__(
+        self,
+        *,
+        table: pa.Table,
+        _rows_per_chunk: Optional[int] = None,
+        **kwargs: Unpack[PolygonLayerKwargs],
+    ):
+        super().__init__(table=table, _rows_per_chunk=_rows_per_chunk, **kwargs)
+
+    @classmethod
+    def from_geopandas(
+        cls,
+        gdf: gpd.GeoDataFrame,
+        *,
+        auto_downcast: bool = True,
+        **kwargs: Unpack[PolygonLayerKwargs],
+    ) -> Self:
+        return super().from_geopandas(gdf=gdf, auto_downcast=auto_downcast, **kwargs)
+
+    _layer_type = traitlets.Unicode("polygon").tag(sync=True)
+
+    table = PyarrowTableTrait(
+        allowed_geometry_types={EXTENSION_NAME.POLYGON, EXTENSION_NAME.MULTIPOLYGON}
+    )
+    """A GeoArrow table with a Polygon or MultiPolygon column.
+
+    This is the fastest way to plot data from an existing GeoArrow source, such as
+    [geoarrow-rust](https://geoarrow.github.io/geoarrow-rs/python/latest) or
+    [geoarrow-pyarrow](https://geoarrow.github.io/geoarrow-python/main/index.html).
+
+    If you have a GeoPandas `GeoDataFrame`, use
+    [`from_geopandas`][lonboard.PolygonLayer.from_geopandas] instead.
+    """
+
+    stroked = traitlets.Bool(None, allow_none=True).tag(sync=True)
+    """Whether to draw an outline around the polygon (solid fill).
+
+    Note that both the outer polygon as well the outlines of any holes will be drawn.
+
+    - Type: `bool`, optional
+    - Default: `True`
+    """
+
+    filled = traitlets.Bool(None, allow_none=True).tag(sync=True)
+    """Whether to draw a filled polygon (solid fill).
+
+    Note that only the area between the outer polygon and any holes will be filled.
+
+    - Type: `bool`, optional
+    - Default: `True`
+    """
+
+    extruded = traitlets.Bool(None, allow_none=True).tag(sync=True)
+    """Whether to extrude the polygons.
+
+    Based on the elevations provided by the `getElevation` accessor.
+
+    If set to `false`, all polygons will be flat, this generates less geometry and is
+    faster than simply returning 0 from getElevation.
+
+    - Type: `bool`, optional
+    - Default: `False`
+    """
+
+    wireframe = traitlets.Bool(None, allow_none=True).tag(sync=True)
+    """
+    Whether to generate a line wireframe of the polygon. The outline will have
+    "horizontal" lines closing the top and bottom polygons and a vertical line
+    (a "strut") for each vertex on the polygon.
+
+    - Type: `bool`, optional
+    - Default: `False`
+
+    **Remarks:**
+
+    - These lines are rendered with `GL.LINE` and will thus always be 1 pixel wide.
+    - Wireframe and solid extrusions are exclusive, you'll need to create two layers
+      with the same data if you want a combined rendering effect.
+    """
+
+    elevation_scale = traitlets.Float(None, allow_none=True, min=0).tag(sync=True)
+    """Elevation multiplier.
+
+    The final elevation is calculated by `elevationScale * getElevation(d)`.
+    `elevationScale` is a handy property to scale all elevation without updating the
+    data.
+
+    - Type: `float`, optional
+    - Default: `1`
+    """
+
+    line_width_units = traitlets.Unicode(None, allow_none=True).tag(sync=True)
+    """
+    The units of the line width, one of `'meters'`, `'common'`, and `'pixels'`. See
+    [unit
+    system](https://deck.gl/docs/developer-guide/coordinate-systems#supported-units).
+
+    - Type: `str`, optional
+    - Default: `'meters'`
+    """
+
+    line_width_scale = traitlets.Float(None, allow_none=True, min=0).tag(sync=True)
+    """
+    The line width multiplier that multiplied to all outlines of `Polygon` and
+    `MultiPolygon` features if the `stroked` attribute is true.
+
+    - Type: `float`, optional
+    - Default: `1`
+    """
+
+    line_width_min_pixels = traitlets.Float(None, allow_none=True, min=0).tag(sync=True)
+    """
+    The minimum line width in pixels. This can be used to prevent the line from getting
+    too small when zoomed out.
+
+    - Type: `float`, optional
+    - Default: `0`
+    """
+
+    line_width_max_pixels = traitlets.Float(None, allow_none=True, min=0).tag(sync=True)
+    """
+    The maximum line width in pixels. This can be used to prevent the line from getting
+    too big when zoomed in.
+
+    - Type: `float`, optional
+    - Default: `None`
+    """
+
+    line_joint_rounded = traitlets.Bool(None, allow_none=True).tag(sync=True)
+    """Type of joint. If `true`, draw round joints. Otherwise draw miter joints.
+
+    - Type: `bool`, optional
+    - Default: `False`
+    """
+
+    line_miter_limit = traitlets.Float(None, allow_none=True, min=0).tag(sync=True)
+    """The maximum extent of a joint in ratio to the stroke width.
+
+    Only works if `line_joint_rounded` is false.
+
+    - Type: `float`, optional
+    - Default: `4`
+    """
+
+    get_fill_color = ColorAccessor(None, allow_none=True)
+    """
+    The fill color of each polygon in the format of `[r, g, b, [a]]`. Each channel is a
+    number between 0-255 and `a` is 255 if not supplied.
+
+    - Type: [ColorAccessor][lonboard.traits.ColorAccessor], optional
+        - If a single `list` or `tuple` is provided, it is used as the fill color for
+          all polygons.
+        - If a numpy or pyarrow array is provided, each value in the array will be used
+          as the fill color for the polygon at the same row index.
+    - Default: `[0, 0, 0, 255]`.
+    """
+
+    get_line_color = ColorAccessor(None, allow_none=True)
+    """
+    The line color of each polygon in the format of `[r, g, b, [a]]`. Each channel is a
+    number between 0-255 and `a` is 255 if not supplied.
+
+    Only applies if `extruded=True`.
+
+    - Type: [ColorAccessor][lonboard.traits.ColorAccessor], optional
+        - If a single `list` or `tuple` is provided, it is used as the line color for
+          all polygons.
+        - If a numpy or pyarrow array is provided, each value in the array will be used
+          as the line color for the polygon at the same row index.
+    - Default: `[0, 0, 0, 255]`.
+    """
+
+    get_line_width = FloatAccessor(None, allow_none=True)
+    """
+    The width of the outline of each polygon, in units specified by `line_width_units`
+    (default `'meters'`).
+
+    - Type: [FloatAccessor][lonboard.traits.FloatAccessor], optional
+        - If a number is provided, it is used as the outline width for all polygons.
+        - If an array is provided, each value in the array will be used as the outline
+          width for the polygon at the same row index.
+    - Default: `1`.
+    """
+
+    get_elevation = FloatAccessor(None, allow_none=True)
+    """
+    The elevation to extrude each polygon with, in meters.
+
+    Only applies if `extruded=True`.
+
+    - Type: [FloatAccessor][lonboard.traits.FloatAccessor], optional
+        - If a number is provided, it is used as the width for all polygons.
+        - If an array is provided, each value in the array will be used as the width for
+          the polygon at the same row index.
+    - Default: `1000`.
+    """
+
+
 class ScatterplotLayer(BaseArrowLayer):
     """The `ScatterplotLayer` renders circles at given coordinates.
 
@@ -601,6 +885,25 @@ class ScatterplotLayer(BaseArrowLayer):
     m = Map(layer)
     ```
     """
+
+    def __init__(
+        self,
+        *,
+        table: pa.Table,
+        _rows_per_chunk: Optional[int] = None,
+        **kwargs: Unpack[ScatterplotLayerKwargs],
+    ):
+        super().__init__(table=table, _rows_per_chunk=_rows_per_chunk, **kwargs)
+
+    @classmethod
+    def from_geopandas(
+        cls,
+        gdf: gpd.GeoDataFrame,
+        *,
+        auto_downcast: bool = True,
+        **kwargs: Unpack[ScatterplotLayerKwargs],
+    ) -> Self:
+        return super().from_geopandas(gdf=gdf, auto_downcast=auto_downcast, **kwargs)
 
     _layer_type = traitlets.Unicode("scatterplot").tag(sync=True)
 
@@ -814,6 +1117,25 @@ class PathLayer(BaseArrowLayer):
     ```
     """
 
+    def __init__(
+        self,
+        *,
+        table: pa.Table,
+        _rows_per_chunk: Optional[int] = None,
+        **kwargs: Unpack[PathLayerKwargs],
+    ):
+        super().__init__(table=table, _rows_per_chunk=_rows_per_chunk, **kwargs)
+
+    @classmethod
+    def from_geopandas(
+        cls,
+        gdf: gpd.GeoDataFrame,
+        *,
+        auto_downcast: bool = True,
+        **kwargs: Unpack[PathLayerKwargs],
+    ) -> Self:
+        return super().from_geopandas(gdf=gdf, auto_downcast=auto_downcast, **kwargs)
+
     _layer_type = traitlets.Unicode("path").tag(sync=True)
 
     table = PyarrowTableTrait(
@@ -927,9 +1249,122 @@ class PathLayer(BaseArrowLayer):
     """
 
 
+class PointCloudLayer(BaseArrowLayer):
+    """
+    The `PointCloudLayer` renders a point cloud with 3D positions, normals and colors.
+
+    The `PointCloudLayer` can be more efficient at rendering large quantities of points
+    than the [`ScatterplotLayer`][lonboard.ScatterplotLayer], but has fewer rendering
+    options. In particular, you can have only one point size across all points in your
+    data.
+
+    **Example:**
+
+    From GeoPandas:
+
+    ```py
+    import geopandas as gpd
+    from lonboard import Map, PointCloudLayer
+
+    # A GeoDataFrame with Point geometries
+    gdf = gpd.GeoDataFrame()
+    layer = PointCloudLayer.from_geopandas(
+        gdf,
+        get_color=[255, 0, 0],
+        point_size=2,
+    )
+    m = Map(layer)
+    ```
+    """
+
+    def __init__(
+        self,
+        *,
+        table: pa.Table,
+        _rows_per_chunk: Optional[int] = None,
+        **kwargs: Unpack[PointCloudLayerKwargs],
+    ):
+        super().__init__(table=table, _rows_per_chunk=_rows_per_chunk, **kwargs)
+
+    @classmethod
+    def from_geopandas(
+        cls,
+        gdf: gpd.GeoDataFrame,
+        *,
+        auto_downcast: bool = True,
+        **kwargs: Unpack[PointCloudLayerKwargs],
+    ) -> Self:
+        return super().from_geopandas(gdf=gdf, auto_downcast=auto_downcast, **kwargs)
+
+    _layer_type = traitlets.Unicode("point-cloud").tag(sync=True)
+
+    table = PyarrowTableTrait(
+        allowed_geometry_types={EXTENSION_NAME.POINT}, allowed_dimensions={3}
+    )
+    """A GeoArrow table with a Point column.
+
+    This is the fastest way to plot data from an existing GeoArrow source, such as
+    [geoarrow-rust](https://geoarrow.github.io/geoarrow-rs/python/latest) or
+    [geoarrow-pyarrow](https://geoarrow.github.io/geoarrow-python/main/index.html).
+
+    If you have a GeoPandas `GeoDataFrame`, use
+    [`from_geopandas`][lonboard.PointCloudLayer.from_geopandas] instead.
+    """
+
+    size_units = traitlets.Unicode(None, allow_none=True).tag(sync=True)
+    """
+    The units of the line width, one of `'meters'`, `'common'`, and `'pixels'`. See
+    [unit
+    system](https://deck.gl/docs/developer-guide/coordinate-systems#supported-units).
+
+    - Type: `str`, optional
+    - Default: `'pixels'`
+    """
+
+    point_size = traitlets.Float(None, allow_none=True, min=0).tag(sync=True)
+    """
+    Global radius of all points, in units specified by `size_units`.
+
+    - Type: `float`, optional
+    - Default: `10`
+    """
+
+    get_color = ColorAccessor(None, allow_none=True)
+    """
+    The color of each path in the format of `[r, g, b, [a]]`. Each channel is a number
+    between 0-255 and `a` is 255 if not supplied.
+
+    - Type: [ColorAccessor][lonboard.traits.ColorAccessor], optional
+        - If a single `list` or `tuple` is provided, it is used as the color for all
+          paths.
+        - If a numpy or pyarrow array is provided, each value in the array will be used
+          as the color for the path at the same row index.
+    - Default: `[0, 0, 0, 255]`.
+    """
+
+    get_normal = NormalAccessor(None, allow_none=True)
+    """
+    The normal of each object, in `[nx, ny, nz]`.
+
+    - Type: [NormalAccessor][lonboard.traits.NormalAccessor], optional
+        - If a single `list` or `tuple` is provided, it is used as the normal for all
+          points.
+        - If a numpy or pyarrow array is provided, each value in the array will be used
+          as the normal for the point at the same row index.
+    - Default: `1`.
+    """
+
+
 class SolidPolygonLayer(BaseArrowLayer):
     """
     The `SolidPolygonLayer` renders filled and/or extruded polygons.
+
+    !!! note
+
+        This layer is similar to the [`PolygonLayer`][lonboard.PolygonLayer] but will
+        not render an outline around polygons. In most cases, you'll want to use the
+        `PolygonLayer` directly, but for very large datasets not drawing the outline can
+        significantly improve performance, in which case you may want to use this layer.
 
     **Example:**
 
@@ -963,6 +1398,25 @@ class SolidPolygonLayer(BaseArrowLayer):
     m = Map(layer)
     ```
     """
+
+    def __init__(
+        self,
+        *,
+        table: pa.Table,
+        _rows_per_chunk: Optional[int] = None,
+        **kwargs: Unpack[SolidPolygonLayerKwargs],
+    ):
+        super().__init__(table=table, _rows_per_chunk=_rows_per_chunk, **kwargs)
+
+    @classmethod
+    def from_geopandas(
+        cls,
+        gdf: gpd.GeoDataFrame,
+        *,
+        auto_downcast: bool = True,
+        **kwargs: Unpack[SolidPolygonLayerKwargs],
+    ) -> Self:
+        return super().from_geopandas(gdf=gdf, auto_downcast=auto_downcast, **kwargs)
 
     _layer_type = traitlets.Unicode("solid-polygon").tag(sync=True)
 
@@ -1007,6 +1461,12 @@ class SolidPolygonLayer(BaseArrowLayer):
 
     - Type: `bool`, optional
     - Default: `False`
+
+    **Remarks:**
+
+    - These lines are rendered with `GL.LINE` and will thus always be 1 pixel wide.
+    - Wireframe and solid extrusions are exclusive, you'll need to create two layers
+      with the same data if you want a combined rendering effect.
     """
 
     elevation_scale = traitlets.Float(None, allow_none=True, min=0).tag(sync=True)
@@ -1017,12 +1477,6 @@ class SolidPolygonLayer(BaseArrowLayer):
 
     - Type: `float`, optional
     - Default: `1`
-
-    **Remarks:**
-
-    - These lines are rendered with `GL.LINE` and will thus always be 1 pixel wide.
-    - Wireframe and solid extrusions are exclusive, you'll need to create two layers
-      with the same data if you want a combined rendering effect.
     """
 
     get_elevation = FloatAccessor(None, allow_none=True)
@@ -1101,10 +1555,20 @@ class HeatmapLayer(BaseArrowLayer):
 
     """
 
-    def __init__(self, *args, table: pa.Table, **kwargs):
+    def __init__(self, *, table: pa.Table, **kwargs: Unpack[HeatmapLayerKwargs]):
         # NOTE: we override the default for _rows_per_chunk because otherwise we render
         # one heatmap per _chunk_ not for the entire dataset.
-        super().__init__(*args, table=table, _rows_per_chunk=len(self.table), **kwargs)
+        super().__init__(table=table, _rows_per_chunk=len(table), **kwargs)
+
+    @classmethod
+    def from_geopandas(
+        cls,
+        gdf: gpd.GeoDataFrame,
+        *,
+        auto_downcast: bool = True,
+        **kwargs: Unpack[HeatmapLayerKwargs],
+    ) -> Self:
+        return super().from_geopandas(gdf=gdf, auto_downcast=auto_downcast, **kwargs)
 
     _layer_type = traitlets.Unicode("heatmap").tag(sync=True)
 

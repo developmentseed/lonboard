@@ -21,7 +21,8 @@ extra:
 
 nav:
   - "index.md"
-  - Example Notebooks:
+  - Examples:
+      - examples/index.md
       - examples/internet-speeds.ipynb
       - examples/north-america-roads.ipynb
       - examples/migration.ipynb
@@ -40,6 +41,8 @@ nav:
           - api/layers/bitmap-tile-layer.md
           - api/layers/heatmap-layer.md
           - api/layers/path-layer.md
+          - api/layers/point-cloud-layer.md
+          - api/layers/polygon-layer.md
           - api/layers/scatterplot-layer.md
           - api/layers/solid-polygon-layer.md
           - api/layers/base-layer.md
@@ -176,12 +179,15 @@ markdown_extensions:
       guess_lang: false
   - def_list
   - footnotes
+  - md_in_html
   - pymdownx.arithmatex
   - pymdownx.betterem
   - pymdownx.caret:
       insert: false
   - pymdownx.details
-  - pymdownx.emoji
+  - pymdownx.emoji:
+      emoji_index: !!python/name:material.extensions.emoji.twemoji
+      emoji_generator: !!python/name:material.extensions.emoji.to_svg
   - pymdownx.escapeall:
       hardbreak: true
       nbsp: true
