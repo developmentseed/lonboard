@@ -71,21 +71,20 @@ if TYPE_CHECKING:
 
 # From mbview
 # https://github.com/mapbox/mbview/blob/e64bd86cfe4a63e6af4ea1d310bd49be4f162a43/views/vector.ejs#L75-L87
-# (primary_color, secondary_color)
-# Chosen by ChatGPT at this point.
-COLORS: List[Tuple[str, str]] = [
-    ("#FC49A3", "#A2FFCD"),  # pink
-    ("#CC66FF", "#66CCFF"),  # purple-ish
-    ("#66CCFF", "#FFCC66"),  # sky blue
-    ("#66FFCC", "#FF6666"),  # teal
-    ("#00FF00", "#FF8000"),  # lime green
-    ("#FFCC66", "#66FFCC"),  # light orange
-    ("#FF6666", "#66CCFF"),  # salmon
-    ("#FF0000", "#66FFCC"),  # red
-    ("#FF8000", "#FFFF66"),  # orange
-    ("#FFFF66", "#FF8000"),  # yellow
-    ("#00FFFF", "#FF6666"),  # turquoise
+COLORS = [
+    "#FC49A3",  # pink
+    "#CC66FF",  # purple-ish
+    "#66CCFF",  # sky blue
+    "#66FFCC",  # teal
+    "#00FF00",  # lime green
+    "#FFCC66",  # light orange
+    "#FF6666",  # salmon
+    "#FF0000",  # red
+    "#FF8000",  # orange
+    "#FFFF66",  # yellow
+    "#00FFFF",  # turquoise
 ]
+DEFAULT_POLYGON_LINE_COLOR = [0, 0, 0, 200]
 
 
 def viz(
@@ -139,7 +138,7 @@ def viz(
         layers = [
             create_layer_from_data_input(
                 item,
-                _viz_colors=color_ordering[i % len(color_ordering)],
+                _viz_color=color_ordering[i % len(color_ordering)],
                 scatterplot_kwargs=scatterplot_kwargs,
                 path_kwargs=path_kwargs,
                 polygon_kwargs=polygon_kwargs,
@@ -150,7 +149,7 @@ def viz(
         layers = [
             create_layer_from_data_input(
                 data,
-                _viz_colors=color_ordering[0],
+                _viz_color=color_ordering[0],
                 scatterplot_kwargs=scatterplot_kwargs,
                 path_kwargs=path_kwargs,
                 polygon_kwargs=polygon_kwargs,
@@ -357,7 +356,7 @@ def _viz_geoarrow_array(
 def _viz_geoarrow_table(
     table: pa.Table,
     *,
-    _viz_colors: Tuple[str, str],
+    _viz_color: str,
     scatterplot_kwargs: Optional[ScatterplotLayerKwargs] = None,
     path_kwargs: Optional[PathLayerKwargs] = None,
     polygon_kwargs: Optional[PolygonLayerKwargs] = None,
@@ -373,7 +372,7 @@ def _viz_geoarrow_table(
         scatterplot_kwargs = {} if not scatterplot_kwargs else scatterplot_kwargs
 
         if "get_fill_color" not in scatterplot_kwargs.keys():
-            scatterplot_kwargs["get_fill_color"] = _viz_colors[0]
+            scatterplot_kwargs["get_fill_color"] = _viz_color
 
         if "radius_min_pixels" not in scatterplot_kwargs.keys():
             if len(table) <= 10_000:
@@ -402,7 +401,7 @@ def _viz_geoarrow_table(
         path_kwargs = {} if not path_kwargs else path_kwargs
 
         if "get_color" not in path_kwargs.keys():
-            path_kwargs["get_color"] = _viz_colors[0]
+            path_kwargs["get_color"] = _viz_color
 
         if "width_min_pixels" not in path_kwargs.keys():
             if len(table) <= 1_000:
@@ -428,23 +427,27 @@ def _viz_geoarrow_table(
         polygon_kwargs = {} if not polygon_kwargs else polygon_kwargs
 
         if "get_fill_color" not in polygon_kwargs.keys():
-            polygon_kwargs["get_fill_color"] = _viz_colors[0]
+            polygon_kwargs["get_fill_color"] = _viz_color
 
         if "get_line_color" not in polygon_kwargs.keys():
-            polygon_kwargs["get_line_color"] = _viz_colors[1]
+            polygon_kwargs["get_line_color"] = DEFAULT_POLYGON_LINE_COLOR
 
         if "opacity" not in polygon_kwargs.keys():
             polygon_kwargs["opacity"] = 0.5
 
         if "line_width_min_pixels" not in polygon_kwargs.keys():
-            if len(table) <= 1_000:
-                polygon_kwargs["line_width_min_pixels"] = 1
-            elif len(table) <= 10_000:
-                polygon_kwargs["line_width_min_pixels"] = 0.8
-            elif len(table) <= 100_000:
-                polygon_kwargs["line_width_min_pixels"] = 0.7
-            else:
+            if len(table) <= 100:
                 polygon_kwargs["line_width_min_pixels"] = 0.5
+            if len(table) <= 1_000:
+                polygon_kwargs["line_width_min_pixels"] = 0.45
+            if len(table) <= 5_000:
+                polygon_kwargs["line_width_min_pixels"] = 0.4
+            elif len(table) <= 10_000:
+                polygon_kwargs["line_width_min_pixels"] = 0.3
+            elif len(table) <= 100_000:
+                polygon_kwargs["line_width_min_pixels"] = 0.25
+            else:
+                polygon_kwargs["line_width_min_pixels"] = 0.2
 
         return PolygonLayer(table=table, **polygon_kwargs)
 
