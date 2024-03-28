@@ -3,14 +3,14 @@ import geopandas as gpd
 from geoarrow.rust.core import read_pyogrio
 from pyogrio.raw import read_arrow
 
-from lonboard import SolidPolygonLayer, viz
+from lonboard import PolygonLayer, viz
 
 
 def test_viz_wkb_pyarrow():
     path = geodatasets.get_path("naturalearth.land")
     meta, table = read_arrow(path)
     map_ = viz(table)
-    assert isinstance(map_.layers[0], SolidPolygonLayer)
+    assert isinstance(map_.layers[0], PolygonLayer)
 
 
 def test_viz_reproject():
@@ -37,19 +37,19 @@ def test_viz_geo_interface():
     geo_interface_obj = GeoInterfaceHolder(gdf.geometry[0])
     map_ = viz(geo_interface_obj)
 
-    assert isinstance(map_.layers[0], SolidPolygonLayer)
+    assert isinstance(map_.layers[0], PolygonLayer)
 
 
 def test_viz_geoarrow_rust_table():
     table = read_pyogrio(geodatasets.get_path("naturalearth.land"))
     map_ = viz(table)
-    assert isinstance(map_.layers[0], SolidPolygonLayer)
+    assert isinstance(map_.layers[0], PolygonLayer)
 
 
 def test_viz_geoarrow_rust_array():
     table = read_pyogrio(geodatasets.get_path("naturalearth.land"))
     map_ = viz(table.geometry.chunk(0))
-    assert isinstance(map_.layers[0], SolidPolygonLayer)
+    assert isinstance(map_.layers[0], PolygonLayer)
 
 
 def test_viz_geoarrow_rust_wkb_array():
@@ -57,4 +57,4 @@ def test_viz_geoarrow_rust_wkb_array():
     arr = table.geometry.chunk(0)
     wkb_arr = arr.to_wkb()
     map_ = viz(wkb_arr)
-    assert isinstance(map_.layers[0], SolidPolygonLayer)
+    assert isinstance(map_.layers[0], PolygonLayer)
