@@ -610,10 +610,46 @@ class BitmapTileLayer(BaseLayer):
 class PolygonLayer(BaseArrowLayer):
     """The `PolygonLayer` renders filled, stroked and/or extruded polygons.
 
-    This layer is essentially a combination of a [`PathLayer`][lonboard.PathLayer] and a
-    [`SolidPolygonLayer`][lonboard.SolidPolygonLayer]. This has some overhead beyond a
-    `SolidPolygonLayer`, so if you're looking for the maximum performance with large
-    data, you may want to use a `SolidPolygonLayer` directly.
+    !!! note
+
+        This layer is essentially a combination of a [`PathLayer`][lonboard.PathLayer]
+        and a [`SolidPolygonLayer`][lonboard.SolidPolygonLayer]. This has some overhead
+        beyond a `SolidPolygonLayer`, so if you're looking for the maximum performance
+        with large data, you may want to use a `SolidPolygonLayer` directly.
+
+    **Example:**
+
+    From GeoPandas:
+
+    ```py
+    import geopandas as gpd
+    from lonboard import Map, PolygonLayer
+
+    # A GeoDataFrame with Polygon or MultiPolygon geometries
+    gdf = gpd.GeoDataFrame()
+    layer = PolygonLayer.from_geopandas(
+        gdf,
+        get_fill_color=[255, 0, 0],
+        get_line_color=[0, 100, 100, 150],
+    )
+    m = Map(layer)
+    ```
+
+    From [geoarrow-rust](https://geoarrow.github.io/geoarrow-rs/python/latest):
+
+    ```py
+    from geoarrow.rust.core import read_parquet
+    from lonboard import Map, PolygonLayer
+
+    # Example: A GeoParquet file with Polygon or MultiPolygon geometries
+    table = read_parquet("path/to/file.parquet")
+    layer = PolygonLayer(
+        table=table,
+        get_fill_color=[255, 0, 0],
+        get_line_color=[0, 100, 100, 150],
+    )
+    m = Map(layer)
+    ```
     """
 
     def __init__(
@@ -1322,6 +1358,13 @@ class PointCloudLayer(BaseArrowLayer):
 class SolidPolygonLayer(BaseArrowLayer):
     """
     The `SolidPolygonLayer` renders filled and/or extruded polygons.
+
+    !!! note
+
+        This layer is similar to the [`PolygonLayer`][lonboard.PolygonLayer] but will
+        not render an outline around polygons. In most cases, you'll want to use the
+        `PolygonLayer` directly, but for very large datasets not drawing the outline can
+        significantly improve performance, in which case you may want to use this layer.
 
     **Example:**
 
