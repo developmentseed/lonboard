@@ -28,14 +28,14 @@ from lonboard._geoarrow.extension_types import construct_geometry_array
 from lonboard._geoarrow.geopandas_interop import geopandas_to_geoarrow
 from lonboard._geoarrow.parse_wkb import parse_wkb_table
 from lonboard._geoarrow.sanitize import remove_extension_classes
-from lonboard._layer import PathLayer, ScatterplotLayer, SolidPolygonLayer
+from lonboard._layer import PathLayer, PolygonLayer, ScatterplotLayer
 from lonboard._map import Map
 from lonboard._utils import get_geometry_column_index
 from lonboard.basemap import CartoBasemap
 from lonboard.types.layer import (
     PathLayerKwargs,
+    PolygonLayerKwargs,
     ScatterplotLayerKwargs,
-    SolidPolygonLayerKwargs,
 )
 from lonboard.types.map import MapKwargs
 
@@ -84,6 +84,7 @@ COLORS = [
     "#FFFF66",  # yellow
     "#00FFFF",  # turquoise
 ]
+DEFAULT_POLYGON_LINE_COLOR = [0, 0, 0, 200]
 
 
 def viz(
@@ -91,7 +92,7 @@ def viz(
     *,
     scatterplot_kwargs: Optional[ScatterplotLayerKwargs] = None,
     path_kwargs: Optional[PathLayerKwargs] = None,
-    solid_polygon_kwargs: Optional[SolidPolygonLayerKwargs] = None,
+    polygon_kwargs: Optional[PolygonLayerKwargs] = None,
     map_kwargs: Optional[MapKwargs] = None,
 ) -> Map:
     """A high-level function to plot your data easily.
@@ -120,8 +121,8 @@ def viz(
           [`ScatterplotLayer`][lonboard.ScatterplotLayer]s.
         path_kwargs: a `dict` of parameters to pass down to all generated
           [`PathLayer`][lonboard.PathLayer]s.
-        solid_polygon_kwargs: a `dict` of parameters to pass down to all generated
-          [`SolidPolygonLayer`][lonboard.SolidPolygonLayer]s.
+        polygon_kwargs: a `dict` of parameters to pass down to all generated
+          [`PolygonLayer`][lonboard.PolygonLayer]s.
         map_kwargs: a `dict` of parameters to pass down to the generated
           [`Map`][lonboard.Map].
 
@@ -140,7 +141,7 @@ def viz(
                 _viz_color=color_ordering[i % len(color_ordering)],
                 scatterplot_kwargs=scatterplot_kwargs,
                 path_kwargs=path_kwargs,
-                solid_polygon_kwargs=solid_polygon_kwargs,
+                polygon_kwargs=polygon_kwargs,
             )
             for i, item in enumerate(data)
         ]
@@ -151,7 +152,7 @@ def viz(
                 _viz_color=color_ordering[0],
                 scatterplot_kwargs=scatterplot_kwargs,
                 path_kwargs=path_kwargs,
-                solid_polygon_kwargs=solid_polygon_kwargs,
+                polygon_kwargs=polygon_kwargs,
             )
         ]
 
@@ -165,7 +166,7 @@ def viz(
 
 def create_layer_from_data_input(
     data: VizDataInput, **kwargs
-) -> Union[ScatterplotLayer, PathLayer, SolidPolygonLayer]:
+) -> Union[ScatterplotLayer, PathLayer, PolygonLayer]:
     # geopandas GeoDataFrame
     if (
         data.__class__.__module__.startswith("geopandas")
@@ -232,14 +233,14 @@ def create_layer_from_data_input(
 
 def _viz_geopandas_geodataframe(
     data: gpd.GeoDataFrame, **kwargs
-) -> Union[ScatterplotLayer, PathLayer, SolidPolygonLayer]:
+) -> Union[ScatterplotLayer, PathLayer, PolygonLayer]:
     table = geopandas_to_geoarrow(data)
     return _viz_geoarrow_table(table, **kwargs)
 
 
 def _viz_geopandas_geoseries(
     data: gpd.GeoSeries, **kwargs
-) -> Union[ScatterplotLayer, PathLayer, SolidPolygonLayer]:
+) -> Union[ScatterplotLayer, PathLayer, PolygonLayer]:
     import geopandas as gpd
 
     gdf = gpd.GeoDataFrame(geometry=data)
@@ -249,13 +250,13 @@ def _viz_geopandas_geoseries(
 
 def _viz_shapely_scalar(
     data: shapely.geometry.base.BaseGeometry, **kwargs
-) -> Union[ScatterplotLayer, PathLayer, SolidPolygonLayer]:
+) -> Union[ScatterplotLayer, PathLayer, PolygonLayer]:
     return _viz_shapely_array(np.array([data]), **kwargs)
 
 
 def _viz_shapely_array(
     data: NDArray[np.object_], **kwargs
-) -> Union[ScatterplotLayer, PathLayer, SolidPolygonLayer]:
+) -> Union[ScatterplotLayer, PathLayer, PolygonLayer]:
     # TODO: pass include_z?
     field, geom_arr = construct_geometry_array(data)
     schema = pa.schema([field])
@@ -265,7 +266,7 @@ def _viz_shapely_array(
 
 def _viz_geo_interface(
     data: dict, **kwargs
-) -> Union[ScatterplotLayer, PathLayer, SolidPolygonLayer]:
+) -> Union[ScatterplotLayer, PathLayer, PolygonLayer]:
     if data["type"] in [
         "Point",
         "LineString",
@@ -309,7 +310,7 @@ def _viz_geo_interface(
 def _viz_geoarrow_array(
     data: ArrowArrayExportable,
     **kwargs,
-) -> Union[ScatterplotLayer, PathLayer, SolidPolygonLayer]:
+) -> Union[ScatterplotLayer, PathLayer, PolygonLayer]:
     schema_capsule, array_capsule = data.__arrow_c_array__()
 
     # If the user doesn't have pyarrow extension types registered for geoarrow types,
@@ -355,11 +356,11 @@ def _viz_geoarrow_array(
 def _viz_geoarrow_table(
     table: pa.Table,
     *,
-    _viz_color: Optional[str] = None,
+    _viz_color: str,
     scatterplot_kwargs: Optional[ScatterplotLayerKwargs] = None,
     path_kwargs: Optional[PathLayerKwargs] = None,
-    solid_polygon_kwargs: Optional[SolidPolygonLayerKwargs] = None,
-) -> Union[ScatterplotLayer, PathLayer, SolidPolygonLayer]:
+    polygon_kwargs: Optional[PolygonLayerKwargs] = None,
+) -> Union[ScatterplotLayer, PathLayer, PolygonLayer]:
     table = remove_extension_classes(table)
     table = parse_wkb_table(table)
 
@@ -383,6 +384,14 @@ def _viz_geoarrow_table(
             else:
                 scatterplot_kwargs["radius_min_pixels"] = 0.2
 
+        if "opacity" not in scatterplot_kwargs.keys():
+            if len(table) <= 10_000:
+                scatterplot_kwargs["opacity"] = 0.9
+            elif len(table) <= 100_000:
+                scatterplot_kwargs["opacity"] = 0.7
+            elif len(table) <= 1_000_000:
+                scatterplot_kwargs["opacity"] = 0.5
+
         return ScatterplotLayer(table=table, **scatterplot_kwargs)
 
     elif geometry_ext_type in [
@@ -404,17 +413,42 @@ def _viz_geoarrow_table(
             else:
                 path_kwargs["width_min_pixels"] = 0.5
 
+        if "opacity" not in path_kwargs.keys():
+            if len(table) <= 1_000:
+                path_kwargs["opacity"] = 0.9
+            elif len(table) <= 10_000:
+                path_kwargs["opacity"] = 0.7
+            elif len(table) <= 100_000:
+                path_kwargs["opacity"] = 0.5
+
         return PathLayer(table=table, **path_kwargs)
 
     elif geometry_ext_type in [EXTENSION_NAME.POLYGON, EXTENSION_NAME.MULTIPOLYGON]:
-        solid_polygon_kwargs = {} if not solid_polygon_kwargs else solid_polygon_kwargs
+        polygon_kwargs = {} if not polygon_kwargs else polygon_kwargs
 
-        if "get_fill_color" not in solid_polygon_kwargs.keys():
-            solid_polygon_kwargs["get_fill_color"] = _viz_color
+        if "get_fill_color" not in polygon_kwargs.keys():
+            polygon_kwargs["get_fill_color"] = _viz_color
 
-        if "opacity" not in solid_polygon_kwargs.keys():
-            solid_polygon_kwargs["opacity"] = 0.6
+        if "get_line_color" not in polygon_kwargs.keys():
+            polygon_kwargs["get_line_color"] = DEFAULT_POLYGON_LINE_COLOR
 
-        return SolidPolygonLayer(table=table, **solid_polygon_kwargs)
+        if "opacity" not in polygon_kwargs.keys():
+            polygon_kwargs["opacity"] = 0.5
+
+        if "line_width_min_pixels" not in polygon_kwargs.keys():
+            if len(table) <= 100:
+                polygon_kwargs["line_width_min_pixels"] = 0.5
+            if len(table) <= 1_000:
+                polygon_kwargs["line_width_min_pixels"] = 0.45
+            if len(table) <= 5_000:
+                polygon_kwargs["line_width_min_pixels"] = 0.4
+            elif len(table) <= 10_000:
+                polygon_kwargs["line_width_min_pixels"] = 0.3
+            elif len(table) <= 100_000:
+                polygon_kwargs["line_width_min_pixels"] = 0.25
+            else:
+                polygon_kwargs["line_width_min_pixels"] = 0.2
+
+        return PolygonLayer(table=table, **polygon_kwargs)
 
     raise ValueError(f"Unsupported extension type: '{geometry_ext_type}'.")

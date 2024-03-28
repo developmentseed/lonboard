@@ -131,6 +131,24 @@ class PointCloudLayerKwargs(BaseLayerKwargs, total=False):
     get_normal: NormalAccessorInput
 
 
+class PolygonLayerKwargs(BaseLayerKwargs, total=False):
+    stroked: bool
+    filled: bool
+    extruded: bool
+    wireframe: bool
+    elevation_scale: IntFloat
+    line_width_units: Units
+    line_width_scale: IntFloat
+    line_width_min_pixels: IntFloat
+    line_width_max_pixels: IntFloat
+    line_joint_rounded: bool
+    line_miter_limit: IntFloat
+    get_fill_color: ColorAccessorInput
+    get_line_color: ColorAccessorInput
+    get_line_width: FloatAccessorInput
+    get_elevation: FloatAccessorInput
+
+
 class ScatterplotLayerKwargs(BaseLayerKwargs, total=False):
     radius_units: Units
     radius_scale: IntFloat

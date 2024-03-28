@@ -11,6 +11,7 @@ from ._layer import (
     HeatmapLayer,
     PathLayer,
     PointCloudLayer,
+    PolygonLayer,
     ScatterplotLayer,
     SolidPolygonLayer,
 )
