@@ -13,6 +13,8 @@ import { isDefined, loadChildModels } from "./util.js";
 import { v4 as uuidv4 } from "uuid";
 import { Message } from "./types.js";
 import { flyTo } from "./actions/fly-to.js";
+import { useModelStateDebounced } from "./state";
+
 
 await initParquetWasm();
 
@@ -73,7 +75,10 @@ function App() {
   let [pickingRadius] = useModelState<number>("picking_radius");
   let [useDevicePixels] = useModelState<number | boolean>("use_device_pixels");
   let [parameters] = useModelState<object>("parameters");
-
+  const [viewState, setViewState] = useModelStateDebounced<MapViewState>(
+    "_view_state",
+    300
+  );
   let [initialViewState, setInitialViewState] = useState(
     pythonInitialViewState,
   );
@@ -147,13 +152,13 @@ function App() {
   return (
     <div id={`map-${mapId}`} style={{ height: mapHeight || "100%" }}>
       <DeckGL
-        initialViewState={
-          ["longitude", "latitude", "zoom"].every((key) =>
-            Object.keys(initialViewState).includes(key),
-          )
-            ? initialViewState
-            : DEFAULT_INITIAL_VIEW_STATE
-        }
+        // initialViewState={
+        //   ["longitude", "latitude", "zoom"].every((key) =>
+        //     Object.keys(initialViewState).includes(key),
+        //   )
+        //     ? initialViewState
+        //     : DEFAULT_INITIAL_VIEW_STATE
+        // }
         controller={true}
         layers={layers}
         // @ts-expect-error
@@ -164,6 +169,15 @@ function App() {
         _typedArrayManagerProps={{
           overAlloc: 1,
           poolSize: 0,
+        }}
+        viewState={
+          Object.keys(viewState).length === 0
+            ? DEFAULT_INITIAL_VIEW_STATE
+            : viewState
+        }
+        onViewStateChange={(event) => {
+          // @ts-expect-error here viewState is typed as Record<string, any>
+          setViewState(event.viewState);
         }}
         parameters={parameters || {}}
       >

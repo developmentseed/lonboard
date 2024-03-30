@@ -123,6 +123,11 @@ class Map(BaseAnyWidget):
     This API is not yet stabilized and may change in the future.
     """
 
+    _view_state = traitlets.Any(allow_none=True).tag(sync=True)
+    """
+    View state that is synced from the frontend
+    """
+
     _height = traitlets.Int(default_value=DEFAULT_HEIGHT, allow_none=True).tag(
         sync=True
     )
@@ -333,6 +338,6 @@ class Map(BaseAnyWidget):
             drop_defaults=False,
         )
 
-    @traitlets.default("_initial_view_state")
+    @traitlets.default("_view_state")
     def _default_initial_view_state(self):
         return compute_view(self.layers)
