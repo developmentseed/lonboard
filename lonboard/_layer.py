@@ -183,6 +183,20 @@ class BaseLayer(BaseWidget):
     - Default: `False`
     """
 
+    selected_bounds = traitlets.List(
+        trait=traitlets.Float(allow_none=False),
+        allow_none=True,
+        default_value=None,
+        sync=True,
+    )
+    """
+    Bounds selected by the user, represented as a list of floats
+     representing [minx, miny, maxx, maxy]
+    We make this available on the map, as well as each layer, for convenience.
+    This tries to copy Shapely in representing bounds:
+     https://shapely.readthedocs.io/en/stable/manual.html#object.bounds
+    """
+
     selected_index = traitlets.Int(None, allow_none=True).tag(sync=True)
     """
     The positional index of the most-recently clicked on row of data.

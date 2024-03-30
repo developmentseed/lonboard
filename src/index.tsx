@@ -196,12 +196,23 @@ function App() {
       setSelectionObjectCount(selectedObjects ? selectedObjects.length : 0);
 
       // set this to what Shapely uses to represent Bounds
-      setBoundsModel([
+      const bounds = [
         Math.min(pt1[0], pt2[0]),
         Math.min(pt1[1], pt2[1]),
         Math.max(pt1[0], pt2[0]),
         Math.max(pt1[1], pt2[1]),
-      ]);
+      ];
+      setBoundsModel(bounds);
+
+      // now we need to set the selected_bounds on each layer
+      loadChildModels(model.widget_manager, childLayerIds).then(layerModels => {
+        layerModels.forEach(layer => {
+          layer.set('selected_bounds', bounds);
+          layer.save_changes();
+        });
+      }).catch(e => {
+        console.log('error setting selected_bounds state on layer models', e);
+      });
     } else {
       setSelectionStart([[info.x, info.y], info.coordinate]);
       setSelectionEnd(undefined);
