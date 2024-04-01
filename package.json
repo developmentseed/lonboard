@@ -22,7 +22,7 @@
   "devDependencies": {
     "@anywidget/types": "^0.1.5",
     "@jupyter-widgets/base": "^6.0.7",
-    "@types/react": "^18.2.69",
+    "@types/react": "^18.2.73",
     "@types/uuid": "^9.0.8",
     "esbuild": "^0.20.2",
     "nodemon": "^3.1.0",
