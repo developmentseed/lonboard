@@ -95,9 +95,9 @@ class Map(BaseAnyWidget):
     _esm = bundler_output_dir / "index.js"
     _css = bundler_output_dir / "index.css"
 
-    _initial_view_state = traitlets.Dict().tag(sync=True)
+    view_state = traitlets.Any(allow_none=True).tag(sync=True)
     """
-    The initial view state of the map.
+    The view state of the map.
 
     - Type: `dict`, optional
     - Default: Automatically inferred from the data passed to the map.
@@ -122,19 +122,6 @@ class Map(BaseAnyWidget):
 
     This API is not yet stabilized and may change in the future.
     """
-
-    _view_state = traitlets.Any(allow_none=True).tag(sync=True)
-    """
-    View state that is synced from the frontend
-    """
-
-    @property
-    def view_state(self):
-        return self._view_state
-
-    @view_state.setter
-    def view_state(self, view_state):
-        self.fly_to(**view_state, duration=0)
 
     _height = traitlets.Int(default_value=DEFAULT_HEIGHT, allow_none=True).tag(
         sync=True
@@ -346,6 +333,6 @@ class Map(BaseAnyWidget):
             drop_defaults=False,
         )
 
-    @traitlets.default("_view_state")
+    @traitlets.default("view_state")
     def _default_initial_view_state(self):
         return compute_view(self.layers)

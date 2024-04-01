@@ -4,7 +4,8 @@ import type { AnyModel } from "@anywidget/types";
 import { debounce } from "./util";
 
 const debouncedModelSaveViewState = debounce((model: AnyModel) => {
-  const viewState = model.get("_view_state");
+  // TODO: this and below is hard-coded to the view_state model property!
+  const viewState = model.get("view_state");
 
   // transitionInterpolator is sometimes a key in the view state while panning
   // This is a function object and so can't be serialized via JSON.
@@ -17,16 +18,14 @@ const debouncedModelSaveViewState = debounce((model: AnyModel) => {
   if ("transitionInterpolator" in viewState) {
     console.debug("Deleting transitionInterpolator!");
     delete viewState.transitionInterpolator;
-    model.set("_view_state", viewState);
+    model.set("view_state", viewState);
   }
 
   model.save_changes();
 }, 300);
 
-export function useModelStateDebounced<T>(
-  key: string,
-  wait: number,
-): [T, (value: T) => void] {
+// TODO: add a `wait` parameter here, instead of having it hard-coded?
+export function useViewStateDebounced<T>(key: string): [T, (value: T) => void] {
   let model = useModel();
   let [value, setValue] = React.useState(model.get(key));
   React.useEffect(() => {

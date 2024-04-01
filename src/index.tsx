@@ -13,7 +13,7 @@ import { isDefined, loadChildModels } from "./util.js";
 import { v4 as uuidv4 } from "uuid";
 import { Message } from "./types.js";
 import { flyTo } from "./actions/fly-to.js";
-import { useModelStateDebounced } from "./state";
+import { useViewStateDebounced } from "./state";
 
 await initParquetWasm();
 
@@ -71,18 +71,24 @@ function App() {
   let [pickingRadius] = useModelState<number>("picking_radius");
   let [useDevicePixels] = useModelState<number | boolean>("use_device_pixels");
   let [parameters] = useModelState<object>("parameters");
-  const [pythonInitialViewState, setViewState] =
-    useModelStateDebounced<MapViewState>("_view_state", 300);
 
-  let [initialViewState, setInitialViewState] = useState(
-    pythonInitialViewState,
-  );
+  // initialViewState is the value of view_state on the Python side. This is
+  // called `initial` here because it gets passed in to deck's
+  // `initialViewState` param, as deck manages its own view state. Further
+  // updates to `view_state` from Python are set on the deck `initialViewState`
+  // property, which can set new camera state, as described here:
+  // https://deck.gl/docs/developer-guide/interactivity
+  //
+  // `setViewState` is a debounced way to update the model and send view
+  // state information back to Python.
+  const [initialViewState, setViewState] =
+    useViewStateDebounced<MapViewState>("view_state");
 
   // Handle custom messages
   model.on("msg:custom", (msg: Message, buffers) => {
     switch (msg.type) {
       case "fly-to":
-        flyTo(msg, setInitialViewState);
+        flyTo(msg, setViewState);
         break;
 
       default:
