@@ -128,6 +128,14 @@ class Map(BaseAnyWidget):
     View state that is synced from the frontend
     """
 
+    @property
+    def view_state(self):
+        return self._view_state
+
+    @view_state.setter
+    def view_state(self, view_state):
+        self.fly_to(**view_state, duration=0)
+
     _height = traitlets.Int(default_value=DEFAULT_HEIGHT, allow_none=True).tag(
         sync=True
     )

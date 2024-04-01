@@ -584,9 +584,6 @@ export class PolygonModel extends BaseArrowLayerModel {
   }
 
   layerProps(): Omit<GeoArrowPolygonLayerProps, "id"> {
-    console.log("table", this.table);
-    console.log("filled", this.filled);
-
     return {
       data: this.table,
       ...(isDefined(this.stroked) && { stroked: this.stroked }),

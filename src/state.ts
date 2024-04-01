@@ -3,7 +3,6 @@ import { useModel } from "@anywidget/react";
 import { debounce } from "./util";
 
 const debouncedModelSaveViewState = debounce((model) => {
-  console.log("DEBOUNCED");
   const viewState = model.get("_view_state");
 
   // transitionInterpolator is sometimes a key in the view state while panning
@@ -31,12 +30,9 @@ export function useModelStateDebounced<T>(
   let [value, setValue] = React.useState(model.get(key));
   React.useEffect(() => {
     let callback = () => {
-      console.log("callback");
-      console.log(model.get(key));
       setValue(model.get(key));
     };
     model.on(`change:${key}`, callback);
-    console.log(`model on change view state`);
     return () => model.off(`change:${key}`, callback);
   }, [model, key]);
   return [
