@@ -15,7 +15,6 @@ import { Message } from "./types.js";
 import { flyTo } from "./actions/fly-to.js";
 import { useModelStateDebounced } from "./state";
 
-
 await initParquetWasm();
 
 const DEFAULT_INITIAL_VIEW_STATE = {
@@ -77,7 +76,7 @@ function App() {
   let [parameters] = useModelState<object>("parameters");
   const [viewState, setViewState] = useModelStateDebounced<MapViewState>(
     "_view_state",
-    300
+    300,
   );
   let [initialViewState, setInitialViewState] = useState(
     pythonInitialViewState,
@@ -170,11 +169,7 @@ function App() {
           overAlloc: 1,
           poolSize: 0,
         }}
-        viewState={
-          Object.keys(viewState).length === 0
-            ? DEFAULT_INITIAL_VIEW_STATE
-            : viewState
-        }
+        viewState={viewState}
         onViewStateChange={(event) => {
           // @ts-expect-error here viewState is typed as Record<string, any>
           setViewState(event.viewState);
