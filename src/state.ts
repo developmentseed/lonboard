@@ -25,7 +25,7 @@ const debouncedModelSaveViewState = debounce((model) => {
 
 export function useModelStateDebounced<T>(
   key: string,
-  wait: number
+  wait: number,
 ): [T, (value: T) => void] {
   let model = useModel();
   let [value, setValue] = React.useState(model.get(key));
