@@ -278,7 +278,7 @@ class Map(BaseAnyWidget):
 
         Any parameters that are unset will not be changed.
 
-        Args:
+        Other Args:
             longitude: the new longitude to set on the map. Defaults to None.
             latitude: the new latitude to set on the map. Defaults to None.
             zoom: the new zoom to set on the map. Defaults to None.
