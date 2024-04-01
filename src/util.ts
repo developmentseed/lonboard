@@ -22,13 +22,12 @@ export function isDefined<T>(value: T | undefined | null): value is T {
   return value !== undefined && value !== null;
 }
 
-// From https://www.joshwcomeau.com/snippets/javascript/debounce/
-export const debounce = (callback: (args) => void, wait: number) => {
-  let timeoutId = null;
-  return (...args) => {
-    window.clearTimeout(timeoutId);
-    timeoutId = window.setTimeout(() => {
-      callback.apply(null, args);
-    }, wait);
+// From https://gist.github.com/ca0v/73a31f57b397606c9813472f7493a940
+export function debounce<T extends Function>(cb: T, wait = 20) {
+  let h: ReturnType<typeof setTimeout> | undefined;
+  let callable = (...args: any) => {
+    clearTimeout(h);
+    h = setTimeout(() => cb(...args), wait);
   };
-};
+  return <T>(<any>callable);
+}

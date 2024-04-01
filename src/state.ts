@@ -1,8 +1,9 @@
 import * as React from "react";
 import { useModel } from "@anywidget/react";
+import type { AnyModel } from "@anywidget/types";
 import { debounce } from "./util";
 
-const debouncedModelSaveViewState = debounce((model) => {
+const debouncedModelSaveViewState = debounce((model: AnyModel) => {
   const viewState = model.get("_view_state");
 
   // transitionInterpolator is sometimes a key in the view state while panning
