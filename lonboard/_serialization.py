@@ -1,12 +1,14 @@
 import math
 from io import BytesIO
-from typing import List, Tuple, Union
+from typing import List, Optional, Tuple, Union
 
 import numpy as np
 import pyarrow as pa
 import pyarrow.parquet as pq
 from numpy.typing import NDArray
 from traitlets import TraitError
+
+from lonboard.models import ViewState
 
 DEFAULT_PARQUET_COMPRESSION = "ZSTD"
 DEFAULT_PARQUET_COMPRESSION_LEVEL = 7
@@ -86,6 +88,13 @@ def infer_rows_per_chunk(table: pa.Table) -> int:
 def validate_accessor_length_matches_table(accessor, table):
     if len(accessor) != len(table):
         raise TraitError("accessor must have same length as table")
+
+
+def serialize_view_state(data: Optional[ViewState], obj):
+    if data is None:
+        return None
+
+    return data._asdict()
 
 
 ACCESSOR_SERIALIZATION = {"to_json": serialize_accessor}

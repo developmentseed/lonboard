@@ -21,8 +21,18 @@ from typing_extensions import Self
 from lonboard._serialization import (
     ACCESSOR_SERIALIZATION,
     TABLE_SERIALIZATION,
+    serialize_view_state,
 )
 from lonboard._utils import get_geometry_column_index
+from lonboard.models import ViewState
+
+DEFAULT_INITIAL_VIEW_STATE = {
+    "latitude": 10,
+    "longitude": 0,
+    "zoom": 0.5,
+    "bearing": 0,
+    "pitch": 0,
+}
 
 
 # This is a custom subclass of traitlets.TraitType because its `error` method ignores
@@ -819,6 +829,34 @@ class NormalAccessor(FixedErrorTraitType):
                 )
 
             return value.cast(pa.list_(pa.float32(), 3))
+
+        self.error(obj, value)
+        assert False
+
+
+class ViewStateTrait(FixedErrorTraitType):
+    allow_none = True
+    default_value = DEFAULT_INITIAL_VIEW_STATE
+
+    def __init__(
+        self: TraitType,
+        *args,
+        **kwargs: Any,
+    ) -> None:
+        super().__init__(*args, **kwargs)
+
+        self.tag(sync=True, to_json=serialize_view_state)
+
+    def validate(self, obj, value):
+        if value is None:
+            return None
+
+        if isinstance(value, ViewState):
+            return value
+
+        if isinstance(value, dict):
+            value = {**DEFAULT_INITIAL_VIEW_STATE, **value}
+            return ViewState(**value)
 
         self.error(obj, value)
         assert False
