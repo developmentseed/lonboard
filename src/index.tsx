@@ -11,7 +11,7 @@ import { BaseLayerModel, initializeLayer } from "./model/index.js";
 import type { WidgetModel } from "@jupyter-widgets/base";
 import { initParquetWasm } from "./parquet.js";
 import { getTooltip } from "./tooltip/index.js";
-import { getPolygon, isDefined, loadChildModels } from "./util.js";
+import { makePolygon, isDefined, loadChildModels } from "./util.js";
 import { v4 as uuidv4 } from "uuid";
 import { Message } from "./types.js";
 import { flyTo } from "./actions/fly-to.js";
@@ -236,7 +236,7 @@ function App() {
       if (!pt1 || !pt2) return;
       const data = [
         {
-          polygon: getPolygon(pt1, pt2),
+          polygon: makePolygon(pt1, pt2),
         },
       ];
       const bboxLayer = new PolygonLayer({
@@ -247,7 +247,7 @@ function App() {
         stroked: true,
         getLineWidth: 2,
         lineWidthUnits: "pixels",
-        getPolygon: (d) => d.polygon,
+        makePolygon: (d) => d.polygon,
       });
       console.log(bboxLayer);
       setHoverBBoxLayer(bboxLayer);
@@ -263,7 +263,7 @@ function App() {
       if (!pt1 || !pt2) return undefined;
       const data = [
         {
-          polygon: getPolygon(pt1, pt2),
+          polygon: makePolygon(pt1, pt2),
         },
       ];
       return new PolygonLayer({
@@ -274,7 +274,7 @@ function App() {
         stroked: true,
         getLineWidth: 2,
         lineWidthUnits: "pixels",
-        getPolygon: (d) => d.polygon,
+        makePolygon: (d) => d.polygon,
       });
     } else {
       return undefined;
