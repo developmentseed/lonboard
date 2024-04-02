@@ -13,6 +13,7 @@ from lonboard._environment import DEFAULT_HEIGHT
 from lonboard._layer import BaseLayer
 from lonboard._viewport import compute_view
 from lonboard.basemap import CartoBasemap
+from lonboard.traits import DEFAULT_INITIAL_VIEW_STATE, ViewStateTrait
 from lonboard.types.map import MapKwargs
 
 if TYPE_CHECKING:
@@ -95,32 +96,28 @@ class Map(BaseAnyWidget):
     _esm = bundler_output_dir / "index.js"
     _css = bundler_output_dir / "index.css"
 
-    _initial_view_state = traitlets.Dict().tag(sync=True)
+    view_state = ViewStateTrait()
     """
-    The initial view state of the map.
+    The view state of the map.
 
-    - Type: `dict`, optional
+    - Type: [`ViewState`][lonboard.models.ViewState]
     - Default: Automatically inferred from the data passed to the map.
 
-    The keys _must_ include:
+    You can initialize the map to a specific view state using this property:
 
-    - `longitude`: longitude at the map center.
-    - `latitude`: latitude at the map center.
-    - `zoom`: zoom level.
+    ```py
+    Map(
+        layers,
+        view_state={"longitude": -74.0060, "latitude": 40.7128, "zoom": 7}
+    )
+    ```
 
-    Keys may additionally include:
+    !!! note
 
-    - `pitch` (float, optional) - pitch angle in degrees. Default `0` (top-down).
-    - `bearing` (float, optional) - bearing angle in degrees. Default `0` (north).
-    - `maxZoom` (float, optional) - max zoom level. Default `20`.
-    - `minZoom` (float, optional) - min zoom level. Default `0`.
-    - `maxPitch` (float, optional) - max pitch angle. Default `60`.
-    - `minPitch` (float, optional) - min pitch angle. Default `0`.
+        The properties of the view state are immutable. Use
+        [`set_view_state`][lonboard.Map.set_view_state] to modify a map's view state
+        once it's been initially rendered.
 
-    Note that currently no camel-case/snake-case translation occurs for this method, and
-    so keys must be in camel case.
-
-    This API is not yet stabilized and may change in the future.
     """
 
     _height = traitlets.Int(default_value=DEFAULT_HEIGHT, allow_none=True).tag(
@@ -283,12 +280,51 @@ class Map(BaseAnyWidget):
       global `parameters` when that layer is rendered.
     """
 
+    def set_view_state(
+        self,
+        *,
+        longitude: Optional[float] = None,
+        latitude: Optional[float] = None,
+        zoom: Optional[float] = None,
+        pitch: Optional[float] = None,
+        bearing: Optional[float] = None,
+    ) -> None:
+        """Set the view state of the map.
+
+        Any parameters that are unset will not be changed.
+
+        Other Args:
+            longitude: the new longitude to set on the map. Defaults to None.
+            latitude: the new latitude to set on the map. Defaults to None.
+            zoom: the new zoom to set on the map. Defaults to None.
+            pitch: the new pitch to set on the map. Defaults to None.
+            bearing: the new bearing to set on the map. Defaults to None.
+        """
+        view_state = (
+            self.view_state._asdict()  # type: ignore
+            if self.view_state is not None
+            else DEFAULT_INITIAL_VIEW_STATE
+        )
+
+        if longitude is not None:
+            view_state["longitude"] = longitude
+        if latitude is not None:
+            view_state["latitude"] = latitude
+        if zoom is not None:
+            view_state["zoom"] = zoom
+        if pitch is not None:
+            view_state["pitch"] = pitch
+        if bearing is not None:
+            view_state["bearing"] = bearing
+
+        self.view_state = view_state
+
     def fly_to(
         self,
         *,
         longitude: Union[int, float],
         latitude: Union[int, float],
-        zoom: int,
+        zoom: float,
         duration: int = 4000,
         pitch: Union[int, float] = 0,
         bearing: Union[int, float] = 0,
@@ -348,6 +384,6 @@ class Map(BaseAnyWidget):
             drop_defaults=False,
         )
 
-    @traitlets.default("_initial_view_state")
+    @traitlets.default("view_state")
     def _default_initial_view_state(self):
         return compute_view(self.layers)

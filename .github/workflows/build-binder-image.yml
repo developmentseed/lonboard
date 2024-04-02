@@ -10,7 +10,7 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - name: cache binder build on mybinder.org
-        uses: jupyterhub/repo2docker-action@b3cd89ff99f95b00abb5b4db27ec49bb4d3f8c85
+        uses: jupyterhub/repo2docker-action@73f40a661223935d94921712083a929474b78a4f
         with:
           NO_PUSH: true
           MYBINDERORG_TAG: ${{ github.event.ref }} # This builds the container on mybinder.org with the branch that was pushed on.

@@ -26,8 +26,7 @@ else:
 class ArrowArrayExportable(Protocol):
     def __arrow_c_array__(
         self, requested_schema: object | None = None
-    ) -> Tuple[object, object]:
-        ...
+    ) -> Tuple[object, object]: ...
 
 
 IntFloat = Union[int, float]
@@ -130,6 +129,24 @@ class PointCloudLayerKwargs(BaseLayerKwargs, total=False):
     point_size: IntFloat
     get_color: ColorAccessorInput
     get_normal: NormalAccessorInput
+
+
+class PolygonLayerKwargs(BaseLayerKwargs, total=False):
+    stroked: bool
+    filled: bool
+    extruded: bool
+    wireframe: bool
+    elevation_scale: IntFloat
+    line_width_units: Units
+    line_width_scale: IntFloat
+    line_width_min_pixels: IntFloat
+    line_width_max_pixels: IntFloat
+    line_joint_rounded: bool
+    line_miter_limit: IntFloat
+    get_fill_color: ColorAccessorInput
+    get_line_color: ColorAccessorInput
+    get_line_width: FloatAccessorInput
+    get_elevation: FloatAccessorInput
 
 
 class ScatterplotLayerKwargs(BaseLayerKwargs, total=False):
