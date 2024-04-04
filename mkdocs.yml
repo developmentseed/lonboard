@@ -71,7 +71,9 @@ nav:
   - Performance: performance.md
   - Changelog: CHANGELOG.md
   - Alternatives: alternatives.md
-  - "How it works?": how-it-works.md
+  - "How it works?":
+      - how-it-works/index.md
+      - how-it-works/internals.md
 
 watch:
   - lonboard
