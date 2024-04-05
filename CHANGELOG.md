@@ -4,11 +4,15 @@
 
 ### New! :sparkles:
 
-- PolygonLayer by @kylebarron in https://github.com/developmentseed/lonboard/pull/330
-- adds an example using PolygonLayer by @naomatheus in https://github.com/developmentseed/lonboard/pull/351
+- A new [`PolygonLayer`](https://developmentseed.org/lonboard/v0.8.0/api/layers/polygon-layer/)! This layer renders polygon outlines for easier visibility. @kylebarron in https://github.com/developmentseed/lonboard/pull/330
+- An example using `PolygonLayer` by @naomatheus in https://github.com/developmentseed/lonboard/pull/351
 - Sync view state between JS and Python by @kylebarron in https://github.com/developmentseed/lonboard/pull/448
 - Support geoarrow array input into `viz()` by @kylebarron in https://github.com/developmentseed/lonboard/pull/427
 - Internal architecture documentation by @kylebarron in https://github.com/developmentseed/lonboard/pull/450
+
+### Fixes :bug:
+
+- Fix CLI with unset `geometry_name` by @kylebarron in https://github.com/developmentseed/lonboard/pull/451
 
 **Full Changelog**: https://github.com/developmentseed/lonboard/compare/v0.7.1...v0.8.0
 
