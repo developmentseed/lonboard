@@ -27,7 +27,9 @@ def read_pyogrio(path: Path) -> pa.Table:
         ) from e
 
     meta, table = read_arrow(path)
-    geometry_column_name = meta.get("geometry_name", "wkb_geometry")
+    # The `geometry_name` key always exists but can be an empty string. In the case of
+    # an empty string, we want to default to `wkb_geometry`
+    geometry_column_name = meta.get("geometry_name") or "wkb_geometry"
     # TODO: assert there are not two column names of wkb_geometry, nor an existing
     # column named "geometry"
 
