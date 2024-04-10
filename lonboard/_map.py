@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import sys
+from functools import lru_cache
 from pathlib import Path
 from typing import IO, TYPE_CHECKING, Optional, Sequence, TextIO, Union
 
@@ -44,6 +45,13 @@ _HTML_TEMPLATE = """<!DOCTYPE html>
 </body>
 </html>
 """
+
+
+@lru_cache
+def _load_parquet_wasm_binary() -> bytes:
+    """Load the gzipped parquet-wasm binary blob"""
+    with open(bundler_output_dir / "arrow2_bg.wasm.gz", "rb") as f:
+        return f.read()
 
 
 class Map(BaseAnyWidget):
@@ -91,10 +99,14 @@ class Map(BaseAnyWidget):
         if isinstance(layers, BaseLayer):
             layers = [layers]
 
-        super().__init__(layers=layers, **kwargs)
+        _parquet_wasm_content = _load_parquet_wasm_binary()
+        super().__init__(
+            layers=layers, _parquet_wasm_content=_parquet_wasm_content, **kwargs
+        )
 
     _esm = bundler_output_dir / "index.js"
     _css = bundler_output_dir / "index.css"
+    _parquet_wasm_content = traitlets.Bytes(allow_none=False).tag(sync=True)
 
     view_state = ViewStateTrait()
     """
