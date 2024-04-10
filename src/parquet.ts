@@ -17,6 +17,10 @@ async function decompressBlob(blob: Blob) {
  * @return Whether initialization succeeded
  */
 export async function initParquetWasmFromBinary(view: DataView): Promise<void> {
+  if (WASM_READY) {
+    return;
+  }
+
   let blob = new Blob([view]);
   const decompressedBlob = await decompressBlob(blob);
   const decompressedBuffer = await decompressedBlob.arrayBuffer();
