@@ -1,4 +1,3 @@
-import { useEffect, useState } from "react";
 import { initSync, readParquet } from "parquet-wasm/esm/arrow2";
 import * as arrow from "apache-arrow";
 
@@ -17,20 +16,13 @@ async function decompressBlob(blob: Blob) {
  *
  * @return Whether initialization succeeded
  */
-export async function initParquetWasmFromBinary(
-  view: DataView | null,
-): Promise<boolean> {
-  if (!view) {
-    return false;
-  }
-
+export async function initParquetWasmFromBinary(view: DataView): Promise<void> {
   let blob = new Blob([view]);
   const decompressedBlob = await decompressBlob(blob);
   const decompressedBuffer = await decompressedBlob.arrayBuffer();
 
   initSync(decompressedBuffer);
   WASM_READY = true;
-  return true;
 }
 
 /**
@@ -73,22 +65,4 @@ export function parseParquetBuffers(dataViews: DataView[]): arrow.Table {
   }
 
   return new arrow.Table(batches);
-}
-
-export function useParquetWasm(view: DataView | null): [boolean] {
-  const [wasmReady, setWasmReady] = useState<boolean>(false);
-
-  // Init parquet wasm
-  useEffect(() => {
-    const callback = async () => {
-      const succeeded = await initParquetWasmFromBinary(view);
-      if (succeeded) {
-        setWasmReady(true);
-      }
-    };
-
-    callback();
-  }, []);
-
-  return [wasmReady];
 }
