@@ -7,15 +7,13 @@ import DeckGL from "@deck.gl/react/typed";
 import { MapViewState, type Layer } from "@deck.gl/core/typed";
 import { BaseLayerModel, initializeLayer } from "./model/index.js";
 import type { WidgetModel } from "@jupyter-widgets/base";
-import { initParquetWasm } from "./parquet.js";
+import { useParquetWasm } from "./parquet.js";
 import { getTooltip } from "./tooltip/index.js";
 import { isDefined, loadChildModels } from "./util.js";
 import { v4 as uuidv4 } from "uuid";
 import { Message } from "./types.js";
 import { flyTo } from "./actions/fly-to.js";
 import { useViewStateDebounced } from "./state";
-
-await initParquetWasm();
 
 const DEFAULT_INITIAL_VIEW_STATE = {
   latitude: 10,
@@ -65,6 +63,10 @@ async function getChildModelState(
 function App() {
   let model = useModel();
 
+  let [parquetWasmBinary] = useModelState<DataView | null>(
+    "_parquet_wasm_content",
+  );
+  let [parquetWasmReady] = useParquetWasm(parquetWasmBinary);
   let [mapStyle] = useModelState<string>("basemap_style");
   let [mapHeight] = useModelState<number>("_height");
   let [showTooltip] = useModelState<boolean>("show_tooltip");
@@ -108,7 +110,15 @@ function App() {
   let [stateCounter, setStateCounter] = useState<Date>(new Date());
 
   useEffect(() => {
+    if (!parquetWasmReady) {
+      return;
+    }
+
     const callback = async () => {
+      if (!parquetWasmReady) {
+        throw new Error("inside callback but parquetWasm not ready!");
+      }
+
       const childModels = await loadChildModels(
         model.widget_manager,
         childLayerIds,
@@ -122,7 +132,7 @@ function App() {
       setSubModelState(newSubModelState);
     };
     callback().catch(console.error);
-  }, [childLayerIds]);
+  }, [parquetWasmReady, childLayerIds]);
 
   const layers: Layer[] = [];
   for (const subModel of Object.values(subModelState)) {
