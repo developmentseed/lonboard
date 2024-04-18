@@ -9,6 +9,9 @@ site_url: https://developmentseed.org/lonboard/
 docs_dir: docs
 
 extra:
+  analytics:
+    provider: plausible
+    domain: developmentseed.org/lonboard
   social:
     - icon: "fontawesome/brands/github"
       link: "https://github.com/developmentseed"
