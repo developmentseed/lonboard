@@ -61,12 +61,17 @@ def test_viz_geoarrow_rust_wkb_array():
     assert isinstance(map_.layers[0], PolygonLayer)
 
 
-def test_viz_geoarrow_pyarrow_array():
-    data = gap.as_geoarrow(["POINT (0 1)", "POINT (2 1)", "POINT (3 1)"])
+def test_viz_geoarrow_pyarrow_array_interleaved():
+    data = gap.as_geoarrow(
+        ["POINT (0 1)", "POINT (2 1)", "POINT (3 1)"],
+        coord_type=gap.CoordType.INTERLEAVED,
+    )
     map_ = viz(data)
     assert isinstance(map_.layers[0], ScatterplotLayer)
 
-    data = gap.as_geoarrow(["LINESTRING (30 10, 10 30, 40 40)"])
+    data = gap.as_geoarrow(
+        ["LINESTRING (30 10, 10 30, 40 40)"], coord_type=gap.CoordType.INTERLEAVED
+    )
     map_ = viz(data)
     assert isinstance(map_.layers[0], PathLayer)
 
@@ -77,7 +82,35 @@ def test_viz_geoarrow_pyarrow_array():
                 "POLYGON ((35 10, 45 45, 15 40, 10 20, 35 10),"
                 "(20 30, 35 35, 30 20, 20 30))"
             ),
-        ]
+        ],
+        coord_type=gap.CoordType.INTERLEAVED,
+    )
+    map_ = viz(data)
+    assert isinstance(map_.layers[0], PolygonLayer)
+
+
+def test_viz_geoarrow_pyarrow_array_separated():
+    data = gap.as_geoarrow(
+        ["POINT (0 1)", "POINT (2 1)", "POINT (3 1)"], coord_type=gap.CoordType.SEPARATE
+    )
+    map_ = viz(data)
+    assert isinstance(map_.layers[0], ScatterplotLayer)
+
+    data = gap.as_geoarrow(
+        ["LINESTRING (30 10, 10 30, 40 40)"], coord_type=gap.CoordType.SEPARATE
+    )
+    map_ = viz(data)
+    assert isinstance(map_.layers[0], PathLayer)
+
+    data = gap.as_geoarrow(
+        [
+            "POLYGON ((30 10, 40 40, 20 40, 10 20, 30 10))",
+            (
+                "POLYGON ((35 10, 45 45, 15 40, 10 20, 35 10),"
+                "(20 30, 35 35, 30 20, 20 30))"
+            ),
+        ],
+        coord_type=gap.CoordType.SEPARATE,
     )
     map_ = viz(data)
     assert isinstance(map_.layers[0], PolygonLayer)
