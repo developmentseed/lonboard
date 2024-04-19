@@ -1,13 +1,15 @@
-from typing import Any, Dict, Optional, Sequence, TypeVar
+from typing import TYPE_CHECKING, Any, Dict, Optional, Sequence, TypeVar
 
 import numpy as np
-import pandas as pd
 import pyarrow as pa
 
 from lonboard._base import BaseExtension
 from lonboard._constants import EXTENSION_NAME
 
-DF = TypeVar("DF", bound=pd.DataFrame)
+if TYPE_CHECKING:
+    import pandas as pd
+
+    DF = TypeVar("DF", bound=pd.DataFrame)
 
 GEOARROW_EXTENSION_TYPE_NAMES = {e.value for e in EXTENSION_NAME}
 
@@ -35,6 +37,8 @@ def auto_downcast(df: DF) -> DF:
     Returns:
         DataFrame with downcasted data types
     """
+    import pandas as pd
+
     # Convert objects to numeric types where possible.
     # Note: we have to exclude geometry because
     # `convert_dtypes(dtype_backend="pyarrow")` fails on the geometory column, but we

@@ -1,10 +1,10 @@
-from typing import List, Optional
+from typing import TYPE_CHECKING, List, Optional
 
-import geopandas as gpd
 import numpy as np
 import pyarrow as pa
 
-from lonboard._geoarrow.extension_types import construct_geometry_array
+if TYPE_CHECKING:
+    import geopandas as gpd
 
 
 def geopandas_to_geoarrow(
@@ -12,6 +12,8 @@ def geopandas_to_geoarrow(
     columns: Optional[List[str]] = None,
     preserve_index: Optional[bool] = None,
 ):
+    from lonboard._geoarrow.extension_types import construct_geometry_array
+
     df_attr = gdf.drop(columns=[gdf._geometry_column_name])
 
     if columns is not None:

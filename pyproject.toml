@@ -12,13 +12,10 @@ include = ["lonboard/static/*.js", "lonboard/static/*.css", "MANIFEST.in"]
 python = "^3.8"
 anywidget = "^0.9.0"
 pyarrow = ">=14.0.1"
-geopandas = ">=0.13"
-pandas = "^2"
 palettable = "^3.3.3"
 # We use the colormap module from matplotlib. This module may be vendored in the
 # future to remove the matplotlib dependency.
 matplotlib = "^3.7"
-shapely = "^2"
 click = { version = "^8.1.7", optional = true }
 pyogrio = { version = "^0.7.2", optional = true }
 typing-extensions = { version = "^4.6.0", python = "<3.12" }
@@ -27,7 +24,10 @@ typing-extensions = { version = "^4.6.0", python = "<3.12" }
 cli = ["click", "pyogrio"]
 
 [tool.poetry.group.dev.dependencies]
-# anywidget = { version = "^0.7.1", extras = ["dev"] }
+geopandas = ">=0.13"
+pandas = "^2"
+shapely = "^2"
+
 jupyterlab = "^4.0.5"
 pre-commit = "^3.4.0"
 pytest = "^7.4.2"

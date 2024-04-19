@@ -1,14 +1,17 @@
 from __future__ import annotations
 
-from typing import Any, Dict, Optional, Sequence, Tuple, Union
+from typing import TYPE_CHECKING, Any, Dict, Optional, Sequence, Tuple, Union
 
 import matplotlib as mpl
 import numpy as np
-import pandas as pd
 import pyarrow as pa
 import pyarrow.compute as pc
 from numpy.typing import NDArray
 from palettable.palette import Palette
+
+if TYPE_CHECKING:
+    import pandas as pd
+
 
 __all__ = (
     "apply_continuous_cmap",

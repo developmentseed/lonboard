@@ -24,23 +24,22 @@ import shapely.geometry.base
 from numpy.typing import NDArray
 
 from lonboard._constants import EXTENSION_NAME
-from lonboard._geoarrow.extension_types import construct_geometry_array
-from lonboard._geoarrow.geopandas_interop import geopandas_to_geoarrow
 from lonboard._geoarrow.parse_wkb import parse_wkb_table
 from lonboard._geoarrow.sanitize import remove_extension_classes
 from lonboard._layer import PathLayer, PolygonLayer, ScatterplotLayer
 from lonboard._map import Map
 from lonboard._utils import get_geometry_column_index
 from lonboard.basemap import CartoBasemap
-from lonboard.types.layer import (
-    PathLayerKwargs,
-    PolygonLayerKwargs,
-    ScatterplotLayerKwargs,
-)
-from lonboard.types.map import MapKwargs
 
 if TYPE_CHECKING:
     import geopandas as gpd
+
+    from lonboard.types.layer import (
+        PathLayerKwargs,
+        PolygonLayerKwargs,
+        ScatterplotLayerKwargs,
+    )
+    from lonboard.types.map import MapKwargs
 
     class GeoInterfaceProtocol(Protocol):
         @property
@@ -103,8 +102,8 @@ def viz(
 
     This function accepts a variety of geospatial inputs:
 
-    - geopandas `GeoDataFrame`
-    - geopandas `GeoSeries`
+    - GeoPandas `GeoDataFrame`
+    - GeoPandas `GeoSeries`
     - numpy array of Shapely objects
     - Single Shapely object
     - Any Python class with a `__geo_interface__` property conforming to the
@@ -236,6 +235,8 @@ def create_layer_from_data_input(
 def _viz_geopandas_geodataframe(
     data: gpd.GeoDataFrame, **kwargs
 ) -> Union[ScatterplotLayer, PathLayer, PolygonLayer]:
+    from lonboard._geoarrow.geopandas_interop import geopandas_to_geoarrow
+
     table = geopandas_to_geoarrow(data)
     return _viz_geoarrow_table(table, **kwargs)
 
@@ -244,6 +245,8 @@ def _viz_geopandas_geoseries(
     data: gpd.GeoSeries, **kwargs
 ) -> Union[ScatterplotLayer, PathLayer, PolygonLayer]:
     import geopandas as gpd
+
+    from lonboard._geoarrow.geopandas_interop import geopandas_to_geoarrow
 
     gdf = gpd.GeoDataFrame(geometry=data)
     table = geopandas_to_geoarrow(gdf)
@@ -259,6 +262,8 @@ def _viz_shapely_scalar(
 def _viz_shapely_array(
     data: NDArray[np.object_], **kwargs
 ) -> Union[ScatterplotLayer, PathLayer, PolygonLayer]:
+    from lonboard._geoarrow.extension_types import construct_geometry_array
+
     # TODO: pass include_z?
     field, geom_arr = construct_geometry_array(data)
     schema = pa.schema([field])
@@ -269,6 +274,8 @@ def _viz_shapely_array(
 def _viz_geo_interface(
     data: dict, **kwargs
 ) -> Union[ScatterplotLayer, PathLayer, PolygonLayer]:
+    from lonboard._geoarrow.extension_types import construct_geometry_array
+
     if data["type"] in [
         "Point",
         "LineString",
