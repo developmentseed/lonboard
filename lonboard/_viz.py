@@ -62,6 +62,7 @@ if TYPE_CHECKING:
         pa.Table,
         NDArray[np.object_],
         shapely.geometry.base.BaseGeometry,
+        ArrowArrayExportable,
         ArrowStreamExportable,
         GeoInterfaceProtocol,
         Dict[str, Any],
@@ -110,6 +111,7 @@ def viz(
         [Geo Interface protocol](https://gist.github.com/sgillies/2217756).
     - `dict` holding GeoJSON-like data.
     - pyarrow `Table` with a geometry column marked with a GeoArrow extension type
+    - pyarrow `Array` marked with a [GeoArrow extension type defined by geoarrow-pyarrow](https://geoarrow.org/geoarrow-python/main/pyarrow.html#geoarrow.pyarrow.GeometryExtensionType)
 
     Alternatively, you can pass a `list` or `tuple` of any of the above inputs.
 
