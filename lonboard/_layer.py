@@ -29,6 +29,7 @@ from lonboard._geoarrow.geopandas_interop import geopandas_to_geoarrow
 from lonboard._geoarrow.ops import reproject_table
 from lonboard._geoarrow.ops.bbox import Bbox, total_bounds
 from lonboard._geoarrow.ops.centroid import WeightedCentroid, weighted_centroid
+from lonboard._geoarrow.ops.coord_layout import transpose_table
 from lonboard._geoarrow.parse_wkb import parse_wkb_table
 from lonboard._geoarrow.sanitize import remove_extension_classes
 from lonboard._serialization import infer_rows_per_chunk
@@ -271,6 +272,7 @@ class BaseArrowLayer(BaseLayer):
 
         table = remove_extension_classes(table)
         table = parse_wkb_table(table)
+        table = transpose_table(table)
 
         # Reproject table to WGS84 if needed
         # Note this must happen before calculating the default viewport
