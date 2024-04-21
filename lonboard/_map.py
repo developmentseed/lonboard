@@ -1,11 +1,13 @@
 from __future__ import annotations
 
 import sys
+from io import StringIO
 from pathlib import Path
-from typing import IO, TYPE_CHECKING, Optional, Sequence, TextIO, Union
+from typing import IO, TYPE_CHECKING, Optional, Sequence, TextIO, Union, overload
 
 import ipywidgets
 import traitlets
+from IPython.core.display import HTML
 from ipywidgets.embed import embed_minimal_html
 
 from lonboard._base import BaseAnyWidget
@@ -350,9 +352,25 @@ class Map(BaseAnyWidget):
         }
         self.send(data)
 
+    @overload
     def to_html(
-        self, filename: Union[str, Path, TextIO, IO[str]], title: Optional[str] = None
-    ) -> None:
+        self,
+        filename: None = None,
+        title: Optional[str] = None,
+    ) -> str: ...
+
+    @overload
+    def to_html(
+        self,
+        filename: Union[str, Path, TextIO, IO[str]],
+        title: Optional[str] = None,
+    ) -> None: ...
+
+    def to_html(
+        self,
+        filename: Union[str, Path, TextIO, IO[str], None] = None,
+        title: Optional[str] = None,
+    ) -> Union[None, str]:
         """Save the current map as a standalone HTML file.
 
         Args:
@@ -361,13 +379,27 @@ class Map(BaseAnyWidget):
         Other args:
             title: A title for the exported map. This will show as the browser tab name.
         """
-        embed_minimal_html(
-            filename,
-            views=[self],
-            title=title or "Lonboard export",
-            template=_HTML_TEMPLATE,
-            drop_defaults=False,
-        )
+
+        def inner(fp):
+            embed_minimal_html(
+                fp,
+                views=[self],
+                title=title or "Lonboard export",
+                template=_HTML_TEMPLATE,
+                drop_defaults=False,
+            )
+
+        if filename is None:
+            with StringIO() as sio:
+                inner(sio)
+                return sio.getvalue()
+
+        else:
+            inner(filename)
+
+    def as_html(self) -> HTML:
+        """Render the current map as a static HTML file in IPython."""
+        return HTML(self.to_html())
 
     @traitlets.default("view_state")
     def _default_initial_view_state(self):
