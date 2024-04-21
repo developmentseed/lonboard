@@ -31,7 +31,7 @@
     "vitest": "^1.4.0"
   },
   "scripts": {
-    "build": "node ./build.mjs",
+    "build": "node ./build.mjs && gzip -c node_modules/parquet-wasm/esm/arrow2_bg.wasm > lonboard/static/arrow2_bg.wasm.gz",
     "build:watch": "nodemon --watch src/ --exec \"npm run build\" --ext js,json,ts,tsx,css",
     "fmt:check": "prettier './src/**/*.{ts,tsx,css}' --check",
     "fmt": "prettier './src/**/*.{ts,tsx,css}' --write",

@@ -1,19 +1,31 @@
-import { useEffect, useState } from "react";
-import _initParquetWasm, { readParquet } from "parquet-wasm/esm/arrow2";
+import { initSync, readParquet } from "parquet-wasm/esm/arrow2";
 import * as arrow from "apache-arrow";
 
-// NOTE: this version must be synced exactly with the parquet-wasm version in
-// use.
-const PARQUET_WASM_VERSION = "0.5.0";
-const PARQUET_WASM_CDN_URL = `https://cdn.jsdelivr.net/npm/parquet-wasm@${PARQUET_WASM_VERSION}/esm/arrow2_bg.wasm`;
 let WASM_READY: boolean = false;
 
-export async function initParquetWasm() {
+// https://developer.mozilla.org/en-US/docs/Web/API/Compression_Streams_API
+async function decompressBlob(blob: Blob) {
+  const ds = new DecompressionStream("gzip");
+  const decompressedStream = blob.stream().pipeThrough(ds);
+  return await new Response(decompressedStream).blob();
+}
+
+/**
+ * Initialize parquet-wasm from an existing WASM binary blob.
+ * It is expected that this WASM has been gzipped
+ *
+ * @return Whether initialization succeeded
+ */
+export async function initParquetWasmFromBinary(view: DataView): Promise<void> {
   if (WASM_READY) {
     return;
   }
 
-  await _initParquetWasm(PARQUET_WASM_CDN_URL);
+  let blob = new Blob([view]);
+  const decompressedBlob = await decompressBlob(blob);
+  const decompressedBuffer = await decompressedBlob.arrayBuffer();
+
+  initSync(decompressedBuffer);
   WASM_READY = true;
 }
 

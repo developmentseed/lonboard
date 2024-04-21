@@ -1,21 +1,19 @@
 import * as React from "react";
 import { useState, useEffect } from "react";
 import { createRender, useModelState, useModel } from "@anywidget/react";
-import type { Initialize, Render } from "@anywidget/types";
+import type { Initialize, InitializeProps, Render } from "@anywidget/types";
 import Map from "react-map-gl/maplibre";
 import DeckGL from "@deck.gl/react/typed";
 import { MapViewState, type Layer } from "@deck.gl/core/typed";
 import { BaseLayerModel, initializeLayer } from "./model/index.js";
 import type { WidgetModel } from "@jupyter-widgets/base";
-import { initParquetWasm } from "./parquet.js";
+import { initParquetWasmFromBinary } from "./parquet.js";
 import { getTooltip } from "./tooltip/index.js";
 import { isDefined, loadChildModels } from "./util.js";
 import { v4 as uuidv4 } from "uuid";
 import { Message } from "./types.js";
 import { flyTo } from "./actions/fly-to.js";
 import { useViewStateDebounced } from "./state";
-
-await initParquetWasm();
 
 const DEFAULT_INITIAL_VIEW_STATE = {
   latitude: 10,
@@ -190,7 +188,13 @@ function App() {
   );
 }
 
+async function initialize({ model }: InitializeProps): Promise<void> {
+  const parquetWasmBinary: DataView = model.get("_parquet_wasm_content");
+  await initParquetWasmFromBinary(parquetWasmBinary);
+}
+
 const module: { render: Render; initialize?: Initialize } = {
+  initialize,
   render: createRender(App),
 };
 
