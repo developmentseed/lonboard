@@ -1954,6 +1954,7 @@ For more control over rendering, construct <code>Map</code> and <code>Layer</cod
     <a href="https://gist.github.com/sgillies/2217756">Geo Interface protocol</a>.</li>
 <li><code>dict</code> holding GeoJSON-like data.</li>
 <li>pyarrow <code>Table</code> with a geometry column marked with a GeoArrow extension type</li>
+<li>pyarrow <code>Array</code> marked with a <a href="https://geoarrow.org/geoarrow-python/main/pyarrow.html#geoarrow.pyarrow.GeometryExtensionType">GeoArrow extension type defined by geoarrow-pyarrow</a></li>
 </ul>
 <p>Alternatively, you can pass a <code>list</code> or <code>tuple</code> of any of the above inputs.</p>
 
@@ -2050,6 +2051,7 @@ For more control over rendering, construct <code>Map</code> and <code>Layer</cod
     <span class="n">Table</span><span class="p">,</span>
     <span class="n">NDArray</span><span class="p">[</span><span class="n">object_</span><span class="p">],</span>
     <span class="n">BaseGeometry</span><span class="p">,</span>
+    <span class="n">ArrowArrayExportable</span><span class="p">,</span>
     <span class="n">ArrowStreamExportable</span><span class="p">,</span>
     <span class="n">GeoInterfaceProtocol</span><span class="p">,</span>
     <span class="n">Dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Any</span><span class="p">],</span>
