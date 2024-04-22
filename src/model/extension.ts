@@ -1,9 +1,9 @@
-import { LayerExtension } from "@deck.gl/core/typed";
+import { LayerExtension } from "@deck.gl/core";
 import {
   BrushingExtension as _BrushingExtension,
   CollisionFilterExtension as _CollisionFilterExtension,
   DataFilterExtension as _DataFilterExtension,
-} from "@deck.gl/extensions/typed";
+} from "@deck.gl/extensions";
 import type { WidgetModel } from "@jupyter-widgets/base";
 import { BaseModel } from "./base.js";
 import type { BaseLayerModel } from "./base-layer.js";
