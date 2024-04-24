@@ -26,7 +26,7 @@ import traitlets
 
 from lonboard._base import BaseExtension, BaseWidget
 from lonboard._constants import EXTENSION_NAME, OGC_84
-from lonboard._duckdb import from_duckdb as _from_duckdb
+from lonboard._geoarrow._duckdb import from_duckdb as _from_duckdb
 from lonboard._geoarrow.geopandas_interop import geopandas_to_geoarrow
 from lonboard._geoarrow.ops import reproject_table
 from lonboard._geoarrow.ops.bbox import Bbox, total_bounds

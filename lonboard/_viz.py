@@ -279,7 +279,7 @@ def _viz_duckdb_relation(
     con: Optional[duckdb.DuckDBPyConnection] = None,
     **kwargs,
 ) -> Union[ScatterplotLayer, PathLayer, PolygonLayer]:
-    from lonboard._duckdb import from_duckdb
+    from lonboard._geoarrow._duckdb import from_duckdb
 
     table = from_duckdb(data, con=con)
     return _viz_geoarrow_table(table, **kwargs)
