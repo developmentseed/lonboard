@@ -697,6 +697,17 @@ class PolygonLayer(BaseArrowLayer):
     ) -> Self:
         return super().from_geopandas(gdf=gdf, auto_downcast=auto_downcast, **kwargs)
 
+    @classmethod
+    def from_duckdb(
+        cls,
+        sql: Union[str, duckdb.DuckDBPyRelation],
+        con: Optional[duckdb.DuckDBPyConnection] = None,
+        *,
+        crs: Optional[Union[str, pyproj.CRS]] = None,
+        **kwargs: Unpack[PolygonLayerKwargs],
+    ) -> Self:
+        return super().from_duckdb(sql=sql, con=con, crs=crs, **kwargs)
+
     _layer_type = traitlets.Unicode("polygon").tag(sync=True)
 
     table = PyarrowTableTrait(
@@ -931,6 +942,17 @@ class ScatterplotLayer(BaseArrowLayer):
     ) -> Self:
         return super().from_geopandas(gdf=gdf, auto_downcast=auto_downcast, **kwargs)
 
+    @classmethod
+    def from_duckdb(
+        cls,
+        sql: Union[str, duckdb.DuckDBPyRelation],
+        con: Optional[duckdb.DuckDBPyConnection] = None,
+        *,
+        crs: Optional[Union[str, pyproj.CRS]] = None,
+        **kwargs: Unpack[ScatterplotLayerKwargs],
+    ) -> Self:
+        return super().from_duckdb(sql=sql, con=con, crs=crs, **kwargs)
+
     _layer_type = traitlets.Unicode("scatterplot").tag(sync=True)
 
     table = PyarrowTableTrait(
@@ -1162,6 +1184,17 @@ class PathLayer(BaseArrowLayer):
     ) -> Self:
         return super().from_geopandas(gdf=gdf, auto_downcast=auto_downcast, **kwargs)
 
+    @classmethod
+    def from_duckdb(
+        cls,
+        sql: Union[str, duckdb.DuckDBPyRelation],
+        con: Optional[duckdb.DuckDBPyConnection] = None,
+        *,
+        crs: Optional[Union[str, pyproj.CRS]] = None,
+        **kwargs: Unpack[PathLayerKwargs],
+    ) -> Self:
+        return super().from_duckdb(sql=sql, con=con, crs=crs, **kwargs)
+
     _layer_type = traitlets.Unicode("path").tag(sync=True)
 
     table = PyarrowTableTrait(
@@ -1322,6 +1355,17 @@ class PointCloudLayer(BaseArrowLayer):
     ) -> Self:
         return super().from_geopandas(gdf=gdf, auto_downcast=auto_downcast, **kwargs)
 
+    @classmethod
+    def from_duckdb(
+        cls,
+        sql: Union[str, duckdb.DuckDBPyRelation],
+        con: Optional[duckdb.DuckDBPyConnection] = None,
+        *,
+        crs: Optional[Union[str, pyproj.CRS]] = None,
+        **kwargs: Unpack[PointCloudLayerKwargs],
+    ) -> Self:
+        return super().from_duckdb(sql=sql, con=con, crs=crs, **kwargs)
+
     _layer_type = traitlets.Unicode("point-cloud").tag(sync=True)
 
     table = PyarrowTableTrait(
@@ -1443,6 +1487,17 @@ class SolidPolygonLayer(BaseArrowLayer):
         **kwargs: Unpack[SolidPolygonLayerKwargs],
     ) -> Self:
         return super().from_geopandas(gdf=gdf, auto_downcast=auto_downcast, **kwargs)
+
+    @classmethod
+    def from_duckdb(
+        cls,
+        sql: Union[str, duckdb.DuckDBPyRelation],
+        con: Optional[duckdb.DuckDBPyConnection] = None,
+        *,
+        crs: Optional[Union[str, pyproj.CRS]] = None,
+        **kwargs: Unpack[SolidPolygonLayerKwargs],
+    ) -> Self:
+        return super().from_duckdb(sql=sql, con=con, crs=crs, **kwargs)
 
     _layer_type = traitlets.Unicode("solid-polygon").tag(sync=True)
 
@@ -1595,6 +1650,17 @@ class HeatmapLayer(BaseArrowLayer):
         **kwargs: Unpack[HeatmapLayerKwargs],
     ) -> Self:
         return super().from_geopandas(gdf=gdf, auto_downcast=auto_downcast, **kwargs)
+
+    @classmethod
+    def from_duckdb(
+        cls,
+        sql: Union[str, duckdb.DuckDBPyRelation],
+        con: Optional[duckdb.DuckDBPyConnection] = None,
+        *,
+        crs: Optional[Union[str, pyproj.CRS]] = None,
+        **kwargs: Unpack[HeatmapLayerKwargs],
+    ) -> Self:
+        return super().from_duckdb(sql=sql, con=con, crs=crs, **kwargs)
 
     _layer_type = traitlets.Unicode("heatmap").tag(sync=True)
 
