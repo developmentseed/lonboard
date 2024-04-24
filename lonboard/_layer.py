@@ -331,19 +331,19 @@ class BaseArrowLayer(BaseLayer):
     @classmethod
     def from_duckdb(
         cls,
-        input: Union[str, duckdb.DuckDBPyRelation],
+        sql: Union[str, duckdb.DuckDBPyRelation],
         con: Optional[duckdb.DuckDBPyConnection] = None,
         *,
         crs: Optional[Union[str, pyproj.CRS]] = None,
         **kwargs: Unpack[BaseLayerKwargs],
     ) -> Self:
-        if isinstance(input, str):
-            assert con is not None, "con must be provided when input is a str"
+        if isinstance(sql, str):
+            assert con is not None, "con must be provided when sql is a str"
 
-            rel = con.sql(input)
+            rel = con.sql(sql)
             table = _from_duckdb(rel, con=con, crs=crs)
         else:
-            table = _from_duckdb(input, con=con, crs=crs)
+            table = _from_duckdb(sql, con=con, crs=crs)
 
         return cls(table=table, **kwargs)
 
