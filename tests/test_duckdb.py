@@ -1,3 +1,5 @@
+from tempfile import TemporaryDirectory
+
 import duckdb
 import geopandas as gpd
 import pytest
@@ -64,12 +66,19 @@ def test_point_2d():
 
 
 def test_bbox_2d():
-    con = duckdb.connect()
-    sql = f"""
-        INSTALL spatial;
-        LOAD spatial;
-        SELECT name, ST_Extent(geom) as geom FROM ST_Read("{points_path}");
-        """
-    rel = con.sql(sql)
+    with TemporaryDirectory() as tmpdir:
+        nybb = gpd.read_file(gpd.datasets.get_path("nybb"))
+        nybb = nybb.to_crs("EPSG:4326")
+        tmp_path = f"{tmpdir}/nybb.shp"
+        nybb.to_file(tmp_path)
+
+        con = duckdb.connect()
+        sql = f"""
+            INSTALL spatial;
+            LOAD spatial;
+            SELECT * EXCLUDE (geom), ST_Extent(geom) as geom FROM ST_Read("{tmp_path}");
+            """
+        rel = con.sql(sql)
+
     m = viz(rel)
     assert isinstance(m.layers[0], PolygonLayer)
