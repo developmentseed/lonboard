@@ -16,6 +16,7 @@ from typing import (
     Optional,
     Sequence,
     Tuple,
+    Union,
 )
 
 import geopandas as gpd
@@ -25,6 +26,7 @@ import traitlets
 
 from lonboard._base import BaseExtension, BaseWidget
 from lonboard._constants import EXTENSION_NAME, OGC_84
+from lonboard._duckdb import from_duckdb as _from_duckdb
 from lonboard._geoarrow.geopandas_interop import geopandas_to_geoarrow
 from lonboard._geoarrow.ops import reproject_table
 from lonboard._geoarrow.ops.bbox import Bbox, total_bounds
@@ -54,6 +56,9 @@ from lonboard.types.layer import (
 )
 
 if TYPE_CHECKING:
+    import duckdb
+    import pyproj
+
     if sys.version_info >= (3, 11):
         from typing import Self
     else:
@@ -321,6 +326,25 @@ class BaseArrowLayer(BaseLayer):
             gdf = _auto_downcast(gdf.copy())  # type: ignore
 
         table = geopandas_to_geoarrow(gdf)
+        return cls(table=table, **kwargs)
+
+    @classmethod
+    def from_duckdb(
+        cls,
+        input: Union[str, duckdb.DuckDBPyRelation],
+        con: Optional[duckdb.DuckDBPyConnection] = None,
+        *,
+        crs: Optional[Union[str, pyproj.CRS]] = None,
+        **kwargs: Unpack[BaseLayerKwargs],
+    ) -> Self:
+        if isinstance(input, str):
+            assert con is not None, "con must be provided when input is a str"
+
+            rel = con.sql(input)
+            table = _from_duckdb(rel, con=con, crs=crs)
+        else:
+            table = _from_duckdb(input, con=con, crs=crs)
+
         return cls(table=table, **kwargs)
 
 

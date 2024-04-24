@@ -40,6 +40,7 @@ from lonboard.types.layer import (
 from lonboard.types.map import MapKwargs
 
 if TYPE_CHECKING:
+    import duckdb
     import geopandas as gpd
 
     class GeoInterfaceProtocol(Protocol):
@@ -66,6 +67,7 @@ if TYPE_CHECKING:
         ArrowStreamExportable,
         GeoInterfaceProtocol,
         Dict[str, Any],
+        duckdb.DuckDBPyRelation,
     ]
     """A type definition for allowed data inputs to the `viz` function."""
 
@@ -107,6 +109,8 @@ def viz(
     - geopandas `GeoSeries`
     - numpy array of Shapely objects
     - Single Shapely object
+    - DuckDB query with a spatial column.
+        - Query **must** be created with `.sql()` and not with `.execute()`.
     - Any Python class with a `__geo_interface__` property conforming to the
         [Geo Interface protocol](https://gist.github.com/sgillies/2217756).
     - `dict` holding GeoJSON-like data.
@@ -183,6 +187,21 @@ def create_layer_from_data_input(
     ):
         return _viz_geopandas_geoseries(data, **kwargs)  # type: ignore
 
+    # duckdb DuckDBPyRelation
+    if (
+        data.__class__.__module__.startswith("duckdb")
+        and data.__class__.__name__ == "DuckDBPyRelation"
+    ):
+        return _viz_duckdb_relation(data, **kwargs)  # type: ignore
+
+    if (
+        data.__class__.__module__.startswith("duckdb")
+        and data.__class__.__name__ == "DuckDBPyConnection"
+    ):
+        raise ValueError(
+            "Must pass in DuckDBPyRelation, not DuckDBPyConnection to viz()"
+        )
+
     # pyarrow table
     if isinstance(data, pa.Table):
         return _viz_geoarrow_table(data, **kwargs)
@@ -247,6 +266,15 @@ def _viz_geopandas_geoseries(
 
     gdf = gpd.GeoDataFrame(geometry=data)
     table = geopandas_to_geoarrow(gdf)
+    return _viz_geoarrow_table(table, **kwargs)
+
+
+def _viz_duckdb_relation(
+    data: duckdb.DuckDBPyRelation, **kwargs
+) -> Union[ScatterplotLayer, PathLayer, PolygonLayer]:
+    from lonboard._duckdb import from_duckdb
+
+    table = from_duckdb(data)
     return _viz_geoarrow_table(table, **kwargs)
 
 
