@@ -97,6 +97,7 @@ def viz(
     path_kwargs: Optional[PathLayerKwargs] = None,
     polygon_kwargs: Optional[PolygonLayerKwargs] = None,
     map_kwargs: Optional[MapKwargs] = None,
+    con: Optional[duckdb.DuckDBPyConnection] = None,
 ) -> Map:
     """A high-level function to plot your data easily.
 
@@ -131,6 +132,8 @@ def viz(
           [`PolygonLayer`][lonboard.PolygonLayer]s.
         map_kwargs: a `dict` of parameters to pass down to the generated
           [`Map`][lonboard.Map].
+        con: the active DuckDB connection. This is necessary in some cases when passing
+            in a DuckDB query.
 
     For more control over rendering, construct `Map` and `Layer` objects directly.
 
@@ -148,6 +151,7 @@ def viz(
                 scatterplot_kwargs=scatterplot_kwargs,
                 path_kwargs=path_kwargs,
                 polygon_kwargs=polygon_kwargs,
+                con=con,
             )
             for i, item in enumerate(data)
         ]
@@ -159,6 +163,7 @@ def viz(
                 scatterplot_kwargs=scatterplot_kwargs,
                 path_kwargs=path_kwargs,
                 polygon_kwargs=polygon_kwargs,
+                con=con,
             )
         ]
 
@@ -270,11 +275,13 @@ def _viz_geopandas_geoseries(
 
 
 def _viz_duckdb_relation(
-    data: duckdb.DuckDBPyRelation, **kwargs
+    data: duckdb.DuckDBPyRelation,
+    con: Optional[duckdb.DuckDBPyConnection] = None,
+    **kwargs,
 ) -> Union[ScatterplotLayer, PathLayer, PolygonLayer]:
     from lonboard._duckdb import from_duckdb
 
-    table = from_duckdb(data)
+    table = from_duckdb(data, con=con)
     return _viz_geoarrow_table(table, **kwargs)
 
 
