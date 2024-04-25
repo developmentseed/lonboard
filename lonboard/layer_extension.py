@@ -304,3 +304,101 @@ class DataFilterExtension(BaseExtension):
     - Type: `int`, optional
     - Default 1.
     """
+
+
+class PathStyleExtension(BaseExtension):
+    """
+    Adds selected features to the PathLayer and composite layers that render
+    the PathLayer, e.g. PolygonLayer and GeoJsonLayer.
+
+    # Example
+
+    Deck.gl example at https://deck.gl/docs/api-reference/extensions/path-style-extension
+    TODO Add Lonboard example. 
+
+    # Layer Properties
+
+    This extension dynamically enables the following properties onto the layer(s) where
+    it is included:
+
+    ## `get_dash_array`
+    TODO Is using a FloatAccessor correct? This option is `Accessor<number[2]>` in deck.gl
+    rather than `Accessor<number>`. 
+    
+    Must be specified if the dash option is enabled. The dash array to draw each path with: 
+    [dashSize, gapSize] relative to the width of the path.
+
+        - If an array is provided, it is used as the dash array for all paths.
+        - If a function is provided, it is called on each path to retrieve its dash array.
+        - Return [0, 0] to draw the path in solid line.
+        - If this accessor is not specified, all paths are drawn as solid lines.
+    
+    - Type: [FloatAccessor][lonboard.traits.FloatAccessor], optional
+    - Default: `None`.
+    
+    ## `dash_justified`
+    
+    Only effective if getDashArray is specified. 
+    
+        - If true, adjust gaps for the dashes to align at both ends. 
+        - Overrides the effect of highPrecisionDash.
+    
+    - Type: `boolean`, optional
+    - Default False.
+
+    ## `get_offset`
+    
+    Must be specified if the offset option is enabled.
+
+    The offset to draw each path with, relative to the width of the path.
+    Negative offset is to the left hand side, and positive offset is to the right hand side. 
+    0 extrudes the path so that it is centered at the specified coordinates.
+
+        - If a number is provided, it is used as the offset for all paths.
+        - If a function is provided, it is called on each path to retrieve its offset.
+    
+    - Type: [FloatAccessor][lonboard.traits.FloatAccessor], optional
+    - Default: `None`.
+    
+    ## `dash_gap_pickle`
+    
+    Only effective if getDashArray is specified.
+    
+        - If true, gaps between solid strokes are pickable.
+        - If false, only the solid strokes are pickable.
+    
+    - Type: `boolean`, optional
+    - Default False.
+
+    """
+
+    _extension_type = traitlets.Unicode("path-style").tag(sync=True)
+
+    _layer_traits = {
+        "get_dash_array": FloatAccessor(None, allow_none=True),
+        "dash_justified": traitlets.Bool(False).tag(sync=True),
+        "get_offset": FloatAccessor(None, allow_none=True),
+        "dash_gap_pickle": traitlets.Bool(False).tag(sync=True),
+    }
+    
+    dash = traitlets.Bool(False).tag(sync=True)
+    """Add capability to render dashed lines.
+
+    - Type: `boolean`, optional
+    - Default False.
+    """
+    
+    high_precision_dash = traitlets.Bool(False).tag(sync=True)
+    """Improve dash rendering quality in certain circumstances.
+    Note that this option introduces additional performance overhead.
+
+    - Type: `boolean`, optional
+    - Default False.
+    """
+    
+    offset = traitlets.Bool(False).tag(sync=True)
+    """Add capability to offset lines.
+
+    - Type: `boolean`, optional
+    - Default False.
+    """

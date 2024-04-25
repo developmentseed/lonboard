@@ -3,6 +3,7 @@ import {
   BrushingExtension as _BrushingExtension,
   CollisionFilterExtension as _CollisionFilterExtension,
   DataFilterExtension as _DataFilterExtension,
+  PathStyleExtension as _PathStyleExtension,
 } from "@deck.gl/extensions/typed";
 import type { WidgetModel } from "@jupyter-widgets/base";
 import { BaseModel } from "./base.js";
@@ -135,6 +136,45 @@ export class DataFilterExtension extends BaseExtensionModel {
   }
 }
 
+export class PathStyleExtension extends BaseExtensionModel {
+  static extensionType = "path-style";
+
+  extensionInstance: _PathStyleExtension;
+
+  constructor(
+    model: WidgetModel,
+    layerModel: BaseLayerModel,
+    updateStateCallback: () => void,
+  ) {
+    super(model, updateStateCallback);
+
+    const dash = this.model.get("dash");
+    const highPrecisionDash = this.model.get("high_precision_dash");
+    const offset = this.model.get("offset");
+    this.extensionInstance = new _PathStyleExtension({ dash });
+
+    // Properties added by the extension onto the layer
+    layerModel.initRegularAttribute("get_dash_array", "getDashArray");
+    layerModel.initRegularAttribute("dash_justified", "dashJustified");
+    layerModel.initRegularAttribute("get_offset", "getOffset");
+    layerModel.initRegularAttribute(
+      "dash_gap_pickle",
+      "dashGapPickle",
+    );
+    layerModel.initVectorizedAccessor("get_filter_value", "getFilterValue");
+
+    // Update the layer model with the list of the JS property names added by
+    // this extension
+    layerModel.extensionLayerPropertyNames = [
+      ...layerModel.extensionLayerPropertyNames,
+      "getDashArray",
+      "dashJustified",
+      "getOffset",
+      "dashGapPickle",
+    ];
+  }
+}
+
 export async function initializeExtension(
   model: WidgetModel,
   layerModel: BaseLayerModel,
@@ -166,8 +206,16 @@ export async function initializeExtension(
         updateStateCallback,
       );
       break;
-
-    default:
+    
+    case PathStyleExtension.extensionType:
+      extensionModel = new PathStyleExtension(
+        model,
+        layerModel,
+        updateStateCallback,
+      );
+      break;
+    
+        default:
       throw new Error(`no known model for extension type ${extensionType}`);
   }
 
