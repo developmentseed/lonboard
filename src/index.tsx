@@ -4,7 +4,7 @@ import { createRender, useModelState, useModel } from "@anywidget/react";
 import type { Initialize, Render } from "@anywidget/types";
 import Map from "react-map-gl/maplibre";
 import DeckGL from "@deck.gl/react";
-import { MapViewState, type Layer } from "@deck.gl/core";
+import { MapViewState, Widget, type Layer } from "@deck.gl/core";
 import { BaseLayerModel, initializeLayer } from "./model/index.js";
 import type { WidgetModel } from "@jupyter-widgets/base";
 import { initParquetWasm } from "./parquet.js";
@@ -14,6 +14,7 @@ import { v4 as uuidv4 } from "uuid";
 import { Message } from "./types.js";
 import { flyTo } from "./actions/fly-to.js";
 import { useViewStateDebounced } from "./state";
+import { BaseDeckWidgetModel, initializeWidget } from "./model/deck-widget.js";
 
 await initParquetWasm();
 
@@ -62,6 +63,40 @@ async function getChildModelState(
   return newSubModelState;
 }
 
+async function getDeckWidgetModelState(
+  deckWidgetModels: WidgetModel[],
+  deckWidgetIds: string[],
+  previousSubModelState: Record<string, BaseDeckWidgetModel>,
+  setStateCounter: React.Dispatch<React.SetStateAction<Date>>,
+): Promise<Record<string, BaseDeckWidgetModel>> {
+  const newDeckWidgetModelState: Record<string, BaseDeckWidgetModel> = {};
+  const updateStateCallback = () => setStateCounter(new Date());
+
+  for (let i = 0; i < deckWidgetIds.length; i++) {
+    const deckWidgetId = deckWidgetIds[i];
+    const deckWidgetModel = deckWidgetModels[i];
+
+    // If the layer existed previously, copy its model without constructing
+    // a new one
+    if (deckWidgetId in previousSubModelState) {
+      // pop from old state
+      newDeckWidgetModelState[deckWidgetId] = previousSubModelState[deckWidgetId];
+      delete previousSubModelState[deckWidgetId];
+      continue;
+    }
+
+    const deckWidget = await initializeWidget(deckWidgetModel, updateStateCallback);
+    newDeckWidgetModelState[deckWidgetId] = deckWidget;
+  }
+
+  // finalize models that were deleted
+  for (const previousDeckWidgetModel of Object.values(previousSubModelState)) {
+    previousDeckWidgetModel.finalize();
+  }
+
+  return newDeckWidgetModelState;
+}
+
 function App() {
   let model = useModel();
 
@@ -102,7 +137,12 @@ function App() {
     Record<string, BaseLayerModel>
   >({});
 
+  let [deckWidgetState, setDeckWidgetState] = useState<
+    Record<string, BaseDeckWidgetModel>
+  >({});
+
   let [childLayerIds] = useModelState<string[]>("layers");
+  let [deckWidgetIds] = useModelState<string[]>("deck_widgets");
 
   // Fake state just to get react to re-render when a model callback is called
   let [stateCounter, setStateCounter] = useState<Date>(new Date());
@@ -120,6 +160,19 @@ function App() {
         setStateCounter,
       );
       setSubModelState(newSubModelState);
+
+      const deckWidgetModels = await loadChildModels(
+        model.widget_manager,
+        deckWidgetIds,
+      );
+      const newDeckWidgetState = await getDeckWidgetModelState(
+        deckWidgetModels,
+        deckWidgetIds,
+        deckWidgetState,
+        setStateCounter,
+      );
+      setDeckWidgetState(newDeckWidgetState);
+
     };
     callback().catch(console.error);
   }, [childLayerIds]);
@@ -127,6 +180,11 @@ function App() {
   const layers: Layer[] = [];
   for (const subModel of Object.values(subModelState)) {
     layers.push(subModel.render());
+  }
+
+  const deckWidgets: Widget[] = [];
+  for (const deckWidget of Object.values(deckWidgetState)) {
+    deckWidgets.push(deckWidget.render());
   }
 
   // This hook checks if the map container parent has a height set, which is
@@ -162,6 +220,7 @@ function App() {
         }
         controller={true}
         layers={layers}
+        widgets={deckWidgets}
         // @ts-expect-error
         getTooltip={showTooltip && getTooltip}
         pickingRadius={pickingRadius}
@@ -170,17 +229,6 @@ function App() {
         _typedArrayManagerProps={{
           overAlloc: 1,
           poolSize: 0,
-        }}
-        onViewStateChange={(event) => {
-          const { viewState } = event;
-          const { longitude, latitude, zoom, pitch, bearing } = viewState;
-          setViewState({
-            longitude,
-            latitude,
-            zoom,
-            pitch,
-            bearing,
-          });
         }}
         parameters={parameters || {}}
       >

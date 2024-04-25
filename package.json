@@ -11,6 +11,7 @@
     "@deck.gl/layers": "^9.0.9",
     "@deck.gl/react": "^9.0.9",
     "@geoarrow/deck.gl-layers": "github:atmorling/deck.gl-layers#v9-test",
+    "@deck.gl/widgets": "^9.0.9",
     "apache-arrow": "^15.0.2",
     "maplibre-gl": "^3.6.2",
     "parquet-wasm": "0.5.0",
@@ -38,11 +39,6 @@
     "fmt": "prettier './src/**/*.{ts,tsx,css}' --write",
     "test": "vitest run",
     "typecheck": "tsc --build"
-  },
-  "resolutions": {
-    "@deck.gl/core": "8.9.30",
-    "@deck.gl/layers": "8.9.30",
-    "@deck.gl/react": "8.9.30"
   },
   "volta": {
     "node": "18.18.2",
