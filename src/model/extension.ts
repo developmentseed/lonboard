@@ -8,6 +8,7 @@ import {
 import type { WidgetModel } from "@jupyter-widgets/base";
 import { BaseModel } from "./base.js";
 import type { BaseLayerModel } from "./base-layer.js";
+import { isDefined } from "../util.js";
 
 export abstract class BaseExtensionModel extends BaseModel {
   static extensionType: string;
@@ -151,26 +152,26 @@ export class PathStyleExtension extends BaseExtensionModel {
     const dash = this.model.get("dash");
     const highPrecisionDash = this.model.get("high_precision_dash");
     const offset = this.model.get("offset");
-    this.extensionInstance = new _PathStyleExtension({ dash });
+    this.extensionInstance = new _PathStyleExtension({
+      ...(isDefined(dash) ? { dash } : {}),
+      ...(isDefined(highPrecisionDash) ? { highPrecisionDash } : {}),
+      ...(isDefined(offset) ? { offset } : {}),
+    });
 
     // Properties added by the extension onto the layer
-    layerModel.initRegularAttribute("get_dash_array", "getDashArray");
+    layerModel.initRegularAttribute("dash_gap_pickle", "dashGapPickle");
     layerModel.initRegularAttribute("dash_justified", "dashJustified");
-    layerModel.initRegularAttribute("get_offset", "getOffset");
-    layerModel.initRegularAttribute(
-      "dash_gap_pickle",
-      "dashGapPickle",
-    );
-    layerModel.initVectorizedAccessor("get_filter_value", "getFilterValue");
+    layerModel.initVectorizedAccessor("get_dash_array", "getDashArray");
+    layerModel.initVectorizedAccessor("get_offset", "getOffset");
 
     // Update the layer model with the list of the JS property names added by
     // this extension
     layerModel.extensionLayerPropertyNames = [
       ...layerModel.extensionLayerPropertyNames,
-      "getDashArray",
-      "dashJustified",
-      "getOffset",
       "dashGapPickle",
+      "dashJustified",
+      "getDashArray",
+      "getOffset",
     ];
   }
 }
@@ -206,7 +207,7 @@ export async function initializeExtension(
         updateStateCallback,
       );
       break;
-    
+
     case PathStyleExtension.extensionType:
       extensionModel = new PathStyleExtension(
         model,
@@ -214,8 +215,8 @@ export async function initializeExtension(
         updateStateCallback,
       );
       break;
-    
-        default:
+
+    default:
       throw new Error(`no known model for extension type ${extensionType}`);
   }
 

@@ -1,7 +1,7 @@
 import traitlets
 
 from lonboard._base import BaseExtension
-from lonboard.traits import FloatAccessor, GetFilterValueAccessor, PointAccessor
+from lonboard.traits import FloatAccessor, GetFilterValueAccessor, PointAccessor, DashArrayAccessor
 
 
 class BrushingExtension(BaseExtension):
@@ -375,7 +375,7 @@ class PathStyleExtension(BaseExtension):
     _extension_type = traitlets.Unicode("path-style").tag(sync=True)
 
     _layer_traits = {
-        "get_dash_array": FloatAccessor(None, allow_none=True),
+        "get_dash_array": DashArrayAccessor(None, allow_none=True),
         "dash_justified": traitlets.Bool(False).tag(sync=True),
         "get_offset": FloatAccessor(None, allow_none=True),
         "dash_gap_pickle": traitlets.Bool(False).tag(sync=True),
