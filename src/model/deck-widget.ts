@@ -1,68 +1,59 @@
-import type { WidgetModel } from "@jupyter-widgets/base";
-import { BaseModel } from "./base.js";
-import { Widget, WidgetPlacement } from "@deck.gl/core";
-import { CompassWidget, ZoomWidget, FullscreenWidget } from '@deck.gl/widgets'
+import { Deck, Widget, WidgetPlacement } from '@deck.gl/core';
 
-export abstract class BaseDeckWidgetModel extends BaseModel {
-
-  protected viewId: string | null = null;
-  protected placement: WidgetPlacement = "top-left";
-  protected props: Object = {};
-
-  constructor(model: WidgetModel, updateStateCallback: () => void) {
-    super(model, updateStateCallback);
-
-    this.initRegularAttribute("props", "props");
-    this.initRegularAttribute("view_id", "viewId");
-    this.initRegularAttribute("placement", "placement");
-  }
-
-  abstract render(): Widget;
+interface TitleWidgetProps {
+  id: string;
+  title: string,
+  
+  placement?: WidgetPlacement;
+  style?: Partial<CSSStyleDeclaration>;
 }
 
-export class FullscreenWidgetModel extends BaseDeckWidgetModel {
-  static widgetType = "fullscreen";
+export class TitleWidget implements Widget<TitleWidgetProps> {
 
-  protected enterLabel: string = "Enter Fullscreen";
-  protected exitLabel: string = "Exit Fullscreen";
-  protected style: Partial<CSSStyleDeclaration> = {};
-  protected className: string | undefined = undefined;
+  id = "title";
+  props: TitleWidgetProps;
+  placement: WidgetPlacement = 'top-right';
+  deck?: Deck;
+  element?: HTMLDivElement;
 
-  constructor(model: WidgetModel, updateStateCallback: () => void) {
-    super(model, updateStateCallback);
+  constructor(props: TitleWidgetProps) {
+    this.id = props.id || 'title';
+    this.placement = props.placement || 'top-right';
+    props.title = props.title;
+    props.style = props.style || {};
 
-    this.initRegularAttribute("enter_label", "enterLabel");
-    this.initRegularAttribute("exit_label", "exitLabel");
-    this.initRegularAttribute("style", "style");
-    this.initRegularAttribute("class_name", "className");
+    this.props = props;
   }
 
-  render(): FullscreenWidget {
-    return new FullscreenWidget({
-      id: "fullscreen",
-      placement: this.placement,
-      enterLabel: this.enterLabel,
-      exitLabel: this.exitLabel,
-      style: this.style,
-      className: this.className,
-    }) 
-  }
-}
-
-export async function initializeWidget(
-  model: WidgetModel,
-  updateStateCallback: () => void,
-): Promise<BaseDeckWidgetModel> {
-  const deckWidgetType = model.get("_widget_type");
-  let deckWidgetModel: BaseDeckWidgetModel;
-  switch (deckWidgetType) {
-    case FullscreenWidgetModel.widgetType:
-      deckWidgetModel = new FullscreenWidgetModel(model, updateStateCallback);
-      break;
-
-    default:
-      throw new Error(`no layer supported for ${deckWidgetType}`);
+  setProps(props: Partial<TitleWidgetProps>) {
+    Object.assign(this.props, props);
   }
   
-  return deckWidgetModel;
+  onAdd({deck}: {deck: Deck}): HTMLDivElement {
+    const element = document.createElement('div');
+    element.className = 'Title-Widget';
+
+    const titleElement = document.createElement('p');
+    titleElement.innerText = this.props.title;
+
+    const {style} = this.props;
+    if (style) {
+      Object.entries(style).map(([key, value]) => {
+        //titleElement.style.setProperty(key, value as string);
+        titleElement.style[key] = value as string;
+      } );
+    }
+    element.appendChild(titleElement);
+    
+    this.deck = deck;
+    this.element = element;
+    return element;
+  }
+  
+  onRemove() {
+    this.deck = undefined;
+    this.element = undefined;
+  }
+
+  
 }
