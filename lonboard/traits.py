@@ -864,12 +864,12 @@ class ViewStateTrait(FixedErrorTraitType):
 
 class DashArrayAccessor(FixedErrorTraitType):
     """A trait to validate input for a deck.gl dash accessor.
-    Used in `PathStyleExtension`. 
+    Used in `PathStyleExtension`.
 
     Various input is allowed:
 
     - A `list` or `tuple` with 2 integers.
-      This defines the dash size and gap size respectively. 
+      This defines the dash size and gap size respectively.
     - A numpy `ndarray` with two dimensions and data type [`np.uint8`][numpy.uint8]. The
       size of the second dimension must be `2`.
     - A pyarrow [`FixedSizeListArray`][pyarrow.FixedSizeListArray] or
@@ -938,24 +938,19 @@ class DashArrayAccessor(FixedErrorTraitType):
 
         if isinstance(value, (pa.ChunkedArray, pa.Array)):
             if not pa.types.is_fixed_size_list(value.type):
-                self.error(
-                    obj, value, info="Pyarrow array must be a FixedSizeList."
-                )
+                self.error(obj, value, info="Pyarrow array must be a FixedSizeList.")
 
             if value.type.list_size not in (2):
                 self.error(
                     obj,
                     value,
                     info=(
-                        "Pyarrow array must have a FixedSizeList inner size of "
-                        "2."
+                        "Pyarrow array must have a FixedSizeList inner size of " "2."
                     ),
                 )
 
             if not pa.types.is_uint8(value.type.value_type):
-                self.error(
-                    obj, value, info="Pyarrow array must have a uint8 child."
-                )
+                self.error(obj, value, info="Pyarrow array must have a uint8 child.")
 
             return value
 
