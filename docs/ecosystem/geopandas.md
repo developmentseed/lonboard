@@ -35,6 +35,7 @@ layer = PolygonLayer.from_geopandas(
     get_fill_color=[255, 0, 0],
 )
 m = Map(layer)
+m
 ```
 
 We can also pass a _column_ of data into any rendering parameter that starts
@@ -63,6 +64,7 @@ layer = ScatterplotLayer.from_geopandas(
     stroked=True,
 )
 m = Map(layer)
+m
 ```
 
 A random radius per point:
