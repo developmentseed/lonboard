@@ -4,6 +4,7 @@ from __future__ import annotations
 
 import json
 from random import shuffle
+from textwrap import dedent
 from typing import (
     TYPE_CHECKING,
     Any,
@@ -110,9 +111,9 @@ def viz(
     - geopandas `GeoSeries`.
     - numpy array of Shapely objects.
     - Single Shapely object.
-    - A DuckDB query with a spatial column from duckdb-spatial.
+    - A DuckDB query with a spatial column from DuckDB Spatial.
 
-        !!! note
+        !!! warning
 
             The DuckDB query must be run with
             [`duckdb.sql()`](https://duckdb.org/docs/api/python/reference/#duckdb.sql)
@@ -143,7 +144,18 @@ def viz(
             viz(query, con=con)
             ```
 
-        !!! note
+            You can also render an entire table by using the `table()` method:
+
+            ```py
+            import duckdb
+            from lonboard import viz
+
+            con = duckdb.connect()
+            con.execute("CREATE TABLE spatial_table AS ...;")
+            viz(con.table(), con=con)
+            ```
+
+        !!! warning
 
             DuckDB Spatial does not currently expose coordinate reference system
             information, so the user must ensure that data has been reprojected to
@@ -215,6 +227,26 @@ def viz(
     return Map(layers=layers, **map_kwargs)
 
 
+DUCKDB_PY_CONN_ERROR = dedent("""\
+    Must pass in DuckDBPyRelation object, not DuckDBPyConnection.
+
+    Instead of using `duckdb.execute()` or `con.execute()`, use `duckdb.sql()` or
+    `con.sql()`.
+
+    If using `con.sql()`, ensure you pass the `con` into the `viz()` function:
+
+    ```
+    viz(con.sql("SELECT * FROM table;", con=con))
+    ```
+
+    Alternatively, you can call the `table()` method of `con`:
+
+    ```
+    viz(con.table("table_name", con=con))
+    ```
+    """)
+
+
 def create_layer_from_data_input(
     data: VizDataInput, **kwargs
 ) -> Union[ScatterplotLayer, PathLayer, PolygonLayer]:
@@ -243,9 +275,7 @@ def create_layer_from_data_input(
         data.__class__.__module__.startswith("duckdb")
         and data.__class__.__name__ == "DuckDBPyConnection"
     ):
-        raise ValueError(
-            "Must pass in DuckDBPyRelation, not DuckDBPyConnection to viz()"
-        )
+        raise TypeError(DUCKDB_PY_CONN_ERROR)
 
     # pyarrow table
     if isinstance(data, pa.Table):
