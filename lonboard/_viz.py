@@ -106,17 +106,55 @@ def viz(
 
     This function accepts a variety of geospatial inputs:
 
-    - geopandas `GeoDataFrame`
-    - geopandas `GeoSeries`
-    - numpy array of Shapely objects
-    - Single Shapely object
-    - DuckDB query with a spatial column.
-        - Query **must** be created with `.sql()` and not with `.execute()`.
+    - geopandas `GeoDataFrame`.
+    - geopandas `GeoSeries`.
+    - numpy array of Shapely objects.
+    - Single Shapely object.
+    - A DuckDB query with a spatial column from duckdb-spatial.
+
+        !!! note
+
+            The DuckDB query must be run with
+            [`duckdb.sql()`](https://duckdb.org/docs/api/python/reference/#duckdb.sql)
+            or
+            [`duckdb.DuckDBPyConnection.sql()`](https://duckdb.org/docs/api/python/reference/#duckdb.DuckDBPyConnection.sql)
+            and not with `duckdb.execute()` or `duckdb.DuckDBPyConnection.execute()`.
+
+            For example
+
+            ```py
+            import duckdb
+            from lonboard import viz
+
+            sql = "SELECT * FROM spatial_table;"
+            query = duckdb.sql(sql)
+            viz(query)
+            ```
+
+            If you're using a custom connection, ensure you pass in the `con` parameter:
+
+            ```py
+            import duckdb
+            from lonboard import viz
+
+            con = duckdb.connect()
+            sql = "SELECT * FROM spatial_table;"
+            query = con.sql(sql)
+            viz(query, con=con)
+            ```
+
+        !!! note
+
+            DuckDB Spatial does not currently expose coordinate reference system
+            information, so the user must ensure that data has been reprojected to
+            EPSG:4326.
+
     - Any Python class with a `__geo_interface__` property conforming to the
         [Geo Interface protocol](https://gist.github.com/sgillies/2217756).
     - `dict` holding GeoJSON-like data.
-    - pyarrow `Table` with a geometry column marked with a GeoArrow extension type
-    - pyarrow `Array` marked with a [GeoArrow extension type defined by geoarrow-pyarrow](https://geoarrow.org/geoarrow-python/main/pyarrow.html#geoarrow.pyarrow.GeometryExtensionType)
+    - pyarrow `Table` with a geometry column marked with a
+        [GeoArrow](https://geoarrow.org/) extension type.
+    - pyarrow `Array` marked with a [GeoArrow extension type defined by geoarrow-pyarrow](https://geoarrow.org/geoarrow-python/main/pyarrow.html#geoarrow.pyarrow.GeometryExtensionType).
 
     Alternatively, you can pass a `list` or `tuple` of any of the above inputs.
 
@@ -133,9 +171,11 @@ def viz(
         map_kwargs: a `dict` of parameters to pass down to the generated
           [`Map`][lonboard.Map].
         con: the active DuckDB connection. This is necessary in some cases when passing
-            in a DuckDB query.
+            in a DuckDB query. In particular, if you're using a non-global DuckDB
+            connection and if your SQL query outputs the default `GEOMETRY` type.
 
-    For more control over rendering, construct `Map` and `Layer` objects directly.
+    For more control over rendering, construct [`Map`][lonboard.Map] and `Layer` objects
+    directly.
 
     Returns:
         widget visualizing the provided data.

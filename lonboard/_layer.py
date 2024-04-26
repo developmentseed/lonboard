@@ -337,6 +337,27 @@ class BaseArrowLayer(BaseLayer):
         crs: Optional[Union[str, pyproj.CRS]] = None,
         **kwargs: Unpack[BaseLayerKwargs],
     ) -> Self:
+        """Construct a Layer from a duckdb-spatial query.
+
+        DuckDB Spatial does not currently expose coordinate reference system
+        information, so **the user must ensure that data has been reprojected to
+        EPSG:4326** or pass in the existing CRS of the data in the `crs` keyword
+        parameter.
+
+        Args:
+            sql: The SQL input to visualize. This can either be a string containing a
+                SQL query or the output of the duckdb `sql` function.
+            con: The current DuckDB connection. This is required when passing a `str` to
+                the `sql` parameter or when using a non-global DuckDB connection.
+                Defaults to None.
+
+        Other args:
+            crs: The CRS of the input data. This can either be a string passed to
+                `pyproj.CRS.from_user_input` or a `pyproj.CRS` object. Defaults to None.
+
+        Returns:
+            A Layer with the initialized data.
+        """
         if isinstance(sql, str):
             assert con is not None, "con must be provided when sql is a str"
 
