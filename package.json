@@ -10,7 +10,7 @@
     "@deck.gl/geo-layers": "^9.0.9",
     "@deck.gl/layers": "^9.0.9",
     "@deck.gl/react": "^9.0.9",
-    "@geoarrow/deck.gl-layers": "file:../deck.gl-layers",
+    "@geoarrow/deck.gl-layers": "github:atmorling/deck.gl-layers#v9-test",
     "apache-arrow": "^15.0.2",
     "maplibre-gl": "^3.6.2",
     "parquet-wasm": "0.5.0",
