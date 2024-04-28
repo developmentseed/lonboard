@@ -153,6 +153,22 @@ class Map(BaseAnyWidget):
     - Default: `5`
     """
 
+    selected_bounds = traitlets.Tuple(
+        traitlets.Float(),
+        traitlets.Float(),
+        traitlets.Float(),
+        traitlets.Float(),
+        allow_none=True,
+        default_value=None,
+    ).tag(sync=True)
+    """
+    Bounds selected by the user, represented as a tuple of floats ordered as
+
+    ```
+    (minx, miny, maxx, maxy)
+    ```
+    """
+
     basemap_style = traitlets.Unicode(CartoBasemap.PositronNoLabels).tag(sync=True)
     """
     A MapLibre-compatible basemap style.
