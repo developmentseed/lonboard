@@ -18,7 +18,6 @@ from typing import (
     Tuple,
 )
 
-import geopandas as gpd
 import ipywidgets
 import pyarrow as pa
 import traitlets
@@ -41,19 +40,22 @@ from lonboard.traits import (
     NormalAccessor,
     PyarrowTableTrait,
 )
-from lonboard.types.layer import (
-    BaseLayerKwargs,
-    BitmapLayerKwargs,
-    BitmapTileLayerKwargs,
-    HeatmapLayerKwargs,
-    PathLayerKwargs,
-    PointCloudLayerKwargs,
-    PolygonLayerKwargs,
-    ScatterplotLayerKwargs,
-    SolidPolygonLayerKwargs,
-)
 
 if TYPE_CHECKING:
+    import geopandas as gpd
+
+    from lonboard.types.layer import (
+        BaseLayerKwargs,
+        BitmapLayerKwargs,
+        BitmapTileLayerKwargs,
+        HeatmapLayerKwargs,
+        PathLayerKwargs,
+        PointCloudLayerKwargs,
+        PolygonLayerKwargs,
+        ScatterplotLayerKwargs,
+        SolidPolygonLayerKwargs,
+    )
+
     if sys.version_info >= (3, 11):
         from typing import Self
     else:

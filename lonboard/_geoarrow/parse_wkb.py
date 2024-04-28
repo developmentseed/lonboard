@@ -8,7 +8,6 @@ import shapely
 
 from lonboard._constants import EXTENSION_NAME, OGC_84
 from lonboard._geoarrow.crs import get_field_crs
-from lonboard._geoarrow.extension_types import construct_geometry_array
 from lonboard._utils import get_geometry_column_index
 
 
@@ -76,6 +75,8 @@ def parse_geoparquet_table(table: pa.Table) -> pa.Table:
 def parse_wkb_column(
     field: pa.Field, column: pa.ChunkedArray
 ) -> Tuple[pa.Field, pa.ChunkedArray]:
+    from lonboard._geoarrow.extension_types import construct_geometry_array
+
     crs_str = get_field_crs(field)
 
     # We call shapely.from_wkb on the _entire column_ so that we don't get mixed type
