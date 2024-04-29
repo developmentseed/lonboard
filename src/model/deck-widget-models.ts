@@ -1,7 +1,7 @@
 import type { WidgetModel } from "@jupyter-widgets/base";
 import { BaseModel } from "./base.js";
 import { Widget, WidgetPlacement } from "@deck.gl/core";
-import { CompassWidget, ZoomWidget, FullscreenWidget } from "@deck.gl/widgets";
+import { CompassWidget, ZoomWidget, FullscreenWidget, LightTheme } from "@deck.gl/widgets";
 import { TitleWidget } from "./deck-widget.js";
 
 export abstract class BaseDeckWidgetModel extends BaseModel {
@@ -44,7 +44,10 @@ export class FullscreenWidgetModel extends BaseDeckWidgetModel {
       placement: this.placement,
       enterLabel: this.enterLabel,
       exitLabel: this.exitLabel,
-      style: this.style,
+      style: {
+        ...LightTheme as Partial<CSSStyleDeclaration>,
+        ...this.style
+      },
       className: this.className,
     }) 
   }
@@ -92,6 +95,7 @@ export class TitleWidgetModel extends BaseDeckWidgetModel{
       title: this.title, 
       placement: this.placement, 
       style: {
+        ...LightTheme,
         'fontSize': this.fontSize,
         'fontStyle': this.fontStyle,
         'fontFamily': this.fontFamily,
@@ -117,8 +121,12 @@ export async function initializeWidget(
       deckWidgetModel = new FullscreenWidgetModel(model, updateStateCallback);
       break;
 
+    case TitleWidgetModel.widgetType:
+      deckWidgetModel = new TitleWidgetModel(model, updateStateCallback);
+      break;
+
     default:
-      throw new Error(`no layer supported for ${deckWidgetType}`);
+      throw new Error(`no widget supported for ${deckWidgetType}`);
   }
   
   return deckWidgetModel;

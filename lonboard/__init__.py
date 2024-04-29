@@ -18,3 +18,8 @@ from ._layer import (
 from ._map import Map
 from ._version import __version__
 from ._viz import viz
+from ._deck_widget import (
+    BaseDeckWidget,
+    FullscreenWidget,
+    TitleWidget
+)

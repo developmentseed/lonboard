@@ -1,7 +1,7 @@
 import traitlets
 from lonboard._base import BaseWidget
 
-class DeckWidget(BaseWidget):
+class BaseDeckWidget(BaseWidget):
 
     # props = traitlets.Dict({}).tag(sync=True) # make me a class
     placement = traitlets.Enum(
@@ -13,19 +13,20 @@ class DeckWidget(BaseWidget):
     def __init__(self, **kwargs):
         super().__init__(**kwargs)
 
-class FullscreenWidget(DeckWidget):
+class FullscreenWidget(BaseDeckWidget):
     _widget_type = traitlets.Unicode("fullscreen").tag(sync=True)
 
-    enter_label = traitlets.Unicode(default_value=None, allow_none=True).tags(sync=True)
-    exit_label = traitlets.Unicode(default_value=None, allow_none=True).tags(sync=True)
-    style = traitlets.Dict(default_value=None, allow_none=True).tags(sync=True)
-    class_name = traitlets.Unicode(default_value=None, allow_none=True).tags(sync=True)
+    enter_label = traitlets.Unicode(default_value=None, allow_none=True).tag(sync=True)
+    exit_label = traitlets.Unicode(default_value=None, allow_none=True).tag(sync=True)
+    style = traitlets.Dict(default_value=None, allow_none=True).tag(sync=True)
+    class_name = traitlets.Unicode(default_value=None, allow_none=True).tag(sync=True)
     
     def __init__(self, **kwargs):
         super().__init__(**kwargs)
 
-class TitleControl(MapControl):
+class TitleWidget(BaseDeckWidget):
 
+    _widget_type = traitlets.Unicode("title").tag(sync=True)
     title = traitlets.Unicode(allow_none=False).tag(sync=True)
     # position = traitlets.Dict(
     #     key_trait=traitlets.Enum(values=["left", "top", "bottom", "right"]),

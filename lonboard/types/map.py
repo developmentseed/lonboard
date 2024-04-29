@@ -1,7 +1,8 @@
 import sys
-from typing import Any, Dict, Union
+from typing import Any, Dict, List, Union
 
 from lonboard.basemap import CartoBasemap
+from lonboard._deck_widget import BaseDeckWidget
 
 if sys.version_info >= (3, 12):
     from typing import TypedDict
@@ -17,3 +18,4 @@ class MapKwargs(TypedDict, total=False):
     basemap_style: Union[str, CartoBasemap]
     use_device_pixels: Union[int, float, bool]
     parameters: Dict[str, Any]
+    deck_widgets: List[BaseDeckWidget]

@@ -13,6 +13,7 @@ from lonboard._environment import DEFAULT_HEIGHT
 from lonboard._layer import BaseLayer
 from lonboard._viewport import compute_view
 from lonboard.basemap import CartoBasemap
+from lonboard._deck_widget import BaseDeckWidget
 from lonboard.traits import DEFAULT_INITIAL_VIEW_STATE, ViewStateTrait
 from lonboard.types.map import MapKwargs
 
@@ -151,6 +152,12 @@ class Map(BaseAnyWidget):
 
     - Type: `int`
     - Default: `5`
+    """
+
+    deck_widgets = traitlets.List(trait=traitlets.Instance(BaseDeckWidget)).tag(
+        sync=True, **ipywidgets.widget_serialization
+    )
+    """One or more `Widget` objects to display on this map.
     """
 
     basemap_style = traitlets.Unicode(CartoBasemap.PositronNoLabels).tag(sync=True)
