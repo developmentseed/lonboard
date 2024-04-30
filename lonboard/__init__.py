@@ -21,5 +21,7 @@ from ._viz import viz
 from ._deck_widget import (
     BaseDeckWidget,
     FullscreenWidget,
+    ZoomWidget,
+    CompassWidget,
     TitleWidget
 )

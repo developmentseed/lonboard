@@ -53,6 +53,72 @@ export class FullscreenWidgetModel extends BaseDeckWidgetModel {
   }
 }
 
+export class ZoomWidgetModel extends BaseDeckWidgetModel {
+  static widgetType = "zoom";
+
+  protected zoomInLabel: string = "Zoom In";
+  protected zoomOutLabel: string = "Zoom Out";
+  protected transitionDuration: number = 200;
+  protected style: Partial<CSSStyleDeclaration> = {};
+  protected className: string | undefined = undefined;
+
+  constructor(model: WidgetModel, updateStateCallback: () => void) {
+    super(model, updateStateCallback);
+
+    this.initRegularAttribute("zoom_in_label", "zoomInLabel");
+    this.initRegularAttribute("zoom_out_label", "zoomOutLabel");
+    this.initRegularAttribute("transition_duration", "transitionDuration");
+    this.initRegularAttribute("style", "style");
+    this.initRegularAttribute("class_name", "className");
+  }
+
+  render(): ZoomWidget {
+    return new ZoomWidget({
+      id: "fullscreen",
+      placement: this.placement,
+      zoomInLabel: this.zoomInLabel,
+      zoomOutLabel: this.zoomOutLabel,
+      transitionDuration: this.transitionDuration,
+      style: {
+        ...LightTheme as Partial<CSSStyleDeclaration>,
+        ...this.style
+      },
+      className: this.className,
+    }) 
+  }
+}
+
+export class CompassWidgetModel extends BaseDeckWidgetModel {
+  static widgetType = "compass";
+
+  protected label: string = "Compass";
+  protected transitionDuration: number = 200;
+  protected style: Partial<CSSStyleDeclaration> = {};
+  protected className: string | undefined = undefined;
+
+  constructor(model: WidgetModel, updateStateCallback: () => void) {
+    super(model, updateStateCallback);
+
+    this.initRegularAttribute("label", "label");
+    this.initRegularAttribute("transition_duration", "transitionDuration");
+    this.initRegularAttribute("style", "style");
+    this.initRegularAttribute("class_name", "className");
+  }
+
+  render(): CompassWidget {
+    return new CompassWidget({
+      id: "fullscreen",
+      label: this.label,
+      transitionDuration: this.transitionDuration,
+      style: {
+        ...LightTheme as Partial<CSSStyleDeclaration>,
+        ...this.style
+      },
+      className: this.className,
+    }) 
+  }
+}
+
 export class TitleWidgetModel extends BaseDeckWidgetModel{
   static widgetType = "title";
 
@@ -119,6 +185,14 @@ export async function initializeWidget(
   switch (deckWidgetType) {
     case FullscreenWidgetModel.widgetType:
       deckWidgetModel = new FullscreenWidgetModel(model, updateStateCallback);
+      break;
+
+    case ZoomWidgetModel.widgetType:
+      deckWidgetModel = new ZoomWidgetModel(model, updateStateCallback);
+      break;
+
+    case CompassWidgetModel.widgetType:
+      deckWidgetModel = new CompassWidgetModel(model, updateStateCallback);
       break;
 
     case TitleWidgetModel.widgetType:
