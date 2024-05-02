@@ -14,7 +14,7 @@ from lonboard._environment import DEFAULT_HEIGHT
 from lonboard._layer import BaseLayer
 from lonboard._viewport import compute_view
 from lonboard.basemap import CartoBasemap
-from lonboard.traits import DEFAULT_INITIAL_VIEW_STATE, ViewStateTrait
+from lonboard.traits import DEFAULT_INITIAL_VIEW_STATE, BasemapUrl, ViewStateTrait
 from lonboard.types.map import MapKwargs
 
 if TYPE_CHECKING:
@@ -156,13 +156,13 @@ class Map(BaseAnyWidget):
     - Default: `5`
     """
 
-    basemap_style = traitlets.Unicode(CartoBasemap.PositronNoLabels).tag(sync=True)
+    basemap_style = BasemapUrl(CartoBasemap.PositronNoLabels)
     """
-    A MapLibre-compatible basemap style.
+    A URL to a MapLibre-compatible basemap style.
 
     Various styles are provided in [`lonboard.basemap`](https://developmentseed.org/lonboard/latest/api/basemap/).
 
-    - Type: `str`
+    - Type: `str`, holding a URL hosting a basemap style.
     - Default
       [`lonboard.basemap.CartoBasemap.PositronNoLabels`][lonboard.basemap.CartoBasemap.PositronNoLabels]
     """
