@@ -21,6 +21,8 @@ GEOARROW_EXTENSION_TYPE_NAMES = {e.value for e in EXTENSION_NAME}
 
 def get_geometry_column_index(schema: pa.Schema) -> Optional[int]:
     """Get the positional index of the geometry column in a pyarrow Schema"""
+    field_idxs = []
+
     for field_idx in range(len(schema)):
         field_metadata = schema.field(field_idx).metadata
         if (
@@ -28,9 +30,14 @@ def get_geometry_column_index(schema: pa.Schema) -> Optional[int]:
             and field_metadata.get(b"ARROW:extension:name")
             in GEOARROW_EXTENSION_TYPE_NAMES
         ):
-            return field_idx
+            field_idxs.append(field_idx)
 
-    return None
+    if len(field_idxs) > 1:
+        raise ValueError("Multiple geometry columns not supported.")
+    elif len(field_idxs) == 1:
+        return field_idxs[0]
+    else:
+        return None
 
 
 def auto_downcast(df: DF) -> DF:

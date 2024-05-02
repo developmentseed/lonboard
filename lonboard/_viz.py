@@ -188,7 +188,7 @@ def create_layers_from_data_input(
 
     # pyarrow table
     if isinstance(data, pa.Table):
-        return [_viz_geoarrow_table(data, **kwargs)]
+        return _viz_geoarrow_table(data, **kwargs)
 
     # Shapely array
     if isinstance(data, np.ndarray) and np.issubdtype(data.dtype, np.object_):
@@ -201,12 +201,12 @@ def create_layers_from_data_input(
     # Anything with __arrow_c_array__
     if hasattr(data, "__arrow_c_array__"):
         data = cast("ArrowArrayExportable", data)
-        return [_viz_geoarrow_array(data, **kwargs)]
+        return _viz_geoarrow_array(data, **kwargs)
 
     # Anything with __arrow_c_stream__
     if hasattr(data, "__arrow_c_stream__"):
         data = cast("ArrowStreamExportable", data)
-        return [_viz_geoarrow_table(pa.table(data), **kwargs)]
+        return _viz_geoarrow_table(pa.table(data), **kwargs)
 
     # Anything with __geo_interface__
     if hasattr(data, "__geo_interface__"):
@@ -242,7 +242,7 @@ def _viz_geopandas_geodataframe(
     layers: List[Union[ScatterplotLayer, PathLayer, PolygonLayer]] = []
     for partial_gdf in split_mixed_gdf(data):
         table = geopandas_to_geoarrow(partial_gdf)
-        layers.append(_viz_geoarrow_table(table, **kwargs))
+        layers.extend(_viz_geoarrow_table(table, **kwargs))
 
     return layers
 
@@ -291,7 +291,7 @@ def _viz_geo_interface(
         table = pa.table(attribute_columns)
         shapely_geom = shapely.from_geojson(json.dumps(data["geometry"]))
         field, geom_arr = construct_geometry_array(np.array([shapely_geom]))
-        return [_viz_geoarrow_table(table.append_column(field, geom_arr), **kwargs)]
+        return _viz_geoarrow_table(table.append_column(field, geom_arr), **kwargs)
 
     if data["type"] == "FeatureCollection":
         # We currently take a FeatureCollection through GeoPandas so that we can handle
@@ -325,7 +325,7 @@ def _viz_geo_interface(
 def _viz_geoarrow_array(
     data: ArrowArrayExportable,
     **kwargs,
-) -> Union[ScatterplotLayer, PathLayer, PolygonLayer]:
+) -> List[Union[ScatterplotLayer, PathLayer, PolygonLayer]]:
     schema_capsule, array_capsule = data.__arrow_c_array__()
 
     # If the user doesn't have pyarrow extension types registered for geoarrow types,
@@ -375,9 +375,25 @@ def _viz_geoarrow_table(
     scatterplot_kwargs: Optional[ScatterplotLayerKwargs] = None,
     path_kwargs: Optional[PathLayerKwargs] = None,
     polygon_kwargs: Optional[PolygonLayerKwargs] = None,
-) -> Union[ScatterplotLayer, PathLayer, PolygonLayer]:
+) -> List[Union[ScatterplotLayer, PathLayer, PolygonLayer]]:
     table = remove_extension_classes(table)
-    table = parse_wkb_table(table)
+    parsed_tables = parse_wkb_table(table)
+    if len(parsed_tables) > 1:
+        output: List[Union[ScatterplotLayer, PathLayer, PolygonLayer]] = []
+        for parsed_table in parsed_tables:
+            output.extend(
+                _viz_geoarrow_table(
+                    parsed_table,
+                    _viz_color=_viz_color,
+                    scatterplot_kwargs=scatterplot_kwargs,
+                    path_kwargs=path_kwargs,
+                    polygon_kwargs=polygon_kwargs,
+                )
+            )
+
+        return output
+    else:
+        table = parsed_tables[0]
 
     geometry_column_index = get_geometry_column_index(table.schema)
     geometry_field = table.schema.field(geometry_column_index)
@@ -407,7 +423,7 @@ def _viz_geoarrow_table(
             elif len(table) <= 1_000_000:
                 scatterplot_kwargs["opacity"] = 0.5
 
-        return ScatterplotLayer(table=table, **scatterplot_kwargs)
+        return [ScatterplotLayer(table=table, **scatterplot_kwargs)]
 
     elif geometry_ext_type in [
         EXTENSION_NAME.LINESTRING,
@@ -436,7 +452,7 @@ def _viz_geoarrow_table(
             elif len(table) <= 100_000:
                 path_kwargs["opacity"] = 0.5
 
-        return PathLayer(table=table, **path_kwargs)
+        return [PathLayer(table=table, **path_kwargs)]
 
     elif geometry_ext_type in [EXTENSION_NAME.POLYGON, EXTENSION_NAME.MULTIPOLYGON]:
         polygon_kwargs = {} if not polygon_kwargs else polygon_kwargs
@@ -464,6 +480,6 @@ def _viz_geoarrow_table(
             else:
                 polygon_kwargs["line_width_min_pixels"] = 0.2
 
-        return PolygonLayer(table=table, **polygon_kwargs)
+        return [PolygonLayer(table=table, **polygon_kwargs)]
 
     raise ValueError(f"Unsupported extension type: '{geometry_ext_type}'.")

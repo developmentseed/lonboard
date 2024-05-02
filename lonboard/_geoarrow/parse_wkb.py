@@ -1,10 +1,13 @@
 """Handle GeoArrow tables with WKB-encoded geometry"""
 
 import json
-from typing import Tuple
+from typing import List
 
+import numpy as np
 import pyarrow as pa
 import shapely
+import shapely.geometry
+from shapely import GeometryType
 
 from lonboard._constants import EXTENSION_NAME, OGC_84
 from lonboard._geoarrow.crs import get_field_crs
@@ -12,28 +15,85 @@ from lonboard._geoarrow.extension_types import construct_geometry_array
 from lonboard._utils import get_geometry_column_index
 
 
-def parse_wkb_table(table: pa.Table) -> pa.Table:
+def parse_wkb_table(table: pa.Table) -> List[pa.Table]:
     """Parse a table with a WKB column into GeoArrow-native geometries.
 
     If no columns are WKB-encoded, returns the input. Note that WKB columns must be
     tagged with an extension name of `geoarrow.wkb` or `ogc.wkb`
+
+    Returns one table per GeoArrow geometry type. E.g. if the input has points, lines,
+    and polygons, then it returns three tables.
     """
     table = parse_geoparquet_table(table)
+    field_idx = get_geometry_column_index(table.schema)
 
-    wkb_names = {EXTENSION_NAME.WKB, EXTENSION_NAME.OGC_WKB}
-    for field_idx in range(len(table.schema)):
-        field = table.field(field_idx)
-        column = table.column(field_idx)
+    field = table.field(field_idx)
+    column = table.column(field_idx)
 
-        if not field.metadata:
-            continue
+    extension_type_name = field.metadata.get(b"ARROW:extension:name")
 
-        extension_type_name = field.metadata.get(b"ARROW:extension:name")
-        if extension_type_name in wkb_names:
-            new_field, new_column = parse_wkb_column(field, column)
-            table = table.set_column(field_idx, new_field, new_column)
+    # For native GeoArrow input, return table as-is
+    if extension_type_name not in {EXTENSION_NAME.WKB, EXTENSION_NAME.OGC_WKB}:
+        return [table]
 
-    return table
+    # Handle WKB input
+    parsed_tables = []
+    crs_str = get_field_crs(field)
+    shapely_arr = shapely.from_wkb(column)
+
+    type_ids = np.array(shapely.get_type_id(shapely_arr))
+    unique_type_ids = set(np.unique(type_ids))
+
+    if GeometryType.GEOMETRYCOLLECTION in unique_type_ids:
+        raise ValueError("GeometryCollections not currently supported")
+
+    if GeometryType.LINEARRING in unique_type_ids:
+        raise ValueError("LinearRings not currently supported")
+
+    point_indices = np.where(
+        (type_ids == GeometryType.POINT) | (type_ids == GeometryType.MULTIPOINT)
+    )[0]
+
+    linestring_indices = np.where(
+        (type_ids == GeometryType.LINESTRING)
+        | (type_ids == GeometryType.MULTILINESTRING)
+    )[0]
+
+    polygon_indices = np.where(
+        (type_ids == GeometryType.POLYGON) | (type_ids == GeometryType.MULTIPOLYGON)
+    )[0]
+
+    if len(point_indices) > 0:
+        point_field, point_arr = construct_geometry_array(
+            shapely_arr[point_indices],
+            crs_str=crs_str,
+        )
+        point_table = table.take(point_indices).set_column(
+            field_idx, point_field, point_arr
+        )
+        parsed_tables.append(point_table)
+
+    if len(linestring_indices) > 0:
+        linestring_field, linestring_arr = construct_geometry_array(
+            shapely_arr[linestring_indices],
+            crs_str=crs_str,
+        )
+        linestring_table = table.take(linestring_indices).set_column(
+            field_idx, linestring_field, linestring_arr
+        )
+        parsed_tables.append(linestring_table)
+
+    if len(polygon_indices) > 0:
+        polygon_field, polygon_arr = construct_geometry_array(
+            shapely_arr[polygon_indices],
+            crs_str=crs_str,
+        )
+        polygon_table = table.take(polygon_indices).set_column(
+            field_idx, polygon_field, polygon_arr
+        )
+        parsed_tables.append(polygon_table)
+
+    return parsed_tables
 
 
 def parse_geoparquet_table(table: pa.Table) -> pa.Table:
@@ -71,28 +131,3 @@ def parse_geoparquet_table(table: pa.Table) -> pa.Table:
         table = table.set_column(column_idx, new_field, existing_column)
 
     return table
-
-
-def parse_wkb_column(
-    field: pa.Field, column: pa.ChunkedArray
-) -> Tuple[pa.Field, pa.ChunkedArray]:
-    crs_str = get_field_crs(field)
-
-    # We call shapely.from_wkb on the _entire column_ so that we don't get mixed type
-    # arrays in each column.
-    shapely_arr = shapely.from_wkb(column)
-    new_field, geom_arr = construct_geometry_array(
-        shapely_arr,
-        crs_str=crs_str,
-    )
-
-    # Slice full array to maintain chunking
-    chunk_offsets = [0]
-    for chunk in column.chunks:
-        chunk_offsets.append(len(chunk) + chunk_offsets[-1])
-
-    chunks = []
-    for start_slice, end_slice in zip(chunk_offsets[:-1], chunk_offsets[1:]):
-        chunks.append(geom_arr.slice(start_slice, end_slice - start_slice))
-
-    return new_field, pa.chunked_array(chunks)

@@ -1,12 +1,17 @@
+from pathlib import Path
+
 import geoarrow.pyarrow as gap
 import geodatasets
 import geopandas as gpd
 import numpy as np
+import pyarrow.parquet as pq
 import shapely
 from geoarrow.rust.core import read_pyogrio
 from pyogrio.raw import read_arrow
 
 from lonboard import PathLayer, PolygonLayer, ScatterplotLayer, viz
+
+fixtures_dir = Path(__file__).parent / "fixtures"
 
 
 def mixed_shapely_geoms():
@@ -37,6 +42,17 @@ def test_viz_wkb_pyarrow():
     meta, table = read_arrow(path)
     map_ = viz(table)
     assert isinstance(map_.layers[0], PolygonLayer)
+
+
+def test_viz_wkb_mixed_pyarrow():
+    path = "/Users/kyle/github/developmentseed/lonboard/tests/fixtures/monaco_nofilter_noclip_compact.parquet"
+    table = pq.read_table(path)
+
+    table = pq.read_table(fixtures_dir / "monaco_nofilter_noclip_compact.parquet")
+    map_ = viz(table)
+    assert isinstance(map_.layers[0], ScatterplotLayer)
+    assert isinstance(map_.layers[1], PathLayer)
+    assert isinstance(map_.layers[2], PolygonLayer)
 
 
 def test_viz_reproject():
