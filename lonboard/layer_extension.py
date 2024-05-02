@@ -1,7 +1,12 @@
 import traitlets
 
 from lonboard._base import BaseExtension
-from lonboard.traits import FloatAccessor, GetFilterValueAccessor, PointAccessor
+from lonboard.traits import (
+    DashArrayAccessor,
+    FilterValueAccessor,
+    FloatAccessor,
+    PointAccessor,
+)
 
 
 class BrushingExtension(BaseExtension):
@@ -147,9 +152,9 @@ class DataFilterExtension(BaseExtension):
     )
     ```
 
-    The `DataFilterExtension` allows filtering on 1 to 4 attributes at the same time. So
-    if you have four numeric columns of interest, you can filter on the intersection of
-    all of them.
+    The `DataFilterExtension` allows filtering on 1 to 4 attributes at the same time.
+    So if you have four numeric columns of interest, you can filter on the
+    intersection of all of them.
 
     For easy visualization, we suggest connecting the `DataFilterExtension` to an
     interactive slider from `ipywidgets`.
@@ -211,6 +216,9 @@ class DataFilterExtension(BaseExtension):
 
     # Layer Properties
 
+    This extension dynamically enables the following properties onto the layer(s) where
+    it is included:
+
     ## `filter_enabled`
 
     Enable/disable the data filter. If the data filter is disabled, all objects are
@@ -268,7 +276,7 @@ class DataFilterExtension(BaseExtension):
     Accessor to retrieve the value for each object that it will be filtered by.
 
     - Type:
-      [GetFilterValueAccessor][lonboard.traits.GetFilterValueAccessor]
+      [FilterValueAccessor][lonboard.traits.FilterValueAccessor]
         - If a scalar value is provided, it is used as the value for all objects.
         - If an array is provided, each value in the array will be used as the value
           for the object at the same row index.
@@ -293,7 +301,7 @@ class DataFilterExtension(BaseExtension):
         ).tag(sync=True),
         "filter_transform_size": traitlets.Bool(True).tag(sync=True),
         "filter_transform_color": traitlets.Bool(True).tag(sync=True),
-        "get_filter_value": GetFilterValueAccessor(None, allow_none=False),
+        "get_filter_value": FilterValueAccessor(None, allow_none=False),
     }
 
     filter_size = traitlets.Int(1, min=1, max=4).tag(sync=True)
@@ -303,4 +311,123 @@ class DataFilterExtension(BaseExtension):
 
     - Type: `int`, optional
     - Default 1.
+    """
+
+
+class PathStyleExtension(BaseExtension):
+    """
+    Adds selected features to the PathLayer and composite layers that render
+    the [PathLayer][lonboard.PathLayer], e.g. [PolygonLayer][lonboard.PolygonLayer].
+
+    # Example
+
+    Deck.gl example https://deck.gl/docs/api-reference/extensions/path-style-extension
+
+    # Layer Properties
+
+    This extension dynamically enables the following properties onto the layer(s) where
+    it is included:
+
+    ## `get_dash_array`
+
+    Must be specified if the dash option is enabled. The dash array to draw each path
+    with `[dash_size, gap_size]` relative to the width of the path.
+
+    - Type: [DashArrayAccessor][lonboard.traits.DashArrayAccessor], optional
+        - If a scalar value is provided, it is used as the value for all objects. Pass
+          `[0, 0]` to draw the path in solid line.
+        - If an array is provided, each value in the array will be used as the value
+          for the object at the same row index.
+    - Default: `[0, 0]`.
+
+    ## `dash_justified`
+
+    Only effective if `get_dash_array` is specified. If `True`, adjust gaps for the
+    dashes to align at both ends. Overrides the effect of `high_precision_dash`.
+
+    - Type: `boolean`, optional
+    - Default `False`.
+
+    ## `get_offset`
+
+    Must be specified if the `offset` option is enabled.
+
+    The offset to draw each path with, relative to the width of the path. Negative
+    offset is to the left hand side, and positive offset is to the right hand side. `0`
+    extrudes the path so that it is centered at the specified coordinates.
+
+    - Type: [FloatAccessor][lonboard.traits.FloatAccessor], optional
+        - If a number is provided, it is used as the offset for all objects.
+        - If an array is provided, each value in the array will be used as the offset
+          for the object at the same row index.
+    - Default: `None`.
+
+    ## `dash_gap_pickable`
+
+    Only effective if `get_dash_array` is specified. If `True`, gaps between solid
+    strokes are pickable. If `False`, only the solid strokes are pickable.
+
+    # Remarks
+
+    ## Limitations
+
+    WebGL2 has guaranteed support for up to 16 attributes per shader. The current
+    implementation of `PathLayer` uses 13 attributes. Each one of the options of this
+    extension adds one more attribute. In other words, if all options are enabled, the
+    layer will not be able to use other extensions.
+
+    ## Tips on Rendering Dash Lines
+
+    There are three modes to render dash lines with this extension:
+
+    1. Default: dash starts from the beginning of each line segment
+    2. Justified: dash is stretched to center on each line segment
+    3. High precision: dash is evaluated continuously from the beginning of a path
+
+    ![Comparison between dash modes](https://user-images.githubusercontent.com/2059298/93418881-33555280-f860-11ea-82cc-b57ecf2e48ce.png)
+
+    The above table illustrates the visual behavior of the three modes.
+
+    The default mode works best if the data consists of long, disjoint paths. It renders
+    dashes at exactly the defined lengths.
+
+    The justified mode is guaranteed to render sharp, well-defined corners. This is
+    great for rendering polyline shapes. However, the gap size may look inconsistent
+    across line segments due to stretching.
+
+    The high precision mode pre-calculates path length on the CPU, so it may be slower
+    and use more resources for large datasets. When a path contains a lot of short
+    segments, this mode yields the best result.
+    """
+
+    _extension_type = traitlets.Unicode("path-style").tag(sync=True)
+
+    _layer_traits = {
+        "get_dash_array": DashArrayAccessor(None, allow_none=True),
+        "dash_justified": traitlets.Bool(None, allow_none=True).tag(sync=True),
+        "get_offset": FloatAccessor(None, allow_none=True),
+        "dash_gap_pickable": traitlets.Bool(None, allow_none=True).tag(sync=True),
+    }
+
+    dash = traitlets.Bool(None, allow_none=True).tag(sync=True)
+    """Add capability to render dashed lines.
+
+    - Type: `boolean`, optional
+    - Default False.
+    """
+
+    high_precision_dash = traitlets.Bool(None, allow_none=True).tag(sync=True)
+    """Improve dash rendering quality in certain circumstances.
+
+    Note that this option introduces additional performance overhead. See "Remarks".
+
+    - Type: `boolean`, optional
+    - Default `False`.
+    """
+
+    offset = traitlets.Bool(None, allow_none=True).tag(sync=True)
+    """Add capability to offset lines.
+
+    - Type: `boolean`, optional
+    - Default `False`.
     """
