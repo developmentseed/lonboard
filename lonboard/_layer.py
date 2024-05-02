@@ -276,7 +276,12 @@ class BaseArrowLayer(BaseLayer):
             table = pa.table(table)
 
         table = remove_extension_classes(table)
-        table = parse_wkb_table(table)
+        parsed_tables = parse_wkb_table(table)
+        assert len(parsed_tables) == 1, (
+            "Mixed geometry type input not supported here. Use the top "
+            "level viz() function or separate your geometry types in advanced."
+        )
+        table = parsed_tables[0]
         table = transpose_table(table)
 
         # Reproject table to WGS84 if needed
