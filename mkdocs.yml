@@ -68,6 +68,7 @@ nav:
           - api/layer-extensions/brushing-extension.md
           - api/layer-extensions/collision-filter-extension.md
           - api/layer-extensions/data-filter-extension.md
+          - api/layer-extensions/path-style-extension.md
       - api/basemap.md
       - api/colormap.md
       - api/controls.md
