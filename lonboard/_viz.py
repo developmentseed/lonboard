@@ -246,7 +246,7 @@ DUCKDB_PY_CONN_ERROR = dedent("""\
 
 
 def create_layers_from_data_input(
-    data: VizDataInput, **kwargs
+    data: VizDataInput, *, con: Optional[duckdb.DuckDBPyConnection] = None, **kwargs
 ) -> List[Union[ScatterplotLayer, PathLayer, PolygonLayer]]:
     """Create one or more renderable layers from data input.
 
@@ -272,7 +272,7 @@ def create_layers_from_data_input(
         data.__class__.__module__.startswith("duckdb")
         and data.__class__.__name__ == "DuckDBPyRelation"
     ):
-        return _viz_duckdb_relation(data, **kwargs)  # type: ignore
+        return _viz_duckdb_relation(data, con=con, **kwargs)  # type: ignore
 
     if (
         data.__class__.__module__.startswith("duckdb")

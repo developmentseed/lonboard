@@ -145,7 +145,7 @@ def test_solid_polygon_layer_bbox_2d():
     assert isinstance(layer, SolidPolygonLayer)
 
 
-@pytest.skip("Skip because it mutates global state")
+@pytest.mark.skip("Skip because it mutates global state")
 def test_create_table_as():
     sql = f"""
         INSTALL spatial;
