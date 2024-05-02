@@ -3,8 +3,8 @@ import traitlets
 from lonboard._base import BaseExtension
 from lonboard.traits import (
     DashArrayAccessor,
+    FilterValueAccessor,
     FloatAccessor,
-    GetFilterValueAccessor,
     PointAccessor,
 )
 
@@ -216,6 +216,9 @@ class DataFilterExtension(BaseExtension):
 
     # Layer Properties
 
+    This extension dynamically enables the following properties onto the layer(s) where
+    it is included:
+
     ## `filter_enabled`
 
     Enable/disable the data filter. If the data filter is disabled, all objects are
@@ -273,7 +276,7 @@ class DataFilterExtension(BaseExtension):
     Accessor to retrieve the value for each object that it will be filtered by.
 
     - Type:
-      [GetFilterValueAccessor][lonboard.traits.GetFilterValueAccessor]
+      [FilterValueAccessor][lonboard.traits.FilterValueAccessor]
         - If a scalar value is provided, it is used as the value for all objects.
         - If an array is provided, each value in the array will be used as the value
           for the object at the same row index.
@@ -298,7 +301,7 @@ class DataFilterExtension(BaseExtension):
         ).tag(sync=True),
         "filter_transform_size": traitlets.Bool(True).tag(sync=True),
         "filter_transform_color": traitlets.Bool(True).tag(sync=True),
-        "get_filter_value": GetFilterValueAccessor(None, allow_none=False),
+        "get_filter_value": FilterValueAccessor(None, allow_none=False),
     }
 
     filter_size = traitlets.Int(1, min=1, max=4).tag(sync=True)
@@ -314,12 +317,11 @@ class DataFilterExtension(BaseExtension):
 class PathStyleExtension(BaseExtension):
     """
     Adds selected features to the PathLayer and composite layers that render
-    the PathLayer, e.g. PolygonLayer and GeoJsonLayer.
+    the [PathLayer][lonboard.PathLayer], e.g. [PolygonLayer][lonboard.PolygonLayer].
 
     # Example
 
     Deck.gl example https://deck.gl/docs/api-reference/extensions/path-style-extension
-    TODO Add Lonboard example.
 
     # Layer Properties
 
@@ -329,12 +331,17 @@ class PathStyleExtension(BaseExtension):
     ## `get_dash_array`
 
     Must be specified if the dash option is enabled. The dash array to draw each path
-    with [dashSize, gapSize] relative to the width of the path.
+    with `[dash_size, gap_size]` relative to the width of the path.
 
-        - If an array is provided, it is used as the dash array for all paths.
-        - If a function is provided, it is called on each path to get its dash array.
-        - Return [0, 0] to draw the path in solid line.
-        - If this accessor is not specified, all paths are drawn as solid lines.
+    - Type: [DashArrayAccessor][lonboard.traits.DashArrayAccessor], optional
+        - If a scalar value is provided, it is used as the value for all objects.
+        - If an array is provided, each value in the array will be used as the value
+          for the object at the same row index.
+
+    - If an array is provided, it is used as the dash array for all paths.
+    - If a function is provided, it is called on each path to get its dash array.
+    - Return [0, 0] to draw the path in solid line.
+    - If this accessor is not specified, all paths are drawn as solid lines.
 
     - Type: [FloatAccessor][lonboard.traits.FloatAccessor], optional
     - Default: `None`.

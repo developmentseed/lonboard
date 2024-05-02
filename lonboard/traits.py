@@ -546,7 +546,7 @@ class PointAccessor(FixedErrorTraitType):
         assert False
 
 
-class GetFilterValueAccessor(FixedErrorTraitType):
+class FilterValueAccessor(FixedErrorTraitType):
     """
     A trait to validate input for the `get_filter_value` accessor added by the
     [`DataFilterExtension`][lonboard.layer_extension.DataFilterExtension], which can
@@ -864,22 +864,22 @@ class ViewStateTrait(FixedErrorTraitType):
 
 class DashArrayAccessor(FixedErrorTraitType):
     """A trait to validate input for a deck.gl dash accessor.
-    Used in `PathStyleExtension`.
+
+    Primarily used in
+    [`PathStyleExtension`][lonboard.layer_extension.PathStyleExtension].
 
     Various input is allowed:
 
-    - A `list` or `tuple` with 2 integers.
-      This defines the dash size and gap size respectively.
-    - A numpy `ndarray` with two dimensions and data type [`np.uint8`][numpy.uint8]. The
-      size of the second dimension must be `2`.
+    - A `list` or `tuple` with 2 integers. This defines the dash size and gap size
+      respectively.
+    - A numpy `ndarray` with two dimensions and numeric data type. The size of the
+      second dimension must be `2`.
     - A pyarrow [`FixedSizeListArray`][pyarrow.FixedSizeListArray] or
       [`ChunkedArray`][pyarrow.ChunkedArray] containing `FixedSizeListArray`s. The inner
-      size of the fixed size list must be `2` and its child must have type
-      `uint8`.
+      size of the fixed size list must be `2`.
     - Any Arrow fixed size list array from a library that implements the [Arrow
       PyCapsule
       Interface](https://arrow.apache.org/docs/format/CDataInterface/PyCapsuleInterface.html).
-
     """
 
     default_value = (0, 0)
@@ -903,29 +903,33 @@ class DashArrayAccessor(FixedErrorTraitType):
             if len(value) != 2:
                 self.error(obj, value, info="2 value list only")
 
-            if any(not isinstance(v, int) for v in value):
+            if any(not isinstance(v, (int, float)) for v in value):
                 self.error(
                     obj,
                     value,
-                    info="all values to be integers if passed a tuple or list",
+                    info="all values to be int or float type if passed a tuple or list",
                 )
 
             return value
 
         if isinstance(value, np.ndarray):
-            if not np.issubdtype(value.dtype, np.uint8):
+            if not np.issubdtype(value.dtype, np.number):
                 self.error(obj, value, info="NumPy array must be uint8 type.")
 
             if value.ndim != 2:
                 self.error(obj, value, info="NumPy array must have 2 dimensions.")
 
             list_size = value.shape[1]
-            if list_size not in (2):
+            if list_size != 2:
                 self.error(
                     obj,
                     value,
                     info="NumPy array must have 2 as its second dimension.",
                 )
+
+            # Cast float64 to float32; leave other data types the same
+            if np.issubdtype(value.dtype, np.float64):
+                value = value.astype(np.float32)
 
             return pa.FixedSizeListArray.from_arrays(value.flatten("C"), list_size)
 
@@ -940,17 +944,25 @@ class DashArrayAccessor(FixedErrorTraitType):
             if not pa.types.is_fixed_size_list(value.type):
                 self.error(obj, value, info="Pyarrow array must be a FixedSizeList.")
 
-            if value.type.list_size not in (2):
+            if value.type.list_size != 2:
                 self.error(
                     obj,
                     value,
-                    info=(
-                        "Pyarrow array must have a FixedSizeList inner size of " "2."
-                    ),
+                    info="Pyarrow array must have a FixedSizeList inner size of 2.",
                 )
 
-            if not pa.types.is_uint8(value.type.value_type):
-                self.error(obj, value, info="Pyarrow array must have a uint8 child.")
+            if not (
+                pa.types.is_integer(value.type.value_type)
+                or pa.types.is_signed_integer(value.type.value_type)
+                or pa.types.is_floating(value.type.value_type)
+            ):
+                self.error(
+                    obj, value, info="Pyarrow array to have a numeric type child."
+                )
+
+            # Cast float64 to float32; leave other data types the same
+            if pa.types.is_float64(value.type.value_type):
+                value = value.cast(pa.list_(pa.float32(), value.type.list_size))
 
             return value
 
