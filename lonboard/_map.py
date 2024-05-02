@@ -7,7 +7,6 @@ from typing import IO, TYPE_CHECKING, Optional, Sequence, TextIO, Union, overloa
 
 import ipywidgets
 import traitlets
-from IPython.core.display import HTML
 from ipywidgets.embed import embed_minimal_html
 
 from lonboard._base import BaseAnyWidget
@@ -19,6 +18,8 @@ from lonboard.traits import DEFAULT_INITIAL_VIEW_STATE, ViewStateTrait
 from lonboard.types.map import MapKwargs
 
 if TYPE_CHECKING:
+    from IPython.display import HTML  # type: ignore
+
     if sys.version_info >= (3, 12):
         from typing import Unpack
     else:
@@ -378,6 +379,9 @@ class Map(BaseAnyWidget):
 
         Other args:
             title: A title for the exported map. This will show as the browser tab name.
+
+        Returns:
+            If `filename` is not passed, returns the HTML content as a `str`.
         """
 
         def inner(fp):
@@ -398,7 +402,31 @@ class Map(BaseAnyWidget):
             inner(filename)
 
     def as_html(self) -> HTML:
-        """Render the current map as a static HTML file in IPython."""
+        """Render the current map as a static HTML file in IPython.
+
+        !!! warning
+
+            The primary, recommended way to display a map is by "displaying" it by
+            leaving it as the last line in a cell.
+
+            ```py
+            from lonboard import Map
+
+            m = Map(layers=[])
+            m
+            ```
+
+            This method exists to support environments that are unable to display
+            Jupyter Widgets. Some aspects of Lonboard are unavailable with this display
+            method. In particular, the map is unable to send any information back to
+            Python. So [`selected_index`][lonboard.BaseArrowLayer.selected_index] will
+            never be populated, for example.
+
+        Returns:
+            IPython HTML object.
+        """
+        from IPython.display import HTML  # type: ignore
+
         return HTML(self.to_html())
 
     @traitlets.default("view_state")
