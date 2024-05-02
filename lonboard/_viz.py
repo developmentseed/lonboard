@@ -30,7 +30,7 @@ from lonboard._geoarrow.parse_wkb import parse_wkb_table
 from lonboard._geoarrow.sanitize import remove_extension_classes
 from lonboard._layer import PathLayer, PolygonLayer, ScatterplotLayer
 from lonboard._map import Map
-from lonboard._utils import get_geometry_column_index
+from lonboard._utils import get_geometry_column_index, split_mixed_gdf
 from lonboard.basemap import CartoBasemap
 from lonboard.types.layer import (
     PathLayerKwargs,
@@ -137,26 +137,24 @@ def viz(
     shuffle(color_ordering)
 
     if isinstance(data, (list, tuple)):
-        layers = [
-            create_layer_from_data_input(
+        layers: List[Union[ScatterplotLayer, PathLayer, PolygonLayer]] = []
+        for i, item in enumerate(data):
+            ls = create_layers_from_data_input(
                 item,
                 _viz_color=color_ordering[i % len(color_ordering)],
                 scatterplot_kwargs=scatterplot_kwargs,
                 path_kwargs=path_kwargs,
                 polygon_kwargs=polygon_kwargs,
             )
-            for i, item in enumerate(data)
-        ]
+            layers.extend(ls)
     else:
-        layers = [
-            create_layer_from_data_input(
-                data,
-                _viz_color=color_ordering[0],
-                scatterplot_kwargs=scatterplot_kwargs,
-                path_kwargs=path_kwargs,
-                polygon_kwargs=polygon_kwargs,
-            )
-        ]
+        layers = create_layers_from_data_input(
+            data,
+            _viz_color=color_ordering[0],
+            scatterplot_kwargs=scatterplot_kwargs,
+            path_kwargs=path_kwargs,
+            polygon_kwargs=polygon_kwargs,
+        )
 
     map_kwargs = {} if not map_kwargs else map_kwargs
 
@@ -166,9 +164,14 @@ def viz(
     return Map(layers=layers, **map_kwargs)
 
 
-def create_layer_from_data_input(
+def create_layers_from_data_input(
     data: VizDataInput, **kwargs
-) -> Union[ScatterplotLayer, PathLayer, PolygonLayer]:
+) -> List[Union[ScatterplotLayer, PathLayer, PolygonLayer]]:
+    """Create one or more renderable layers from data input.
+
+    This helper function can create multiple layers in the case of mixed input.
+    """
+
     # geopandas GeoDataFrame
     if (
         data.__class__.__module__.startswith("geopandas")
@@ -185,7 +188,7 @@ def create_layer_from_data_input(
 
     # pyarrow table
     if isinstance(data, pa.Table):
-        return _viz_geoarrow_table(data, **kwargs)
+        return [_viz_geoarrow_table(data, **kwargs)]
 
     # Shapely array
     if isinstance(data, np.ndarray) and np.issubdtype(data.dtype, np.object_):
@@ -198,12 +201,12 @@ def create_layer_from_data_input(
     # Anything with __arrow_c_array__
     if hasattr(data, "__arrow_c_array__"):
         data = cast("ArrowArrayExportable", data)
-        return _viz_geoarrow_array(data, **kwargs)
+        return [_viz_geoarrow_array(data, **kwargs)]
 
     # Anything with __arrow_c_stream__
     if hasattr(data, "__arrow_c_stream__"):
         data = cast("ArrowStreamExportable", data)
-        return _viz_geoarrow_table(pa.table(data), **kwargs)
+        return [_viz_geoarrow_table(pa.table(data), **kwargs)]
 
     # Anything with __geo_interface__
     if hasattr(data, "__geo_interface__"):
@@ -235,40 +238,44 @@ def create_layer_from_data_input(
 
 def _viz_geopandas_geodataframe(
     data: gpd.GeoDataFrame, **kwargs
-) -> Union[ScatterplotLayer, PathLayer, PolygonLayer]:
-    table = geopandas_to_geoarrow(data)
-    return _viz_geoarrow_table(table, **kwargs)
+) -> List[Union[ScatterplotLayer, PathLayer, PolygonLayer]]:
+    layers: List[Union[ScatterplotLayer, PathLayer, PolygonLayer]] = []
+    for partial_gdf in split_mixed_gdf(data):
+        table = geopandas_to_geoarrow(partial_gdf)
+        layers.append(_viz_geoarrow_table(table, **kwargs))
+
+    return layers
 
 
 def _viz_geopandas_geoseries(
     data: gpd.GeoSeries, **kwargs
-) -> Union[ScatterplotLayer, PathLayer, PolygonLayer]:
+) -> List[Union[ScatterplotLayer, PathLayer, PolygonLayer]]:
     import geopandas as gpd
 
-    gdf = gpd.GeoDataFrame(geometry=data)
-    table = geopandas_to_geoarrow(gdf)
-    return _viz_geoarrow_table(table, **kwargs)
+    gdf = gpd.GeoDataFrame(geometry=data)  # type: ignore
+    return _viz_geopandas_geodataframe(gdf, **kwargs)
 
 
 def _viz_shapely_scalar(
     data: shapely.geometry.base.BaseGeometry, **kwargs
-) -> Union[ScatterplotLayer, PathLayer, PolygonLayer]:
+) -> List[Union[ScatterplotLayer, PathLayer, PolygonLayer]]:
     return _viz_shapely_array(np.array([data]), **kwargs)
 
 
 def _viz_shapely_array(
     data: NDArray[np.object_], **kwargs
-) -> Union[ScatterplotLayer, PathLayer, PolygonLayer]:
-    # TODO: pass include_z?
-    field, geom_arr = construct_geometry_array(data)
-    schema = pa.schema([field])
-    table = pa.Table.from_arrays([geom_arr], schema=schema)
-    return _viz_geoarrow_table(table, **kwargs)
+) -> List[Union[ScatterplotLayer, PathLayer, PolygonLayer]]:
+    # Note: for now we pass this through a GeoDataFrame to handle mixed-type geometry
+    # arrays. Longer term we should do this without a GeoPandas dependency.
+    import geopandas as gpd
+
+    gdf = gpd.GeoDataFrame(geometry=data)  # type: ignore
+    return _viz_geopandas_geodataframe(gdf, **kwargs)
 
 
 def _viz_geo_interface(
     data: dict, **kwargs
-) -> Union[ScatterplotLayer, PathLayer, PolygonLayer]:
+) -> List[Union[ScatterplotLayer, PathLayer, PolygonLayer]]:
     if data["type"] in [
         "Point",
         "LineString",
@@ -284,9 +291,14 @@ def _viz_geo_interface(
         table = pa.table(attribute_columns)
         shapely_geom = shapely.from_geojson(json.dumps(data["geometry"]))
         field, geom_arr = construct_geometry_array(np.array([shapely_geom]))
-        return _viz_geoarrow_table(table.append_column(field, geom_arr), **kwargs)
+        return [_viz_geoarrow_table(table.append_column(field, geom_arr), **kwargs)]
 
     if data["type"] == "FeatureCollection":
+        # We currently take a FeatureCollection through GeoPandas so that we can handle
+        # mixed-geometry type collections
+        import geopandas as gpd
+        import pandas as pd
+
         attribute_columns_struct = pa.array(
             [feature["properties"] for feature in data["features"]]
         )
@@ -295,15 +307,16 @@ def _viz_geo_interface(
         arrays = []
         for field_idx in range(attribute_columns_struct.type.num_fields):
             fields.append(attribute_columns_struct.type.field(field_idx))
-            arrays.append(pc.struct_field(attribute_columns_struct, field_idx))
+            arrays.append(pc.struct_field(attribute_columns_struct, field_idx))  # type: ignore
 
         table = pa.Table.from_arrays(arrays, schema=pa.schema(fields))
+        df = table.to_pandas(types_mapper=pd.ArrowDtype)
 
         shapely_geom_arr = shapely.from_geojson(
             [json.dumps(feature["geometry"]) for feature in data["features"]]
         )
-        field, geom_arr = construct_geometry_array(shapely_geom_arr)
-        return _viz_geoarrow_table(table.append_column(field, geom_arr), **kwargs)
+        gdf = gpd.GeoDataFrame(df, geometry=shapely_geom_arr)  # type: ignore
+        return _viz_geopandas_geodataframe(gdf, **kwargs)
 
     geo_interface_type = data["type"]
     raise ValueError(f"type '{geo_interface_type}' not supported.")

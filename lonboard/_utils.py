@@ -1,11 +1,16 @@
-from typing import Any, Dict, Optional, Sequence, TypeVar
+from typing import TYPE_CHECKING, Any, Dict, List, Optional, Sequence, TypeVar
 
 import numpy as np
 import pandas as pd
 import pyarrow as pa
+import shapely
+from shapely import GeometryType
 
 from lonboard._base import BaseExtension
 from lonboard._constants import EXTENSION_NAME
+
+if TYPE_CHECKING:
+    import geopandas as gpd
 
 DF = TypeVar("DF", bound=pd.DataFrame)
 
@@ -99,3 +104,51 @@ def remove_extension_kwargs(
                     )
 
     return extension_kwargs
+
+
+def split_mixed_gdf(gdf: gpd.GeoDataFrame) -> List[gpd.GeoDataFrame]:
+    """Split a GeoDataFrame into one or more GeoDataFrames with unique geometry type"""
+
+    type_ids = np.array(shapely.get_type_id(gdf.geometry))
+    unique_type_ids = set(np.unique(type_ids))
+
+    if GeometryType.GEOMETRYCOLLECTION in unique_type_ids:
+        raise ValueError("GeometryCollections not currently supported")
+
+    if GeometryType.LINEARRING in unique_type_ids:
+        raise ValueError("LinearRings not currently supported")
+
+    if len(unique_type_ids) == 1:
+        return [gdf]
+
+    if len(unique_type_ids) == 2:
+        if unique_type_ids == {GeometryType.POINT, GeometryType.MULTIPOINT}:
+            return [gdf]
+
+        if unique_type_ids == {GeometryType.LINESTRING, GeometryType.MULTILINESTRING}:
+            return [gdf]
+
+        if unique_type_ids == {GeometryType.POLYGON, GeometryType.MULTIPOLYGON}:
+            return [gdf]
+
+    gdfs = []
+    point_indices = np.where(
+        (type_ids == GeometryType.POINT) | (type_ids == GeometryType.MULTIPOINT)
+    )[0]
+    if len(point_indices) > 0:
+        gdfs.append(gdf.iloc[point_indices])
+
+    linestring_indices = np.where(
+        (type_ids == GeometryType.LINESTRING)
+        | (type_ids == GeometryType.MULTILINESTRING)
+    )[0]
+    if len(linestring_indices) > 0:
+        gdfs.append(gdf.iloc[linestring_indices])
+
+    polygon_indices = np.where(
+        (type_ids == GeometryType.POLYGON) | (type_ids == GeometryType.MULTIPOLYGON)
+    )[0]
+    if len(polygon_indices) > 0:
+        gdfs.append(gdf.iloc[polygon_indices])
+
+    return gdfs
