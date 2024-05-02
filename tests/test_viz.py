@@ -45,9 +45,6 @@ def test_viz_wkb_pyarrow():
 
 
 def test_viz_wkb_mixed_pyarrow():
-    path = "/Users/kyle/github/developmentseed/lonboard/tests/fixtures/monaco_nofilter_noclip_compact.parquet"
-    table = pq.read_table(path)
-
     table = pq.read_table(fixtures_dir / "monaco_nofilter_noclip_compact.parquet")
     map_ = viz(table)
     assert isinstance(map_.layers[0], ScatterplotLayer)
