@@ -4,6 +4,7 @@
 
 - [Speedtest data ![](../assets/scatterplot-layer-network-speeds.jpg)](../examples/internet-speeds) using [`ScatterplotLayer`](../api/layers/scatterplot-layer)
 - [North America roads ![](../assets/path-layer-roads.jpg)](../examples/north-america-roads) using [`PathLayer`](../api/layers/path-layer)
+- [Overture Maps buildings ![](../assets/overture.jpg)](../examples/overture-maps) using [`PolygonLayer`](../api/layers/polygon-layer)
 - [Global boundaries ![](../assets/boundaries.png)](../examples/global-boundaries) using [`PolygonLayer`](../api/layers/polygon-layer)
 - [U.S. County-to-County Migration ![](../assets/arc-layer-migration-example.gif)](../examples/migration) using [`ArcLayer`](../api/layers/arc-layer) and [`BrushingExtension`](../api/layer-extensions/brushing-extension)
 - [Scatterplot with GPU data filtering ![](../assets/data-filter-extension.gif)](../examples/data-filter-extension) using [`ScatterplotLayer`](../api/layers/scatterplot-layer) and [`DataFilterExtension`](../api/layer-extensions/data-filter-extension)
