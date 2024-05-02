@@ -8,6 +8,7 @@ from __future__ import annotations
 
 import warnings
 from typing import Any, List, Optional, Set, Tuple, Union, cast
+from urllib.parse import urlparse
 
 import matplotlib as mpl
 import numpy as np
@@ -968,3 +969,26 @@ class DashArrayAccessor(FixedErrorTraitType):
 
         self.error(obj, value)
         assert False
+
+
+class BasemapUrl(traitlets.Unicode):
+    def __init__(
+        self: TraitType,
+        *args,
+        **kwargs: Any,
+    ) -> None:
+        super().__init__(*args, **kwargs)
+        self.tag(sync=True)
+
+    def validate(self, obj: Any, value: Any) -> Any:
+        value = super().validate(obj, value)
+
+        try:
+            parsed = urlparse(value)
+        except:  # noqa
+            self.error(obj, value, info="to be a URL")
+
+        if not parsed.scheme.startswith("http"):
+            self.error(obj, value, info="to be a HTTP(s) URL")
+        else:
+            return value
