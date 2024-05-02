@@ -159,7 +159,7 @@ export class PathStyleExtension extends BaseExtensionModel {
     });
 
     // Properties added by the extension onto the layer
-    layerModel.initRegularAttribute("dash_gap_pickle", "dashGapPickle");
+    layerModel.initRegularAttribute("dash_gap_pickable", "dashGapPickable");
     layerModel.initRegularAttribute("dash_justified", "dashJustified");
     layerModel.initVectorizedAccessor("get_dash_array", "getDashArray");
     layerModel.initVectorizedAccessor("get_offset", "getOffset");
@@ -168,7 +168,7 @@ export class PathStyleExtension extends BaseExtensionModel {
     // this extension
     layerModel.extensionLayerPropertyNames = [
       ...layerModel.extensionLayerPropertyNames,
-      "dashGapPickle",
+      "dashGapPickable",
       "dashJustified",
       "getDashArray",
       "getOffset",
