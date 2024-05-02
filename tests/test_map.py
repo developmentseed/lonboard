@@ -31,5 +31,5 @@ def allow_single_layer():
 
 
 def test_map_basemap_non_url():
-    with pytest.raises(TraitError, match="expected to be a HTTP(s) URL"):
+    with pytest.raises(TraitError, match=r"expected to be a HTTP\(s\) URL"):
         _m = Map([], basemap_style="hello world")
