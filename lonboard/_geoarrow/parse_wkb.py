@@ -27,6 +27,10 @@ def parse_wkb_table(table: pa.Table) -> List[pa.Table]:
     table = parse_geoparquet_table(table)
     field_idx = get_geometry_column_index(table.schema)
 
+    # For non-geometry table, just return as-is
+    if field_idx is None:
+        return [table]
+
     field = table.field(field_idx)
     column = table.column(field_idx)
 
