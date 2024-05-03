@@ -80,8 +80,9 @@ nav:
   - cli.md
   - Ecosystem:
       - ecosystem/index.md
-      - ecosystem/geoarrow.md
       - ecosystem/geopandas.md
+      - ecosystem/duckdb.md
+      - ecosystem/geoarrow.md
       - ecosystem/jupyter-widgets.md
       - ecosystem/panel.md
       - ecosystem/shiny.md

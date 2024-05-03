@@ -4,6 +4,7 @@ from __future__ import annotations
 
 import json
 from random import shuffle
+from textwrap import dedent
 from typing import (
     TYPE_CHECKING,
     Any,
@@ -40,6 +41,7 @@ from lonboard.types.layer import (
 from lonboard.types.map import MapKwargs
 
 if TYPE_CHECKING:
+    import duckdb
     import geopandas as gpd
 
     class GeoInterfaceProtocol(Protocol):
@@ -66,6 +68,7 @@ if TYPE_CHECKING:
         ArrowStreamExportable,
         GeoInterfaceProtocol,
         Dict[str, Any],
+        duckdb.DuckDBPyRelation,
     ]
     """A type definition for allowed data inputs to the `viz` function."""
 
@@ -95,6 +98,7 @@ def viz(
     path_kwargs: Optional[PathLayerKwargs] = None,
     polygon_kwargs: Optional[PolygonLayerKwargs] = None,
     map_kwargs: Optional[MapKwargs] = None,
+    con: Optional[duckdb.DuckDBPyConnection] = None,
 ) -> Map:
     """A high-level function to plot your data easily.
 
@@ -103,15 +107,66 @@ def viz(
 
     This function accepts a variety of geospatial inputs:
 
-    - geopandas `GeoDataFrame`
-    - geopandas `GeoSeries`
-    - numpy array of Shapely objects
-    - Single Shapely object
+    - geopandas `GeoDataFrame`.
+    - geopandas `GeoSeries`.
+    - numpy array of Shapely objects.
+    - Single Shapely object.
+    - A DuckDB query with a spatial column from DuckDB Spatial.
+
+        !!! warning
+
+            The DuckDB query must be run with
+            [`duckdb.sql()`](https://duckdb.org/docs/api/python/reference/#duckdb.sql)
+            or
+            [`duckdb.DuckDBPyConnection.sql()`](https://duckdb.org/docs/api/python/reference/#duckdb.DuckDBPyConnection.sql)
+            and not with `duckdb.execute()` or `duckdb.DuckDBPyConnection.execute()`.
+
+            For example
+
+            ```py
+            import duckdb
+            from lonboard import viz
+
+            sql = "SELECT * FROM spatial_table;"
+            query = duckdb.sql(sql)
+            viz(query)
+            ```
+
+            If you're using a custom connection, ensure you pass in the `con` parameter:
+
+            ```py
+            import duckdb
+            from lonboard import viz
+
+            con = duckdb.connect()
+            sql = "SELECT * FROM spatial_table;"
+            query = con.sql(sql)
+            viz(query, con=con)
+            ```
+
+            You can also render an entire table by using the `table()` method:
+
+            ```py
+            import duckdb
+            from lonboard import viz
+
+            con = duckdb.connect()
+            con.execute("CREATE TABLE spatial_table AS ...;")
+            viz(con.table(), con=con)
+            ```
+
+        !!! warning
+
+            DuckDB Spatial does not currently expose coordinate reference system
+            information, so the user must ensure that data has been reprojected to
+            EPSG:4326.
+
     - Any Python class with a `__geo_interface__` property conforming to the
         [Geo Interface protocol](https://gist.github.com/sgillies/2217756).
     - `dict` holding GeoJSON-like data.
-    - pyarrow `Table` with a geometry column marked with a GeoArrow extension type
-    - pyarrow `Array` marked with a [GeoArrow extension type defined by geoarrow-pyarrow](https://geoarrow.org/geoarrow-python/main/pyarrow.html#geoarrow.pyarrow.GeometryExtensionType)
+    - pyarrow `Table` with a geometry column marked with a
+        [GeoArrow](https://geoarrow.org/) extension type.
+    - pyarrow `Array` marked with a [GeoArrow extension type defined by geoarrow-pyarrow](https://geoarrow.org/geoarrow-python/main/pyarrow.html#geoarrow.pyarrow.GeometryExtensionType).
 
     Alternatively, you can pass a `list` or `tuple` of any of the above inputs.
 
@@ -127,8 +182,12 @@ def viz(
           [`PolygonLayer`][lonboard.PolygonLayer]s.
         map_kwargs: a `dict` of parameters to pass down to the generated
           [`Map`][lonboard.Map].
+        con: the active DuckDB connection. This is necessary in some cases when passing
+            in a DuckDB query. In particular, if you're using a non-global DuckDB
+            connection and if your SQL query outputs the default `GEOMETRY` type.
 
-    For more control over rendering, construct `Map` and `Layer` objects directly.
+    For more control over rendering, construct [`Map`][lonboard.Map] and `Layer` objects
+    directly.
 
     Returns:
         widget visualizing the provided data.
@@ -145,6 +204,7 @@ def viz(
                 scatterplot_kwargs=scatterplot_kwargs,
                 path_kwargs=path_kwargs,
                 polygon_kwargs=polygon_kwargs,
+                con=con,
             )
             layers.extend(ls)
     else:
@@ -154,6 +214,7 @@ def viz(
             scatterplot_kwargs=scatterplot_kwargs,
             path_kwargs=path_kwargs,
             polygon_kwargs=polygon_kwargs,
+            con=con,
         )
 
     map_kwargs = {} if not map_kwargs else map_kwargs
@@ -164,8 +225,28 @@ def viz(
     return Map(layers=layers, **map_kwargs)
 
 
+DUCKDB_PY_CONN_ERROR = dedent("""\
+    Must pass in DuckDBPyRelation object, not DuckDBPyConnection.
+
+    Instead of using `duckdb.execute()` or `con.execute()`, use `duckdb.sql()` or
+    `con.sql()`.
+
+    If using `con.sql()`, ensure you pass the `con` into the `viz()` function:
+
+    ```
+    viz(con.sql("SELECT * FROM table;", con=con))
+    ```
+
+    Alternatively, you can call the `table()` method of `con`:
+
+    ```
+    viz(con.table("table_name", con=con))
+    ```
+    """)
+
+
 def create_layers_from_data_input(
-    data: VizDataInput, **kwargs
+    data: VizDataInput, *, con: Optional[duckdb.DuckDBPyConnection] = None, **kwargs
 ) -> List[Union[ScatterplotLayer, PathLayer, PolygonLayer]]:
     """Create one or more renderable layers from data input.
 
@@ -185,6 +266,19 @@ def create_layers_from_data_input(
         and data.__class__.__name__ == "GeoSeries"
     ):
         return _viz_geopandas_geoseries(data, **kwargs)  # type: ignore
+
+    # duckdb DuckDBPyRelation
+    if (
+        data.__class__.__module__.startswith("duckdb")
+        and data.__class__.__name__ == "DuckDBPyRelation"
+    ):
+        return _viz_duckdb_relation(data, con=con, **kwargs)  # type: ignore
+
+    if (
+        data.__class__.__module__.startswith("duckdb")
+        and data.__class__.__name__ == "DuckDBPyConnection"
+    ):
+        raise TypeError(DUCKDB_PY_CONN_ERROR)
 
     # pyarrow table
     if isinstance(data, pa.Table):
@@ -254,6 +348,17 @@ def _viz_geopandas_geoseries(
 
     gdf = gpd.GeoDataFrame(geometry=data)  # type: ignore
     return _viz_geopandas_geodataframe(gdf, **kwargs)
+
+
+def _viz_duckdb_relation(
+    data: duckdb.DuckDBPyRelation,
+    con: Optional[duckdb.DuckDBPyConnection] = None,
+    **kwargs,
+) -> List[Union[ScatterplotLayer, PathLayer, PolygonLayer]]:
+    from lonboard._geoarrow._duckdb import from_duckdb
+
+    table = from_duckdb(data, con=con)
+    return _viz_geoarrow_table(table, **kwargs)
 
 
 def _viz_shapely_scalar(
