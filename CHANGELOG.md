@@ -1,5 +1,28 @@
 # Changelog
 
+## [0.9.0] - 2024-05-06
+
+### New! :sparkles:
+
+- Direct [DuckDB Spatial](https://duckdb.org/docs/extensions/spatial.html) integration. Refer to the [DuckDB example notebook](https://developmentseed.org/lonboard/latest/examples/duckdb/) and the [DuckDB page](https://developmentseed.org/lonboard/latest/ecosystem/duckdb/) in the documentation. by @kylebarron in https://github.com/developmentseed/lonboard/pull/498
+- Add [overture buildings notebook](https://developmentseed.org/lonboard/latest/examples/overture-maps/) by @kylebarron in https://github.com/developmentseed/lonboard/pull/479
+- Adding [PathStyleExtension](https://developmentseed.org/lonboard/latest/api/layer-extensions/path-style-extension/) code by @shriv in https://github.com/developmentseed/lonboard/pull/487
+- Handle mixed geometry types in `viz` by @kylebarron in https://github.com/developmentseed/lonboard/pull/495
+- Render map as static HTML file by @kylebarron in https://github.com/developmentseed/lonboard/pull/474. You can use `Map.as_html` to render a map in notebook environments that support HTML but not widgets.
+- Improved integration with [geoarrow-pyarrow](https://geoarrow.org/geoarrow-python/main/pyarrow.html) by @kylebarron in https://github.com/developmentseed/lonboard/pull/470
+
+### Fixes :bug:
+
+- Updated Map keyword arguments by @kylebarron in https://github.com/developmentseed/lonboard/pull/496
+- validate basemap style is a url by @kylebarron in https://github.com/developmentseed/lonboard/pull/497
+
+### New Contributors
+
+- @willemarcel made their first contribution in https://github.com/developmentseed/lonboard/pull/486
+- @shriv made their first contribution in https://github.com/developmentseed/lonboard/pull/487
+
+**Full Changelog**: https://github.com/developmentseed/lonboard/compare/v0.8.0...v0.9.0
+
 ## [0.8.0] - 2024-04-05
 
 ### New! :sparkles:
