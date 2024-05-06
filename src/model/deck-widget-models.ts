@@ -6,9 +6,10 @@ import { TitleWidget } from "./deck-widget.js";
 
 export abstract class BaseDeckWidgetModel extends BaseModel {
 
+  // protected props: Object = {};
   // protected viewId: string | null = null;
   protected placement: WidgetPlacement = "top-left";
-  // protected props: Object = {};
+  protected className: string | undefined = undefined;
 
   constructor(model: WidgetModel, updateStateCallback: () => void) {
     super(model, updateStateCallback);
@@ -16,6 +17,7 @@ export abstract class BaseDeckWidgetModel extends BaseModel {
     // this.initRegularAttribute("props", "props");
     // this.initRegularAttribute("view_id", "viewId");
     this.initRegularAttribute("placement", "placement");
+    this.initRegularAttribute("class_name", "className");
   }
 
   abstract render(): Widget;
@@ -27,7 +29,6 @@ export class FullscreenWidgetModel extends BaseDeckWidgetModel {
   protected enterLabel: string = "Enter Fullscreen";
   protected exitLabel: string = "Exit Fullscreen";
   protected style: Partial<CSSStyleDeclaration> = {};
-  protected className: string | undefined = undefined;
 
   constructor(model: WidgetModel, updateStateCallback: () => void) {
     super(model, updateStateCallback);
@@ -60,7 +61,6 @@ export class ZoomWidgetModel extends BaseDeckWidgetModel {
   protected zoomOutLabel: string = "Zoom Out";
   protected transitionDuration: number = 200;
   protected style: Partial<CSSStyleDeclaration> = {};
-  protected className: string | undefined = undefined;
 
   constructor(model: WidgetModel, updateStateCallback: () => void) {
     super(model, updateStateCallback);
@@ -94,7 +94,6 @@ export class CompassWidgetModel extends BaseDeckWidgetModel {
   protected label: string = "Compass";
   protected transitionDuration: number = 200;
   protected style: Partial<CSSStyleDeclaration> = {};
-  protected className: string | undefined = undefined;
 
   constructor(model: WidgetModel, updateStateCallback: () => void) {
     super(model, updateStateCallback);
@@ -161,7 +160,7 @@ export class TitleWidgetModel extends BaseDeckWidgetModel{
       title: this.title, 
       placement: this.placement, 
       style: {
-        ...LightTheme,
+        //...LightTheme,
         'fontSize': this.fontSize,
         'fontStyle': this.fontStyle,
         'fontFamily': this.fontFamily,
@@ -171,7 +170,8 @@ export class TitleWidgetModel extends BaseDeckWidgetModel{
         'borderRadius': this.borderRadius,
         'border': this.border,
         'padding': this.padding,
-      }
+      },
+      className: this.className,
     })
   }
 }
