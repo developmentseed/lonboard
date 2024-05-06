@@ -4,7 +4,7 @@
   },
   "dependencies": {
     "@anywidget/react": "^0.0.7",
-    "@babel/runtime": "^7.24.4",
+    "@babel/runtime": "^7.24.5",
     "@deck.gl/core": "^8.9.35",
     "@deck.gl/extensions": "^8.9.35",
     "@deck.gl/layers": "^8.9.35",
@@ -12,7 +12,7 @@
     "@geoarrow/deck.gl-layers": "^0.3.0-beta.16",
     "apache-arrow": "^16.0.0",
     "maplibre-gl": "^3.6.2",
-    "parquet-wasm": "0.6.0",
+    "parquet-wasm": "0.6.1",
     "react": "^18.3.1",
     "react-dom": "^18.3.1",
     "react-map-gl": "^7.1.7",
@@ -28,7 +28,7 @@
     "nodemon": "^3.1.0",
     "prettier": "^3.2.5",
     "typescript": "^5.4.5",
-    "vitest": "^1.5.2"
+    "vitest": "^1.6.0"
   },
   "scripts": {
     "build": "node ./build.mjs",
