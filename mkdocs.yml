@@ -44,6 +44,7 @@ nav:
       - examples/global-boundaries.ipynb
       - examples/migration.ipynb
       - examples/data-filter-extension.ipynb
+      - examples/duckdb.ipynb
       - Integrations:
           - ColorPicker: examples/integrations/color-picker.ipynb
           - Sidecar: examples/integrations/sidecar.ipynb
