@@ -1775,8 +1775,8 @@ class HeatmapLayer(BaseArrowLayer):
     """The weight of each object.
 
     - Type: [FloatAccessor][lonboard.traits.FloatAccessor], optional
-        - If a number is provided, it is used as the outline width for all objects.
-        - If an array is provided, each value in the array will be used as the outline
-          width for the object at the same row index.
+        - If a number is provided, it is used as the weight for all objects.
+        - If an array is provided, each value in the array will be used as the weight
+          for the object at the same row index.
     - Default: `1`.
     """
