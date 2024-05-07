@@ -9,7 +9,7 @@
     "@deck.gl/extensions": "^9.0.9",
     "@deck.gl/geo-layers": "^9.0.9",
     "@deck.gl/layers": "^9.0.9",
-    "@deck.gl/react": "^9.0.9",
+    "@deck.gl/react": "^19.0.9",
     "@deck.gl/widgets": "^9.0.11",
     "@geoarrow/deck.gl-layers": "github:atmorling/deck.gl-layers#v9-test",
     "apache-arrow": "^15.0.2",

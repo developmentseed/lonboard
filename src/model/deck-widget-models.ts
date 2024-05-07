@@ -2,7 +2,7 @@ import type { WidgetModel } from "@jupyter-widgets/base";
 import { BaseModel } from "./base.js";
 import { Widget, WidgetPlacement } from "@deck.gl/core";
 import { CompassWidget, ZoomWidget, FullscreenWidget, LightTheme } from "@deck.gl/widgets";
-import { TitleWidget } from "./deck-widget.js";
+import { NorthArrowWidget, TitleWidget } from "./deck-widget.js";
 
 export abstract class BaseDeckWidgetModel extends BaseModel {
 
@@ -41,7 +41,7 @@ export class FullscreenWidgetModel extends BaseDeckWidgetModel {
 
   render(): FullscreenWidget {
     return new FullscreenWidget({
-      id: "fullscreen",
+      id: "fullscreen-widget",
       placement: this.placement,
       enterLabel: this.enterLabel,
       exitLabel: this.exitLabel,
@@ -74,7 +74,7 @@ export class ZoomWidgetModel extends BaseDeckWidgetModel {
 
   render(): ZoomWidget {
     return new ZoomWidget({
-      id: "fullscreen",
+      id: "zoom-widget",
       placement: this.placement,
       zoomInLabel: this.zoomInLabel,
       zoomOutLabel: this.zoomOutLabel,
@@ -106,7 +106,39 @@ export class CompassWidgetModel extends BaseDeckWidgetModel {
 
   render(): CompassWidget {
     return new CompassWidget({
-      id: "fullscreen",
+      id: "compass-widget",
+      placement: this.placement,
+      label: this.label,
+      transitionDuration: this.transitionDuration,
+      style: {
+        ...LightTheme as Partial<CSSStyleDeclaration>,
+        ...this.style
+      },
+      className: this.className,
+    }) 
+  }
+}
+
+export class NorthArrowWidgetModel extends BaseDeckWidgetModel {
+  static widgetType = "north-arrow";
+
+  protected label: string = "North Arrow";
+  protected transitionDuration: number = 200;
+  protected style: Partial<CSSStyleDeclaration> = {};
+
+  constructor(model: WidgetModel, updateStateCallback: () => void) {
+    super(model, updateStateCallback);
+
+    this.initRegularAttribute("label", "label");
+    this.initRegularAttribute("transition_duration", "transitionDuration");
+    this.initRegularAttribute("style", "style");
+    this.initRegularAttribute("class_name", "className");
+  }
+
+  render(): NorthArrowWidget {
+    return new NorthArrowWidget({
+      id: "north-arrow-widget",
+      placement: this.placement,
       label: this.label,
       transitionDuration: this.transitionDuration,
       style: {
@@ -199,9 +231,12 @@ export async function initializeWidget(
       deckWidgetModel = new TitleWidgetModel(model, updateStateCallback);
       break;
 
+    case NorthArrowWidgetModel.widgetType:
+      deckWidgetModel = new NorthArrowWidgetModel(model, updateStateCallback);
+      break;  
+
     default:
       throw new Error(`no widget supported for ${deckWidgetType}`);
   }
-  
   return deckWidgetModel;
 }

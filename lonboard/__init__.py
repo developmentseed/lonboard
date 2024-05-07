@@ -23,5 +23,6 @@ from ._deck_widget import (
     FullscreenWidget,
     ZoomWidget,
     CompassWidget,
-    TitleWidget
+    TitleWidget,
+    NorthArrowWidget
 )

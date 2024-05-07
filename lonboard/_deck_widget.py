@@ -48,6 +48,17 @@ class CompassWidget(BaseDeckWidget):
     def __init__(self, **kwargs):
         super().__init__(**kwargs)
 
+class NorthArrowWidget(BaseDeckWidget):
+    _widget_type = traitlets.Unicode("north-arrow").tag(sync=True)
+
+    label = traitlets.Unicode(default_value=None, allow_none=True).tag(sync=True)
+    transition_duration = traitlets.Int(default_value=None, allow_none=True).tag(sync=True)
+    style = traitlets.Dict(default_value=None, allow_none=True).tag(sync=True)
+    class_name = traitlets.Unicode(default_value=None, allow_none=True).tag(sync=True)
+    
+    def __init__(self, **kwargs):
+        super().__init__(**kwargs)
+
 class TitleWidget(BaseDeckWidget):
 
     _widget_type = traitlets.Unicode("title").tag(sync=True)
