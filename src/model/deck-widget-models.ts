@@ -2,7 +2,7 @@ import type { WidgetModel } from "@jupyter-widgets/base";
 import { BaseModel } from "./base.js";
 import { Widget, WidgetPlacement } from "@deck.gl/core";
 import { CompassWidget, ZoomWidget, FullscreenWidget, LightTheme } from "@deck.gl/widgets";
-import { NorthArrowWidget, TitleWidget } from "./deck-widget.js";
+import { LegendWidget, NorthArrowWidget, TitleWidget } from "./deck-widget.js";
 
 export abstract class BaseDeckWidgetModel extends BaseModel {
 
@@ -47,7 +47,7 @@ export class FullscreenWidgetModel extends BaseDeckWidgetModel {
       exitLabel: this.exitLabel,
       style: {
         ...LightTheme as Partial<CSSStyleDeclaration>,
-        ...this.style
+        ...this.style,
       },
       className: this.className,
     }) 
@@ -81,7 +81,7 @@ export class ZoomWidgetModel extends BaseDeckWidgetModel {
       transitionDuration: this.transitionDuration,
       style: {
         ...LightTheme as Partial<CSSStyleDeclaration>,
-        ...this.style
+        ...this.style,
       },
       className: this.className,
     }) 
@@ -112,7 +112,7 @@ export class CompassWidgetModel extends BaseDeckWidgetModel {
       transitionDuration: this.transitionDuration,
       style: {
         ...LightTheme as Partial<CSSStyleDeclaration>,
-        ...this.style
+        ...this.style,
       },
       className: this.className,
     }) 
@@ -143,7 +143,7 @@ export class NorthArrowWidgetModel extends BaseDeckWidgetModel {
       transitionDuration: this.transitionDuration,
       style: {
         ...LightTheme as Partial<CSSStyleDeclaration>,
-        ...this.style
+        ...this.style,
       },
       className: this.className,
     }) 
@@ -155,35 +155,14 @@ export class TitleWidgetModel extends BaseDeckWidgetModel{
 
   protected title: string = "";
   protected placement: WidgetPlacement = "top-right";
-  //protected style: Partial<CSSStyleDeclaration> = {};
-
-  protected fontSize: string = "";
-  protected fontStyle: string = "";
-  protected fontFamily: string = "";
-  protected color: string = "";
-  protected backgroundColor: string = "";
-  protected outline: string = "";
-  protected borderRadius: string = "";
-  protected border: string = "";
-  protected padding: string = "";
+  protected style: Partial<CSSStyleDeclaration> = {};
 
   constructor(model: WidgetModel, updateStateCallback: () => void) {
     super(model, updateStateCallback);
 
     this.initRegularAttribute("title", "title");
     this.initRegularAttribute("placement", "placement");
-    //this.initRegularAttribute("style", "style");
-
-    this.initRegularAttribute("font_size", "fontSize" );
-    this.initRegularAttribute("font_style", "fontStyle" );
-    this.initRegularAttribute("font_family", "fontFamily" );
-    this.initRegularAttribute("font_color", "color" );
-    this.initRegularAttribute("background_color", "backgroundColor" );
-    this.initRegularAttribute("outline", "outline" );
-    this.initRegularAttribute("border_radius", "borderRadius" );
-    this.initRegularAttribute("border", "border" );
-    this.initRegularAttribute("padding", "padding" );
-    
+    this.initRegularAttribute("style", "style");
   }
 
   render() {
@@ -192,16 +171,48 @@ export class TitleWidgetModel extends BaseDeckWidgetModel{
       title: this.title, 
       placement: this.placement, 
       style: {
-        //...LightTheme,
-        'fontSize': this.fontSize,
-        'fontStyle': this.fontStyle,
-        'fontFamily': this.fontFamily,
-        'color': this.color,
-        'backgroundColor': this.backgroundColor,
-        'outline': this.outline,
-        'borderRadius': this.borderRadius,
-        'border': this.border,
-        'padding': this.padding,
+        ...LightTheme,
+        ...this.style,
+      },
+      className: this.className,
+    })
+  }
+}
+
+export class LegendWidgetModel extends BaseDeckWidgetModel{
+  static widgetType = "legend";
+
+  protected title: string = "Legend";
+  protected labels: string[] = [];
+  protected colors: string[] = [];
+  protected placement: WidgetPlacement = "bottom-right";
+  protected style: Partial<CSSStyleDeclaration> = {};
+
+  constructor(model: WidgetModel, updateStateCallback: () => void) {
+    super(model, updateStateCallback);
+
+    this.initRegularAttribute("title", "title");
+    this.initRegularAttribute("placement", "placement");
+    this.initRegularAttribute("style", "style");
+
+    this.initRegularAttribute("labels", "labels");
+    this.initRegularAttribute("colors", "colors");
+  }
+
+  render() {
+    const legend = new Map<string,string>()
+    for (const i in this.labels) {
+      legend.set(this.labels[i], this.colors[i]);
+    }
+
+    return new LegendWidget({
+      id:  "legend", 
+      title: this.title, 
+      legend: legend,
+      placement: this.placement, 
+      style: {
+        // ...LightTheme,
+        ...this.style,
       },
       className: this.className,
     })
@@ -233,6 +244,10 @@ export async function initializeWidget(
 
     case NorthArrowWidgetModel.widgetType:
       deckWidgetModel = new NorthArrowWidgetModel(model, updateStateCallback);
+      break;  
+
+    case LegendWidgetModel.widgetType:
+      deckWidgetModel = new LegendWidgetModel(model, updateStateCallback);
       break;  
 
     default:

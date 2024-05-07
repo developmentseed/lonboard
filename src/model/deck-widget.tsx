@@ -26,7 +26,7 @@ export class TitleWidget implements Widget<TitleWidgetProps> {
     this.placement = props.placement || 'top-right';
     props.title = props.title;
     props.style = props.style || {};
-    props.className = props.className || 'deck-widget-title';
+    this.className = props.className || 'deck-widget-title';
     this.props = props;
   }
 
@@ -38,7 +38,7 @@ export class TitleWidget implements Widget<TitleWidgetProps> {
     const element = document.createElement('div');
     
     element.classList.add('deck-widget');
-    if (this.props.className) element.classList.add(this.props.className);
+    if (this.className) element.classList.add(this.className);
 
     const titleElement = document.createElement('div');
     titleElement.innerText = this.props.title;
@@ -46,11 +46,93 @@ export class TitleWidget implements Widget<TitleWidgetProps> {
     const {style} = this.props;
     if (style) {
       Object.entries(style).map(([key, value]) => {
-        titleElement.style.setProperty(key, value as string);
+        element.style.setProperty(key, value as string);
       } );
     }
     element.appendChild(titleElement);
     
+    this.deck = deck;
+    this.element = element;
+    return element;
+  }
+  
+  onRemove() {
+    this.deck = undefined;
+    this.element = undefined;
+  }
+}
+
+interface LegendWidgetProps {
+  id: string;
+  title: string,
+  legend: Map<string, string>,
+  placement?: WidgetPlacement;
+  style?: Partial<CSSStyleDeclaration>;
+  className?: string;
+}
+
+export class LegendWidget implements Widget<LegendWidgetProps> {
+
+  id = "legend";
+  props: LegendWidgetProps;
+  placement: WidgetPlacement = "bottom-right";
+
+  deck?: Deck;
+  element?: HTMLDivElement;
+  className: string = "deck-widget-legend";
+
+  constructor(props: LegendWidgetProps) {
+    this.id = props.id || 'legend';
+    this.placement = props.placement || 'bottom-right';
+    props.title = props.title || 'Legend';
+    props.legend = props.legend;
+    props.style = props.style || {};
+    this.className = props.className || 'deck-widget-legend';
+    this.props = props;
+  }
+
+  setProps(props: Partial<TitleWidgetProps>) {
+    Object.assign(this.props, props);
+  }
+  
+  onAdd({deck}: {deck: Deck}): HTMLDivElement {
+    const element = document.createElement('div');
+    
+    element.classList.add('deck-widget');
+    if (this.className) element.classList.add(this.className);
+
+    const titleElement = document.createElement('div');
+    titleElement.innerText = this.props.title;
+    titleElement.classList.add("legend-title");
+
+    const legendElement = document.createElement('div');
+    legendElement.classList.add("legend-scale");
+
+    const ul = document.createElement('ul');
+    ul.classList.add("legend-labels");
+
+    this.props.legend.forEach((color, label) => {
+      const li = document.createElement('li');
+      const span = document.createElement('span');
+
+      span.style.setProperty("background", color )
+      li.innerText = label;
+
+      li.appendChild(span);
+      ul.appendChild(li);
+    });
+
+    legendElement.appendChild(ul);
+
+    const {style} = this.props;
+    if (style) {
+      Object.entries(style).map(([key, value]) => {
+        element.style.setProperty(key, value as string);
+      } );
+    }
+    element.appendChild(titleElement);
+    element.appendChild(legendElement);
+
     this.deck = deck;
     this.element = element;
     return element;

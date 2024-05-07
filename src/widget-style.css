@@ -148,8 +148,8 @@
     );
   }
 
-  .deck-widget.deck-widget-title{
-    font-size: 32px;
+  .deck-widget.deck-widget-title {
+    font-size: 26px;
     font-style: normal;
     font-family: Helvetica;
     color: rgb(0,0,0);
@@ -162,4 +162,64 @@
     border-style: solid;
     border-color: rgb(0,0,0);
     padding: 3px;
+    text-align: center;
   }
+
+  .deck-widget.deck-widget-legend {
+    background-color: rgb(255, 255, 255);
+    border-color: rgb(0,0,0);
+    border-style: solid;
+    border-radius: 5px;
+    border-width: 1px;
+    padding: 10px; 
+    font-size:14px; 
+  }
+
+  .legend-title {
+    text-align: left;
+    margin-bottom: 5px;
+    font-weight: bold;
+    /* font-size: 90%; */
+    font-family: "Helvetica";
+    color: rgba(0, 0, 0, 1);
+    }
+
+  .legend-scale ul{
+    list-style: none;
+    margin: 0;
+    margin-bottom: 5px;
+    padding: 0;
+    color: rgba(0, 0, 0, 1);
+  }
+
+  .deck-widget.deck-widget-legend.legend-scale ul {
+    margin: 0;
+    margin-bottom: 5px;
+    padding: 0;
+    float: left;
+    list-style: none;
+    }
+  .deck-widget.deck-widget-legend.legend-scale ul li {
+    font-size: 80%;
+    list-style: none;
+    margin-left: 0;
+    line-height: 18px;
+    margin-bottom: 2px;
+    }
+  .deck-widget.deck-widget-legend ul.legend-labels li span {
+    display: block;
+    float: left;
+    height: 16px;
+    width: 30px;
+    margin-right: 5px;
+    margin-left: 0;
+    border: 1px solid #999;
+    }
+  /* .maplegend .legend-source {
+    font-size: 80%;
+    color: #777;
+    clear: both;
+    }
+  .maplegend a {
+    color: #777;
+    } */

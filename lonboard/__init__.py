@@ -24,5 +24,6 @@ from ._deck_widget import (
     ZoomWidget,
     CompassWidget,
     TitleWidget,
-    NorthArrowWidget
+    NorthArrowWidget,
+    LegendWidget
 )
