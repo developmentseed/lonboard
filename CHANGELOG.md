@@ -1,5 +1,13 @@
 # Changelog
 
+## [0.9.1] - 2024-05-07
+
+### Fixes :bug:
+
+- Fix parquet-wasm WASM version mismatch by @kylebarron in https://github.com/developmentseed/lonboard/pull/508
+
+**Full Changelog**: https://github.com/developmentseed/lonboard/compare/v0.9.0...v0.9.1
+
 ## [0.9.0] - 2024-05-06
 
 ### New! :sparkles:
