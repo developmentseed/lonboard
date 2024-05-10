@@ -158,9 +158,7 @@ def _reproject_coords(arr: pa.FixedSizeListArray, transformer: Transformer):
         raise ValueError(f"Unexpected list size {list_size}")
 
     coord_field = pa.list_(pa.field(dims, pa.float64()), len(dims))
-    return pa.FixedSizeListArray.from_arrays(
-        output_np_arr.flatten("C"), type=coord_field
-    )
+    return pa.FixedSizeListArray.from_arrays(output_np_arr.ravel("C"), type=coord_field)
 
 
 def _reproject_chunk_nest_0(arr: pa.ListArray, transformer: Transformer):
