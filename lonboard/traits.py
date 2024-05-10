@@ -272,7 +272,7 @@ class ColorAccessor(FixedErrorTraitType):
                     info="Color array must have 3 or 4 as its second dimension.",
                 )
 
-            return pa.FixedSizeListArray.from_arrays(value.flatten("C"), list_size)
+            return pa.FixedSizeListArray.from_arrays(value.ravel("C"), list_size)
 
         # Check for Arrow PyCapsule Interface
         # https://arrow.apache.org/docs/format/CDataInterface/PyCapsuleInterface.html
@@ -502,7 +502,7 @@ class PointAccessor(FixedErrorTraitType):
                     info="Point array to have 2 or 3 as its second dimension",
                 )
 
-            return pa.FixedSizeListArray.from_arrays(value.flatten("C"), list_size)
+            return pa.FixedSizeListArray.from_arrays(value.ravel("C"), list_size)
 
         if isinstance(value, (pa.ChunkedArray, pa.Array)):
             if not pa.types.is_fixed_size_list(value.type):
@@ -681,7 +681,7 @@ class FilterValueAccessor(FixedErrorTraitType):
                     ),
                 )
 
-            return pa.FixedSizeListArray.from_arrays(value.flatten("C"), filter_size)
+            return pa.FixedSizeListArray.from_arrays(value.ravel("C"), filter_size)
 
         # Check for Arrow PyCapsule Interface
         # https://arrow.apache.org/docs/format/CDataInterface/PyCapsuleInterface.html
@@ -800,7 +800,7 @@ class NormalAccessor(FixedErrorTraitType):
                 )
                 value = value.astype(np.float32)
 
-            return pa.FixedSizeListArray.from_arrays(value.flatten("C"), 3)
+            return pa.FixedSizeListArray.from_arrays(value.ravel("C"), 3)
 
         # Check for Arrow PyCapsule Interface
         # https://arrow.apache.org/docs/format/CDataInterface/PyCapsuleInterface.html
@@ -932,7 +932,7 @@ class DashArrayAccessor(FixedErrorTraitType):
             if np.issubdtype(value.dtype, np.float64):
                 value = value.astype(np.float32)
 
-            return pa.FixedSizeListArray.from_arrays(value.flatten("C"), list_size)
+            return pa.FixedSizeListArray.from_arrays(value.ravel("C"), list_size)
 
         # Check for Arrow PyCapsule Interface
         # https://arrow.apache.org/docs/format/CDataInterface/PyCapsuleInterface.html
