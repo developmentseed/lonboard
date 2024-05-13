@@ -159,12 +159,12 @@ def split_mixed_gdf(gdf: gpd.GeoDataFrame) -> List[gpd.GeoDataFrame]:
     # Starting from polygons, then linestrings, then points,
     # so that the order of generated layers is polygon, then path then scatterplot.
     # This ensures that points are rendered on top and polygons on the bottom.
-    for single_typ_geometry_indices in (
+    for single_type_geometry_indices in (
         polygon_indices,
         linestring_indices,
         point_indices,
     ):
-        if len(single_typ_geometry_indices) > 0:
-            gdfs.append(gdf.iloc[single_typ_geometry_indices])
+        if len(single_type_geometry_indices) > 0:
+            gdfs.append(gdf.iloc[single_type_geometry_indices])
 
     return gdfs
