@@ -54,8 +54,8 @@ def parse_wkb_table(table: pa.Table) -> List[pa.Table]:
     if GeometryType.LINEARRING in unique_type_ids:
         raise ValueError("LinearRings not currently supported")
 
-    polygon_indices = np.where(
-        (type_ids == GeometryType.POLYGON) | (type_ids == GeometryType.MULTIPOLYGON)
+    point_indices = np.where(
+        (type_ids == GeometryType.POINT) | (type_ids == GeometryType.MULTIPOINT)
     )[0]
 
     linestring_indices = np.where(
@@ -63,39 +63,30 @@ def parse_wkb_table(table: pa.Table) -> List[pa.Table]:
         | (type_ids == GeometryType.MULTILINESTRING)
     )[0]
 
-    point_indices = np.where(
-        (type_ids == GeometryType.POINT) | (type_ids == GeometryType.MULTIPOINT)
+    polygon_indices = np.where(
+        (type_ids == GeometryType.POLYGON) | (type_ids == GeometryType.MULTIPOLYGON)
     )[0]
 
-    if len(polygon_indices) > 0:
-        polygon_field, polygon_arr = construct_geometry_array(
-            shapely_arr[polygon_indices],
-            crs_str=crs_str,
-        )
-        polygon_table = table.take(polygon_indices).set_column(
-            field_idx, polygon_field, polygon_arr
-        )
-        parsed_tables.append(polygon_table)
-
-    if len(linestring_indices) > 0:
-        linestring_field, linestring_arr = construct_geometry_array(
-            shapely_arr[linestring_indices],
-            crs_str=crs_str,
-        )
-        linestring_table = table.take(linestring_indices).set_column(
-            field_idx, linestring_field, linestring_arr
-        )
-        parsed_tables.append(linestring_table)
-
-    if len(point_indices) > 0:
-        point_field, point_arr = construct_geometry_array(
-            shapely_arr[point_indices],
-            crs_str=crs_str,
-        )
-        point_table = table.take(point_indices).set_column(
-            field_idx, point_field, point_arr
-        )
-        parsed_tables.append(point_table)
+    # Here we intentionally check geometries in a specific order.
+    # Starting from polygons, then linestrings, then points,
+    # so that the order of generated layers is polygon, then path then scatterplot.
+    # This ensures that points are rendered on top and polygons on the bottom.
+    for single_type_geometry_indices in (
+        polygon_indices,
+        linestring_indices,
+        point_indices,
+    ):
+        if len(single_type_geometry_indices) > 0:
+            single_type_geometry_field, single_type_geometry_arr = (
+                construct_geometry_array(
+                    shapely_arr[single_type_geometry_indices],
+                    crs_str=crs_str,
+                )
+            )
+            geometry_table = table.take(single_type_geometry_indices).set_column(
+                field_idx, single_type_geometry_field, single_type_geometry_arr
+            )
+            parsed_tables.append(geometry_table)
 
     return parsed_tables
 
