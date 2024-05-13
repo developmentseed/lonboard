@@ -312,7 +312,7 @@ class Map(BaseAnyWidget):
         *,
         longitude: Union[int, float],
         latitude: Union[int, float],
-        zoom: float,
+        zoom: Union[int, float],
         duration: int = 4000,
         pitch: Union[int, float] = 0,
         bearing: Union[int, float] = 0,
@@ -339,6 +339,19 @@ class Map(BaseAnyWidget):
                 second. Similar to speed it linearly affects the duration, when
                 specified speed is ignored.
         """
+        if not isinstance(longitude, (int, float)):
+            raise TypeError(
+                f"Expected longitude to be an int or float, got {type(longitude)}"
+            )
+
+        if not isinstance(latitude, (int, float)):
+            raise TypeError(
+                f"Expected latitude to be an int or float, got {type(latitude)}"
+            )
+
+        if not isinstance(zoom, (int, float)):
+            raise TypeError(f"Expected zoom to be an int or float, got {type(zoom)}")
+
         data = {
             "type": "fly-to",
             "longitude": longitude,
