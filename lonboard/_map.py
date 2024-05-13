@@ -406,7 +406,7 @@ class Map(BaseAnyWidget):
 
         !!! warning
 
-            The primary, recommended way to display a map is by "displaying" it by
+            The primary, recommended way to display a map is by
             leaving it as the last line in a cell.
 
             ```py
