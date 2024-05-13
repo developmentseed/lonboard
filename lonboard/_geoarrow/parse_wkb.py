@@ -83,10 +83,12 @@ def parse_wkb_table(table: pa.Table) -> List[pa.Table]:
                     crs_str=crs_str,
                 )
             )
-            geometry_table = table.take(single_type_geometry_indices).set_column(
+            single_type_geometry_table = table.take(
+                single_type_geometry_indices
+            ).set_column(
                 field_idx, single_type_geometry_field, single_type_geometry_arr
             )
-            parsed_tables.append(geometry_table)
+            parsed_tables.append(single_type_geometry_table)
 
     return parsed_tables
 
