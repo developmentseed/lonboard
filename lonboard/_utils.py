@@ -131,21 +131,21 @@ def split_mixed_gdf(gdf: gpd.GeoDataFrame) -> List[gpd.GeoDataFrame]:
         return [gdf]
 
     if len(unique_type_ids) == 2:
-        if unique_type_ids == {GeometryType.POINT, GeometryType.MULTIPOINT}:
+        if unique_type_ids == {GeometryType.POLYGON, GeometryType.MULTIPOLYGON}:
             return [gdf]
 
         if unique_type_ids == {GeometryType.LINESTRING, GeometryType.MULTILINESTRING}:
             return [gdf]
 
-        if unique_type_ids == {GeometryType.POLYGON, GeometryType.MULTIPOLYGON}:
+        if unique_type_ids == {GeometryType.POINT, GeometryType.MULTIPOINT}:
             return [gdf]
 
     gdfs = []
-    point_indices = np.where(
-        (type_ids == GeometryType.POINT) | (type_ids == GeometryType.MULTIPOINT)
+    polygon_indices = np.where(
+        (type_ids == GeometryType.POLYGON) | (type_ids == GeometryType.MULTIPOLYGON)
     )[0]
-    if len(point_indices) > 0:
-        gdfs.append(gdf.iloc[point_indices])
+    if len(polygon_indices) > 0:
+        gdfs.append(gdf.iloc[polygon_indices])
 
     linestring_indices = np.where(
         (type_ids == GeometryType.LINESTRING)
@@ -154,10 +154,10 @@ def split_mixed_gdf(gdf: gpd.GeoDataFrame) -> List[gpd.GeoDataFrame]:
     if len(linestring_indices) > 0:
         gdfs.append(gdf.iloc[linestring_indices])
 
-    polygon_indices = np.where(
-        (type_ids == GeometryType.POLYGON) | (type_ids == GeometryType.MULTIPOLYGON)
+    point_indices = np.where(
+        (type_ids == GeometryType.POINT) | (type_ids == GeometryType.MULTIPOINT)
     )[0]
-    if len(polygon_indices) > 0:
-        gdfs.append(gdf.iloc[polygon_indices])
+    if len(point_indices) > 0:
+        gdfs.append(gdf.iloc[point_indices])
 
     return gdfs

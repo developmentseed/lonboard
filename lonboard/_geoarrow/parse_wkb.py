@@ -54,8 +54,8 @@ def parse_wkb_table(table: pa.Table) -> List[pa.Table]:
     if GeometryType.LINEARRING in unique_type_ids:
         raise ValueError("LinearRings not currently supported")
 
-    point_indices = np.where(
-        (type_ids == GeometryType.POINT) | (type_ids == GeometryType.MULTIPOINT)
+    polygon_indices = np.where(
+        (type_ids == GeometryType.POLYGON) | (type_ids == GeometryType.MULTIPOLYGON)
     )[0]
 
     linestring_indices = np.where(
@@ -63,19 +63,19 @@ def parse_wkb_table(table: pa.Table) -> List[pa.Table]:
         | (type_ids == GeometryType.MULTILINESTRING)
     )[0]
 
-    polygon_indices = np.where(
-        (type_ids == GeometryType.POLYGON) | (type_ids == GeometryType.MULTIPOLYGON)
+    point_indices = np.where(
+        (type_ids == GeometryType.POINT) | (type_ids == GeometryType.MULTIPOINT)
     )[0]
 
-    if len(point_indices) > 0:
-        point_field, point_arr = construct_geometry_array(
-            shapely_arr[point_indices],
+    if len(polygon_indices) > 0:
+        polygon_field, polygon_arr = construct_geometry_array(
+            shapely_arr[polygon_indices],
             crs_str=crs_str,
         )
-        point_table = table.take(point_indices).set_column(
-            field_idx, point_field, point_arr
+        polygon_table = table.take(polygon_indices).set_column(
+            field_idx, polygon_field, polygon_arr
         )
-        parsed_tables.append(point_table)
+        parsed_tables.append(polygon_table)
 
     if len(linestring_indices) > 0:
         linestring_field, linestring_arr = construct_geometry_array(
@@ -87,15 +87,15 @@ def parse_wkb_table(table: pa.Table) -> List[pa.Table]:
         )
         parsed_tables.append(linestring_table)
 
-    if len(polygon_indices) > 0:
-        polygon_field, polygon_arr = construct_geometry_array(
-            shapely_arr[polygon_indices],
+    if len(point_indices) > 0:
+        point_field, point_arr = construct_geometry_array(
+            shapely_arr[point_indices],
             crs_str=crs_str,
         )
-        polygon_table = table.take(polygon_indices).set_column(
-            field_idx, polygon_field, polygon_arr
+        point_table = table.take(point_indices).set_column(
+            field_idx, point_field, point_arr
         )
-        parsed_tables.append(polygon_table)
+        parsed_tables.append(point_table)
 
     return parsed_tables
 
