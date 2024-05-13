@@ -105,9 +105,9 @@ def test_viz_shapely_mixed_array():
     geoms = mixed_shapely_geoms()
     map_ = viz(geoms)
 
-    assert isinstance(map_.layers[0], PolygonLayer)
+    assert isinstance(map_.layers[0], ScatterplotLayer)
     assert isinstance(map_.layers[1], PathLayer)
-    assert isinstance(map_.layers[2], ScatterplotLayer)
+    assert isinstance(map_.layers[2], PolygonLayer)
 
 
 def test_viz_geoarrow_rust_table():
