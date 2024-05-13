@@ -1,7 +1,7 @@
 [tool.poetry]
 name = "lonboard"
 version = "0.9.1"
-description = "Fast, interactive geospatial vector data visualization in Jupyter."
+description = "Fast, interactive geospatial data visualization in Jupyter."
 authors = ["Kyle Barron <kyle@developmentseed.org>"]
 license = "MIT"
 readme = "README.md"
