@@ -47,9 +47,9 @@ def test_viz_wkb_pyarrow():
 def test_viz_wkb_mixed_pyarrow():
     table = pq.read_table(fixtures_dir / "monaco_nofilter_noclip_compact.parquet")
     map_ = viz(table)
-    assert isinstance(map_.layers[0], ScatterplotLayer)
+    assert isinstance(map_.layers[0], PolygonLayer)
     assert isinstance(map_.layers[1], PathLayer)
-    assert isinstance(map_.layers[2], PolygonLayer)
+    assert isinstance(map_.layers[2], ScatterplotLayer)
 
 
 def test_viz_reproject():
@@ -84,9 +84,9 @@ def test_viz_geo_interface_mixed_feature_collection():
     geo_interface_obj = GeoInterfaceHolder(gdf)
     map_ = viz(geo_interface_obj)
 
-    assert isinstance(map_.layers[0], ScatterplotLayer)
+    assert isinstance(map_.layers[0], PolygonLayer)
     assert isinstance(map_.layers[1], PathLayer)
-    assert isinstance(map_.layers[2], PolygonLayer)
+    assert isinstance(map_.layers[2], ScatterplotLayer)
 
 
 def test_viz_geopandas_geodataframe():
@@ -105,9 +105,9 @@ def test_viz_shapely_mixed_array():
     geoms = mixed_shapely_geoms()
     map_ = viz(geoms)
 
-    assert isinstance(map_.layers[0], ScatterplotLayer)
+    assert isinstance(map_.layers[0], PolygonLayer)
     assert isinstance(map_.layers[1], PathLayer)
-    assert isinstance(map_.layers[2], PolygonLayer)
+    assert isinstance(map_.layers[2], ScatterplotLayer)
 
 
 def test_viz_geoarrow_rust_table():
