@@ -1,5 +1,24 @@
 # Changelog
 
+## [0.9.2] - 2024-05-14
+
+### Fixes :bug:
+
+- Reverse the layer order for automatically split geometry by @RaczeQ in https://github.com/developmentseed/lonboard/pull/516
+
+### What's Changed
+
+- Perf: Use ravel, not flatten, for numpy to pyarrow by @kylebarron in https://github.com/developmentseed/lonboard/pull/512
+- Update docstring in as_html by @kylebarron in https://github.com/developmentseed/lonboard/pull/519
+- Add type checks to fly_to by @kylebarron in https://github.com/developmentseed/lonboard/pull/521
+- Add pypi classifiers by @kylebarron in https://github.com/developmentseed/lonboard/pull/523
+
+### New Contributors
+
+- @RaczeQ made their first contribution in https://github.com/developmentseed/lonboard/pull/516
+
+**Full Changelog**: https://github.com/developmentseed/lonboard/compare/v0.9.1...v0.9.2
+
 ## [0.9.1] - 2024-05-07
 
 ### Fixes :bug:
