@@ -140,8 +140,6 @@ def split_mixed_gdf(gdf: gpd.GeoDataFrame) -> List[gpd.GeoDataFrame]:
         if unique_type_ids == {GeometryType.POLYGON, GeometryType.MULTIPOLYGON}:
             return [gdf]
 
-    gdfs = []
-
     point_indices = np.where(
         (type_ids == GeometryType.POINT) | (type_ids == GeometryType.MULTIPOINT)
     )[0]
@@ -159,6 +157,7 @@ def split_mixed_gdf(gdf: gpd.GeoDataFrame) -> List[gpd.GeoDataFrame]:
     # Starting from polygons, then linestrings, then points,
     # so that the order of generated layers is polygon, then path then scatterplot.
     # This ensures that points are rendered on top and polygons on the bottom.
+    gdfs = []
     for single_type_geometry_indices in (
         polygon_indices,
         linestring_indices,

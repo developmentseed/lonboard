@@ -41,7 +41,6 @@ def parse_wkb_table(table: pa.Table) -> List[pa.Table]:
         return [table]
 
     # Handle WKB input
-    parsed_tables = []
     crs_str = get_field_crs(field)
     shapely_arr = shapely.from_wkb(column)
 
@@ -71,6 +70,7 @@ def parse_wkb_table(table: pa.Table) -> List[pa.Table]:
     # Starting from polygons, then linestrings, then points,
     # so that the order of generated layers is polygon, then path then scatterplot.
     # This ensures that points are rendered on top and polygons on the bottom.
+    parsed_tables = []
     for single_type_geometry_indices in (
         polygon_indices,
         linestring_indices,
