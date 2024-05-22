@@ -2,7 +2,7 @@ import type { WidgetModel } from "@jupyter-widgets/base";
 import { BaseModel } from "./base.js";
 import { Widget, WidgetPlacement } from "@deck.gl/core";
 import { CompassWidget, ZoomWidget, FullscreenWidget, LightTheme } from "@deck.gl/widgets";
-import { LegendWidget, NorthArrowWidget, TitleWidget } from "./deck-widget.js";
+import { LegendWidget, NorthArrowWidget, TitleWidget, ScaleWidget } from "./deck-widget.js";
 
 export abstract class BaseDeckWidgetModel extends BaseModel {
 
@@ -219,6 +219,38 @@ export class LegendWidgetModel extends BaseDeckWidgetModel{
   }
 }
 
+export class ScaleWidgetModel extends BaseDeckWidgetModel{
+  static widgetType = "scale";
+
+  protected placement: WidgetPlacement = "bottom-left";
+  protected style: Partial<CSSStyleDeclaration> = {};
+  protected maxWidth: number = 300;
+  protected useImperial: boolean = false;
+
+  constructor(model: WidgetModel, updateStateCallback: () => void) {
+    super(model, updateStateCallback);
+
+    this.initRegularAttribute("placement", "placement");
+    this.initRegularAttribute("style", "style");
+    this.initRegularAttribute("max_width", "maxWidth");
+    this.initRegularAttribute("use_imperial", "useImperial");
+  }
+
+  render() {
+    return new ScaleWidget({
+      id:  "scale", 
+      placement: this.placement, 
+      style: {
+        // ...LightTheme,
+        ...this.style,
+      },
+      maxWidth: this.maxWidth,
+      useImperial: this.useImperial,
+      className: this.className,
+    })
+  }
+}
+
 export async function initializeWidget(
   model: WidgetModel,
   updateStateCallback: () => void,
@@ -248,6 +280,10 @@ export async function initializeWidget(
 
     case LegendWidgetModel.widgetType:
       deckWidgetModel = new LegendWidgetModel(model, updateStateCallback);
+      break;  
+
+    case ScaleWidgetModel.widgetType:
+      deckWidgetModel = new ScaleWidgetModel(model, updateStateCallback);
       break;  
 
     default:

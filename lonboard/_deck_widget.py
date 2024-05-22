@@ -64,10 +64,6 @@ class TitleWidget(BaseDeckWidget):
     _widget_type = traitlets.Unicode("title").tag(sync=True)
     title = traitlets.Unicode(allow_none=False).tag(sync=True)
     style = traitlets.Dict(default_value=None, allow_none=True).tag(sync=True)
-    # position = traitlets.Dict(
-    #     key_trait=traitlets.Enum(values=["left", "top", "bottom", "right"]),
-    #     value_trait=traitlets.Unicode(),
-    #     default_value=None).tag(sync=True)
     def __init__(self, **kwargs):
         super().__init__(**kwargs)
 
@@ -78,9 +74,15 @@ class LegendWidget(BaseDeckWidget):
     labels = traitlets.List(traitlets.Unicode()).tag(sync=True)
     colors = traitlets.List(traitlets.Unicode()).tag(sync=True)
     style = traitlets.Dict(default_value=None, allow_none=True).tag(sync=True)
-    # position = traitlets.Dict(
-    #     key_trait=traitlets.Enum(values=["left", "top", "bottom", "right"]),
-    #     value_trait=traitlets.Unicode(),
-    #     default_value=None).tag(sync=True)
+    def __init__(self, **kwargs):
+        super().__init__(**kwargs)
+
+class ScaleWidget(BaseDeckWidget):
+
+    _widget_type = traitlets.Unicode("scale").tag(sync=True)
+    style = traitlets.Dict(default_value=None, allow_none=True).tag(sync=True)
+    max_width = traitlets.Int(default_value=None, allow_none=True).tag(sync=True)
+    use_imperial = traitlets.Bool(default_value=None, allow_none=True).tag(sync=True)
+
     def __init__(self, **kwargs):
         super().__init__(**kwargs)
