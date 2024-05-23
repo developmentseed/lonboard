@@ -75,14 +75,14 @@ def _transpose_coords(arr: Union[pa.FixedSizeListArray, pa.StructArray]):
     if arr.type.num_fields == 2:
         x = arr.field("x").to_numpy()
         y = arr.field("y").to_numpy()
-        coords = np.column_stack([x, y]).flatten("C")
+        coords = np.column_stack([x, y]).ravel("C")
         return pa.FixedSizeListArray.from_arrays(coords, 2)
 
     if arr.type.num_fields == 3:
         x = arr.field("x").to_numpy()
         y = arr.field("y").to_numpy()
         z = arr.field("z").to_numpy()
-        coords = np.column_stack([x, y, z]).flatten("C")
+        coords = np.column_stack([x, y, z]).ravel("C")
         return pa.FixedSizeListArray.from_arrays(coords, 3)
 
     raise ValueError(f"Expected struct with 2 or 3 fields, got {arr.type.num_fields}")

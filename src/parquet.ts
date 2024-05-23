@@ -1,11 +1,10 @@
-import { useEffect, useState } from "react";
-import _initParquetWasm, { readParquet } from "parquet-wasm/esm/arrow2";
+import _initParquetWasm, { readParquet } from "parquet-wasm";
 import * as arrow from "apache-arrow";
 
 // NOTE: this version must be synced exactly with the parquet-wasm version in
 // use.
-const PARQUET_WASM_VERSION = "0.5.0";
-const PARQUET_WASM_CDN_URL = `https://cdn.jsdelivr.net/npm/parquet-wasm@${PARQUET_WASM_VERSION}/esm/arrow2_bg.wasm`;
+const PARQUET_WASM_VERSION = "0.6.1";
+const PARQUET_WASM_CDN_URL = `https://cdn.jsdelivr.net/npm/parquet-wasm@${PARQUET_WASM_VERSION}/esm/parquet_wasm_bg.wasm`;
 let WASM_READY: boolean = false;
 
 export async function initParquetWasm() {
@@ -27,10 +26,10 @@ export function parseParquet(dataView: DataView): arrow.Table {
 
   console.time("readParquet");
 
-  // TODO: use arrow-js-ffi for more memory-efficient wasm --> js transfer
-  const arrowIPCBuffer = readParquet(
-    new Uint8Array(dataView.buffer),
-  ).intoIPCStream();
+  // TODO: use arrow-js-ffi for more memory-efficient wasm --> js transfer?
+  const arrowIPCBuffer = readParquet(new Uint8Array(dataView.buffer), {
+    batchSize: Math.pow(2, 31),
+  }).intoIPCStream();
   const arrowTable = arrow.tableFromIPC(arrowIPCBuffer);
 
   console.timeEnd("readParquet");

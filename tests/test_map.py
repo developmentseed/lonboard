@@ -1,6 +1,7 @@
 import geopandas as gpd
 import pytest
 import shapely
+from traitlets import TraitError
 
 from lonboard import Map, ScatterplotLayer, SolidPolygonLayer
 
@@ -27,3 +28,8 @@ def allow_single_layer():
 
     layer = SolidPolygonLayer.from_geopandas(gdf)
     _m = Map(layer)
+
+
+def test_map_basemap_non_url():
+    with pytest.raises(TraitError, match=r"expected to be a HTTP\(s\) URL"):
+        _m = Map([], basemap_style="hello world")

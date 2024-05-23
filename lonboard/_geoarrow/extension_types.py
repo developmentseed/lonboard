@@ -305,7 +305,7 @@ def construct_geometry_array(
         extension_metadata["ARROW:extension:metadata"] = json.dumps({"crs": crs_str})
 
     if geom_type == GeometryType.POINT:
-        parr = pa.FixedSizeListArray.from_arrays(coords.flatten(), len(dims))
+        parr = pa.FixedSizeListArray.from_arrays(coords.ravel("C"), len(dims))
         extension_metadata["ARROW:extension:name"] = "geoarrow.point"
         field = pa.field(
             field_name,
@@ -318,7 +318,7 @@ def construct_geometry_array(
     elif geom_type == GeometryType.LINESTRING:
         assert len(offsets) == 1, "Expected one offsets array"
         (geom_offsets,) = offsets
-        _parr = pa.FixedSizeListArray.from_arrays(coords.flatten(), len(dims))
+        _parr = pa.FixedSizeListArray.from_arrays(coords.ravel("C"), len(dims))
         parr = pa.ListArray.from_arrays(pa.array(geom_offsets), _parr)
         extension_metadata["ARROW:extension:name"] = "geoarrow.linestring"
         field = pa.field(
@@ -332,7 +332,7 @@ def construct_geometry_array(
     elif geom_type == GeometryType.POLYGON:
         assert len(offsets) == 2, "Expected two offsets arrays"
         ring_offsets, geom_offsets = offsets
-        _parr = pa.FixedSizeListArray.from_arrays(coords.flatten(), len(dims))
+        _parr = pa.FixedSizeListArray.from_arrays(coords.ravel("C"), len(dims))
         _parr1 = pa.ListArray.from_arrays(pa.array(ring_offsets), _parr)
         parr = pa.ListArray.from_arrays(pa.array(geom_offsets), _parr1)
         extension_metadata["ARROW:extension:name"] = "geoarrow.polygon"
@@ -347,7 +347,7 @@ def construct_geometry_array(
     elif geom_type == GeometryType.MULTIPOINT:
         assert len(offsets) == 1, "Expected one offsets array"
         (geom_offsets,) = offsets
-        _parr = pa.FixedSizeListArray.from_arrays(coords.flatten(), len(dims))
+        _parr = pa.FixedSizeListArray.from_arrays(coords.ravel("C"), len(dims))
         parr = pa.ListArray.from_arrays(pa.array(geom_offsets), _parr)
         extension_metadata["ARROW:extension:name"] = "geoarrow.multipoint"
         field = pa.field(
@@ -361,7 +361,7 @@ def construct_geometry_array(
     elif geom_type == GeometryType.MULTILINESTRING:
         assert len(offsets) == 2, "Expected two offsets arrays"
         ring_offsets, geom_offsets = offsets
-        _parr = pa.FixedSizeListArray.from_arrays(coords.flatten(), len(dims))
+        _parr = pa.FixedSizeListArray.from_arrays(coords.ravel("C"), len(dims))
         _parr1 = pa.ListArray.from_arrays(pa.array(ring_offsets), _parr)
         parr = pa.ListArray.from_arrays(pa.array(geom_offsets), _parr1)
         extension_metadata["ARROW:extension:name"] = "geoarrow.multilinestring"
@@ -376,7 +376,7 @@ def construct_geometry_array(
     elif geom_type == GeometryType.MULTIPOLYGON:
         assert len(offsets) == 3, "Expected three offsets arrays"
         ring_offsets, polygon_offsets, geom_offsets = offsets
-        _parr = pa.FixedSizeListArray.from_arrays(coords.flatten(), len(dims))
+        _parr = pa.FixedSizeListArray.from_arrays(coords.ravel("C"), len(dims))
         _parr1 = pa.ListArray.from_arrays(pa.array(ring_offsets), _parr)
         _parr2 = pa.ListArray.from_arrays(pa.array(polygon_offsets), _parr1)
         parr = pa.ListArray.from_arrays(pa.array(geom_offsets), _parr2)
