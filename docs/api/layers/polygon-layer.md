@@ -1,8 +1,8 @@
 # PolygonLayer
 
-![](../../assets/boundaries.png)
+![](../../assets/overture.jpg)
 
-> Screenshot from [Global Boundaries](../../examples/global-boundaries) example
+> Screenshot from [Overture Maps](../../examples/overture-maps) example
 
 ::: lonboard.PolygonLayer
     options:

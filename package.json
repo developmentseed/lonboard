@@ -3,19 +3,18 @@
     "maplibre": "Upgrading maplibre to v4 broke the basemap in static HTML exports."
   },
   "dependencies": {
-    "@anywidget/react": "^0.0.6",
-    "@babel/runtime": "^7.24.4",
-    "@deck.gl/core": "^9.0.9",
-    "@deck.gl/extensions": "^9.0.9",
-    "@deck.gl/geo-layers": "^9.0.9",
-    "@deck.gl/layers": "^9.0.9",
-    "@deck.gl/react": "^9.0.9",
+    "@anywidget/react": "^0.0.7",
+    "@babel/runtime": "^7.24.5",
+    "@deck.gl/core": "^8.9.35",
+    "@deck.gl/extensions": "^8.9.35",
+    "@deck.gl/layers": "^8.9.35",
+    "@deck.gl/react": "^8.9.35",
     "@geoarrow/deck.gl-layers": "github:atmorling/deck.gl-layers#v9-test",
-    "apache-arrow": "^15.0.2",
+    "apache-arrow": "^16.1.0",
     "maplibre-gl": "^3.6.2",
-    "parquet-wasm": "0.5.0",
-    "react": "^18.2.0",
-    "react-dom": "^18.2.0",
+    "parquet-wasm": "0.6.1",
+    "react": "^18.3.1",
+    "react-dom": "^18.3.1",
     "react-map-gl": "^7.1.7",
     "uuid": "^9.0.1"
   },
@@ -23,13 +22,13 @@
   "devDependencies": {
     "@anywidget/types": "^0.1.5",
     "@jupyter-widgets/base": "^6.0.7",
-    "@types/react": "^18.2.74",
+    "@types/react": "^18.3.2",
     "@types/uuid": "^9.0.8",
-    "esbuild": "^0.20.2",
+    "esbuild": "^0.21.3",
     "nodemon": "^3.1.0",
     "prettier": "^3.2.5",
-    "typescript": "^5.4.4",
-    "vitest": "^1.4.0"
+    "typescript": "^5.4.5",
+    "vitest": "^1.6.0"
   },
   "scripts": {
     "build": "node ./build.mjs",

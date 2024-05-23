@@ -7,6 +7,7 @@ import {
 import type { WidgetModel } from "@jupyter-widgets/base";
 import { BaseModel } from "./base.js";
 import type { BaseLayerModel } from "./base-layer.js";
+import { isDefined } from "../util.js";
 
 export abstract class BaseExtensionModel extends BaseModel {
   static extensionType: string;
@@ -135,6 +136,45 @@ export class DataFilterExtension extends BaseExtensionModel {
   }
 }
 
+export class PathStyleExtension extends BaseExtensionModel {
+  static extensionType = "path-style";
+
+  extensionInstance: _PathStyleExtension;
+
+  constructor(
+    model: WidgetModel,
+    layerModel: BaseLayerModel,
+    updateStateCallback: () => void,
+  ) {
+    super(model, updateStateCallback);
+
+    const dash = this.model.get("dash");
+    const highPrecisionDash = this.model.get("high_precision_dash");
+    const offset = this.model.get("offset");
+    this.extensionInstance = new _PathStyleExtension({
+      ...(isDefined(dash) ? { dash } : {}),
+      ...(isDefined(highPrecisionDash) ? { highPrecisionDash } : {}),
+      ...(isDefined(offset) ? { offset } : {}),
+    });
+
+    // Properties added by the extension onto the layer
+    layerModel.initRegularAttribute("dash_gap_pickable", "dashGapPickable");
+    layerModel.initRegularAttribute("dash_justified", "dashJustified");
+    layerModel.initVectorizedAccessor("get_dash_array", "getDashArray");
+    layerModel.initVectorizedAccessor("get_offset", "getOffset");
+
+    // Update the layer model with the list of the JS property names added by
+    // this extension
+    layerModel.extensionLayerPropertyNames = [
+      ...layerModel.extensionLayerPropertyNames,
+      "dashGapPickable",
+      "dashJustified",
+      "getDashArray",
+      "getOffset",
+    ];
+  }
+}
+
 export async function initializeExtension(
   model: WidgetModel,
   layerModel: BaseLayerModel,
@@ -161,6 +201,14 @@ export async function initializeExtension(
 
     case DataFilterExtension.extensionType:
       extensionModel = new DataFilterExtension(
+        model,
+        layerModel,
+        updateStateCallback,
+      );
+      break;
+
+    case PathStyleExtension.extensionType:
+      extensionModel = new PathStyleExtension(
         model,
         layerModel,
         updateStateCallback,

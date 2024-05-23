@@ -16,6 +16,7 @@ from typing import (
     Optional,
     Sequence,
     Tuple,
+    Union,
 )
 
 import geopandas as gpd
@@ -25,6 +26,7 @@ import traitlets
 
 from lonboard._base import BaseExtension, BaseWidget
 from lonboard._constants import EXTENSION_NAME, OGC_84
+from lonboard._geoarrow._duckdb import from_duckdb as _from_duckdb
 from lonboard._geoarrow.geopandas_interop import geopandas_to_geoarrow
 from lonboard._geoarrow.ops import reproject_table
 from lonboard._geoarrow.ops.bbox import Bbox, total_bounds
@@ -54,6 +56,9 @@ from lonboard.types.layer import (
 )
 
 if TYPE_CHECKING:
+    import duckdb
+    import pyproj
+
     if sys.version_info >= (3, 11):
         from typing import Self
     else:
@@ -271,7 +276,12 @@ class BaseArrowLayer(BaseLayer):
             table = pa.table(table)
 
         table = remove_extension_classes(table)
-        table = parse_wkb_table(table)
+        parsed_tables = parse_wkb_table(table)
+        assert len(parsed_tables) == 1, (
+            "Mixed geometry type input not supported here. Use the top "
+            "level viz() function or separate your geometry types in advanced."
+        )
+        table = parsed_tables[0]
         table = transpose_table(table)
 
         # Reproject table to WGS84 if needed
@@ -321,6 +331,46 @@ class BaseArrowLayer(BaseLayer):
             gdf = _auto_downcast(gdf.copy())  # type: ignore
 
         table = geopandas_to_geoarrow(gdf)
+        return cls(table=table, **kwargs)
+
+    @classmethod
+    def from_duckdb(
+        cls,
+        sql: Union[str, duckdb.DuckDBPyRelation],
+        con: Optional[duckdb.DuckDBPyConnection] = None,
+        *,
+        crs: Optional[Union[str, pyproj.CRS]] = None,
+        **kwargs: Unpack[BaseLayerKwargs],
+    ) -> Self:
+        """Construct a Layer from a duckdb-spatial query.
+
+        DuckDB Spatial does not currently expose coordinate reference system
+        information, so **the user must ensure that data has been reprojected to
+        EPSG:4326** or pass in the existing CRS of the data in the `crs` keyword
+        parameter.
+
+        Args:
+            sql: The SQL input to visualize. This can either be a string containing a
+                SQL query or the output of the duckdb `sql` function.
+            con: The current DuckDB connection. This is required when passing a `str` to
+                the `sql` parameter or when using a non-global DuckDB connection.
+                Defaults to None.
+
+        Other args:
+            crs: The CRS of the input data. This can either be a string passed to
+                `pyproj.CRS.from_user_input` or a `pyproj.CRS` object. Defaults to None.
+
+        Returns:
+            A Layer with the initialized data.
+        """
+        if isinstance(sql, str):
+            assert con is not None, "con must be provided when sql is a str"
+
+            rel = con.sql(sql)
+            table = _from_duckdb(rel, con=con, crs=crs)
+        else:
+            table = _from_duckdb(sql, con=con, crs=crs)
+
         return cls(table=table, **kwargs)
 
 
@@ -673,6 +723,17 @@ class PolygonLayer(BaseArrowLayer):
     ) -> Self:
         return super().from_geopandas(gdf=gdf, auto_downcast=auto_downcast, **kwargs)
 
+    @classmethod
+    def from_duckdb(
+        cls,
+        sql: Union[str, duckdb.DuckDBPyRelation],
+        con: Optional[duckdb.DuckDBPyConnection] = None,
+        *,
+        crs: Optional[Union[str, pyproj.CRS]] = None,
+        **kwargs: Unpack[PolygonLayerKwargs],
+    ) -> Self:
+        return super().from_duckdb(sql=sql, con=con, crs=crs, **kwargs)
+
     _layer_type = traitlets.Unicode("polygon").tag(sync=True)
 
     table = PyarrowTableTrait(
@@ -907,6 +968,17 @@ class ScatterplotLayer(BaseArrowLayer):
     ) -> Self:
         return super().from_geopandas(gdf=gdf, auto_downcast=auto_downcast, **kwargs)
 
+    @classmethod
+    def from_duckdb(
+        cls,
+        sql: Union[str, duckdb.DuckDBPyRelation],
+        con: Optional[duckdb.DuckDBPyConnection] = None,
+        *,
+        crs: Optional[Union[str, pyproj.CRS]] = None,
+        **kwargs: Unpack[ScatterplotLayerKwargs],
+    ) -> Self:
+        return super().from_duckdb(sql=sql, con=con, crs=crs, **kwargs)
+
     _layer_type = traitlets.Unicode("scatterplot").tag(sync=True)
 
     table = PyarrowTableTrait(
@@ -1138,6 +1210,17 @@ class PathLayer(BaseArrowLayer):
     ) -> Self:
         return super().from_geopandas(gdf=gdf, auto_downcast=auto_downcast, **kwargs)
 
+    @classmethod
+    def from_duckdb(
+        cls,
+        sql: Union[str, duckdb.DuckDBPyRelation],
+        con: Optional[duckdb.DuckDBPyConnection] = None,
+        *,
+        crs: Optional[Union[str, pyproj.CRS]] = None,
+        **kwargs: Unpack[PathLayerKwargs],
+    ) -> Self:
+        return super().from_duckdb(sql=sql, con=con, crs=crs, **kwargs)
+
     _layer_type = traitlets.Unicode("path").tag(sync=True)
 
     table = PyarrowTableTrait(
@@ -1298,6 +1381,17 @@ class PointCloudLayer(BaseArrowLayer):
     ) -> Self:
         return super().from_geopandas(gdf=gdf, auto_downcast=auto_downcast, **kwargs)
 
+    @classmethod
+    def from_duckdb(
+        cls,
+        sql: Union[str, duckdb.DuckDBPyRelation],
+        con: Optional[duckdb.DuckDBPyConnection] = None,
+        *,
+        crs: Optional[Union[str, pyproj.CRS]] = None,
+        **kwargs: Unpack[PointCloudLayerKwargs],
+    ) -> Self:
+        return super().from_duckdb(sql=sql, con=con, crs=crs, **kwargs)
+
     _layer_type = traitlets.Unicode("point-cloud").tag(sync=True)
 
     table = PyarrowTableTrait(
@@ -1419,6 +1513,17 @@ class SolidPolygonLayer(BaseArrowLayer):
         **kwargs: Unpack[SolidPolygonLayerKwargs],
     ) -> Self:
         return super().from_geopandas(gdf=gdf, auto_downcast=auto_downcast, **kwargs)
+
+    @classmethod
+    def from_duckdb(
+        cls,
+        sql: Union[str, duckdb.DuckDBPyRelation],
+        con: Optional[duckdb.DuckDBPyConnection] = None,
+        *,
+        crs: Optional[Union[str, pyproj.CRS]] = None,
+        **kwargs: Unpack[SolidPolygonLayerKwargs],
+    ) -> Self:
+        return super().from_duckdb(sql=sql, con=con, crs=crs, **kwargs)
 
     _layer_type = traitlets.Unicode("solid-polygon").tag(sync=True)
 
@@ -1572,6 +1677,17 @@ class HeatmapLayer(BaseArrowLayer):
     ) -> Self:
         return super().from_geopandas(gdf=gdf, auto_downcast=auto_downcast, **kwargs)
 
+    @classmethod
+    def from_duckdb(
+        cls,
+        sql: Union[str, duckdb.DuckDBPyRelation],
+        con: Optional[duckdb.DuckDBPyConnection] = None,
+        *,
+        crs: Optional[Union[str, pyproj.CRS]] = None,
+        **kwargs: Unpack[HeatmapLayerKwargs],
+    ) -> Self:
+        return super().from_duckdb(sql=sql, con=con, crs=crs, **kwargs)
+
     _layer_type = traitlets.Unicode("heatmap").tag(sync=True)
 
     table = PyarrowTableTrait(allowed_geometry_types={EXTENSION_NAME.POINT})
@@ -1659,8 +1775,8 @@ class HeatmapLayer(BaseArrowLayer):
     """The weight of each object.
 
     - Type: [FloatAccessor][lonboard.traits.FloatAccessor], optional
-        - If a number is provided, it is used as the outline width for all objects.
-        - If an array is provided, each value in the array will be used as the outline
-          width for the object at the same row index.
+        - If a number is provided, it is used as the weight for all objects.
+        - If an array is provided, each value in the array will be used as the weight
+          for the object at the same row index.
     - Default: `1`.
     """

@@ -1,8 +1,9 @@
 from __future__ import annotations
 
 import sys
+from io import StringIO
 from pathlib import Path
-from typing import IO, TYPE_CHECKING, Optional, Sequence, TextIO, Union
+from typing import IO, TYPE_CHECKING, Optional, Sequence, TextIO, Union, overload
 
 import ipywidgets
 import traitlets
@@ -13,10 +14,12 @@ from lonboard._environment import DEFAULT_HEIGHT
 from lonboard._layer import BaseLayer
 from lonboard._viewport import compute_view
 from lonboard.basemap import CartoBasemap
-from lonboard.traits import DEFAULT_INITIAL_VIEW_STATE, ViewStateTrait
+from lonboard.traits import DEFAULT_INITIAL_VIEW_STATE, BasemapUrl, ViewStateTrait
 from lonboard.types.map import MapKwargs
 
 if TYPE_CHECKING:
+    from IPython.display import HTML  # type: ignore
+
     if sys.version_info >= (3, 12):
         from typing import Unpack
     else:
@@ -153,13 +156,13 @@ class Map(BaseAnyWidget):
     - Default: `5`
     """
 
-    basemap_style = traitlets.Unicode(CartoBasemap.PositronNoLabels).tag(sync=True)
+    basemap_style = BasemapUrl(CartoBasemap.PositronNoLabels)
     """
-    A MapLibre-compatible basemap style.
+    A URL to a MapLibre-compatible basemap style.
 
     Various styles are provided in [`lonboard.basemap`](https://developmentseed.org/lonboard/latest/api/basemap/).
 
-    - Type: `str`
+    - Type: `str`, holding a URL hosting a basemap style.
     - Default
       [`lonboard.basemap.CartoBasemap.PositronNoLabels`][lonboard.basemap.CartoBasemap.PositronNoLabels]
     """
@@ -309,7 +312,7 @@ class Map(BaseAnyWidget):
         *,
         longitude: Union[int, float],
         latitude: Union[int, float],
-        zoom: float,
+        zoom: Union[int, float],
         duration: int = 4000,
         pitch: Union[int, float] = 0,
         bearing: Union[int, float] = 0,
@@ -336,6 +339,19 @@ class Map(BaseAnyWidget):
                 second. Similar to speed it linearly affects the duration, when
                 specified speed is ignored.
         """
+        if not isinstance(longitude, (int, float)):
+            raise TypeError(
+                f"Expected longitude to be an int or float, got {type(longitude)}"
+            )
+
+        if not isinstance(latitude, (int, float)):
+            raise TypeError(
+                f"Expected latitude to be an int or float, got {type(latitude)}"
+            )
+
+        if not isinstance(zoom, (int, float)):
+            raise TypeError(f"Expected zoom to be an int or float, got {type(zoom)}")
+
         data = {
             "type": "fly-to",
             "longitude": longitude,
@@ -350,9 +366,25 @@ class Map(BaseAnyWidget):
         }
         self.send(data)
 
+    @overload
     def to_html(
-        self, filename: Union[str, Path, TextIO, IO[str]], title: Optional[str] = None
-    ) -> None:
+        self,
+        filename: None = None,
+        title: Optional[str] = None,
+    ) -> str: ...
+
+    @overload
+    def to_html(
+        self,
+        filename: Union[str, Path, TextIO, IO[str]],
+        title: Optional[str] = None,
+    ) -> None: ...
+
+    def to_html(
+        self,
+        filename: Union[str, Path, TextIO, IO[str], None] = None,
+        title: Optional[str] = None,
+    ) -> Union[None, str]:
         """Save the current map as a standalone HTML file.
 
         Args:
@@ -360,14 +392,55 @@ class Map(BaseAnyWidget):
 
         Other args:
             title: A title for the exported map. This will show as the browser tab name.
+
+        Returns:
+            If `filename` is not passed, returns the HTML content as a `str`.
         """
-        embed_minimal_html(
-            filename,
-            views=[self],
-            title=title or "Lonboard export",
-            template=_HTML_TEMPLATE,
-            drop_defaults=False,
-        )
+
+        def inner(fp):
+            embed_minimal_html(
+                fp,
+                views=[self],
+                title=title or "Lonboard export",
+                template=_HTML_TEMPLATE,
+                drop_defaults=False,
+            )
+
+        if filename is None:
+            with StringIO() as sio:
+                inner(sio)
+                return sio.getvalue()
+
+        else:
+            inner(filename)
+
+    def as_html(self) -> HTML:
+        """Render the current map as a static HTML file in IPython.
+
+        !!! warning
+
+            The primary, recommended way to display a map is by
+            leaving it as the last line in a cell.
+
+            ```py
+            from lonboard import Map
+
+            m = Map(layers=[])
+            m
+            ```
+
+            This method exists to support environments that are unable to display
+            Jupyter Widgets. Some aspects of Lonboard are unavailable with this display
+            method. In particular, the map is unable to send any information back to
+            Python. So [`selected_index`][lonboard.BaseArrowLayer.selected_index] will
+            never be populated, for example.
+
+        Returns:
+            IPython HTML object.
+        """
+        from IPython.display import HTML  # type: ignore
+
+        return HTML(self.to_html())
 
     @traitlets.default("view_state")
     def _default_initial_view_state(self):

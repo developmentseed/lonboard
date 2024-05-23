@@ -40,10 +40,12 @@ nav:
       - examples/index.md
       - examples/internet-speeds.ipynb
       - examples/north-america-roads.ipynb
+      - examples/overture-maps.ipynb
       - examples/global-boundaries.ipynb
       - examples/migration.ipynb
       - examples/data-filter-extension.ipynb
       - Integrations:
+          - examples/duckdb.ipynb
           - ColorPicker: examples/integrations/color-picker.ipynb
           - Sidecar: examples/integrations/sidecar.ipynb
       - 30 Day Map Challenge:
@@ -67,6 +69,7 @@ nav:
           - api/layer-extensions/brushing-extension.md
           - api/layer-extensions/collision-filter-extension.md
           - api/layer-extensions/data-filter-extension.md
+          - api/layer-extensions/path-style-extension.md
       - api/basemap.md
       - api/colormap.md
       - api/controls.md
@@ -78,8 +81,9 @@ nav:
   - cli.md
   - Ecosystem:
       - ecosystem/index.md
-      - ecosystem/geoarrow.md
       - ecosystem/geopandas.md
+      - ecosystem/duckdb.md
+      - ecosystem/geoarrow.md
       - ecosystem/jupyter-widgets.md
       - ecosystem/panel.md
       - ecosystem/shiny.md
@@ -169,6 +173,7 @@ plugins:
             - https://geoarrow.github.io/geoarrow-rs/python/latest/objects.inv
             - https://geopandas.org/en/stable/objects.inv
             - https://geopy.readthedocs.io/en/stable/objects.inv
+            - https://ipython.readthedocs.io/en/stable/objects.inv
             - https://ipywidgets.readthedocs.io/en/stable/objects.inv
             - https://matplotlib.org/stable/objects.inv
             - https://numpy.org/doc/stable/objects.inv
