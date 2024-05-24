@@ -5,10 +5,10 @@
   "dependencies": {
     "@anywidget/react": "^0.0.7",
     "@babel/runtime": "^7.24.5",
-    "@deck.gl/core": "^8.9.35",
-    "@deck.gl/extensions": "^8.9.35",
-    "@deck.gl/layers": "^8.9.35",
-    "@deck.gl/react": "^8.9.35",
+    "@deck.gl/core": "^9.0.15",
+    "@deck.gl/extensions": "^9.0.15",
+    "@deck.gl/layers": "^9.0.15",
+    "@deck.gl/react": "^9.0.15",
     "@geoarrow/deck.gl-layers": "github:atmorling/deck.gl-layers#v9-test",
     "apache-arrow": "^16.1.0",
     "maplibre-gl": "^3.6.2",
@@ -39,9 +39,9 @@
     "typecheck": "tsc --build"
   },
   "resolutions": {
-    "@deck.gl/core": "8.9.30",
-    "@deck.gl/layers": "8.9.30",
-    "@deck.gl/react": "8.9.30"
+    "@deck.gl/core": "9.0.15",
+    "@deck.gl/layers": "9.0.15",
+    "@deck.gl/react": "9.0.15"
   },
   "volta": {
     "node": "18.18.2",
