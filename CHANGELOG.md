@@ -1,5 +1,13 @@
 # Changelog
 
+## [0.9.3] - 2024-05-27
+
+### Fixes :bug:
+
+- Fix reprojecting GeoArrow input by @kylebarron in https://github.com/developmentseed/lonboard/pull/532
+
+**Full Changelog**: https://github.com/developmentseed/lonboard/compare/v0.9.2...v0.9.3
+
 ## [0.9.2] - 2024-05-14
 
 ### Fixes :bug:
