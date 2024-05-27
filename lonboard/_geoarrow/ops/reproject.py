@@ -111,7 +111,10 @@ def reproject_column(
         transformer=transformer,
         max_workers=max_workers,
     )
-    return field.with_metadata(new_extension_metadata), new_chunked_array
+    new_field = field.with_type(new_chunked_array.type).with_metadata(
+        new_extension_metadata
+    )
+    return new_field, new_chunked_array
 
 
 def _reproject_column(
