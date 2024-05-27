@@ -103,6 +103,7 @@ function App() {
 
   let [mapStyle] = useModelState<string>("basemap_style");
   let [mapHeight] = useModelState<number>("_height");
+  let [mapWidth] = useModelState<number>("_width");
   let [showTooltip] = useModelState<boolean>("show_tooltip");
   let [pickingRadius] = useModelState<number>("picking_radius");
   let [useDevicePixels] = useModelState<number | boolean>("use_device_pixels");
@@ -210,7 +211,7 @@ function App() {
   }, []);
 
   return (
-    <div id={`map-${mapId}`} style={{ height: mapHeight || "100%" }}>
+    <div id={`map-${mapId}`} style={{ height: mapHeight || "100%", width: mapWidth || "100%" }}>
       <DeckGL
         initialViewState={
           ["longitude", "latitude", "zoom"].every((key) =>
@@ -222,6 +223,8 @@ function App() {
         controller={true}
         layers={layers}
         widgets={deckWidgets}
+        width={mapWidth}
+        height={mapHeight}
         // @ts-expect-error
         getTooltip={showTooltip && getTooltip}
         pickingRadius={pickingRadius}

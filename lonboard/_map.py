@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import sys
+from math import log2
 from io import StringIO
 from pathlib import Path
 from typing import IO, TYPE_CHECKING, Optional, Sequence, TextIO, Union, overload
@@ -127,6 +128,13 @@ class Map(BaseAnyWidget):
         sync=True
     )
     """Height of the map in pixels.
+
+    This API is not yet stabilized and may change in the future.
+    """
+    _width = traitlets.Int(default_value=DEFAULT_HEIGHT, allow_none=True).tag(
+        sync=True
+    )
+    """Width of the map in pixels.
 
     This API is not yet stabilized and may change in the future.
     """
