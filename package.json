@@ -4,7 +4,7 @@
   },
   "dependencies": {
     "@anywidget/react": "^0.0.7",
-    "@babel/runtime": "^7.24.5",
+    "@babel/runtime": "^7.24.6",
     "@deck.gl/core": "^8.9.35",
     "@deck.gl/extensions": "^8.9.35",
     "@deck.gl/layers": "^8.9.35",
@@ -22,10 +22,10 @@
   "devDependencies": {
     "@anywidget/types": "^0.1.5",
     "@jupyter-widgets/base": "^6.0.7",
-    "@types/react": "^18.3.2",
+    "@types/react": "^18.3.3",
     "@types/uuid": "^9.0.8",
-    "esbuild": "^0.21.3",
-    "nodemon": "^3.1.0",
+    "esbuild": "^0.21.4",
+    "nodemon": "^3.1.1",
     "prettier": "^3.2.5",
     "typescript": "^5.4.5",
     "vitest": "^1.6.0"
