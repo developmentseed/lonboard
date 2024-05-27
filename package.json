@@ -9,6 +9,7 @@
     "@deck.gl/extensions": "^9.0.15",
     "@deck.gl/layers": "^9.0.15",
     "@deck.gl/react": "^9.0.15",
+    "@deck.gl/widgets": "^9.0.15",
     "@geoarrow/deck.gl-layers": "github:atmorling/deck.gl-layers#v9-test",
     "apache-arrow": "^16.1.0",
     "maplibre-gl": "^3.6.2",
