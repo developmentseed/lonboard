@@ -15,6 +15,7 @@ import { Message } from "./types.js";
 import { flyTo } from "./actions/fly-to.js";
 import { useViewStateDebounced } from "./state";
 import { BaseDeckWidgetModel, initializeWidget } from "./model/deck-widget-models.js";
+import '@deck.gl/widgets/stylesheet.css';
 import './widget-style.css'
 
 await initParquetWasm();
