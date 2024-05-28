@@ -102,8 +102,8 @@ function App() {
   let model = useModel();
 
   let [mapStyle] = useModelState<string>("basemap_style");
-  let [mapHeight] = useModelState<number>("_height");
-  let [mapWidth] = useModelState<number>("_width");
+  let [mapHeight] = useModelState<number>("height");
+  let [mapWidth] = useModelState<number>("width");
   let [showTooltip] = useModelState<boolean>("show_tooltip");
   let [pickingRadius] = useModelState<number>("picking_radius");
   let [useDevicePixels] = useModelState<number | boolean>("use_device_pixels");

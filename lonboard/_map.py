@@ -13,6 +13,7 @@ from ipywidgets.embed import embed_minimal_html
 from lonboard._base import BaseAnyWidget
 from lonboard._environment import DEFAULT_HEIGHT
 from lonboard._layer import BaseLayer
+from lonboard._deck_widget import BaseDeckWidget
 from lonboard._viewport import compute_view
 from lonboard.basemap import CartoBasemap
 from lonboard.traits import DEFAULT_INITIAL_VIEW_STATE, BasemapUrl, ViewStateTrait
@@ -124,14 +125,14 @@ class Map(BaseAnyWidget):
 
     """
 
-    _height = traitlets.Int(default_value=DEFAULT_HEIGHT, allow_none=True).tag(
+    height = traitlets.Int(default_value=DEFAULT_HEIGHT, allow_none=True).tag(
         sync=True
     )
     """Height of the map in pixels.
 
     This API is not yet stabilized and may change in the future.
     """
-    _width = traitlets.Int(default_value=DEFAULT_HEIGHT, allow_none=True).tag(
+    width = traitlets.Int(default_value=DEFAULT_HEIGHT, allow_none=True).tag(
         sync=True
     )
     """Width of the map in pixels.
