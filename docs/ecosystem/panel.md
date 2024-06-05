@@ -196,7 +196,7 @@ class StateViewer(pn.viewable.Viewer):
     def _fly_to_center(self):
         computed_view_state = compute_view(self.value.layers)
         self.value.fly_to(
-            **computed_view_state,    
+            **computed_view_state,
             duration=1000,
         )
 
