@@ -1746,11 +1746,53 @@
     <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
       
         <li class="md-nav__item">
-  <a href="#example" class="md-nav__link">
+  <a href="#prerequisites" class="md-nav__link">
     <span class="md-ellipsis">
-      Example
+      Prerequisites
     </span>
   </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#tutorial" class="md-nav__link">
+    <span class="md-ellipsis">
+      Tutorial
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#how-to" class="md-nav__link">
+    <span class="md-ellipsis">
+      How to
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="How to">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#update-the-map-in-place" class="md-nav__link">
+    <span class="md-ellipsis">
+      Update the Map In Place
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#build-an-application" class="md-nav__link">
+    <span class="md-ellipsis">
+      Build an Application
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
   
 </li>
       
@@ -1959,11 +2001,53 @@
     <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
       
         <li class="md-nav__item">
-  <a href="#example" class="md-nav__link">
+  <a href="#prerequisites" class="md-nav__link">
     <span class="md-ellipsis">
-      Example
+      Prerequisites
     </span>
   </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#tutorial" class="md-nav__link">
+    <span class="md-ellipsis">
+      Tutorial
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#how-to" class="md-nav__link">
+    <span class="md-ellipsis">
+      How to
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="How to">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#update-the-map-in-place" class="md-nav__link">
+    <span class="md-ellipsis">
+      Update the Map In Place
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#build-an-application" class="md-nav__link">
+    <span class="md-ellipsis">
+      Build an Application
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
   
 </li>
       
@@ -1989,105 +2073,208 @@
 
 
 <h1 id="panel">Panel<a class="headerlink" href="#panel" title="Permanent link">&para;</a></h1>
-<p><a href="https://panel.holoviz.org/">Panel</a> is a tool to build interactive web applications and dashboards using Python code.</p>
-<p>Panel <a href="https://github.com/developmentseed/lonboard/issues/262">has been reported to work</a> with Lonboard. However, it appears that Panel <a href="https://github.com/holoviz/panel/issues/5921">does not support reactive updates</a> in the same way that <a href="../shiny/">Shiny</a> does, so the map will necessarily be recreated from scratch on every update.</p>
-<h2 id="example">Example<a class="headerlink" href="#example" title="Permanent link">&para;</a></h2>
-<p>This example was written by <a href="https://github.com/MarcSkovMadsen">@MarcSkovMadsen</a> in <a href="https://github.com/developmentseed/lonboard/issues/262">issue #262</a>.</p>
-<div class="highlight"><pre><span></span><code><span class="sd">&quot;&quot;&quot;Panel data app based on https://developmentseed.org/lonboard/latest/examples/north-america-roads/&quot;&quot;&quot;</span>
-<span class="c1"># pip install panel colorcet ipywidgets_bokeh geopandas palettable lonboard</span>
-<span class="kn">import</span> <span class="nn">colorcet</span> <span class="k">as</span> <span class="nn">cc</span>
+<p><a href="https://panel.holoviz.org/">Panel</a> is a framework for building interactive tools for notebooks, dashboards, and web applications that can run on a server—all using Python.</p>
+<h2 id="prerequisites">Prerequisites<a class="headerlink" href="#prerequisites" title="Permanent link">&para;</a></h2>
+<p>To run the code below, you need to install the following packages:</p>
+<div class="highlight"><pre><span></span><code>pip<span class="w"> </span>install<span class="w"> </span>panel<span class="w"> </span>colorcet<span class="w"> </span>ipywidgets_bokeh<span class="w"> </span>geopandas<span class="w"> </span>palettable<span class="w"> </span>lonboard<span class="w"> </span>pyogrio<span class="w"> </span>watchfiles
+</code></pre></div>
+<h2 id="tutorial">Tutorial<a class="headerlink" href="#tutorial" title="Permanent link">&para;</a></h2>
+<p>In this tutorial, you will learn how to display a <code>lonboard</code> <code>Map</code> via the <a href="https://panel.holoviz.org/reference/panes/IPyWidget.html"><code>IPyWidget</code></a> <em>pane</em>.</p>
+<p><img alt="Lonboard map displayed in a Panel component" src="../../assets/panel-display-example.png" /></p>
+<p>Create a file named <code>app.py</code> with the following content:</p>
+<div class="highlight"><pre><span></span><code><span class="kn">import</span> <span class="nn">geopandas</span> <span class="k">as</span> <span class="nn">gpd</span>
+<span class="kn">from</span> <span class="nn">lonboard</span> <span class="kn">import</span> <span class="n">Map</span><span class="p">,</span> <span class="n">ScatterplotLayer</span>
+<span class="kn">import</span> <span class="nn">panel</span> <span class="k">as</span> <span class="nn">pn</span>
+
+<span class="n">pn</span><span class="o">.</span><span class="n">extension</span><span class="p">(</span><span class="s2">&quot;ipywidgets&quot;</span><span class="p">)</span>
+
+<span class="nd">@pn</span><span class="o">.</span><span class="n">cache</span>
+<span class="k">def</span> <span class="nf">get_data</span><span class="p">():</span>
+    <span class="k">return</span> <span class="n">gpd</span><span class="o">.</span><span class="n">read_file</span><span class="p">(</span><span class="n">gpd</span><span class="o">.</span><span class="n">datasets</span><span class="o">.</span><span class="n">get_path</span><span class="p">(</span><span class="s2">&quot;naturalearth_cities&quot;</span><span class="p">))</span>
+
+<span class="n">gdf</span> <span class="o">=</span> <span class="n">get_data</span><span class="p">()</span>
+<span class="n">layer</span> <span class="o">=</span> <span class="n">ScatterplotLayer</span><span class="o">.</span><span class="n">from_geopandas</span><span class="p">(</span><span class="n">gdf</span><span class="p">,</span> <span class="n">radius_min_pixels</span><span class="o">=</span><span class="mi">2</span><span class="p">,</span> <span class="n">get_fill_color</span><span class="o">=</span><span class="s2">&quot;red&quot;</span><span class="p">)</span>
+<span class="n">cities_map</span> <span class="o">=</span> <span class="n">Map</span><span class="p">(</span><span class="n">layer</span><span class="p">)</span>
+
+<span class="c1"># Fit to the available space</span>
+<span class="n">cities_map</span><span class="o">.</span><span class="n">layout</span><span class="o">.</span><span class="n">height</span> <span class="o">=</span> <span class="n">cities_map</span><span class="o">.</span><span class="n">layout</span><span class="o">.</span><span class="n">width</span> <span class="o">=</span> <span class="s2">&quot;100%&quot;</span>
+
+<span class="n">pn</span><span class="o">.</span><span class="n">Column</span><span class="p">(</span>
+    <span class="s2">&quot;# Lonboard Map&quot;</span><span class="p">,</span>
+    <span class="n">pn</span><span class="o">.</span><span class="n">pane</span><span class="o">.</span><span class="n">IPyWidget</span><span class="p">(</span><span class="n">cities_map</span><span class="p">,</span> <span class="n">height</span><span class="o">=</span><span class="mi">500</span><span class="p">,</span> <span class="n">width</span><span class="o">=</span><span class="mi">1000</span><span class="p">),</span>
+<span class="p">)</span><span class="o">.</span><span class="n">servable</span><span class="p">()</span>
+</code></pre></div>
+<p>Now run:</p>
+<div class="highlight"><pre><span></span><code>panel<span class="w"> </span>serve<span class="w"> </span>app.py<span class="w"> </span>--autoreload
+</code></pre></div>
+<p>Finally, open <a href="http://localhost:5006">http://localhost:5006</a> and you should see the <code>lonboard</code> map.</p>
+<h2 id="how-to">How to<a class="headerlink" href="#how-to" title="Permanent link">&para;</a></h2>
+<h3 id="update-the-map-in-place">Update the Map In Place<a class="headerlink" href="#update-the-map-in-place" title="Permanent link">&para;</a></h3>
+<p>Panel supports <strong>in-place updates</strong> of <code>lonboard</code> <code>Map</code>s, allowing you to update details of a map efficiently without redrawing the entire map. This is useful for updating the map based on user interactions or on a schedule.</p>
+<p><img alt="In place update of map in Panel" src="../../assets/panel-update-in-place-example.gif" /></p>
+<div class="highlight"><pre><span></span><code><span class="kn">import</span> <span class="nn">geopandas</span> <span class="k">as</span> <span class="nn">gpd</span>
+<span class="kn">from</span> <span class="nn">lonboard</span> <span class="kn">import</span> <span class="n">Map</span><span class="p">,</span> <span class="n">ScatterplotLayer</span>
+<span class="kn">import</span> <span class="nn">panel</span> <span class="k">as</span> <span class="nn">pn</span>
+
+<span class="n">pn</span><span class="o">.</span><span class="n">extension</span><span class="p">(</span><span class="s2">&quot;ipywidgets&quot;</span><span class="p">)</span>
+
+<span class="n">colors</span> <span class="o">=</span> <span class="p">{</span>
+    <span class="s2">&quot;Red&quot;</span><span class="p">:</span> <span class="p">[</span><span class="mi">200</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">],</span>
+    <span class="s2">&quot;Green&quot;</span><span class="p">:</span> <span class="p">[</span><span class="mi">0</span><span class="p">,</span> <span class="mi">200</span><span class="p">,</span> <span class="mi">0</span><span class="p">],</span>
+    <span class="s2">&quot;Blue&quot;</span><span class="p">:</span> <span class="p">[</span><span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">200</span><span class="p">],</span>
+<span class="p">}</span>
+
+<span class="nd">@pn</span><span class="o">.</span><span class="n">cache</span>
+<span class="k">def</span> <span class="nf">get_data</span><span class="p">():</span>
+    <span class="k">return</span> <span class="n">gpd</span><span class="o">.</span><span class="n">read_file</span><span class="p">(</span><span class="n">gpd</span><span class="o">.</span><span class="n">datasets</span><span class="o">.</span><span class="n">get_path</span><span class="p">(</span><span class="s2">&quot;naturalearth_cities&quot;</span><span class="p">))</span>
+
+<span class="n">gdf</span> <span class="o">=</span> <span class="n">get_data</span><span class="p">()</span>
+<span class="n">layer</span> <span class="o">=</span> <span class="n">ScatterplotLayer</span><span class="o">.</span><span class="n">from_geopandas</span><span class="p">(</span><span class="n">gdf</span><span class="p">,</span> <span class="n">radius_min_pixels</span><span class="o">=</span><span class="mi">2</span><span class="p">,</span> <span class="n">get_fill_color</span><span class="o">=</span><span class="s2">&quot;red&quot;</span><span class="p">)</span>
+<span class="n">cities_map</span> <span class="o">=</span> <span class="n">Map</span><span class="p">(</span><span class="n">layer</span><span class="p">)</span>
+
+<span class="c1"># Fit to the available space</span>
+<span class="n">cities_map</span><span class="o">.</span><span class="n">layout</span><span class="o">.</span><span class="n">height</span> <span class="o">=</span> <span class="n">cities_map</span><span class="o">.</span><span class="n">layout</span><span class="o">.</span><span class="n">width</span> <span class="o">=</span> <span class="s2">&quot;100%&quot;</span>
+
+<span class="n">color_input</span> <span class="o">=</span> <span class="n">pn</span><span class="o">.</span><span class="n">widgets</span><span class="o">.</span><span class="n">Select</span><span class="p">(</span>
+    <span class="n">name</span><span class="o">=</span><span class="s2">&quot;Color&quot;</span><span class="p">,</span> <span class="n">options</span><span class="o">=</span><span class="nb">list</span><span class="p">(</span><span class="n">colors</span><span class="o">.</span><span class="n">keys</span><span class="p">()),</span> <span class="n">description</span><span class="o">=</span><span class="s2">&quot;The color of the points&quot;</span>
+<span class="p">)</span>
+
+<span class="nd">@pn</span><span class="o">.</span><span class="n">depends</span><span class="p">(</span><span class="n">value</span><span class="o">=</span><span class="n">color_input</span><span class="p">,</span> <span class="n">watch</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+<span class="k">def</span> <span class="nf">set_fill_color</span><span class="p">(</span><span class="n">value</span><span class="p">):</span>
+    <span class="n">cities_map</span><span class="o">.</span><span class="n">layers</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">get_fill_color</span> <span class="o">=</span> <span class="n">colors</span><span class="p">[</span><span class="n">value</span><span class="p">]</span>
+
+<span class="n">pn</span><span class="o">.</span><span class="n">Column</span><span class="p">(</span>
+    <span class="n">color_input</span><span class="p">,</span>
+    <span class="n">pn</span><span class="o">.</span><span class="n">pane</span><span class="o">.</span><span class="n">IPyWidget</span><span class="p">(</span><span class="n">cities_map</span><span class="p">,</span> <span class="n">height</span><span class="o">=</span><span class="mi">500</span><span class="p">,</span> <span class="n">width</span><span class="o">=</span><span class="mi">1000</span><span class="p">),</span>
+<span class="p">)</span><span class="o">.</span><span class="n">servable</span><span class="p">()</span>
+</code></pre></div>
+<h3 id="build-an-application">Build an Application<a class="headerlink" href="#build-an-application" title="Permanent link">&para;</a></h3>
+<p>With Panel, you can build reusable components and styled web applications in just a few lines of code.</p>
+<p>The example below is based on the <a href="../../examples/north-america-roads/">North America Roads</a> example.</p>
+<p><img alt="Panel lonboard application" src="../../assets/panel-application-example.gif" /></p>
+<div class="highlight"><pre><span></span><code><span class="kn">import</span> <span class="nn">colorcet</span> <span class="k">as</span> <span class="nn">cc</span>
 <span class="kn">import</span> <span class="nn">geopandas</span> <span class="k">as</span> <span class="nn">gpd</span>
+<span class="kn">import</span> <span class="nn">param</span>
 
 <span class="kn">from</span> <span class="nn">lonboard</span> <span class="kn">import</span> <span class="n">Map</span><span class="p">,</span> <span class="n">PathLayer</span>
 <span class="kn">from</span> <span class="nn">lonboard.colormap</span> <span class="kn">import</span> <span class="n">apply_continuous_cmap</span>
+<span class="kn">from</span> <span class="nn">lonboard._viewport</span> <span class="kn">import</span> <span class="n">compute_view</span>
 <span class="kn">from</span> <span class="nn">palettable.palette</span> <span class="kn">import</span> <span class="n">Palette</span>
 
 <span class="kn">import</span> <span class="nn">panel</span> <span class="k">as</span> <span class="nn">pn</span>
 
+<span class="n">pn</span><span class="o">.</span><span class="n">extension</span><span class="p">(</span><span class="s2">&quot;ipywidgets&quot;</span><span class="p">)</span>
+
 <span class="n">url</span> <span class="o">=</span> <span class="s2">&quot;https://naciscdn.org/naturalearth/10m/cultural/ne_10m_roads_north_america.zip&quot;</span>
-<span class="n">path</span> <span class="o">=</span> <span class="s2">&quot;ne_10m_roads_north_america.zip&quot;</span>
 
-<span class="k">try</span><span class="p">:</span>
-    <span class="n">gdf</span> <span class="o">=</span> <span class="n">pn</span><span class="o">.</span><span class="n">state</span><span class="o">.</span><span class="n">as_cached</span><span class="p">(</span>
-        <span class="s2">&quot;ne_10m_roads_north_america&quot;</span><span class="p">,</span> <span class="n">gpd</span><span class="o">.</span><span class="n">read_file</span><span class="p">,</span> <span class="n">filename</span><span class="o">=</span><span class="n">path</span><span class="p">,</span> <span class="n">engine</span><span class="o">=</span><span class="s2">&quot;pyogrio&quot;</span>
-    <span class="p">)</span>
-<span class="k">except</span><span class="p">:</span>
-    <span class="n">gdf</span> <span class="o">=</span> <span class="n">pn</span><span class="o">.</span><span class="n">state</span><span class="o">.</span><span class="n">as_cached</span><span class="p">(</span>
-        <span class="s2">&quot;ne_10m_roads_north_america&quot;</span><span class="p">,</span> <span class="n">gpd</span><span class="o">.</span><span class="n">read_file</span><span class="p">,</span> <span class="n">filename</span><span class="o">=</span><span class="n">url</span><span class="p">,</span> <span class="n">engine</span><span class="o">=</span><span class="s2">&quot;pyogrio&quot;</span>
-    <span class="p">)</span>
+<span class="nd">@pn</span><span class="o">.</span><span class="n">cache</span>
+<span class="k">def</span> <span class="nf">get_data</span><span class="p">():</span>
+    <span class="k">return</span> <span class="n">gpd</span><span class="o">.</span><span class="n">read_file</span><span class="p">(</span><span class="n">filename</span><span class="o">=</span><span class="n">url</span><span class="p">,</span> <span class="n">engine</span><span class="o">=</span><span class="s2">&quot;pyogrio&quot;</span><span class="p">)</span>
 
+<span class="n">gdf</span> <span class="o">=</span> <span class="n">get_data</span><span class="p">()</span>
 <span class="n">state_options</span> <span class="o">=</span> <span class="nb">sorted</span><span class="p">(</span><span class="n">state</span> <span class="k">for</span> <span class="n">state</span> <span class="ow">in</span> <span class="n">gdf</span><span class="p">[</span><span class="s2">&quot;state&quot;</span><span class="p">]</span><span class="o">.</span><span class="n">unique</span><span class="p">()</span> <span class="k">if</span> <span class="n">state</span><span class="p">)</span>
 
+<span class="n">description</span> <span class="o">=</span> <span class="s2">&quot;&quot;&quot;# Lonboard</span>
+
+<span class="s2">A Python library for **fast, interactive geospatial vector data visualization** in Jupyter (and Panel).</span>
+
+<span class="s2">By utilizing new technologies like `GeoArrow` and `GeoParquet` in conjunction with GPU-based map rendering, Lonboard aims to enable visualizing large geospatial datasets interactively through a simple interface.&quot;&quot;&quot;</span>
+
+<span class="n">logo</span> <span class="o">=</span> <span class="n">pn</span><span class="o">.</span><span class="n">pane</span><span class="o">.</span><span class="n">Image</span><span class="p">(</span>
+    <span class="s2">&quot;https://github.com/developmentseed/lonboard/raw/main/assets/dalle-lonboard.jpg&quot;</span>
+<span class="p">)</span>
 
 <span class="k">def</span> <span class="nf">to_rgb</span><span class="p">(</span><span class="nb">hex</span><span class="p">:</span> <span class="nb">str</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">list</span><span class="p">:</span>
     <span class="n">h</span> <span class="o">=</span> <span class="nb">hex</span><span class="o">.</span><span class="n">strip</span><span class="p">(</span><span class="s2">&quot;#&quot;</span><span class="p">)</span>
     <span class="k">return</span> <span class="nb">list</span><span class="p">(</span><span class="nb">int</span><span class="p">(</span><span class="n">h</span><span class="p">[</span><span class="n">i</span> <span class="p">:</span> <span class="n">i</span> <span class="o">+</span> <span class="mi">2</span><span class="p">],</span> <span class="mi">16</span><span class="p">)</span> <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="mi">2</span><span class="p">,</span> <span class="mi">4</span><span class="p">))</span>
-
 
 <span class="k">def</span> <span class="nf">to_palette</span><span class="p">(</span><span class="n">cmap</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Palette</span><span class="p">:</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;Returns the ColorCet colormap as a palettable Palette&quot;&quot;&quot;</span>
     <span class="n">colors</span> <span class="o">=</span> <span class="p">[</span><span class="n">to_rgb</span><span class="p">(</span><span class="n">item</span><span class="p">)</span> <span class="k">for</span> <span class="n">item</span> <span class="ow">in</span> <span class="n">cmap</span><span class="p">]</span>
     <span class="k">return</span> <span class="n">Palette</span><span class="p">(</span><span class="n">name</span><span class="o">=</span><span class="s2">&quot;colorcet&quot;</span><span class="p">,</span> <span class="n">map_type</span><span class="o">=</span><span class="s2">&quot;colorcet&quot;</span><span class="p">,</span> <span class="n">colors</span><span class="o">=</span><span class="n">colors</span><span class="p">)</span>
 
+<span class="k">class</span> <span class="nc">StateViewer</span><span class="p">(</span><span class="n">pn</span><span class="o">.</span><span class="n">viewable</span><span class="o">.</span><span class="n">Viewer</span><span class="p">):</span>
+    <span class="n">value</span><span class="p">:</span> <span class="n">Map</span> <span class="o">=</span> <span class="n">param</span><span class="o">.</span><span class="n">ClassSelector</span><span class="p">(</span><span class="n">class_</span><span class="o">=</span><span class="n">Map</span><span class="p">,</span> <span class="n">doc</span><span class="o">=</span><span class="s2">&quot;The map object&quot;</span><span class="p">,</span> <span class="n">constant</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+    <span class="n">state</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="n">param</span><span class="o">.</span><span class="n">Selector</span><span class="p">(</span><span class="n">default</span><span class="o">=</span><span class="s2">&quot;California&quot;</span><span class="p">,</span> <span class="n">objects</span><span class="o">=</span><span class="n">state_options</span><span class="p">)</span>
+    <span class="n">cmap</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="n">param</span><span class="o">.</span><span class="n">Selector</span><span class="p">(</span><span class="n">default</span><span class="o">=</span><span class="n">cc</span><span class="o">.</span><span class="n">fire</span><span class="p">,</span> <span class="n">objects</span><span class="o">=</span><span class="n">cc</span><span class="o">.</span><span class="n">palette</span><span class="p">,</span> <span class="n">label</span><span class="o">=</span><span class="s2">&quot;cmap by Colorcet&quot;</span><span class="p">)</span>
+    <span class="n">alpha</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="n">param</span><span class="o">.</span><span class="n">Number</span><span class="p">(</span><span class="n">default</span><span class="o">=</span><span class="mf">0.8</span><span class="p">,</span> <span class="n">bounds</span><span class="o">=</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="mi">1</span><span class="p">))</span>
 
-<span class="k">def</span> <span class="nf">create_map</span><span class="p">(</span><span class="n">state</span><span class="o">=</span><span class="s2">&quot;California&quot;</span><span class="p">,</span> <span class="n">cmap</span><span class="o">=</span><span class="n">cc</span><span class="o">.</span><span class="n">fire</span><span class="p">,</span> <span class="n">alpha</span><span class="o">=</span><span class="mf">0.8</span><span class="p">):</span>
-    <span class="n">palette</span> <span class="o">=</span> <span class="n">to_palette</span><span class="p">(</span><span class="n">cmap</span><span class="p">)</span>
-    <span class="n">data</span> <span class="o">=</span> <span class="n">gdf</span><span class="p">[</span><span class="n">gdf</span><span class="p">[</span><span class="s2">&quot;state&quot;</span><span class="p">]</span> <span class="o">==</span> <span class="n">state</span><span class="p">]</span>
-    <span class="n">layer</span> <span class="o">=</span> <span class="n">PathLayer</span><span class="o">.</span><span class="n">from_geopandas</span><span class="p">(</span><span class="n">data</span><span class="p">,</span> <span class="n">width_min_pixels</span><span class="o">=</span><span class="mf">0.8</span><span class="p">)</span>
-    <span class="n">normalized_scale_rank</span> <span class="o">=</span> <span class="p">(</span><span class="n">data</span><span class="p">[</span><span class="s2">&quot;scalerank&quot;</span><span class="p">]</span> <span class="o">-</span> <span class="mi">3</span><span class="p">)</span> <span class="o">/</span> <span class="mi">9</span>
-    <span class="n">layer</span><span class="o">.</span><span class="n">get_color</span> <span class="o">=</span> <span class="n">apply_continuous_cmap</span><span class="p">(</span><span class="n">normalized_scale_rank</span><span class="p">,</span> <span class="n">palette</span><span class="p">,</span> <span class="n">alpha</span><span class="o">=</span><span class="n">alpha</span><span class="p">)</span>
-    <span class="n">map_</span> <span class="o">=</span> <span class="n">Map</span><span class="p">(</span><span class="n">layer</span><span class="p">,</span> <span class="n">_height</span><span class="o">=</span><span class="mi">650</span><span class="p">)</span>
-    <span class="k">return</span> <span class="n">map_</span>
+    <span class="n">data</span> <span class="o">=</span> <span class="n">param</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">()</span>
 
+    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="o">**</span><span class="n">params</span><span class="p">):</span>
+        <span class="n">params</span><span class="p">[</span><span class="s2">&quot;value&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">params</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;value&quot;</span><span class="p">,</span> <span class="n">Map</span><span class="p">(</span><span class="n">layers</span><span class="o">=</span><span class="p">[],</span> <span class="n">view_state</span><span class="o">=</span><span class="p">{</span><span class="s2">&quot;longitude&quot;</span><span class="p">:</span> <span class="o">-</span><span class="mf">119.81446785010868</span><span class="p">,</span> <span class="s2">&quot;latitude&quot;</span><span class="p">:</span> <span class="mf">36.08305565437565</span><span class="p">,</span> <span class="s2">&quot;zoom&quot;</span><span class="p">:</span> <span class="mi">5</span><span class="p">}))</span>
 
-<span class="n">description</span> <span class="o">=</span> <span class="s2">&quot;&quot;&quot;# lonboard</span>
+        <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="fm">__init__</span><span class="p">(</span><span class="o">**</span><span class="n">params</span><span class="p">)</span>
 
-<span class="s2">A Python library for **fast, interactive geospatial vector data visualization** in Jupyter (and Panel).</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">value</span><span class="o">.</span><span class="n">layout</span><span class="o">.</span><span class="n">width</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">value</span><span class="o">.</span><span class="n">layout</span><span class="o">.</span><span class="n">height</span><span class="o">=</span><span class="s2">&quot;100%&quot;</span>
 
-<span class="s2">By utilizing new technologies like `GeoArrow` and `GeoParquet` in conjunction with GPU-based map rendering, lonboard aims to enable visualizing large geospatial datasets interactively through a simple interface.&quot;&quot;&quot;</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">description</span> <span class="o">=</span> <span class="n">pn</span><span class="o">.</span><span class="n">Column</span><span class="p">(</span><span class="n">pn</span><span class="o">.</span><span class="n">pane</span><span class="o">.</span><span class="n">Markdown</span><span class="p">(</span><span class="n">description</span><span class="p">,</span> <span class="n">margin</span><span class="o">=</span><span class="mi">5</span><span class="p">),</span> <span class="n">logo</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">settings</span> <span class="o">=</span> <span class="n">pn</span><span class="o">.</span><span class="n">Column</span><span class="p">(</span>
+            <span class="n">pn</span><span class="o">.</span><span class="n">widgets</span><span class="o">.</span><span class="n">Select</span><span class="o">.</span><span class="n">from_param</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">param</span><span class="o">.</span><span class="n">state</span><span class="p">,</span> <span class="n">sizing_mode</span><span class="o">=</span><span class="s2">&quot;stretch_width&quot;</span><span class="p">),</span>
+            <span class="n">pn</span><span class="o">.</span><span class="n">widgets</span><span class="o">.</span><span class="n">ColorMap</span><span class="o">.</span><span class="n">from_param</span><span class="p">(</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">param</span><span class="o">.</span><span class="n">cmap</span><span class="p">,</span>
+                <span class="n">ncols</span><span class="o">=</span><span class="mi">3</span><span class="p">,</span>
+                <span class="n">swatch_width</span><span class="o">=</span><span class="mi">100</span><span class="p">,</span>
+                <span class="n">name</span><span class="o">=</span><span class="s2">&quot;cmap by Colorcet&quot;</span><span class="p">,</span>
+                <span class="n">sizing_mode</span><span class="o">=</span><span class="s2">&quot;stretch_width&quot;</span><span class="p">,</span>
+            <span class="p">),</span>
+            <span class="n">pn</span><span class="o">.</span><span class="n">widgets</span><span class="o">.</span><span class="n">FloatSlider</span><span class="o">.</span><span class="n">from_param</span><span class="p">(</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">param</span><span class="o">.</span><span class="n">alpha</span><span class="p">,</span> <span class="n">sizing_mode</span><span class="o">=</span><span class="s2">&quot;stretch_width&quot;</span>
+            <span class="p">),</span>
+            <span class="n">margin</span><span class="o">=</span><span class="mi">5</span><span class="p">,</span>
+            <span class="n">sizing_mode</span><span class="o">=</span><span class="s2">&quot;fixed&quot;</span><span class="p">,</span>
+            <span class="n">width</span><span class="o">=</span><span class="mi">300</span><span class="p">,</span>
+        <span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">view</span> <span class="o">=</span> <span class="n">pn</span><span class="o">.</span><span class="n">Column</span><span class="p">(</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_title</span><span class="p">,</span> <span class="n">pn</span><span class="o">.</span><span class="n">pane</span><span class="o">.</span><span class="n">IPyWidget</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">value</span><span class="p">,</span> <span class="n">sizing_mode</span><span class="o">=</span><span class="s2">&quot;stretch_both&quot;</span><span class="p">)</span>
+        <span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_layout</span> <span class="o">=</span> <span class="n">pn</span><span class="o">.</span><span class="n">Row</span><span class="p">(</span>
+            <span class="n">pn</span><span class="o">.</span><span class="n">Column</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">settings</span><span class="p">,</span> <span class="n">sizing_mode</span><span class="o">=</span><span class="s2">&quot;fixed&quot;</span><span class="p">,</span> <span class="n">width</span><span class="o">=</span><span class="mi">300</span><span class="p">),</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">view</span><span class="p">,</span>
+            <span class="n">sizing_mode</span><span class="o">=</span><span class="s2">&quot;stretch_both&quot;</span><span class="p">,</span>
+        <span class="p">)</span>
 
+    <span class="k">def</span> <span class="nf">__panel__</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_layout</span>
 
-<span class="c1"># THE PANEL APP</span>
-<span class="n">pn</span><span class="o">.</span><span class="n">extension</span><span class="p">(</span><span class="s2">&quot;ipywidgets&quot;</span><span class="p">)</span>
-<span class="n">state</span> <span class="o">=</span> <span class="n">pn</span><span class="o">.</span><span class="n">widgets</span><span class="o">.</span><span class="n">Select</span><span class="p">(</span>
-    <span class="n">value</span><span class="o">=</span><span class="s2">&quot;California&quot;</span><span class="p">,</span>
-    <span class="n">options</span><span class="o">=</span><span class="n">state_options</span><span class="p">,</span>
-    <span class="n">width</span><span class="o">=</span><span class="mi">150</span><span class="p">,</span>
-    <span class="n">name</span><span class="o">=</span><span class="s2">&quot;State&quot;</span><span class="p">,</span>
-    <span class="n">sizing_mode</span><span class="o">=</span><span class="s2">&quot;stretch_width&quot;</span><span class="p">,</span>
-<span class="p">)</span>
-<span class="n">cmap</span> <span class="o">=</span> <span class="n">pn</span><span class="o">.</span><span class="n">widgets</span><span class="o">.</span><span class="n">ColorMap</span><span class="p">(</span>
-    <span class="n">value</span><span class="o">=</span><span class="n">cc</span><span class="o">.</span><span class="n">fire</span><span class="p">,</span>
-    <span class="n">options</span><span class="o">=</span><span class="n">cc</span><span class="o">.</span><span class="n">palette</span><span class="p">,</span>
-    <span class="n">ncols</span><span class="o">=</span><span class="mi">3</span><span class="p">,</span>
-    <span class="n">swatch_width</span><span class="o">=</span><span class="mi">100</span><span class="p">,</span>
-    <span class="n">name</span><span class="o">=</span><span class="s2">&quot;cmap by Colorcet&quot;</span><span class="p">,</span>
-    <span class="n">sizing_mode</span><span class="o">=</span><span class="s2">&quot;stretch_width&quot;</span><span class="p">,</span>
-<span class="p">)</span>
-<span class="n">alpha</span> <span class="o">=</span> <span class="n">pn</span><span class="o">.</span><span class="n">widgets</span><span class="o">.</span><span class="n">FloatSlider</span><span class="p">(</span>
-    <span class="n">value</span><span class="o">=</span><span class="mf">0.8</span><span class="p">,</span> <span class="n">start</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span> <span class="n">end</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span> <span class="n">name</span><span class="o">=</span><span class="s2">&quot;Alpha&quot;</span><span class="p">,</span> <span class="n">min_width</span><span class="o">=</span><span class="mi">100</span><span class="p">,</span> <span class="n">sizing_mode</span><span class="o">=</span><span class="s2">&quot;stretch_width&quot;</span>
-<span class="p">)</span>
-<span class="n">logo</span> <span class="o">=</span> <span class="n">pn</span><span class="o">.</span><span class="n">pane</span><span class="o">.</span><span class="n">Image</span><span class="p">(</span>
-    <span class="s2">&quot;https://github.com/developmentseed/lonboard/raw/main/assets/dalle-lonboard.jpg&quot;</span>
-<span class="p">)</span>
-<span class="k">def</span> <span class="nf">title</span><span class="p">(</span><span class="n">state</span><span class="p">):</span>
-    <span class="k">return</span> <span class="sa">f</span><span class="s2">&quot;# North America Roads: </span><span class="si">{</span><span class="n">state</span><span class="si">}</span><span class="s2">&quot;</span>
+    <span class="nd">@param</span><span class="o">.</span><span class="n">depends</span><span class="p">(</span><span class="s2">&quot;state&quot;</span><span class="p">,</span> <span class="n">watch</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">on_init</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+    <span class="k">def</span> <span class="nf">_update_data</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">data</span> <span class="o">=</span> <span class="n">gdf</span><span class="p">[</span><span class="n">gdf</span><span class="p">[</span><span class="s2">&quot;state&quot;</span><span class="p">]</span> <span class="o">==</span> <span class="bp">self</span><span class="o">.</span><span class="n">state</span><span class="p">]</span>
 
-<span class="n">settings</span> <span class="o">=</span> <span class="n">pn</span><span class="o">.</span><span class="n">Column</span><span class="p">(</span><span class="n">state</span><span class="p">,</span> <span class="n">cmap</span><span class="p">,</span> <span class="n">alpha</span><span class="p">)</span>
-<span class="n">description</span> <span class="o">=</span> <span class="n">pn</span><span class="o">.</span><span class="n">Column</span><span class="p">(</span><span class="n">pn</span><span class="o">.</span><span class="n">pane</span><span class="o">.</span><span class="n">Markdown</span><span class="p">(</span><span class="n">description</span><span class="p">,</span> <span class="n">margin</span><span class="o">=</span><span class="mi">5</span><span class="p">),</span> <span class="n">logo</span><span class="p">)</span>
-<span class="n">component</span> <span class="o">=</span> <span class="n">pn</span><span class="o">.</span><span class="n">Column</span><span class="p">(</span>
-    <span class="n">pn</span><span class="o">.</span><span class="n">bind</span><span class="p">(</span><span class="n">title</span><span class="p">,</span> <span class="n">state</span><span class="o">=</span><span class="n">state</span><span class="p">),</span>
-    <span class="n">pn</span><span class="o">.</span><span class="n">panel</span><span class="p">(</span>
-        <span class="n">pn</span><span class="o">.</span><span class="n">bind</span><span class="p">(</span><span class="n">create_map</span><span class="p">,</span> <span class="n">state</span><span class="o">=</span><span class="n">state</span><span class="p">,</span> <span class="n">cmap</span><span class="o">=</span><span class="n">cmap</span><span class="p">,</span> <span class="n">alpha</span><span class="o">=</span><span class="n">alpha</span><span class="o">.</span><span class="n">param</span><span class="o">.</span><span class="n">value_throttled</span><span class="p">),</span>
-        <span class="n">sizing_mode</span><span class="o">=</span><span class="s2">&quot;stretch_both&quot;</span><span class="p">,</span>
-    <span class="p">),</span>
-    <span class="n">sizing_mode</span><span class="o">=</span><span class="s2">&quot;stretch_both&quot;</span><span class="p">,</span>
-<span class="p">)</span>
+    <span class="k">def</span> <span class="nf">_get_color</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="n">palette</span> <span class="o">=</span> <span class="n">to_palette</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">cmap</span><span class="p">)</span>
+        <span class="n">normalized_scale_rank</span> <span class="o">=</span> <span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">data</span><span class="p">[</span><span class="s2">&quot;scalerank&quot;</span><span class="p">]</span> <span class="o">-</span> <span class="mi">3</span><span class="p">)</span> <span class="o">/</span> <span class="mi">9</span>
+        <span class="k">return</span> <span class="n">apply_continuous_cmap</span><span class="p">(</span><span class="n">normalized_scale_rank</span><span class="p">,</span> <span class="n">palette</span><span class="p">,</span> <span class="n">alpha</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">alpha</span><span class="p">)</span>
+
+    <span class="nd">@param</span><span class="o">.</span><span class="n">depends</span><span class="p">(</span><span class="s2">&quot;data&quot;</span><span class="p">,</span> <span class="n">watch</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+    <span class="k">def</span> <span class="nf">_update_value</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="n">layer</span> <span class="o">=</span> <span class="n">PathLayer</span><span class="o">.</span><span class="n">from_geopandas</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">data</span><span class="p">,</span> <span class="n">width_min_pixels</span><span class="o">=</span><span class="mf">0.8</span><span class="p">)</span>
+        <span class="n">layer</span><span class="o">.</span><span class="n">get_color</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_get_color</span><span class="p">()</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">value</span><span class="o">.</span><span class="n">layers</span> <span class="o">=</span> <span class="p">[</span><span class="n">layer</span><span class="p">]</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_fly_to_center</span><span class="p">()</span>
+
+    <span class="k">def</span> <span class="nf">_fly_to_center</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="n">computed_view_state</span> <span class="o">=</span> <span class="n">compute_view</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">value</span><span class="o">.</span><span class="n">layers</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">value</span><span class="o">.</span><span class="n">fly_to</span><span class="p">(</span>
+            <span class="o">**</span><span class="n">computed_view_state</span><span class="p">,</span>
+            <span class="n">duration</span><span class="o">=</span><span class="mi">1000</span><span class="p">,</span>
+        <span class="p">)</span>
+
+    <span class="nd">@param</span><span class="o">.</span><span class="n">depends</span><span class="p">(</span><span class="s2">&quot;cmap&quot;</span><span class="p">,</span> <span class="s2">&quot;alpha&quot;</span><span class="p">,</span> <span class="n">watch</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+    <span class="k">def</span> <span class="nf">_update_layer_get_color</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">value</span><span class="o">.</span><span class="n">layers</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">get_color</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_get_color</span><span class="p">()</span>
+
+    <span class="nd">@param</span><span class="o">.</span><span class="n">depends</span><span class="p">(</span><span class="s2">&quot;state&quot;</span><span class="p">)</span>
+    <span class="k">def</span> <span class="nf">_title</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="k">return</span> <span class="sa">f</span><span class="s2">&quot;# North America Roads: </span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">state</span><span class="si">}</span><span class="s2">&quot;</span>
+
+<span class="n">viewer</span> <span class="o">=</span> <span class="n">StateViewer</span><span class="p">()</span>
 <span class="n">pn</span><span class="o">.</span><span class="n">template</span><span class="o">.</span><span class="n">FastListTemplate</span><span class="p">(</span>
     <span class="n">logo</span><span class="o">=</span><span class="s2">&quot;https://panel.holoviz.org/_static/logo_horizontal_dark_theme.png&quot;</span><span class="p">,</span>
-    <span class="n">title</span><span class="o">=</span><span class="s2">&quot;Works with LonBoard&quot;</span><span class="p">,</span>
-    <span class="n">main</span><span class="o">=</span><span class="p">[</span><span class="n">component</span><span class="p">],</span>
-    <span class="n">sidebar</span><span class="o">=</span><span class="p">[</span><span class="n">description</span><span class="p">,</span> <span class="n">settings</span><span class="p">],</span>
+    <span class="n">title</span><span class="o">=</span><span class="s2">&quot;Works with Lonboard&quot;</span><span class="p">,</span>
+    <span class="n">sidebar</span><span class="o">=</span><span class="p">[</span><span class="n">viewer</span><span class="o">.</span><span class="n">description</span><span class="p">,</span> <span class="n">viewer</span><span class="o">.</span><span class="n">settings</span><span class="p">],</span>
+    <span class="n">main</span><span class="o">=</span><span class="p">[</span><span class="n">viewer</span><span class="o">.</span><span class="n">view</span><span class="p">],</span>
+    <span class="n">main_layout</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
 <span class="p">)</span><span class="o">.</span><span class="n">servable</span><span class="p">()</span>
 </code></pre></div>
 
