@@ -7,12 +7,14 @@
 To run the code below, you need to install the following packages:
 
 ```bash
-pip install panel colorcet ipywidgets_bokeh geopandas palettable lonboard pyogrio
+pip install panel colorcet ipywidgets_bokeh geopandas palettable lonboard pyogrio watchfiles
 ```
 
 ## Tutorial
 
 In this tutorial, you will learn how to display a `lonboard` `Map` via the [`IPyWidget`](https://panel.holoviz.org/reference/panes/IPyWidget.html) *pane*.
+
+![Lonboard map displayed in a Panel component](../assets/panel-display-example.png)
 
 Create a file named `app.py` with the following content:
 
@@ -29,11 +31,14 @@ def get_data():
 
 gdf = get_data()
 layer = ScatterplotLayer.from_geopandas(gdf, radius_min_pixels=2, get_fill_color="red")
-cities_map = Map(layer, _height=500)
+cities_map = Map(layer)
+
+# Fit to the available space
+cities_map.layout.height = cities_map.layout.width = "100%"
 
 pn.Column(
     "# Lonboard Map",
-    pn.pane.IPyWidget(cities_map, width=1000),
+    pn.pane.IPyWidget(cities_map, height=500, width=1000),
 ).servable()
 ```
 
@@ -43,9 +48,7 @@ Now run:
 panel serve app.py --autoreload
 ```
 
-Finally, open [http://localhost:5006](http://localhost:5006). It should look like this:
-
-![Lonboard map displayed in a Panel component](../assets/panel-display-example.png)
+Finally, open [http://localhost:5006](http://localhost:5006) and you should see the `lonboard` map.
 
 ## How to
 
@@ -74,7 +77,10 @@ def get_data():
 
 gdf = get_data()
 layer = ScatterplotLayer.from_geopandas(gdf, radius_min_pixels=2, get_fill_color="red")
-cities_map = Map(layer, _height=500)
+cities_map = Map(layer)
+
+# Fit to the available space
+cities_map.layout.height = cities_map.layout.width = "100%"
 
 color_input = pn.widgets.Select(
     name="Color", options=list(colors.keys()), description="The color of the points"
@@ -86,7 +92,7 @@ def set_fill_color(value):
 
 pn.Column(
     color_input,
-    pn.pane.IPyWidget(cities_map, width=1000),
+    pn.pane.IPyWidget(cities_map, height=500, width=1000),
 ).servable()
 ```
 
@@ -113,10 +119,12 @@ import panel as pn
 pn.extension("ipywidgets")
 
 url = "https://naciscdn.org/naturalearth/10m/cultural/ne_10m_roads_north_america.zip"
-gdf = pn.state.as_cached(
-    "ne_10m_roads_north_america", gpd.read_file, filename=url, engine="pyogrio"
-)
 
+@pn.cache
+def get_data():
+    return gpd.read_file(filename=url, engine="pyogrio")
+
+gdf = get_data()
 state_options = sorted(state for state in gdf["state"].unique() if state)
 
 description = """# Lonboard
@@ -147,8 +155,11 @@ class StateViewer(pn.viewable.Viewer):
     data = param.DataFrame()
 
     def __init__(self, **params):
-        params["value"] = params.get("value", Map(_height=650, layers=[], view_state={"longitude": -119.81446785010868, "latitude": 36.08305565437565, "zoom": 5}))
+        params["value"] = params.get("value", Map(layers=[], view_state={"longitude": -119.81446785010868, "latitude": 36.08305565437565, "zoom": 5}))
+
         super().__init__(**params)
+
+        self.value.layout.width=self.value.layout.height="100%"
 
         self.description = pn.Column(pn.pane.Markdown(description, margin=5), logo)
         self.settings = pn.Column(
@@ -213,7 +224,7 @@ class StateViewer(pn.viewable.Viewer):
 viewer = StateViewer()
 pn.template.FastListTemplate(
     logo="https://panel.holoviz.org/_static/logo_horizontal_dark_theme.png",
-    title="Works with LonBoard",
+    title="Works with Lonboard",
     sidebar=[viewer.description, viewer.settings],
     main=[viewer.view],
     main_layout=None,
