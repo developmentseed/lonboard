@@ -1,18 +1,18 @@
 # Panel
 
-[Panel](https://panel.holoviz.org/) is a framework to build interactive tools for notebooks, dashboards, and web applications that can run on a server — all using Python.
+[Panel](https://panel.holoviz.org/) is a framework for building interactive tools for notebooks, dashboards, and web applications that can run on a server—all using Python.
 
-## Examples
+## Prerequisites
 
-To run the example code below, you need to install the following packages:
+To run the code below, you need to install the following packages:
 
 ```bash
 pip install panel colorcet ipywidgets_bokeh geopandas palettable lonboard pyogrio
 ```
 
-### Display a Map
+## Tutorial
 
-Panel can display `lonboard` `Map`s via the [`IpyWidget`](https://panel.holoviz.org/reference/panes/IPyWidget.html) *pane*.
+In this tutorial, you will learn how to display a `lonboard` `Map` via the [`IPyWidget`](https://panel.holoviz.org/reference/panes/IPyWidget.html) *pane*.
 
 Create a file named `app.py` with the following content:
 
@@ -47,9 +47,13 @@ Finally, open [http://localhost:5006](http://localhost:5006). It should look lik
 
 ![Lonboard map displayed in a Panel component](../assets/panel-display-example.png)
 
+## How to
+
 ### Update the Map In Place
 
-Panel supports **inplace updates** of `lonboard` `Map`s, allowing you to update details of a map efficiently without redrawing the whole map. This is useful for updating the map based on user interactions or on a schedule.
+Panel supports **in-place updates** of `lonboard` `Map`s, allowing you to update details of a map efficiently without redrawing the entire map. This is useful for updating the map based on user interactions or on a schedule.
+
+![In place update of map in Panel](../assets/panel-update-in-place-example.gif)
 
 ```python
 import geopandas as gpd
@@ -86,15 +90,13 @@ pn.Column(
 ).servable()
 ```
 
-It should look like this:
-
-![In place update of map in Panel](../assets/panel-update-in-place-example.gif)
-
 ### Build an Application
 
 With Panel, you can build reusable components and styled web applications in just a few lines of code.
 
 The example below is based on the [North America Roads](../examples/north-america-roads.ipynb) example.
+
+![Panel lonboard application](../assets/panel-application-example.gif)
 
 ```python
 import colorcet as cc
@@ -217,7 +219,3 @@ pn.template.FastListTemplate(
     main_layout=None,
 ).servable()
 ```
-
-It should look like this:
-
-![Panel lonboard application](../assets/panel-application-example.gif)
