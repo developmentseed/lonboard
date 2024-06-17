@@ -2,7 +2,7 @@ import type { WidgetModel } from "@jupyter-widgets/base";
 import { BaseModel } from "./base.js";
 import { Widget, WidgetPlacement } from "@deck.gl/core";
 import { CompassWidget, ZoomWidget, FullscreenWidget, LightTheme } from "@deck.gl/widgets";
-import { LegendWidget, NorthArrowWidget, TitleWidget, ScaleWidget } from "./deck-widget.js";
+import { LegendWidget, NorthArrowWidget, TitleWidget, ScaleWidget, SaveImageWidget } from "./deck-widget.js";
 
 export abstract class BaseDeckWidgetModel extends BaseModel {
 
@@ -251,6 +251,36 @@ export class ScaleWidgetModel extends BaseDeckWidgetModel{
   }
 }
 
+export class SaveImageWidgetModel extends BaseDeckWidgetModel{
+  static widgetType = "save-image";
+
+  protected label: string = "";
+  protected placement: WidgetPlacement = "top-right";
+  protected style: Partial<CSSStyleDeclaration> = {};
+
+  constructor(model: WidgetModel, updateStateCallback: () => void) {
+    super(model, updateStateCallback);
+
+    this.initRegularAttribute("label", "label");
+    this.initRegularAttribute("placement", "placement");
+    this.initRegularAttribute("style", "style");
+  }
+
+  render() {
+    return new SaveImageWidget({
+      id:  "title", 
+      label: this.label, 
+      placement: this.placement, 
+      style: {
+        ...LightTheme,
+        ...this.style,
+      },
+      className: this.className,
+    })
+  }
+}
+
+
 export async function initializeWidget(
   model: WidgetModel,
   updateStateCallback: () => void,
@@ -284,7 +314,11 @@ export async function initializeWidget(
 
     case ScaleWidgetModel.widgetType:
       deckWidgetModel = new ScaleWidgetModel(model, updateStateCallback);
-      break;  
+      break;
+      
+    case SaveImageWidgetModel.widgetType:
+        deckWidgetModel = new SaveImageWidgetModel(model, updateStateCallback);
+        break;  
 
     default:
       throw new Error(`no widget supported for ${deckWidgetType}`);

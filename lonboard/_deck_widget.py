@@ -86,3 +86,11 @@ class ScaleWidget(BaseDeckWidget):
 
     def __init__(self, **kwargs):
         super().__init__(**kwargs)
+
+class SaveImageWidget(BaseDeckWidget):
+
+    _widget_type = traitlets.Unicode("save-image").tag(sync=True)
+    style = traitlets.Dict(default_value=None, allow_none=True).tag(sync=True)
+    
+    def __init__(self, **kwargs):
+        super().__init__(**kwargs)

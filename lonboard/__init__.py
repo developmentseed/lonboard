@@ -27,4 +27,5 @@ from ._deck_widget import (
     NorthArrowWidget,
     LegendWidget,
     ScaleWidget,
+    SaveImageWidget,
 )
