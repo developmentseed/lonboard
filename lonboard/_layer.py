@@ -721,6 +721,23 @@ class PolygonLayer(BaseArrowLayer):
         auto_downcast: bool = True,
         **kwargs: Unpack[PolygonLayerKwargs],
     ) -> Self:
+        """Construct a Layer from a geopandas GeoDataFrame.
+
+        The GeoDataFrame will be reprojected to EPSG:4326 if it is not already in that
+        coordinate system.
+
+        Args:
+            gdf: The GeoDataFrame to set on the layer.
+
+        Other parameters:
+            auto_downcast: If `True`, automatically downcast to smaller-size data types
+                if possible without loss of precision. This calls
+                [pandas.DataFrame.convert_dtypes][pandas.DataFrame.convert_dtypes] and
+                [pandas.to_numeric][pandas.to_numeric] under the hood.
+
+        Returns:
+            A Layer with the initialized data.
+        """
         return super().from_geopandas(gdf=gdf, auto_downcast=auto_downcast, **kwargs)
 
     @classmethod
@@ -732,6 +749,27 @@ class PolygonLayer(BaseArrowLayer):
         crs: Optional[Union[str, pyproj.CRS]] = None,
         **kwargs: Unpack[PolygonLayerKwargs],
     ) -> Self:
+        """Construct a Layer from a duckdb-spatial query.
+
+        DuckDB Spatial does not currently expose coordinate reference system
+        information, so **the user must ensure that data has been reprojected to
+        EPSG:4326** or pass in the existing CRS of the data in the `crs` keyword
+        parameter.
+
+        Args:
+            sql: The SQL input to visualize. This can either be a string containing a
+                SQL query or the output of the duckdb `sql` function.
+            con: The current DuckDB connection. This is required when passing a `str` to
+                the `sql` parameter or when using a non-global DuckDB connection.
+                Defaults to None.
+
+        Keyword Args:
+            crs: The CRS of the input data. This can either be a string passed to
+                `pyproj.CRS.from_user_input` or a `pyproj.CRS` object. Defaults to None.
+
+        Returns:
+            A Layer with the initialized data.
+        """
         return super().from_duckdb(sql=sql, con=con, crs=crs, **kwargs)
 
     _layer_type = traitlets.Unicode("polygon").tag(sync=True)
@@ -966,6 +1004,23 @@ class ScatterplotLayer(BaseArrowLayer):
         auto_downcast: bool = True,
         **kwargs: Unpack[ScatterplotLayerKwargs],
     ) -> Self:
+        """Construct a Layer from a geopandas GeoDataFrame.
+
+        The GeoDataFrame will be reprojected to EPSG:4326 if it is not already in that
+        coordinate system.
+
+        Args:
+            gdf: The GeoDataFrame to set on the layer.
+
+        Other parameters:
+            auto_downcast: If `True`, automatically downcast to smaller-size data types
+                if possible without loss of precision. This calls
+                [pandas.DataFrame.convert_dtypes][pandas.DataFrame.convert_dtypes] and
+                [pandas.to_numeric][pandas.to_numeric] under the hood.
+
+        Returns:
+            A Layer with the initialized data.
+        """
         return super().from_geopandas(gdf=gdf, auto_downcast=auto_downcast, **kwargs)
 
     @classmethod
@@ -977,6 +1032,27 @@ class ScatterplotLayer(BaseArrowLayer):
         crs: Optional[Union[str, pyproj.CRS]] = None,
         **kwargs: Unpack[ScatterplotLayerKwargs],
     ) -> Self:
+        """Construct a Layer from a duckdb-spatial query.
+
+        DuckDB Spatial does not currently expose coordinate reference system
+        information, so **the user must ensure that data has been reprojected to
+        EPSG:4326** or pass in the existing CRS of the data in the `crs` keyword
+        parameter.
+
+        Args:
+            sql: The SQL input to visualize. This can either be a string containing a
+                SQL query or the output of the duckdb `sql` function.
+            con: The current DuckDB connection. This is required when passing a `str` to
+                the `sql` parameter or when using a non-global DuckDB connection.
+                Defaults to None.
+
+        Keyword Args:
+            crs: The CRS of the input data. This can either be a string passed to
+                `pyproj.CRS.from_user_input` or a `pyproj.CRS` object. Defaults to None.
+
+        Returns:
+            A Layer with the initialized data.
+        """
         return super().from_duckdb(sql=sql, con=con, crs=crs, **kwargs)
 
     _layer_type = traitlets.Unicode("scatterplot").tag(sync=True)
@@ -1208,6 +1284,23 @@ class PathLayer(BaseArrowLayer):
         auto_downcast: bool = True,
         **kwargs: Unpack[PathLayerKwargs],
     ) -> Self:
+        """Construct a Layer from a geopandas GeoDataFrame.
+
+        The GeoDataFrame will be reprojected to EPSG:4326 if it is not already in that
+        coordinate system.
+
+        Args:
+            gdf: The GeoDataFrame to set on the layer.
+
+        Other parameters:
+            auto_downcast: If `True`, automatically downcast to smaller-size data types
+                if possible without loss of precision. This calls
+                [pandas.DataFrame.convert_dtypes][pandas.DataFrame.convert_dtypes] and
+                [pandas.to_numeric][pandas.to_numeric] under the hood.
+
+        Returns:
+            A Layer with the initialized data.
+        """
         return super().from_geopandas(gdf=gdf, auto_downcast=auto_downcast, **kwargs)
 
     @classmethod
@@ -1219,6 +1312,27 @@ class PathLayer(BaseArrowLayer):
         crs: Optional[Union[str, pyproj.CRS]] = None,
         **kwargs: Unpack[PathLayerKwargs],
     ) -> Self:
+        """Construct a Layer from a duckdb-spatial query.
+
+        DuckDB Spatial does not currently expose coordinate reference system
+        information, so **the user must ensure that data has been reprojected to
+        EPSG:4326** or pass in the existing CRS of the data in the `crs` keyword
+        parameter.
+
+        Args:
+            sql: The SQL input to visualize. This can either be a string containing a
+                SQL query or the output of the duckdb `sql` function.
+            con: The current DuckDB connection. This is required when passing a `str` to
+                the `sql` parameter or when using a non-global DuckDB connection.
+                Defaults to None.
+
+        Keyword Args:
+            crs: The CRS of the input data. This can either be a string passed to
+                `pyproj.CRS.from_user_input` or a `pyproj.CRS` object. Defaults to None.
+
+        Returns:
+            A Layer with the initialized data.
+        """
         return super().from_duckdb(sql=sql, con=con, crs=crs, **kwargs)
 
     _layer_type = traitlets.Unicode("path").tag(sync=True)
@@ -1379,6 +1493,23 @@ class PointCloudLayer(BaseArrowLayer):
         auto_downcast: bool = True,
         **kwargs: Unpack[PointCloudLayerKwargs],
     ) -> Self:
+        """Construct a Layer from a geopandas GeoDataFrame.
+
+        The GeoDataFrame will be reprojected to EPSG:4326 if it is not already in that
+        coordinate system.
+
+        Args:
+            gdf: The GeoDataFrame to set on the layer.
+
+        Other parameters:
+            auto_downcast: If `True`, automatically downcast to smaller-size data types
+                if possible without loss of precision. This calls
+                [pandas.DataFrame.convert_dtypes][pandas.DataFrame.convert_dtypes] and
+                [pandas.to_numeric][pandas.to_numeric] under the hood.
+
+        Returns:
+            A Layer with the initialized data.
+        """
         return super().from_geopandas(gdf=gdf, auto_downcast=auto_downcast, **kwargs)
 
     @classmethod
@@ -1390,6 +1521,27 @@ class PointCloudLayer(BaseArrowLayer):
         crs: Optional[Union[str, pyproj.CRS]] = None,
         **kwargs: Unpack[PointCloudLayerKwargs],
     ) -> Self:
+        """Construct a Layer from a duckdb-spatial query.
+
+        DuckDB Spatial does not currently expose coordinate reference system
+        information, so **the user must ensure that data has been reprojected to
+        EPSG:4326** or pass in the existing CRS of the data in the `crs` keyword
+        parameter.
+
+        Args:
+            sql: The SQL input to visualize. This can either be a string containing a
+                SQL query or the output of the duckdb `sql` function.
+            con: The current DuckDB connection. This is required when passing a `str` to
+                the `sql` parameter or when using a non-global DuckDB connection.
+                Defaults to None.
+
+        Keyword Args:
+            crs: The CRS of the input data. This can either be a string passed to
+                `pyproj.CRS.from_user_input` or a `pyproj.CRS` object. Defaults to None.
+
+        Returns:
+            A Layer with the initialized data.
+        """
         return super().from_duckdb(sql=sql, con=con, crs=crs, **kwargs)
 
     _layer_type = traitlets.Unicode("point-cloud").tag(sync=True)
@@ -1512,6 +1664,23 @@ class SolidPolygonLayer(BaseArrowLayer):
         auto_downcast: bool = True,
         **kwargs: Unpack[SolidPolygonLayerKwargs],
     ) -> Self:
+        """Construct a Layer from a geopandas GeoDataFrame.
+
+        The GeoDataFrame will be reprojected to EPSG:4326 if it is not already in that
+        coordinate system.
+
+        Args:
+            gdf: The GeoDataFrame to set on the layer.
+
+        Other parameters:
+            auto_downcast: If `True`, automatically downcast to smaller-size data types
+                if possible without loss of precision. This calls
+                [pandas.DataFrame.convert_dtypes][pandas.DataFrame.convert_dtypes] and
+                [pandas.to_numeric][pandas.to_numeric] under the hood.
+
+        Returns:
+            A Layer with the initialized data.
+        """
         return super().from_geopandas(gdf=gdf, auto_downcast=auto_downcast, **kwargs)
 
     @classmethod
@@ -1523,6 +1692,27 @@ class SolidPolygonLayer(BaseArrowLayer):
         crs: Optional[Union[str, pyproj.CRS]] = None,
         **kwargs: Unpack[SolidPolygonLayerKwargs],
     ) -> Self:
+        """Construct a Layer from a duckdb-spatial query.
+
+        DuckDB Spatial does not currently expose coordinate reference system
+        information, so **the user must ensure that data has been reprojected to
+        EPSG:4326** or pass in the existing CRS of the data in the `crs` keyword
+        parameter.
+
+        Args:
+            sql: The SQL input to visualize. This can either be a string containing a
+                SQL query or the output of the duckdb `sql` function.
+            con: The current DuckDB connection. This is required when passing a `str` to
+                the `sql` parameter or when using a non-global DuckDB connection.
+                Defaults to None.
+
+        Keyword Args:
+            crs: The CRS of the input data. This can either be a string passed to
+                `pyproj.CRS.from_user_input` or a `pyproj.CRS` object. Defaults to None.
+
+        Returns:
+            A Layer with the initialized data.
+        """
         return super().from_duckdb(sql=sql, con=con, crs=crs, **kwargs)
 
     _layer_type = traitlets.Unicode("solid-polygon").tag(sync=True)
@@ -1675,6 +1865,23 @@ class HeatmapLayer(BaseArrowLayer):
         auto_downcast: bool = True,
         **kwargs: Unpack[HeatmapLayerKwargs],
     ) -> Self:
+        """Construct a Layer from a geopandas GeoDataFrame.
+
+        The GeoDataFrame will be reprojected to EPSG:4326 if it is not already in that
+        coordinate system.
+
+        Args:
+            gdf: The GeoDataFrame to set on the layer.
+
+        Other parameters:
+            auto_downcast: If `True`, automatically downcast to smaller-size data types
+                if possible without loss of precision. This calls
+                [pandas.DataFrame.convert_dtypes][pandas.DataFrame.convert_dtypes] and
+                [pandas.to_numeric][pandas.to_numeric] under the hood.
+
+        Returns:
+            A Layer with the initialized data.
+        """
         return super().from_geopandas(gdf=gdf, auto_downcast=auto_downcast, **kwargs)
 
     @classmethod
@@ -1686,6 +1893,27 @@ class HeatmapLayer(BaseArrowLayer):
         crs: Optional[Union[str, pyproj.CRS]] = None,
         **kwargs: Unpack[HeatmapLayerKwargs],
     ) -> Self:
+        """Construct a Layer from a duckdb-spatial query.
+
+        DuckDB Spatial does not currently expose coordinate reference system
+        information, so **the user must ensure that data has been reprojected to
+        EPSG:4326** or pass in the existing CRS of the data in the `crs` keyword
+        parameter.
+
+        Args:
+            sql: The SQL input to visualize. This can either be a string containing a
+                SQL query or the output of the duckdb `sql` function.
+            con: The current DuckDB connection. This is required when passing a `str` to
+                the `sql` parameter or when using a non-global DuckDB connection.
+                Defaults to None.
+
+        Keyword Args:
+            crs: The CRS of the input data. This can either be a string passed to
+                `pyproj.CRS.from_user_input` or a `pyproj.CRS` object. Defaults to None.
+
+        Returns:
+            A Layer with the initialized data.
+        """
         return super().from_duckdb(sql=sql, con=con, crs=crs, **kwargs)
 
     _layer_type = traitlets.Unicode("heatmap").tag(sync=True)
