@@ -65,7 +65,7 @@ griffe-inherited-docstrings = "^1.0.0"
 [tool.poetry.group.docs.dependencies]
 mkdocs = "^1.4.3"
 mkdocs-material = { version = "^9.5", extras = ["imaging"] }
-mkdocstrings = { version = "^0.23.0", extras = ["python"] }
+mkdocstrings = { version = "^0.25.1", extras = ["python"] }
 # This version only on 3.9+. Ok because it's a dev dependency
 mkdocs-jupyter = { version = "^0.24.5", python = "^3.9" }
 mike = "^2"
