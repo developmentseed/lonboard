@@ -1239,6 +1239,20 @@ astunparse = {version = ">=1.6", markers = "python_version < \"3.9\""}
 colorama = ">=0.4"
 
 [[package]]
+name = "griffe-inherited-docstrings"
+version = "1.0.0"
+description = "Griffe extension for inheriting docstrings."
+optional = false
+python-versions = ">=3.8"
+files = [
+    {file = "griffe_inherited_docstrings-1.0.0-py3-none-any.whl", hash = "sha256:46a7861401022330d39d4e937e52bae4d8b309c943204720d737835214bad8bc"},
+    {file = "griffe_inherited_docstrings-1.0.0.tar.gz", hash = "sha256:ae3e2362af11f1eb95eb81a0ddc744d4fd05649f4ec749ea4559da033d863a46"},
+]
+
+[package.dependencies]
+griffe = ">=0.38"
+
+[[package]]
 name = "h11"
 version = "0.14.0"
 description = "A pure-Python, bring-your-own-I/O implementation of HTTP/1.1"
@@ -2626,8 +2640,8 @@ files = [
 [package.dependencies]
 numpy = [
     {version = ">=1.20.3", markers = "python_version < \"3.10\""},
-    {version = ">=1.21.0", markers = "python_version >= \"3.10\" and python_version < \"3.11\""},
     {version = ">=1.23.2", markers = "python_version >= \"3.11\""},
+    {version = ">=1.21.0", markers = "python_version >= \"3.10\" and python_version < \"3.11\""},
 ]
 python-dateutil = ">=2.8.2"
 pytz = ">=2020.1"
@@ -4292,4 +4306,4 @@ cli = ["click", "pyogrio"]
 [metadata]
 lock-version = "2.0"
 python-versions = "^3.8"
-content-hash = "db4e91916ddc4689fb54420f4f9832d3089ae87ddcd9b66d09b4dc1475c51039"
+content-hash = "481db628b9f9d87c803ea93e1fab667d9acd5dd246bf88973e2bb8bda80dec0b"
