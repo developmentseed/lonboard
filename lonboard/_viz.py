@@ -173,7 +173,7 @@ def viz(
     Args:
         data: a data object of any supported type.
 
-    Other args:
+    Keyword Args:
         scatterplot_kwargs: a `dict` of parameters to pass down to all generated
           [`ScatterplotLayer`][lonboard.ScatterplotLayer]s.
         path_kwargs: a `dict` of parameters to pass down to all generated

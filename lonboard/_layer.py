@@ -356,7 +356,7 @@ class BaseArrowLayer(BaseLayer):
                 the `sql` parameter or when using a non-global DuckDB connection.
                 Defaults to None.
 
-        Other args:
+        Keyword Args:
             crs: The CRS of the input data. This can either be a string passed to
                 `pyproj.CRS.from_user_input` or a `pyproj.CRS` object. Defaults to None.
 
