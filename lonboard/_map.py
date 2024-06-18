@@ -281,7 +281,7 @@ class Map(BaseAnyWidget):
 
         Any parameters that are unset will not be changed.
 
-        Other Args:
+        Keyword Args:
             longitude: the new longitude to set on the map. Defaults to None.
             latitude: the new latitude to set on the map. Defaults to None.
             zoom: the new zoom to set on the map. Defaults to None.
@@ -390,7 +390,7 @@ class Map(BaseAnyWidget):
         Args:
             filename: where to save the generated HTML file.
 
-        Other args:
+        Keyword Args:
             title: A title for the exported map. This will show as the browser tab name.
 
         Returns:
