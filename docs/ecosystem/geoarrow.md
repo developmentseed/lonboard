@@ -1,6 +1,6 @@
 # GeoArrow
 
-[GeoArrow](https://geoarrow.org/) is an in-memory data structure for storing vector geospatial data and associated attributes. Lonboard uses GeoArrow internally and is the [primary reason why Lonboard is fast](../how-it-works.md#how-is-it-so-fast).
+[GeoArrow](https://geoarrow.org/) is an in-memory data structure for storing vector geospatial data and associated attributes. Lonboard uses GeoArrow internally and is the [primary reason why Lonboard is fast](../../how-it-works#how-is-it-so-fast).
 
 There's a burgeoning ecosystem of Python libraries that use GeoArrow internally. Creating Lonboard `Layer` objects from GeoArrow tables is the fastest way to visualize data, as no conversions are needed on the Python side.
 
