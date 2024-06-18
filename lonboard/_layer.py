@@ -317,7 +317,7 @@ class BaseArrowLayer(BaseLayer):
         Args:
             gdf: The GeoDataFrame to set on the layer.
 
-        Other parameters:
+        Keyword Args:
             auto_downcast: If `True`, automatically downcast to smaller-size data types
                 if possible without loss of precision. This calls
                 [pandas.DataFrame.convert_dtypes][pandas.DataFrame.convert_dtypes] and
@@ -729,7 +729,7 @@ class PolygonLayer(BaseArrowLayer):
         Args:
             gdf: The GeoDataFrame to set on the layer.
 
-        Other parameters:
+        Keyword Args:
             auto_downcast: If `True`, automatically downcast to smaller-size data types
                 if possible without loss of precision. This calls
                 [pandas.DataFrame.convert_dtypes][pandas.DataFrame.convert_dtypes] and
@@ -1012,7 +1012,7 @@ class ScatterplotLayer(BaseArrowLayer):
         Args:
             gdf: The GeoDataFrame to set on the layer.
 
-        Other parameters:
+        Keyword Args:
             auto_downcast: If `True`, automatically downcast to smaller-size data types
                 if possible without loss of precision. This calls
                 [pandas.DataFrame.convert_dtypes][pandas.DataFrame.convert_dtypes] and
@@ -1292,7 +1292,7 @@ class PathLayer(BaseArrowLayer):
         Args:
             gdf: The GeoDataFrame to set on the layer.
 
-        Other parameters:
+        Keyword Args:
             auto_downcast: If `True`, automatically downcast to smaller-size data types
                 if possible without loss of precision. This calls
                 [pandas.DataFrame.convert_dtypes][pandas.DataFrame.convert_dtypes] and
@@ -1501,7 +1501,7 @@ class PointCloudLayer(BaseArrowLayer):
         Args:
             gdf: The GeoDataFrame to set on the layer.
 
-        Other parameters:
+        Keyword Args:
             auto_downcast: If `True`, automatically downcast to smaller-size data types
                 if possible without loss of precision. This calls
                 [pandas.DataFrame.convert_dtypes][pandas.DataFrame.convert_dtypes] and
@@ -1672,7 +1672,7 @@ class SolidPolygonLayer(BaseArrowLayer):
         Args:
             gdf: The GeoDataFrame to set on the layer.
 
-        Other parameters:
+        Keyword Args:
             auto_downcast: If `True`, automatically downcast to smaller-size data types
                 if possible without loss of precision. This calls
                 [pandas.DataFrame.convert_dtypes][pandas.DataFrame.convert_dtypes] and
@@ -1873,7 +1873,7 @@ class HeatmapLayer(BaseArrowLayer):
         Args:
             gdf: The GeoDataFrame to set on the layer.
 
-        Other parameters:
+        Keyword Args:
             auto_downcast: If `True`, automatically downcast to smaller-size data types
                 if possible without loss of precision. This calls
                 [pandas.DataFrame.convert_dtypes][pandas.DataFrame.convert_dtypes] and
