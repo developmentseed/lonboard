@@ -2,6 +2,7 @@ import { Deck, Viewport, WebMercatorViewport, Widget, WidgetPlacement } from '@d
 import { CompassWidget } from '@deck.gl/widgets';
 import React from 'react';
 import { Root, createRoot } from 'react-dom/client';
+import { toPng } from 'html-to-image';
 
 interface TitleWidgetProps {
   id: string;
@@ -353,7 +354,7 @@ export class SaveImageWidget implements Widget<SaveImageWidgetProps> {
       <button
         className={`deck-widget-icon-button ${className}`}
         type="button"
-        onClick={() => this.onClick()}
+        onClick={() => this.onClick.bind(this)}
         title={this.props.label}
       >
         <svg fill="#000000" version="1.1" width="85%" height="85%" viewBox="0 0 492.676 492.676">
@@ -380,18 +381,27 @@ export class SaveImageWidget implements Widget<SaveImageWidgetProps> {
     return element;
   }
 
-  onClick() {
-    if (this.deck){
-
+  async onClick() {
+    if (this.deck) {
+    
       this.deck.redraw("true");
-      const canvas = this.deck?.getCanvas();
-      const image = canvas?.toDataURL('image/png');
+      const deck_wrapper = this.deck?.getCanvas()?.parentElement;
+      console.log(deck_wrapper);
+      
+     if(deck_wrapper) {
+        toPng(deck_wrapper, )
+        .then(function (dataUrl) {
+          var img = new Image();
+          img.src = dataUrl;
 
-      if (image){
-        const a = document.createElement('a');
-        a.href = image;
-        a.download = 'map.png';
-        a.click();
+          const a = document.createElement('a');
+          a.href = dataUrl;
+          a.download = 'map.png';
+          a.click();
+        })
+        .catch(function (error) {
+          console.error('Failed to export PNG', error);
+        });
       }
     }
   }

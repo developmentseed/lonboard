@@ -12,6 +12,7 @@
     "@deck.gl/widgets": "^9.0.16",
     "@geoarrow/deck.gl-layers": "github:atmorling/deck.gl-layers#v9-test",
     "apache-arrow": "^16.1.0",
+    "html-to-image": "^1.11.11",
     "maplibre-gl": "^3.6.2",
     "parquet-wasm": "0.6.1",
     "react": "^18.3.1",
