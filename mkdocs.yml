@@ -157,13 +157,15 @@ plugins:
         python:
           paths: [lonboard]
           options:
-            show_root_heading: true
-            docstring_style: google
-            show_source: false
             docstring_section_style: list
-            separate_signature: true
-            show_signature_annotations: true
+            docstring_style: google
             line_length: 80
+            separate_signature: true
+            show_root_heading: true
+            show_signature_annotations: true
+            show_source: false
+            show_symbol_type_toc: true
+            signature_crossrefs: true
             extensions:
               - griffe_inherited_docstrings
 
