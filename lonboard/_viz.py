@@ -175,13 +175,13 @@ def viz(
 
     Keyword Args:
         scatterplot_kwargs: a `dict` of parameters to pass down to all generated
-          [`ScatterplotLayer`][lonboard.ScatterplotLayer]s.
+            [`ScatterplotLayer`][lonboard.ScatterplotLayer]s.
         path_kwargs: a `dict` of parameters to pass down to all generated
-          [`PathLayer`][lonboard.PathLayer]s.
+            [`PathLayer`][lonboard.PathLayer]s.
         polygon_kwargs: a `dict` of parameters to pass down to all generated
-          [`PolygonLayer`][lonboard.PolygonLayer]s.
+            [`PolygonLayer`][lonboard.PolygonLayer]s.
         map_kwargs: a `dict` of parameters to pass down to the generated
-          [`Map`][lonboard.Map].
+            [`Map`][lonboard.Map].
         con: the active DuckDB connection. This is necessary in some cases when passing
             in a DuckDB query. In particular, if you're using a non-global DuckDB
             connection and if your SQL query outputs the default `GEOMETRY` type.
