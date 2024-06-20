@@ -18,7 +18,7 @@ def test_viz_geometry():
         """
     rel = con.sql(sql)
     assert rel.types[-1] == "GEOMETRY"
-    m = viz(rel)
+    m = viz(rel, con=con)
     assert isinstance(m.layers[0], ScatterplotLayer)
 
 
@@ -165,7 +165,10 @@ def test_create_table_as_custom_con():
         """
     con = duckdb.connect()
     con.execute(sql)
-    with pytest.raises(ValueError, match="Could not coerce type GEOMETRY to WKB"):
+
+    with pytest.raises(
+        duckdb.InvalidInputException, match="object was created by another Connection"
+    ):
         m = viz(con.table("test"))
 
     # Succeeds when passing in con object
