@@ -109,6 +109,7 @@ function App() {
   let [pickingRadius] = useModelState<number>("picking_radius");
   let [useDevicePixels] = useModelState<number | boolean>("use_device_pixels");
   let [parameters] = useModelState<object>("parameters");
+  let [controller] = useModelState<boolean>("controller");
 
   // initialViewState is the value of view_state on the Python side. This is
   // called `initial` here because it gets passed in to deck's
@@ -221,7 +222,7 @@ function App() {
             ? initialViewState
             : DEFAULT_INITIAL_VIEW_STATE
         }
-        controller={true}
+        controller={controller}
         layers={layers}
         widgets={deckWidgets}
         width={mapWidth}

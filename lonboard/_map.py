@@ -171,6 +171,10 @@ class Map(BaseAnyWidget):
     """One or more `Widget` objects to display on this map.
     """
 
+    controller = traitlets.Bool(default_value=True).tag(sync=True)
+    """Whether or not the map is interactive
+    """
+
     basemap_style = traitlets.Unicode(CartoBasemap.PositronNoLabels).tag(sync=True)
     """
     A URL to a MapLibre-compatible basemap style.
