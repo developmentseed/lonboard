@@ -92,7 +92,7 @@ export class LegendWidget implements Widget<LegendWidgetProps> {
     this.props = props;
   }
 
-  setProps(props: Partial<TitleWidgetProps>) {
+  setProps(props: Partial<LegendWidgetProps>) {
     Object.assign(this.props, props);
   }
   
@@ -219,7 +219,7 @@ export class ScaleWidget implements Widget<ScaleWidgetProps> {
     this.props = props;
   }
 
-  setProps(props: Partial<TitleWidgetProps>) {
+  setProps(props: Partial<ScaleWidgetProps>) {
     Object.assign(this.props, props);
   }
 
