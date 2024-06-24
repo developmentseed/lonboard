@@ -224,6 +224,48 @@ def viz(
 
     return Map(layers=layers, **map_kwargs)
 
+def viz_layer(
+    data: Union[VizDataInput, List[VizDataInput], Tuple[VizDataInput, ...]],
+    *,
+    scatterplot_kwargs: Optional[ScatterplotLayerKwargs] = None,
+    path_kwargs: Optional[PathLayerKwargs] = None,
+    polygon_kwargs: Optional[PolygonLayerKwargs] = None,
+    map_kwargs: Optional[MapKwargs] = None,
+    con: Optional[duckdb.DuckDBPyConnection] = None,
+) -> List[Union[ScatterplotLayer, PathLayer, PolygonLayer]]:
+    """Same as viz but returns only the created layers
+    """
+    color_ordering = COLORS.copy()
+    shuffle(color_ordering)
+
+    if isinstance(data, (list, tuple)):
+        layers: List[Union[ScatterplotLayer, PathLayer, PolygonLayer]] = []
+        for i, item in enumerate(data):
+            ls = create_layers_from_data_input(
+                item,
+                _viz_color=color_ordering[i % len(color_ordering)],
+                scatterplot_kwargs=scatterplot_kwargs,
+                path_kwargs=path_kwargs,
+                polygon_kwargs=polygon_kwargs,
+                con=con,
+            )
+            layers.extend(ls)
+    else:
+        layers = create_layers_from_data_input(
+            data,
+            _viz_color=color_ordering[0],
+            scatterplot_kwargs=scatterplot_kwargs,
+            path_kwargs=path_kwargs,
+            polygon_kwargs=polygon_kwargs,
+            con=con,
+        )
+
+    map_kwargs = {} if not map_kwargs else map_kwargs
+
+    if "basemap_style" not in map_kwargs.keys():
+        map_kwargs["basemap_style"] = CartoBasemap.DarkMatter
+
+    return layers
 
 DUCKDB_PY_CONN_ERROR = dedent("""\
     Must pass in DuckDBPyRelation object, not DuckDBPyConnection.
