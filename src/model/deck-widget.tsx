@@ -354,7 +354,7 @@ export class SaveImageWidget implements Widget<SaveImageWidgetProps> {
       <button
         className={`deck-widget-icon-button ${className}`}
         type="button"
-        onClick={() => this.onClick.bind(this)}
+        onClick={() => this.handleClick}
         title={this.props.label}
       >
         <svg fill="#000000" version="1.1" width="85%" height="85%" viewBox="0 0 492.676 492.676">
@@ -381,7 +381,7 @@ export class SaveImageWidget implements Widget<SaveImageWidgetProps> {
     return element;
   }
 
-  async onClick() {
+  async handleClick() {
     if (this.deck) {
     
       this.deck.redraw("true");
