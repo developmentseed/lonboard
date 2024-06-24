@@ -4,7 +4,7 @@ import { createRender, useModelState, useModel } from "@anywidget/react";
 import type { Initialize, Render } from "@anywidget/types";
 import Map from "react-map-gl/maplibre";
 import DeckGL from "@deck.gl/react";
-import { MapViewState, Widget, type Layer } from "@deck.gl/core";
+import { MapView, MapViewState, Widget, type Layer } from "@deck.gl/core";
 import { BaseLayerModel, initializeLayer } from "./model/index.js";
 import type { WidgetModel } from "@jupyter-widgets/base";
 import { initParquetWasm } from "./parquet.js";
@@ -27,6 +27,8 @@ const DEFAULT_INITIAL_VIEW_STATE = {
   bearing: 0,
   pitch: 0,
 };
+
+const MAP_VIEW = new MapView({repeat: true});
 
 const DEFAULT_MAP_STYLE =
   "https://basemaps.cartocdn.com/gl/positron-nolabels-gl-style/style.json";
@@ -222,6 +224,7 @@ function App() {
             ? initialViewState
             : DEFAULT_INITIAL_VIEW_STATE
         }
+        views={MAP_VIEW}
         controller={controller}
         layers={layers}
         widgets={deckWidgets}
