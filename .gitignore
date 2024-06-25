@@ -19,7 +19,6 @@ site
 .yarn
 *.wasm
 __pycache__
-static
 .pnp.cjs
 .pnp.loader.mjs
 node_modules
