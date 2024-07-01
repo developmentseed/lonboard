@@ -167,6 +167,38 @@ class Map(BaseAnyWidget):
       [`lonboard.basemap.CartoBasemap.PositronNoLabels`][lonboard.basemap.CartoBasemap.PositronNoLabels]
     """
 
+    custom_attribution = traitlets.Union(
+        [traitlets.Unicode(allow_none=True), traitlets.List(traitlets.Unicode(allow_none=False))]
+    ).tag(sync=True)
+    """
+    Custom attribution to display on the map.
+
+    This attribute supports the same format as the `attribution` property in the Maplibre API.
+
+    - Type: `str` or `List[str]`
+    - Default: `None`
+
+    You can provide either a single string or a list of strings for custom attributions. If an attribution value is set in the map style, it will be displayed in addition to this custom attribution.
+
+    **Example:**
+    
+        ```py
+        m = Map(
+            layers,
+            custom_attribution="Development Seed"
+        )
+        ```
+
+    **Example:**
+
+        ```py
+        m = Map(
+            layers,
+            custom_attribution=["Development Seed", "OpenStreetMap"]
+        )
+        ```
+    """
+
     # TODO: We'd prefer a "Strict union of bool and float" but that doesn't
     # work here because `Union[bool, float]` would coerce `1` to `True`, which we don't
     # want, and `Union[float, bool]` would coerce `True` to `1`, which we also don't
