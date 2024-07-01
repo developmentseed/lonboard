@@ -62,8 +62,6 @@ export abstract class BaseLayerModel extends BaseModel {
   }
 
   baseLayerProps(): LayerProps {
-    // console.log("extensions", this.extensionInstances());
-    // console.log("extensionprops", this.extensionProps());
     return {
       extensions: this.extensionInstances(),
       ...this.extensionProps(),
