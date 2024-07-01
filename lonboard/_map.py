@@ -176,12 +176,15 @@ class Map(BaseAnyWidget):
     """
     Custom attribution to display on the map.
 
-    This attribute supports the same format as the `attribution` property in the Maplibre API.
+    This attribute supports the same format as the `attribution` property in the
+    Maplibre API.
 
     - Type: `str` or `List[str]`
     - Default: `None`
 
-    You can provide either a single string or a list of strings for custom attributions. If an attribution value is set in the map style, it will be displayed in addition to this custom attribution.
+    You can provide either a single string or a list of strings for custom attributions.
+    If an attribution value is set in the map style, it will be displayed in addition to
+    this custom attribution.
 
     **Example:**
 
