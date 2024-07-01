@@ -168,7 +168,10 @@ class Map(BaseAnyWidget):
     """
 
     custom_attribution = traitlets.Union(
-        [traitlets.Unicode(allow_none=True), traitlets.List(traitlets.Unicode(allow_none=False))]
+        [
+            traitlets.Unicode(allow_none=True),
+            traitlets.List(traitlets.Unicode(allow_none=False)),
+        ]
     ).tag(sync=True)
     """
     Custom attribution to display on the map.
@@ -181,7 +184,7 @@ class Map(BaseAnyWidget):
     You can provide either a single string or a list of strings for custom attributions. If an attribution value is set in the map style, it will be displayed in addition to this custom attribution.
 
     **Example:**
-    
+
         ```py
         m = Map(
             layers,
