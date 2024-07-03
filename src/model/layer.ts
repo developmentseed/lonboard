@@ -24,8 +24,8 @@ import type { WidgetModel } from "@jupyter-widgets/base";
 import * as arrow from "apache-arrow";
 import { parseParquetBuffers } from "../parquet.js";
 import { BaseLayerModel } from "./base-layer.js";
-import { BitmapLayer, BitmapLayerProps } from "@deck.gl/layers/typed";
-import { TileLayer, TileLayerProps } from "@deck.gl/geo-layers/typed";
+import { BitmapLayer, BitmapLayerProps } from "@deck.gl/layers";
+import { TileLayer, TileLayerProps } from "@deck.gl/geo-layers";
 import { isDefined } from "../util.js";
 
 /**
@@ -268,9 +268,6 @@ export class ColumnModel extends BaseArrowLayerModel {
   protected radius: GeoArrowColumnLayerProps["radius"] | null;
   protected angle: GeoArrowColumnLayerProps["angle"] | null;
 
-  // @ts-expect-error Property 'vertices' has no initializer and is not
-  // definitely assigned in the constructor
-  // Ref https://github.com/visgl/deck.gl/pull/8453
   protected vertices: GeoArrowColumnLayerProps["vertices"] | null;
   protected offset: GeoArrowColumnLayerProps["offset"] | null;
   protected coverage: GeoArrowColumnLayerProps["coverage"] | null;
@@ -326,9 +323,6 @@ export class ColumnModel extends BaseArrowLayerModel {
   }
 
   layerProps(): Omit<GeoArrowColumnLayerProps, "id"> {
-    // @ts-expect-error Type 'Position[] | undefined' is not assignable to type
-    // 'Position[] | null'.
-    // Ref https://github.com/visgl/deck.gl/pull/8453
     return {
       data: this.table,
       ...(isDefined(this.diskResolution) && {

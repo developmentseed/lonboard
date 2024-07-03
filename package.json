@@ -5,11 +5,11 @@
   "dependencies": {
     "@anywidget/react": "^0.0.7",
     "@babel/runtime": "^7.24.7",
-    "@deck.gl/core": "^8.9.35",
-    "@deck.gl/extensions": "^8.9.35",
-    "@deck.gl/layers": "^8.9.35",
-    "@deck.gl/react": "^8.9.35",
-    "@geoarrow/deck.gl-layers": "^0.3.0-beta.16",
+    "@deck.gl/core": "^9.0.21",
+    "@deck.gl/extensions": "^9.0.21",
+    "@deck.gl/layers": "^9.0.21",
+    "@deck.gl/react": "^9.0.21",
+    "@geoarrow/deck.gl-layers": "^0.3.0-beta.17",
     "apache-arrow": "^16.1.0",
     "maplibre-gl": "^3.6.2",
     "parquet-wasm": "0.6.1",
@@ -37,11 +37,6 @@
     "fmt": "prettier './src/**/*.{ts,tsx,css}' --write",
     "test": "vitest run",
     "typecheck": "tsc --build"
-  },
-  "resolutions": {
-    "@deck.gl/core": "8.9.30",
-    "@deck.gl/layers": "8.9.30",
-    "@deck.gl/react": "8.9.30"
   },
   "volta": {
     "node": "18.18.2",
