@@ -14,6 +14,7 @@ import { v4 as uuidv4 } from "uuid";
 import { Message } from "./types.js";
 import { flyTo } from "./actions/fly-to.js";
 import { useViewStateDebounced } from "./state";
+import "maplibre-gl/dist/maplibre-gl.css";
 
 await initParquetWasm();
 
@@ -71,6 +72,7 @@ function App() {
   let [pickingRadius] = useModelState<number>("picking_radius");
   let [useDevicePixels] = useModelState<number | boolean>("use_device_pixels");
   let [parameters] = useModelState<object>("parameters");
+  let [customAttribution] = useModelState<string>("custom_attribution");
 
   // initialViewState is the value of view_state on the Python side. This is
   // called `initial` here because it gets passed in to deck's
@@ -184,7 +186,10 @@ function App() {
         }}
         parameters={parameters || {}}
       >
-        <Map mapStyle={mapStyle || DEFAULT_MAP_STYLE} />
+        <Map
+          mapStyle={mapStyle || DEFAULT_MAP_STYLE}
+          customAttribution={customAttribution}
+        ></Map>
       </DeckGL>
     </div>
   );
