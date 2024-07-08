@@ -24,10 +24,10 @@
     "@jupyter-widgets/base": "^6.0.8",
     "@types/react": "^18.3.3",
     "@types/uuid": "^10.0.0",
-    "esbuild": "^0.22.0",
+    "esbuild": "^0.23.0",
     "nodemon": "^3.1.4",
     "prettier": "^3.3.2",
-    "typescript": "^5.5.2",
+    "typescript": "^5.5.3",
     "vitest": "^1.6.0"
   },
   "scripts": {
