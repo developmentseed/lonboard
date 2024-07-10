@@ -196,6 +196,13 @@ function App() {
     [isMapHoverEnabled, justClicked],
   );
 
+  let buttonLabel = "Click here to start selecting";
+  if (state.mapMode === MapMode.BBOX_SELECT_START) {
+    buttonLabel = "Click the map to start drawing the selection box";
+  } else if (state.mapMode === MapMode.BBOX_SELECT_UPDATE) {
+    buttonLabel = "Click the map to finish drawing the selection box";
+  }
+
   return (
     <div id={`map-${mapId}`} style={{ height: mapHeight || "100%" }}>
       <div
@@ -212,9 +219,7 @@ function App() {
           dispatch({ type: ActionTypes.TOGGLE_BBOX_SELECT_MODE });
         }}
       >
-        {state.mapMode === MapMode.BBOX_SELECT_START
-          ? "Bbox select mode"
-          : "Pan mode"}
+        {buttonLabel}
       </div>
       <DeckGL
         initialViewState={

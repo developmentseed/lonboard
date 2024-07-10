@@ -1,7 +1,6 @@
 import { Action, baseReducer, State } from ".";
 
 export function logReducer(reducer: typeof baseReducer) {
-  console.log(process.env);
   /* eslint-disable no-console */
   return (state: State, action: Action) => {
     const nextState = reducer(state, action);
