@@ -1,5 +1,5 @@
 import * as React from "react";
-import { useState, useEffect, useMemo, useRef } from "react";
+import { useCallback, useEffect, useReducer, useRef, useState } from "react";
 import { createRender, useModelState, useModel } from "@anywidget/react";
 import type { Initialize, Render } from "@anywidget/types";
 import Map from "react-map-gl/maplibre";
@@ -11,11 +11,18 @@ import { BaseLayerModel, initializeLayer } from "./model/index.js";
 import type { WidgetModel } from "@jupyter-widgets/base";
 import { initParquetWasm } from "./parquet.js";
 import { getTooltip } from "./tooltip/index.js";
-import { makePolygon, isDefined, loadChildModels } from "./util.js";
+import { isDefined, loadChildModels, rateLimit } from "./util.js";
 import { v4 as uuidv4 } from "uuid";
 import { Message } from "./types.js";
 import { flyTo } from "./actions/fly-to.js";
 import { useViewStateDebounced } from "./state";
+import * as selectors from "./reducer/selectors";
+import {
+  ActionTypes,
+  baseInitialState,
+  MapMode,
+  reducer,
+} from "./reducer/index.js";
 
 await initParquetWasm();
 
@@ -65,23 +72,24 @@ async function getChildModelState(
 }
 
 function App() {
+  const [state, dispatch] = useReducer(reducer, baseInitialState);
+
+  const isMapHoverEnabled = selectors.isMapHoverEnabled(state);
+  const isMapClickEnabled = selectors.isMapClickEnabled(state);
+  const [justClicked, setJustClicked] = useState<boolean>(false);
+  const bboxSelectPolygonLayer = selectors.bboxSelectPolygonLayer(state);
+
   const model = useModel();
 
   const [mapStyle] = useModelState<string>("basemap_style");
   const [mapHeight] = useModelState<number>("_height");
   const [showTooltip] = useModelState<boolean>("show_tooltip");
   const [pickingRadius] = useModelState<number>("picking_radius");
-  const [boundsModel, setBoundsModel] =
-    useModelState<Array<number>>("selected_bounds");
-  const [selectionMode, setSelectionMode] = useState<boolean | string>(false);
-  const [selectionObjectCount, setSelectionObjectCount] = useState<
-    boolean | number
-  >(false);
-  const [hoverBBoxLayer, setHoverBBoxLayer] = useState<any>(false);
   const [useDevicePixels] = useModelState<number | boolean>(
     "use_device_pixels",
   );
   const [parameters] = useModelState<object>("parameters");
+  const [customAttribution] = useModelState<string>("custom_attribution");
 
   // initialViewState is the value of view_state on the Python side. This is
   // called `initial` here because it gets passed in to deck's
@@ -161,136 +169,41 @@ function App() {
     }
   }, []);
 
-  // State is an array of: [screen coordinates, geographic coordinates]
-  const [selectionStart, setSelectionStart] = useState<
-    undefined | [[number, number], number[] | undefined]
-  >();
-  const [selectionEnd, setSelectionEnd] = useState<
-    undefined | [[number, number], number[] | undefined]
-  >();
+  const onMapClickHandler = useCallback(
+    (info: PickingInfo) => {
+      if (isMapClickEnabled) {
+        // We added this flag to prevent the hover event from firing after a
+        // click event.
+        setJustClicked(true);
+        dispatch({ type: ActionTypes.MAP_CLICK_EVENT, data: info });
+        setTimeout(() => {
+          setJustClicked(false);
+        }, 100);
+      }
+    },
+    [isMapClickEnabled],
+  );
 
-  function onSelectClick() {
-    if (!selectionMode) {
-      setSelectionMode("selecting");
-    }
-    if (selectionMode === "selected") {
-      setSelectionMode(false);
-      setSelectionStart(undefined);
-      setSelectionEnd(undefined);
-    }
-  }
+  const onMapHoverHandler = useCallback(
+    rateLimit(
+      (info: PickingInfo) =>
+        isMapHoverEnabled &&
+        !justClicked &&
+        dispatch({ type: ActionTypes.MAP_HOVER_EVENT, data: info }),
+      100,
+    ),
+    [isMapHoverEnabled, justClicked],
+  );
 
-  function onMapClick(info: PickingInfo) {
-    if (!selectionMode || selectionMode === "selected") return;
-    if (selectionStart !== undefined && selectionEnd === undefined) {
-      setSelectionEnd([[info.x, info.y], info.coordinate]);
-      const pt1 = selectionStart[0];
-      const pt2 = [info.x, info.y];
-
-      const width = Math.abs(pt2[0] - pt1[0]);
-      const height = Math.abs(pt2[1] - pt1[1]);
-      const left = Math.min(pt1[0], pt2[0]);
-      const top = Math.min(pt1[1], pt2[1]);
-      const selectedObjects = mapRef.current?.pickObjects({
-        x: left,
-        y: top,
-        width,
-        height,
-      });
-      setSelectionMode("selected");
-      setHoverBBoxLayer(false);
-      setSelectionObjectCount(selectedObjects ? selectedObjects.length : 0);
-
-      // set this to what Shapely uses to represent Bounds
-      const bounds = [
-        Math.min(pt1[0], pt2[0]),
-        Math.min(pt1[1], pt2[1]),
-        Math.max(pt1[0], pt2[0]),
-        Math.max(pt1[1], pt2[1]),
-      ];
-      setBoundsModel(bounds);
-
-      // now we need to set the selected_bounds on each layer
-      loadChildModels(model.widget_manager, childLayerIds)
-        .then((layerModels) => {
-          layerModels.forEach((layer) => {
-            layer.set("selected_bounds", bounds);
-            layer.save_changes();
-          });
-        })
-        .catch((e) => {
-          console.log("error setting selected_bounds state on layer models", e);
-        });
-    } else {
-      setSelectionStart([[info.x, info.y], info.coordinate]);
-      setSelectionEnd(undefined);
-    }
-  }
-
-  function onMapHover(hoverInfo: PickingInfo) {
-    if (selectionMode !== "selecting") return;
-    const hoverCoords = hoverInfo.coordinate;
-    if (selectionStart && hoverCoords) {
-      const pt1 = selectionStart[1];
-      const pt2 = hoverCoords;
-      if (!pt1 || !pt2) return;
-      const data = [
-        {
-          polygon: makePolygon(pt1, pt2),
-        },
-      ];
-      const bboxLayer = new PolygonLayer({
-        id: "selection-layer",
-        data,
-        filled: true,
-        getFillColor: [0, 0, 0, 50],
-        stroked: true,
-        getLineWidth: 2,
-        lineWidthUnits: "pixels",
-        makePolygon: (d) => d.polygon,
-      });
-      console.log(bboxLayer);
-      setHoverBBoxLayer(bboxLayer);
-    }
-    return;
-  }
-
-  const selectionIndicator = useMemo(() => {
-    if (!selectionMode) return undefined;
-    if (selectionStart && selectionEnd) {
-      const pt1 = selectionStart[1];
-      const pt2 = selectionEnd[1];
-      if (!pt1 || !pt2) return undefined;
-      const data = [
-        {
-          polygon: makePolygon(pt1, pt2),
-        },
-      ];
-      return new PolygonLayer({
-        id: "selection-layer",
-        data,
-        filled: true,
-        getFillColor: [0, 0, 0, 30],
-        stroked: true,
-        getLineWidth: 2,
-        lineWidthUnits: "pixels",
-        makePolygon: (d) => d.polygon,
-      });
-    } else {
-      return undefined;
-    }
-  }, [selectionStart, selectionEnd, selectionMode]);
-
-  if (selectionIndicator) {
-    layers.push(selectionIndicator);
-  }
-
-  if (hoverBBoxLayer) {
-    layers.push(hoverBBoxLayer);
+  let buttonLabel = "Click here to start selecting";
+  if (state.mapMode === MapMode.BBOX_SELECT_START) {
+    buttonLabel = "Click the map to start drawing the selection box";
+  } else if (state.mapMode === MapMode.BBOX_SELECT_UPDATE) {
+    buttonLabel = "Click the map to finish drawing the selection box";
   }
 
   return (
-    <div id={`map-${mapId}`} style={{ height: "100%" }}>
+    <div id={`map-${mapId}`} style={{ height: mapHeight || "100%" }}>
       <div
         style={{
           position: "absolute",
@@ -301,15 +214,11 @@ function App() {
           zIndex: "1000",
           height: "12px",
         }}
-        onClick={onSelectClick}
+        onClick={() => {
+          dispatch({ type: ActionTypes.TOGGLE_BBOX_SELECT_MODE });
+        }}
       >
-        {!selectionMode ? "Click to start selecting" : ""}
-        {selectionMode === "selecting"
-          ? "Click two points on map to draw bounding box"
-          : ""}
-        {selectionMode === "selected"
-          ? `${selectionObjectCount} objects selected. Click to Unselect.`
-          : ""}
+        {buttonLabel}
       </div>
       <DeckGL
         initialViewState={
@@ -320,18 +229,26 @@ function App() {
             : DEFAULT_INITIAL_VIEW_STATE
         }
         controller={true}
-        layers={layers}
+        layers={layers.concat(bboxSelectPolygonLayer)}
         // @ts-expect-error
-        getTooltip={showTooltip && getTooltip}
+        getTooltip={showTooltip && state.mapMode === MapMode.PAN && getTooltip}
         pickingRadius={pickingRadius}
-        onClick={onMapClick}
-        onHover={onMapHover}
+        onHover={onMapHoverHandler}
+        onClick={onMapClickHandler}
         ref={mapRef}
         useDevicePixels={isDefined(useDevicePixels) ? useDevicePixels : true}
         // https://deck.gl/docs/api-reference/core/deck#_typedarraymanagerprops
         _typedArrayManagerProps={{
           overAlloc: 1,
           poolSize: 0,
+        }}
+        onLoad={() => {
+          if (mapRef.current) {
+            dispatch({
+              type: ActionTypes.SET_MAP_REF,
+              data: mapRef.current,
+            });
+          }
         }}
         onViewStateChange={(event) => {
           const { viewState } = event;
@@ -346,7 +263,10 @@ function App() {
         }}
         parameters={parameters || {}}
       >
-        <Map mapStyle={mapStyle || DEFAULT_MAP_STYLE} />
+        <Map
+          mapStyle={mapStyle || DEFAULT_MAP_STYLE}
+          customAttribution={customAttribution}
+        ></Map>
       </DeckGL>
     </div>
   );
