@@ -1,10 +1,12 @@
-import React, { useCallback, useReducer, useRef } from "react";
-import { useState, useEffect } from "react";
+import * as React from "react";
+import { useCallback, useEffect, useReducer, useRef, useState } from "react";
 import { createRender, useModelState, useModel } from "@anywidget/react";
 import type { Initialize, Render } from "@anywidget/types";
 import Map from "react-map-gl/maplibre";
 import DeckGL, { DeckGLRef } from "@deck.gl/react/typed";
-import { MapViewState, PickingInfo, type Layer } from "@deck.gl/core/typed";
+import { PolygonLayer } from "@deck.gl/layers/typed";
+import type { PickingInfo } from "@deck.gl/core/typed";
+import { MapViewState, type Layer } from "@deck.gl/core/typed";
 import { BaseLayerModel, initializeLayer } from "./model/index.js";
 import type { WidgetModel } from "@jupyter-widgets/base";
 import { initParquetWasm } from "./parquet.js";
@@ -15,9 +17,6 @@ import { Message } from "./types.js";
 import { flyTo } from "./actions/fly-to.js";
 import { useViewStateDebounced } from "./state";
 import * as selectors from "./reducer/selectors";
-
-import "maplibre-gl/dist/maplibre-gl.css";
-
 import {
   ActionTypes,
   baseInitialState,
