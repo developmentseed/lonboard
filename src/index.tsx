@@ -24,6 +24,8 @@ import {
   reducer,
 } from "./reducer/index.js";
 
+import "maplibre-gl/dist/maplibre-gl.css";
+
 await initParquetWasm();
 
 const DEFAULT_INITIAL_VIEW_STATE = {

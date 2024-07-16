@@ -8,6 +8,7 @@ from __future__ import annotations
 
 import warnings
 from typing import Any, List, Optional, Set, Tuple, Union, cast
+from urllib.parse import urlparse
 
 import matplotlib as mpl
 import numpy as np
@@ -271,7 +272,7 @@ class ColorAccessor(FixedErrorTraitType):
                     info="Color array must have 3 or 4 as its second dimension.",
                 )
 
-            return pa.FixedSizeListArray.from_arrays(value.flatten("C"), list_size)
+            return pa.FixedSizeListArray.from_arrays(value.ravel("C"), list_size)
 
         # Check for Arrow PyCapsule Interface
         # https://arrow.apache.org/docs/format/CDataInterface/PyCapsuleInterface.html
@@ -501,7 +502,7 @@ class PointAccessor(FixedErrorTraitType):
                     info="Point array to have 2 or 3 as its second dimension",
                 )
 
-            return pa.FixedSizeListArray.from_arrays(value.flatten("C"), list_size)
+            return pa.FixedSizeListArray.from_arrays(value.ravel("C"), list_size)
 
         if isinstance(value, (pa.ChunkedArray, pa.Array)):
             if not pa.types.is_fixed_size_list(value.type):
@@ -546,7 +547,7 @@ class PointAccessor(FixedErrorTraitType):
         assert False
 
 
-class GetFilterValueAccessor(FixedErrorTraitType):
+class FilterValueAccessor(FixedErrorTraitType):
     """
     A trait to validate input for the `get_filter_value` accessor added by the
     [`DataFilterExtension`][lonboard.layer_extension.DataFilterExtension], which can
@@ -680,7 +681,7 @@ class GetFilterValueAccessor(FixedErrorTraitType):
                     ),
                 )
 
-            return pa.FixedSizeListArray.from_arrays(value.flatten("C"), filter_size)
+            return pa.FixedSizeListArray.from_arrays(value.ravel("C"), filter_size)
 
         # Check for Arrow PyCapsule Interface
         # https://arrow.apache.org/docs/format/CDataInterface/PyCapsuleInterface.html
@@ -799,7 +800,7 @@ class NormalAccessor(FixedErrorTraitType):
                 )
                 value = value.astype(np.float32)
 
-            return pa.FixedSizeListArray.from_arrays(value.flatten("C"), 3)
+            return pa.FixedSizeListArray.from_arrays(value.ravel("C"), 3)
 
         # Check for Arrow PyCapsule Interface
         # https://arrow.apache.org/docs/format/CDataInterface/PyCapsuleInterface.html
@@ -860,3 +861,134 @@ class ViewStateTrait(FixedErrorTraitType):
 
         self.error(obj, value)
         assert False
+
+
+class DashArrayAccessor(FixedErrorTraitType):
+    """A trait to validate input for a deck.gl dash accessor.
+
+    Primarily used in
+    [`PathStyleExtension`][lonboard.layer_extension.PathStyleExtension].
+
+    Various input is allowed:
+
+    - A `list` or `tuple` with 2 integers. This defines the dash size and gap size
+      respectively.
+    - A numpy `ndarray` with two dimensions and numeric data type. The size of the
+      second dimension must be `2`.
+    - A pyarrow [`FixedSizeListArray`][pyarrow.FixedSizeListArray] or
+      [`ChunkedArray`][pyarrow.ChunkedArray] containing `FixedSizeListArray`s. The inner
+      size of the fixed size list must be `2`.
+    - Any Arrow fixed size list array from a library that implements the [Arrow
+      PyCapsule
+      Interface](https://arrow.apache.org/docs/format/CDataInterface/PyCapsuleInterface.html).
+    """
+
+    default_value = (0, 0)
+    info_text = (
+        "a tuple or list or numpy ndarray or "
+        "pyarrow FixedSizeList representing dash size and gap size."
+    )
+
+    def __init__(
+        self: TraitType,
+        *args,
+        **kwargs: Any,
+    ) -> None:
+        super().__init__(*args, **kwargs)
+        self.tag(sync=True, **ACCESSOR_SERIALIZATION)
+
+    def validate(
+        self, obj, value
+    ) -> Union[Tuple[int, ...], List[int], pa.ChunkedArray, pa.FixedSizeListArray]:
+        if isinstance(value, (tuple, list)):
+            if len(value) != 2:
+                self.error(obj, value, info="2 value list only")
+
+            if any(not isinstance(v, (int, float)) for v in value):
+                self.error(
+                    obj,
+                    value,
+                    info="all values to be int or float type if passed a tuple or list",
+                )
+
+            return value
+
+        if isinstance(value, np.ndarray):
+            if not np.issubdtype(value.dtype, np.number):
+                self.error(obj, value, info="NumPy array must be uint8 type.")
+
+            if value.ndim != 2:
+                self.error(obj, value, info="NumPy array must have 2 dimensions.")
+
+            list_size = value.shape[1]
+            if list_size != 2:
+                self.error(
+                    obj,
+                    value,
+                    info="NumPy array must have 2 as its second dimension.",
+                )
+
+            # Cast float64 to float32; leave other data types the same
+            if np.issubdtype(value.dtype, np.float64):
+                value = value.astype(np.float32)
+
+            return pa.FixedSizeListArray.from_arrays(value.ravel("C"), list_size)
+
+        # Check for Arrow PyCapsule Interface
+        # https://arrow.apache.org/docs/format/CDataInterface/PyCapsuleInterface.html
+        # TODO: with pyarrow v16 also import chunked array from stream
+        if not isinstance(value, (pa.ChunkedArray, pa.Array)):
+            if hasattr(value, "__arrow_c_array__"):
+                value = pa.array(value)
+
+        if isinstance(value, (pa.ChunkedArray, pa.Array)):
+            if not pa.types.is_fixed_size_list(value.type):
+                self.error(obj, value, info="Pyarrow array must be a FixedSizeList.")
+
+            if value.type.list_size != 2:
+                self.error(
+                    obj,
+                    value,
+                    info="Pyarrow array must have a FixedSizeList inner size of 2.",
+                )
+
+            if not (
+                pa.types.is_integer(value.type.value_type)
+                or pa.types.is_signed_integer(value.type.value_type)
+                or pa.types.is_floating(value.type.value_type)
+            ):
+                self.error(
+                    obj, value, info="Pyarrow array to have a numeric type child."
+                )
+
+            # Cast float64 to float32; leave other data types the same
+            if pa.types.is_float64(value.type.value_type):
+                value = value.cast(pa.list_(pa.float32(), value.type.list_size))
+
+            return value
+
+        self.error(obj, value)
+        assert False
+
+
+class BasemapUrl(traitlets.Unicode):
+    def __init__(
+        self: TraitType,
+        *args,
+        **kwargs: Any,
+    ) -> None:
+        super().__init__(*args, **kwargs)
+        self.tag(sync=True)
+
+    def validate(self, obj: Any, value: Any) -> Any:
+        value = super().validate(obj, value)
+
+        try:
+            parsed = urlparse(value)
+        except:  # noqa
+            self.error(obj, value, info="to be a URL")
+
+        if not parsed.scheme.startswith("http"):
+            self.error(obj, value, info="to be a HTTP(s) URL")
+        else:
+            return value

@@ -94,7 +94,7 @@ def apply_continuous_cmap(
         cmap: Any matplotlib `Colormap` or `Palette` object from the
             [`palettable`](https://github.com/jiffyclub/palettable) package.
 
-    Other Args:
+    Keyword Args:
         alpha: Alpha must be a scalar between 0 and 1, a sequence of such floats with
             shape matching `values`, or None.
 
@@ -142,7 +142,7 @@ def apply_categorical_cmap(
         cmap: A dictionary mapping keys to colors. See [DiscreteColormap] for more
             information.
 
-    Other Args:
+    Keyword Args:
         alpha: The _default_ alpha value for entries in the colormap that do not have an
             alpha value defined. Alpha must be an integer between 0 and 255 (inclusive).
 
