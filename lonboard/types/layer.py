@@ -111,6 +111,29 @@ class BitmapTileLayerKwargs(BaseLayerKwargs, total=False):
     tint_color: Sequence[IntFloat]
 
 
+class ColumnLayerKwargs(BaseLayerKwargs, total=False):
+    disk_resolution: int
+    radius: IntFloat
+    angle: IntFloat
+    offset: Tuple[IntFloat, IntFloat]
+    coverage: IntFloat
+    elevation_scale: IntFloat
+    filled: bool
+    stroked: bool
+    extruded: bool
+    wireframe: bool
+    flat_shading: bool
+    radius_units: Units
+    line_width_units: Units
+    line_width_scale: IntFloat
+    line_width_min_pixels: IntFloat
+    line_width_max_pixels: IntFloat
+    get_fill_color: ColorAccessorInput
+    get_line_color: ColorAccessorInput
+    get_elevation: FloatAccessorInput
+    get_line_width: FloatAccessorInput
+
+
 class PathLayerKwargs(BaseLayerKwargs, total=False):
     width_units: Units
     width_scale: IntFloat
