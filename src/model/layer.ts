@@ -268,9 +268,7 @@ export class ColumnModel extends BaseArrowLayerModel {
   protected radius: GeoArrowColumnLayerProps["radius"] | null;
   protected angle: GeoArrowColumnLayerProps["angle"] | null;
 
-  // // @ts-expect-error Property 'vertices' has no initializer and is not
-  // definitely assigned in the constructor
-  // Ref https://github.com/visgl/deck.gl/pull/8453
+  // Note: not yet exposed to Python
   // protected vertices: GeoArrowColumnLayerProps["vertices"] | null;
   protected offset: GeoArrowColumnLayerProps["offset"] | null;
   protected coverage: GeoArrowColumnLayerProps["coverage"] | null;
@@ -289,6 +287,7 @@ export class ColumnModel extends BaseArrowLayerModel {
   protected lineWidthMaxPixels:
     | GeoArrowColumnLayerProps["lineWidthMaxPixels"]
     | null;
+  // Note: not yet exposed to Python
   // protected material: GeoArrowColumnLayerProps["material"] | null;
 
   protected getPosition: GeoArrowColumnLayerProps["getPosition"] | null;
