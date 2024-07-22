@@ -1,10 +1,9 @@
 import * as React from "react";
-import { useCallback, useEffect, useReducer, useRef, useState } from "react";
+import { useEffect, useCallback, useRef, useState } from "react";
 import { createRender, useModelState, useModel } from "@anywidget/react";
 import type { Initialize, Render } from "@anywidget/types";
 import Map from "react-map-gl/maplibre";
 import DeckGL, { DeckGLRef } from "@deck.gl/react/typed";
-import { PolygonLayer } from "@deck.gl/layers/typed";
 import type { PickingInfo } from "@deck.gl/core/typed";
 import { MapViewState, type Layer } from "@deck.gl/core/typed";
 import { BaseLayerModel, initializeLayer } from "./model/index.js";
@@ -16,15 +15,12 @@ import { v4 as uuidv4 } from "uuid";
 import { Message } from "./types.js";
 import { flyTo } from "./actions/fly-to.js";
 import { useViewStateDebounced } from "./state";
-import * as selectors from "./reducer/selectors";
-import {
-  ActionTypes,
-  baseInitialState,
-  MapMode,
-  reducer,
-} from "./reducer/index.js";
+
+import { MachineContext, MachineProvider } from "./state/index.js";
+import * as selectors from "./state/selectors.js";
 
 import "maplibre-gl/dist/maplibre-gl.css";
+import { PolygonLayer, PolygonLayerProps } from "@deck.gl/layers/typed";
 
 await initParquetWasm();
 
@@ -74,12 +70,23 @@ async function getChildModelState(
 }
 
 function App() {
-  const [state, dispatch] = useReducer(reducer, baseInitialState);
+  const actorRef = MachineContext.useActorRef();
+  const isDrawingBBoxSelection = MachineContext.useSelector(
+    selectors.isDrawingBBoxSelection,
+  );
+  const isOnMapHoverEventEnabled = MachineContext.useSelector(
+    selectors.isOnMapHoverEventEnabled,
+  );
+  const isTooltipEnabled = MachineContext.useSelector(
+    selectors.isTooltipEnabled,
+  );
+  const buttonLabel = MachineContext.useSelector(selectors.getButtonLabel);
 
-  const isMapHoverEnabled = selectors.isMapHoverEnabled(state);
-  const isMapClickEnabled = selectors.isMapClickEnabled(state);
+  const bboxSelectPolygonLayer = MachineContext.useSelector(
+    selectors.getBboxSelectPolygonLayer,
+  );
+
   const [justClicked, setJustClicked] = useState<boolean>(false);
-  const bboxSelectPolygonLayer = selectors.bboxSelectPolygonLayer(state);
 
   const model = useModel();
 
@@ -118,7 +125,6 @@ function App() {
   });
 
   const [mapId] = useState(uuidv4());
-  const mapRef = useRef<DeckGLRef>(null);
   const [subModelState, setSubModelState] = useState<
     Record<string, BaseLayerModel>
   >({});
@@ -173,36 +179,35 @@ function App() {
 
   const onMapClickHandler = useCallback(
     (info: PickingInfo) => {
-      if (isMapClickEnabled) {
+      if (isDrawingBBoxSelection) {
         // We added this flag to prevent the hover event from firing after a
         // click event.
         setJustClicked(true);
-        dispatch({ type: ActionTypes.MAP_CLICK_EVENT, data: info });
+        actorRef.send({
+          type: "Map click event",
+          data: info,
+        });
         setTimeout(() => {
           setJustClicked(false);
         }, 100);
       }
     },
-    [isMapClickEnabled],
+    [isDrawingBBoxSelection],
   );
 
   const onMapHoverHandler = useCallback(
     rateLimit(
       (info: PickingInfo) =>
-        isMapHoverEnabled &&
+        isOnMapHoverEventEnabled &&
         !justClicked &&
-        dispatch({ type: ActionTypes.MAP_HOVER_EVENT, data: info }),
+        actorRef.send({
+          type: "Map hover event",
+          data: info,
+        }),
       100,
     ),
-    [isMapHoverEnabled, justClicked],
+    [isOnMapHoverEventEnabled, justClicked],
   );
-
-  let buttonLabel = "Click here to start selecting";
-  if (state.mapMode === MapMode.BBOX_SELECT_START) {
-    buttonLabel = "Click the map to start drawing the selection box";
-  } else if (state.mapMode === MapMode.BBOX_SELECT_UPDATE) {
-    buttonLabel = "Click the map to finish drawing the selection box";
-  }
 
   return (
     <div id={`map-${mapId}`} style={{ height: mapHeight || "100%" }}>
@@ -217,7 +222,7 @@ function App() {
           height: "12px",
         }}
         onClick={() => {
-          dispatch({ type: ActionTypes.TOGGLE_BBOX_SELECT_MODE });
+          actorRef.send({ type: "BBox select button clicked" });
         }}
       >
         {buttonLabel}
@@ -231,13 +236,17 @@ function App() {
             : DEFAULT_INITIAL_VIEW_STATE
         }
         controller={true}
-        layers={layers.concat(bboxSelectPolygonLayer)}
+        layers={
+          bboxSelectPolygonLayer
+            ? layers.concat(bboxSelectPolygonLayer)
+            : layers
+        }
         // @ts-expect-error
-        getTooltip={showTooltip && state.mapMode === MapMode.PAN && getTooltip}
+        getTooltip={showTooltip && isTooltipEnabled && getTooltip}
+        getCursor={() => (isDrawingBBoxSelection ? "crosshair" : "grab")}
         pickingRadius={pickingRadius}
-        onHover={onMapHoverHandler}
         onClick={onMapClickHandler}
-        ref={mapRef}
+        onHover={onMapHoverHandler}
         useDevicePixels={isDefined(useDevicePixels) ? useDevicePixels : true}
         // https://deck.gl/docs/api-reference/core/deck#_typedarraymanagerprops
         _typedArrayManagerProps={{
@@ -245,12 +254,9 @@ function App() {
           poolSize: 0,
         }}
         onLoad={() => {
-          if (mapRef.current) {
-            dispatch({
-              type: ActionTypes.SET_MAP_REF,
-              data: mapRef.current,
-            });
-          }
+          actorRef.send({
+            type: "Deck.gl was loaded",
+          });
         }}
         onViewStateChange={(event) => {
           const { viewState } = event;
@@ -274,8 +280,14 @@ function App() {
   );
 }
 
+const MachineApp = () => (
+  <MachineProvider>
+    <App />
+  </MachineProvider>
+);
+
 const module: { render: Render; initialize?: Initialize } = {
-  render: createRender(App),
+  render: createRender(MachineApp),
 };
 
 export default module;

@@ -10,6 +10,7 @@
     "@deck.gl/layers": "^8.9.35",
     "@deck.gl/react": "^8.9.35",
     "@geoarrow/deck.gl-layers": "^0.3.0-beta.16",
+    "@xstate/react": "^4.1.1",
     "apache-arrow": "^16.1.0",
     "maplibre-gl": "^3.6.2",
     "memoize-one": "^6.0.0",
@@ -17,10 +18,13 @@
     "react": "^18.3.1",
     "react-dom": "^18.3.1",
     "react-map-gl": "^7.1.7",
-    "uuid": "^10.0.0"
+    "uuid": "^10.0.0",
+    "xstate": "^5.15.0"
   },
   "type": "module",
   "devDependencies": {
+    "dotenv": "^16.4.5",
+    "@statelyai/inspect": "^0.4.0",
     "@anywidget/types": "^0.1.5",
     "@jupyter-widgets/base": "^6.0.8",
     "@types/react": "^18.3.3",
