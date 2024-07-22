@@ -36,25 +36,16 @@ export function debounce<T extends Function>(cb: T, wait = 20) {
   return <T>(<any>callable);
 }
 
-/**
- * Rate limit a function.
- *
- * @param cb function to rate limit
- * @param limit number of milliseconds to wait between calls
- * @returns the rate limited function
- */
-export function rateLimit<T extends (...args: any[]) => void>(
-  cb: T,
+export function throttle<T extends (...args: any[]) => any>(
+  func: T,
   limit: number,
 ): (...args: Parameters<T>) => void {
-  let lastCall = 0;
-
-  return function (...args: Parameters<T>): void {
-    const now = Date.now();
-
-    if (now - lastCall >= limit) {
-      lastCall = now;
-      cb(...args);
+  let inThrottle: boolean;
+  return function (this: any, ...args: Parameters<T>): void {
+    if (!inThrottle) {
+      func.apply(this, args);
+      inThrottle = true;
+      setTimeout(() => (inThrottle = false), limit);
     }
   };
 }
