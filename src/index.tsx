@@ -85,6 +85,9 @@ function App() {
   const bboxSelectPolygonLayer = MachineContext.useSelector(
     selectors.getBboxSelectPolygonLayer,
   );
+  const bboxSelectBounds = MachineContext.useSelector(
+    selectors.getBboxSelectBounds,
+  );
 
   const [justClicked, setJustClicked] = useState<boolean>(false);
 
@@ -135,21 +138,34 @@ function App() {
   const [stateCounter, setStateCounter] = useState<Date>(new Date());
 
   useEffect(() => {
-    const callback = async () => {
-      const childModels = await loadChildModels(
-        model.widget_manager,
-        childLayerIds,
-      );
-      const newSubModelState = await getChildModelState(
-        childModels,
-        childLayerIds,
-        subModelState,
-        setStateCounter,
-      );
-      setSubModelState(newSubModelState);
+    const loadAndUpdateLayers = async () => {
+      try {
+        const childModels = await loadChildModels(
+          model.widget_manager,
+          childLayerIds,
+        );
+
+        const newSubModelState = await getChildModelState(
+          childModels,
+          childLayerIds,
+          subModelState,
+          setStateCounter,
+        );
+        setSubModelState(newSubModelState);
+
+        if (!isDrawingBBoxSelection && bboxSelectBounds) {
+          childModels.forEach((layer) => {
+            layer.set("selected_bounds", bboxSelectBounds);
+            layer.save_changes();
+          });
+        }
+      } catch (error) {
+        console.error("Error loading child models or setting bounds:", error);
+      }
     };
-    callback().catch(console.error);
-  }, [childLayerIds]);
+
+    loadAndUpdateLayers();
+  }, [childLayerIds, bboxSelectBounds, isDrawingBBoxSelection]);
 
   const layers: Layer[] = [];
   for (const subModel of Object.values(subModelState)) {
