@@ -7,7 +7,9 @@ dotenv.config();
 
 // List of environment variables to expose to the build
 const env = {
-  "process.env.XSTATE_INSPECT": JSON.stringify(process.env.XSTATE_INSPECT),
+  "process.env.XSTATE_INSPECT": JSON.stringify(
+    process.env.XSTATE_INSPECT || "false",
+  ),
 };
 
 esbuild.build({
