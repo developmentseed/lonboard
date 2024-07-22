@@ -1,6 +1,4 @@
-import { assertEvent, assign, createMachine } from "xstate";
-
-import { DeckGLRef } from "@deck.gl/react/typed";
+import { assign, createMachine } from "xstate";
 import { PickingInfo } from "@deck.gl/core/typed";
 
 export const machine = createMachine(
@@ -11,9 +9,7 @@ export const machine = createMachine(
     types: {
       context: {} as {
         bboxSelectStart: number[] | undefined;
-        bboxSelectStartPixel: number[] | undefined;
         bboxSelectEnd: number[] | undefined;
-        bboxSelectEndPixel: number[] | undefined;
       },
       events: {} as
         | {
@@ -44,9 +40,7 @@ export const machine = createMachine(
 
     context: {
       bboxSelectStart: undefined,
-      bboxSelectEndPixel: undefined,
       bboxSelectEnd: undefined,
-      bboxSelectStartPixel: undefined,
     },
 
     states: {
