@@ -5,7 +5,7 @@ import { PickingInfo } from "@deck.gl/core/typed";
 
 export const machine = createMachine(
   {
-    /** @xstate-layout N4IgpgJg5mDOIC5QBsD2A7ARqghgJwgDoB1AS2jABcACU2atHCU9KAYgBEwBjAa0KjJqAdxz1GESAG0ADAF1EoAA6pYpSqQyKQAD0QBaAEwA2AMyFTADmM2ALJYCshgIwBOGc4DsAGhABPRAcLS08HW1tjZyjLV1dLSwBfBN80LFwCQgAFHHRqAFtUSTYAIWLUHWpYMGQeGkwAV0pKDGpuZFI+aXltFTUNLSRdA0MYwhlje2dHW2cHY1djB18AhC9PMdNQ109TGQdPbZlDJJSMbHwiAGVq2pYoakxsCthKfBpe9U10NgBZHCVWu0+NQwAA3MDoSiyBSDD79dDaPQIIz7QieLwYkYyUzuJb+RA48yWGTYwwOWKzOITE4gVLnDLXGrcDSsB5PEHoCDUOFfX7-QEdXgg8GQ6E9VSfAagJFeYwWTyhGILTaOYzLRAmWyEcJxUxk9wxRI09CFODaOnpCDivpfREGUy2cxhMKzGaxBxudXI5xmMYhTamPVmYzjGkWi4kcgwGh0Bi4Zisa2ShGDJEo8zbCYkwyGWz7UwTL36UKEdwk9zOQw7RxeMNnS1ZHL5U1J+F25E59azGJHRwOmT2Hz4hCuLUhKuxeLEuLxOtpCOM26sx7lSqvPDvCVt2Fb22p4auILOmYu92e4e7dYuOboqyhGxz+lXG7Mu5s1cQrk8qUgb8p6UHs4pbGDs2y2J4xI+oYXouoQWYHLYhgyDsoZJAkQA */
+    /** @xstate-layout N4IgpgJg5mDOIC5QBsD2A7ARqghgJwgDoB1AS2jABcACU2atHCU9KAYgBEwBjAa0KjJqAdxz1GESAG0ADAF1EoAA6pYpSqQyKQAD0QBaAEwA2AMyFTADmM2ALJYCshgIwBOGc4DsAGhABPRAcLS08HW1tjZyjLV1dLSwBfBN80LFwCQgAFHHRqAFtUSTYAIWLUHWpYMGQeGkwAV0pKDGpuZFI+aXltFTUNLSRdA0MYwhlje2dHW2cHY1djB18AhC9PMdNQ109TGQdPbZlDJJSMbHwiAGVq2pYoakxsCthKfBpe9U10NgBZHCVWu0+NQwAA3MDoSiyBSDD79dDaPQIIz7QieLwYkYyUzuJb+RA48yWGTYwwOWKzOITE4gVLnDLXGrcDSsB5PEHoCDUOFfX7-agAC1Q4LwIPBkOhPVUnwGoCRXjRrhxMk8liie1sHkMy0QMyCDhJOyizlspmM4xpdPSVxuzLubPKHK5PIwfIBbQ6vDFEKh3Vh0vhiMQXmMFk8oRiC02jmMOoQJlshHCcVMZPcMUSNPQhTg2itFylfS+QeRplNhDCYVmM1iDjccf0zjMYxCm1MqbM5uMlrO1pI5BgNDoDFwzFYhZlCMGSJR5m2ExJhkMtn2ZtsDdChHcJPczkMO0cXh7aQuWRy+RzE8D0+G+8IsxiR0cZZk9h8+IQrkTIX3sXixLieJj3pG0mRZe5HkdF43m5ANi39ItZSGZFDFcfUVz1Gs0PrD9dnWFw5nRKxQhsYC+0ZW5WUgioIWdOCkJdKc5WGVxnC3Ywdm2WxVQ8YxtQ-KtCAXA5bEMFVdm7JIEiAA */
     id: "lonboard",
 
     types: {
@@ -101,17 +101,24 @@ export const machine = createMachine(
         };
       }),
       setBboxSelectStart: assign(({ event }) => {
-        // assertEvent(event, "Map click event");
-        console.log(event.data);
-        return {
-          bboxSelectStart: event.data.coordinate,
-        };
+        if (event.type === "Map click event" && "data" in event) {
+          return {
+            bboxSelectStart: event.data.coordinate,
+          };
+        }
+        return {};
       }),
       setBboxSelectEnd: assign(({ event }) => {
-        // assertEvent(event, "Map click event");
-        return {
-          bboxSelectEnd: event.data.coordinate,
-        };
+        if (
+          (event.type === "Map click event" ||
+            event.type === "Map hover event") &&
+          "data" in event
+        ) {
+          return {
+            bboxSelectEnd: event.data.coordinate,
+          };
+        }
+        return {};
       }),
     },
 
