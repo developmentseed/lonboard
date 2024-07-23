@@ -354,7 +354,7 @@ export class SaveImageWidget implements Widget<SaveImageWidgetProps> {
       <button
         className={`deck-widget-icon-button ${className}`}
         type="button"
-        onClick={() => this.handleClick}
+        onClick={this.handleClick.bind(this)}
         title={this.props.label}
       >
         <svg fill="#000000" version="1.1" width="85%" height="85%" viewBox="0 0 492.676 492.676">
@@ -386,7 +386,6 @@ export class SaveImageWidget implements Widget<SaveImageWidgetProps> {
     
       this.deck.redraw("true");
       const deck_wrapper = this.deck?.getCanvas()?.parentElement;
-      console.log(deck_wrapper);
       
      if(deck_wrapper) {
         toPng(deck_wrapper, )

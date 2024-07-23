@@ -268,7 +268,7 @@ export class SaveImageWidgetModel extends BaseDeckWidgetModel{
 
   render() {
     return new SaveImageWidget({
-      id:  "title", 
+      id:  "save-image", 
       label: this.label, 
       placement: this.placement, 
       style: {
