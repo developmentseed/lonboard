@@ -16,6 +16,7 @@ class EXTENSION_NAME(bytes, Enum):
     MULTILINESTRING = b"geoarrow.multilinestring"
     MULTIPOLYGON = b"geoarrow.multipolygon"
     WKB = b"geoarrow.wkb"
+    WKT = b"geoarrow.wkt"
     OGC_WKB = b"ogc.wkb"
 
     def __str__(self):

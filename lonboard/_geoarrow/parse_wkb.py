@@ -12,17 +12,21 @@ from shapely import GeometryType
 from lonboard._constants import EXTENSION_NAME, OGC_84
 from lonboard._geoarrow.crs import get_field_crs
 from lonboard._geoarrow.extension_types import construct_geometry_array
+from lonboard._geoarrow.utils import is_native_geoarrow
 from lonboard._utils import get_geometry_column_index
 
 
-def parse_wkb_table(table: pa.Table) -> List[pa.Table]:
-    """Parse a table with a WKB column into GeoArrow-native geometries.
+def parse_serialized_table(table: pa.Table) -> List[pa.Table]:
+    """Parse a table with a serialized WKB/WKT column into GeoArrow-native geometries.
 
-    If no columns are WKB-encoded, returns the input. Note that WKB columns must be
-    tagged with an extension name of `geoarrow.wkb` or `ogc.wkb`
+    If no columns are WKB/WKT-encoded, returns the input. Note that WKB columns must be
+    tagged with an extension name of `geoarrow.wkb` or `ogc.wkb`. WKT columns must be
+    tagged with an extension name of `geoarrow.wkt`.
 
     Returns one table per GeoArrow geometry type. E.g. if the input has points, lines,
-    and polygons, then it returns three tables.
+    and polygons, then it returns three tables. Point/MultiPoint,
+    LineString/MultiLineString, Polygon/MultiPolygon are each combined into a single
+    table type.
     """
     table = parse_geoparquet_table(table)
     field_idx = get_geometry_column_index(table.schema)
@@ -37,12 +41,17 @@ def parse_wkb_table(table: pa.Table) -> List[pa.Table]:
     extension_type_name = field.metadata.get(b"ARROW:extension:name")
 
     # For native GeoArrow input, return table as-is
-    if extension_type_name not in {EXTENSION_NAME.WKB, EXTENSION_NAME.OGC_WKB}:
+    if is_native_geoarrow(extension_type_name):
         return [table]
 
-    # Handle WKB input
+    # Handle WKB/WKT input
     crs_str = get_field_crs(field)
-    shapely_arr = shapely.from_wkb(column)
+    if extension_type_name in {EXTENSION_NAME.WKB, EXTENSION_NAME.OGC_WKB}:
+        shapely_arr = shapely.from_wkb(column)
+    elif extension_type_name == EXTENSION_NAME.WKT:
+        shapely_arr = shapely.from_wkt(column)
+    else:
+        raise ValueError(f"Unexpected GeoArrow extension name {extension_type_name}")
 
     type_ids = np.array(shapely.get_type_id(shapely_arr))
     unique_type_ids = set(np.unique(type_ids))
