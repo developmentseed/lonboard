@@ -57,6 +57,7 @@ nav:
       - Layers:
           - api/layers/bitmap-layer.md
           - api/layers/bitmap-tile-layer.md
+          - api/layers/column-layer.md
           - api/layers/heatmap-layer.md
           - api/layers/path-layer.md
           - api/layers/point-cloud-layer.md
