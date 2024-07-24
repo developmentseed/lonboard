@@ -1,12 +1,13 @@
-import geopandas as gpd
 import pytest
-import shapely
 from traitlets import TraitError
 
 from lonboard import Map, ScatterplotLayer, SolidPolygonLayer
 
 
 def test_map_fails_with_unexpected_argument():
+    gpd = pytest.importorskip("geopandas")
+    shapely = pytest.importorskip("shapely")
+
     points = shapely.points([1, 2], [3, 4])
     gdf = gpd.GeoDataFrame(geometry=points)
 
@@ -17,6 +18,8 @@ def test_map_fails_with_unexpected_argument():
 
 
 def allow_layers_positional_argument():
+    gpd = pytest.importorskip("geopandas")
+
     gdf = gpd.read_file(gpd.datasets.get_path("nybb"))
 
     layer = SolidPolygonLayer.from_geopandas(gdf)
@@ -24,6 +27,8 @@ def allow_layers_positional_argument():
 
 
 def allow_single_layer():
+    gpd = pytest.importorskip("geopandas")
+
     gdf = gpd.read_file(gpd.datasets.get_path("nybb"))
 
     layer = SolidPolygonLayer.from_geopandas(gdf)

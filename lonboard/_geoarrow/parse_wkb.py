@@ -5,9 +5,6 @@ from typing import List
 
 import numpy as np
 import pyarrow as pa
-import shapely
-import shapely.geometry
-from shapely import GeometryType
 
 from lonboard._constants import EXTENSION_NAME, OGC_84
 from lonboard._geoarrow.crs import get_field_crs
@@ -43,6 +40,9 @@ def parse_serialized_table(table: pa.Table) -> List[pa.Table]:
     # For native GeoArrow input, return table as-is
     if is_native_geoarrow(extension_type_name):
         return [table]
+
+    import shapely
+    from shapely import GeometryType
 
     # Handle WKB/WKT input
     crs_str = get_field_crs(field)

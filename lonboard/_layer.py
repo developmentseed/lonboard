@@ -19,7 +19,6 @@ from typing import (
     Union,
 )
 
-import geopandas as gpd
 import ipywidgets
 import pyarrow as pa
 import traitlets
@@ -43,18 +42,22 @@ from lonboard.traits import (
     NormalAccessor,
     PyarrowTableTrait,
 )
-from lonboard.types.layer import (
-    BaseLayerKwargs,
-    BitmapLayerKwargs,
-    BitmapTileLayerKwargs,
-    ColumnLayerKwargs,
-    HeatmapLayerKwargs,
-    PathLayerKwargs,
-    PointCloudLayerKwargs,
-    PolygonLayerKwargs,
-    ScatterplotLayerKwargs,
-    SolidPolygonLayerKwargs,
-)
+
+if TYPE_CHECKING:
+    import geopandas as gpd
+
+    from lonboard.types.layer import (
+        BaseLayerKwargs,
+        BitmapLayerKwargs,
+        BitmapTileLayerKwargs,
+        ColumnLayerKwargs,
+        HeatmapLayerKwargs,
+        PathLayerKwargs,
+        PointCloudLayerKwargs,
+        PolygonLayerKwargs,
+        ScatterplotLayerKwargs,
+        SolidPolygonLayerKwargs,
+    )
 
 if TYPE_CHECKING:
     import duckdb

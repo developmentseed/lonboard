@@ -1,6 +1,5 @@
 import ipywidgets
 import numpy as np
-import pandas as pd
 import pyarrow as pa
 import pytest
 import traitlets
@@ -143,6 +142,8 @@ class FloatAccessorWidget(BaseLayer):
 
 
 def test_float_accessor_validation_type():
+    pd = pytest.importorskip("pandas")
+
     # must be int or float scalar
     with pytest.raises(TraitError):
         FloatAccessorWidget(value=())
@@ -183,6 +184,8 @@ class FilterValueAccessorWidget(BaseArrowLayer):
 
 
 def test_filter_value_validation_filter_size_1():
+    pd = pytest.importorskip("pandas")
+
     extensions = [DataFilterExtension(filter_size=1)]
 
     # Must pass a value
@@ -265,6 +268,8 @@ def test_filter_value_validation_filter_size_1():
 
 
 def test_filter_value_validation_filter_size_3():
+    pd = pytest.importorskip("pandas")
+
     extensions = [DataFilterExtension(filter_size=3)]
 
     # Must pass a value
