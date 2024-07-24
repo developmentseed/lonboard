@@ -22,6 +22,7 @@ import pyarrow as pa
 import pyarrow.compute as pc
 from numpy.typing import NDArray
 
+from lonboard._compat import check_pandas_version
 from lonboard._constants import EXTENSION_NAME
 from lonboard._geoarrow.extension_types import construct_geometry_array
 from lonboard._geoarrow.geopandas_interop import geopandas_to_geoarrow
@@ -408,6 +409,8 @@ def _viz_geo_interface(
         # mixed-geometry type collections
         import geopandas as gpd
         import pandas as pd
+
+        check_pandas_version()
 
         attribute_columns_struct = pa.array(
             [feature["properties"] for feature in data["features"]]

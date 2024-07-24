@@ -1,5 +1,8 @@
 from packaging.version import Version
 
+# TODO: if HAS_* are only used in tests, we should remove them from the main package
+# import path for faster import times.
+
 try:
     import pandas as pd
 
@@ -30,3 +33,10 @@ try:
     HAS_SHAPELY = True
 except ImportError:
     HAS_SHAPELY = False
+
+
+def check_pandas_version():
+    import pandas as pd
+
+    if not Version(pd.__version__) >= Version("2.0.0"):
+        raise ValueError("Pandas v2 or later is required.")

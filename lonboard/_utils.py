@@ -6,6 +6,7 @@ import numpy as np
 import pyarrow as pa
 
 from lonboard._base import BaseExtension
+from lonboard._compat import check_pandas_version
 from lonboard._constants import EXTENSION_NAME
 
 if TYPE_CHECKING:
@@ -48,6 +49,8 @@ def auto_downcast(df: DF) -> DF:
         DataFrame with downcasted data types
     """
     import pandas as pd
+
+    check_pandas_version()
 
     # Convert objects to numeric types where possible.
     # Note: we have to exclude geometry because
