@@ -2,14 +2,14 @@ from pathlib import Path
 
 import geoarrow.pyarrow as gap
 import geodatasets
-import geopandas as gpd
 import numpy as np
 import pyarrow as pa
 import pyarrow.parquet as pq
-import shapely
+import pytest
 from geoarrow.rust.core import read_pyogrio
 from pyogrio.raw import read_arrow
 
+import lonboard._compat as compat
 from lonboard import PathLayer, PolygonLayer, ScatterplotLayer, viz
 from lonboard._constants import EXTENSION_NAME
 
@@ -17,6 +17,8 @@ fixtures_dir = Path(__file__).parent / "fixtures"
 
 
 def mixed_shapely_geoms():
+    shapely = pytest.importorskip("shapely")
+
     pt = shapely.Point(0, 0)
     pt2 = shapely.Point(1, 1)
     line = shapely.LineString([pt, pt2])
@@ -25,6 +27,8 @@ def mixed_shapely_geoms():
 
 
 def mixed_gdf():
+    gpd = pytest.importorskip("geopandas")
+
     return gpd.GeoDataFrame({"a": [1, 2, 3]}, geometry=mixed_shapely_geoms())  # type: ignore
 
 
@@ -39,6 +43,7 @@ class GeoInterfaceHolder:
         return self.geom.__geo_interface__
 
 
+@pytest.mark.skipif(not compat.HAS_SHAPELY, reason="shapely not available")
 def test_viz_wkb_pyarrow():
     path = geodatasets.get_path("naturalearth.land")
     meta, table = read_arrow(path)
@@ -46,6 +51,7 @@ def test_viz_wkb_pyarrow():
     assert isinstance(map_.layers[0], PolygonLayer)
 
 
+@pytest.mark.skipif(not compat.HAS_SHAPELY, reason="shapely not available")
 def test_viz_wkb_mixed_pyarrow():
     table = pq.read_table(fixtures_dir / "monaco_nofilter_noclip_compact.parquet")
     map_ = viz(table)
@@ -55,6 +61,8 @@ def test_viz_wkb_mixed_pyarrow():
 
 
 def test_viz_wkt_pyarrow():
+    shapely = pytest.importorskip("shapely")
+
     path = geodatasets.get_path("naturalearth.land")
     meta, table = read_arrow(path)
 
@@ -73,6 +81,8 @@ def test_viz_wkt_pyarrow():
 
 
 def test_viz_reproject():
+    gpd = pytest.importorskip("geopandas")
+
     gdf = gpd.read_file(geodatasets.get_path("nybb"))
     map_ = viz(gdf)
 
@@ -84,6 +94,8 @@ def test_viz_reproject():
 
 
 def test_viz_geo_interface_geometry():
+    gpd = pytest.importorskip("geopandas")
+
     gdf = gpd.read_file(geodatasets.get_path("nybb")).to_crs("EPSG:4326")
     geo_interface_obj = GeoInterfaceHolder(gdf.geometry[0])
     map_ = viz(geo_interface_obj)
@@ -92,6 +104,8 @@ def test_viz_geo_interface_geometry():
 
 
 def test_viz_geo_interface_feature_collection():
+    gpd = pytest.importorskip("geopandas")
+
     gdf = gpd.read_file(geodatasets.get_path("nybb")).to_crs("EPSG:4326")
     geo_interface_obj = GeoInterfaceHolder(gdf)
     map_ = viz(geo_interface_obj)
@@ -110,12 +124,16 @@ def test_viz_geo_interface_mixed_feature_collection():
 
 
 def test_viz_geopandas_geodataframe():
+    gpd = pytest.importorskip("geopandas")
+
     gdf = gpd.read_file(geodatasets.get_path("nybb"))
     map_ = viz(gdf)
     assert isinstance(map_.layers[0], PolygonLayer)
 
 
 def test_viz_shapely_array():
+    gpd = pytest.importorskip("geopandas")
+
     gdf = gpd.read_file(geodatasets.get_path("nybb")).to_crs("EPSG:4326")
     map_ = viz(np.array(gdf.geometry))
     assert isinstance(map_.layers[0], PolygonLayer)
@@ -142,6 +160,7 @@ def test_viz_geoarrow_rust_array():
     assert isinstance(map_.layers[0], PolygonLayer)
 
 
+@pytest.mark.skipif(not compat.HAS_SHAPELY, reason="shapely not available")
 def test_viz_geoarrow_rust_wkb_array():
     table = read_pyogrio(geodatasets.get_path("naturalearth.land"))
     arr = table.geometry.chunk(0)

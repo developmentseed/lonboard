@@ -20,10 +20,9 @@ from typing import (
 import numpy as np
 import pyarrow as pa
 import pyarrow.compute as pc
-import shapely.geometry
-import shapely.geometry.base
 from numpy.typing import NDArray
 
+from lonboard._compat import check_pandas_version
 from lonboard._constants import EXTENSION_NAME
 from lonboard._geoarrow.extension_types import construct_geometry_array
 from lonboard._geoarrow.geopandas_interop import geopandas_to_geoarrow
@@ -33,16 +32,19 @@ from lonboard._layer import PathLayer, PolygonLayer, ScatterplotLayer
 from lonboard._map import Map
 from lonboard._utils import get_geometry_column_index, split_mixed_gdf
 from lonboard.basemap import CartoBasemap
-from lonboard.types.layer import (
-    PathLayerKwargs,
-    PolygonLayerKwargs,
-    ScatterplotLayerKwargs,
-)
-from lonboard.types.map import MapKwargs
 
 if TYPE_CHECKING:
     import duckdb
     import geopandas as gpd
+    import shapely.geometry
+    import shapely.geometry.base
+
+    from lonboard.types.layer import (
+        PathLayerKwargs,
+        PolygonLayerKwargs,
+        ScatterplotLayerKwargs,
+    )
+    from lonboard.types.map import MapKwargs
 
     class GeoInterfaceProtocol(Protocol):
         @property
@@ -107,8 +109,8 @@ def viz(
 
     This function accepts a variety of geospatial inputs:
 
-    - geopandas `GeoDataFrame`.
-    - geopandas `GeoSeries`.
+    - GeoPandas `GeoDataFrame`.
+    - GeoPandas `GeoSeries`.
     - numpy array of Shapely objects.
     - Single Shapely object.
     - A DuckDB query with a spatial column from DuckDB Spatial.
@@ -289,8 +291,10 @@ def create_layers_from_data_input(
         return _viz_shapely_array(data, **kwargs)
 
     # Shapely scalar
-    if isinstance(data, shapely.geometry.base.BaseGeometry):
-        return _viz_shapely_scalar(data, **kwargs)
+    if data.__class__.__module__.startswith("shapely") and any(
+        (cls.__name__ == "BaseGeometry" for cls in data.__class__.__mro__)
+    ):
+        return _viz_shapely_scalar(data, **kwargs)  # type: ignore
 
     # Anything with __arrow_c_array__
     if hasattr(data, "__arrow_c_array__"):
@@ -381,6 +385,8 @@ def _viz_shapely_array(
 def _viz_geo_interface(
     data: dict, **kwargs
 ) -> List[Union[ScatterplotLayer, PathLayer, PolygonLayer]]:
+    import shapely
+
     if data["type"] in [
         "Point",
         "LineString",
@@ -403,6 +409,8 @@ def _viz_geo_interface(
         # mixed-geometry type collections
         import geopandas as gpd
         import pandas as pd
+
+        check_pandas_version()
 
         attribute_columns_struct = pa.array(
             [feature["properties"] for feature in data["features"]]
