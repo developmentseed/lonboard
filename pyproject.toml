@@ -29,6 +29,7 @@ classifiers = [
     "Topic :: Scientific/Engineering :: GIS",
 ]
 
+# TODO: add pyproj
 [tool.poetry.dependencies]
 python = "^3.8"
 anywidget = "^0.9.0"
@@ -40,14 +41,16 @@ matplotlib = "^3.7"
 click = { version = "^8.1.7", optional = true }
 pyogrio = { version = "^0.7.2", optional = true }
 typing-extensions = { version = "^4.6.0", python = "<3.12" }
+geopandas = { version = ">=0.13", optional = true }
+pandas = { version = "^2", optional = true }
+shapely = { version = "^2", optional = true }
+
 
 [tool.poetry.extras]
 cli = ["click", "pyogrio"]
+geopandas = ["geopandas", "pandas", "shapely"]
 
 [tool.poetry.group.dev.dependencies]
-geopandas = ">=0.13"
-pandas = "^2"
-shapely = "^2"
 
 jupyterlab = "^4.0.5"
 pre-commit = "^3.4.0"

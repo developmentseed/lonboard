@@ -1,9 +1,9 @@
+from __future__ import annotations
+
 import geodatasets
-import geopandas as gpd
 import numpy as np
 import pyarrow as pa
 import pytest
-import shapely
 from pyogrio.raw import read_arrow
 from traitlets import TraitError
 
@@ -21,6 +21,9 @@ from lonboard.layer_extension import DataFilterExtension
 
 def test_accessor_length_validation():
     """Accessor length must match table length"""
+    gpd = pytest.importorskip("geopandas")
+    shapely = pytest.importorskip("shapely")
+
     points = shapely.points([1, 2], [3, 4])
     gdf = gpd.GeoDataFrame(geometry=points)
 
@@ -35,6 +38,9 @@ def test_accessor_length_validation():
 
 def test_accessor_length_validation_extension():
     """Accessor length must match table length"""
+    gpd = pytest.importorskip("geopandas")
+    shapely = pytest.importorskip("shapely")
+
     points = shapely.points([1, 2], [3, 4])
     gdf = gpd.GeoDataFrame(geometry=points)
     extension = DataFilterExtension()
@@ -55,6 +61,9 @@ def test_accessor_length_validation_extension():
 
 
 def test_layer_fails_with_unexpected_argument():
+    gpd = pytest.importorskip("geopandas")
+    shapely = pytest.importorskip("shapely")
+
     points = shapely.points([1, 2], [3, 4])
     gdf = gpd.GeoDataFrame(geometry=points)
 
@@ -63,6 +72,9 @@ def test_layer_fails_with_unexpected_argument():
 
 
 def test_layer_outside_4326_range():
+    gpd = pytest.importorskip("geopandas")
+    shapely = pytest.importorskip("shapely")
+
     # Table outside of epsg:4326 range
     points = shapely.points([1000000, 2000000], [3000000, 4000000])
     gdf = gpd.GeoDataFrame(geometry=points)
@@ -72,7 +84,9 @@ def test_layer_outside_4326_range():
 
 
 def test_layer_from_geoarrow_pyarrow():
+    gpd = pytest.importorskip("geopandas")
     ga = pytest.importorskip("geoarrow.pyarrow")
+    shapely = pytest.importorskip("shapely")
 
     points = gpd.GeoSeries(shapely.points([1, 2], [3, 4]))
 
@@ -102,12 +116,17 @@ def test_layer_wkb_geoarrow_wrong_geom_type():
 
 
 def test_warning_no_crs_shapely():
+    shapely = pytest.importorskip("shapely")
+
     points = shapely.points([0, 1, 2], [2, 3, 4])
     with pytest.warns(match="No CRS exists on data"):
         _ = viz(points)
 
 
 def test_warning_no_crs_geopandas():
+    gpd = pytest.importorskip("geopandas")
+    shapely = pytest.importorskip("shapely")
+
     points = shapely.points([0, 1, 2], [2, 3, 4])
     gdf = gpd.GeoDataFrame(geometry=points)
     with pytest.warns(match="No CRS exists on data"):
@@ -115,6 +134,9 @@ def test_warning_no_crs_geopandas():
 
 
 def test_warning_no_crs_arrow():
+    gpd = pytest.importorskip("geopandas")
+    shapely = pytest.importorskip("shapely")
+
     points = shapely.points([0, 1, 2], [2, 3, 4])
     gdf = gpd.GeoDataFrame(geometry=points)
     table = geopandas_to_geoarrow(gdf)
@@ -132,6 +154,9 @@ def test_bitmap_layer():
 
 
 def test_point_cloud_layer():
+    gpd = pytest.importorskip("geopandas")
+    shapely = pytest.importorskip("shapely")
+
     points = shapely.points([0, 1], [2, 3], [4, 5])
     gdf = gpd.GeoDataFrame(geometry=points)
     _layer = PointCloudLayer.from_geopandas(gdf)
