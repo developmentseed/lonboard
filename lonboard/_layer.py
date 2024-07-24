@@ -278,6 +278,15 @@ class BaseArrowLayer(BaseLayer):
     # The following traitlets **are** serialized to JS
 
     table: traitlets.TraitType
+    selected_bounds: traitlets.Tuple(
+        traitlets.Float(),
+        traitlets.Float(),
+        traitlets.Float(),
+        traitlets.Float(),
+        allow_none=True,
+        default_value=None,
+    ).tag(sync=True)
+
 
     def __init__(
         self,

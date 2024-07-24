@@ -56,8 +56,10 @@ export const getBboxSelectBounds = (state: Snapshot) => {
     const [x0, y0] = state.context.bboxSelectStart;
     const [x1, y1] = state.context.bboxSelectEnd;
     return [
-      [Math.min(x0, x1), Math.min(y0, y1)],
-      [Math.max(x0, x1), Math.max(y0, y1)],
+      Math.min(x0, x1),
+      Math.min(y0, y1),
+      Math.max(x0, x1),
+      Math.max(y0, y1),
     ];
   }
   return null;
