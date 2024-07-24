@@ -3,7 +3,7 @@ import { PickingInfo } from "@deck.gl/core/typed";
 
 export const machine = createMachine(
   {
-    /** @xstate-layout N4IgpgJg5mDOIC5QBsD2A7ARqghgJwgDoB1AS2jABcACU2atHCU9KAYgBEwBjAa0KjJqAdxz1GESAG0ADAF1EoAA6pYpSqQyKQAD0QBaAEwA2AMyFTADmM2ALJYCshgIwBOGc4DsAGhABPRAcLS08HW1tjZyjLV1dLSwBfBN80LFwCQgAFHHRqAFtUSTYAIWLUHWpYMGQeGkwAV0pKDGpuZFI+aXltFTUNLSRdA0MYwhlje2dHW2cHY1djB18AhC9PMdNQ109TGQdPbZlDJJSMbHwiAGVq2pYoakxsCthKfBpe9U10NgBZHCVWu0+NQwAA3MDoSiyBSDD79dDaPQIIz7QieLwYkYyUzuJb+RA48yWGTYwwOWKzOITE4gVLnDLXGrcDSsB5PEHoCDUOFfX7-agAC1Q4LwIPBkOhPVUnwGoCRXjRrhxMk8liie1sHkMy0QMyCDhJOyizlspmM4xpdPSVxuzLubPKHK5PIwfIBbQ6vDFEKh3Vh0vhiMQXmMFk8oRiC02jmMOoQJlshHCcVMZPcMUSyVpZ2tWRy+UKYDYAGEavgHTpJf6+l8g-GLF4ZK4ZkqFkdPIYfPj46YieNPE2rIZwvtjjT0IX4IMrRcpTXZUNkaZTYQwmFZi3XA43HH9M4zGMQsurA5l6bTM5LTmLiRyDAaHQGLhmKw5zKEYMkSjzNsJiTDMO+xmrYu6hIQ7gku4zidieXhXmkN7ZLkBSSG+gafsMnaELMMRHI4y4yPYXYrM2hAhJ2sTxMScTxPB9I2kyLL3I8jovG83IBrW1bvnWRhbqutjruusTbq4ca7OsLhzOiVihDYdG5oytysixFQQs6nELi6H5ysMrjOOBxg7Nstiqh4xjat266EH+By2IYKq7MYSRJEAA */
+    /** @xstate-layout N4IgpgJg5mDOIC5QBsD2A7ARqghgJwgDoB1AS2jABcACU2atHCU9KAYgBEwBjAa0KjJqAdxz1GESAG0ADAF1EoAA6pYpSqQyKQAD0QBaAEwA2AJyEALAGYA7AA47M+7ZsBWGVYA0IAJ4HTNoSmAIxWpiE2Hq6GMoZ2AL7x3mhYuASEAAo46NQAtqiSbABCRag61LBgyDw0mACulJQY1NzIpHzS8toqahpaSLoGceYyxhZ2wXauFsGuZsau3n4IwTaBHm4BVjKuNgGxickY2PhEWTn5hQDC1fjUJWWyCgM96pro2noIdoaEhqsycaGPamWJTJYGYyEYIBWY2UJmCy7caHEApE7pADKVRqLCg1Ew2HKsEo+Borz66DYAFkcEoWm0+NQwAA3MDoShPbqqN79UBfIy7QjwkXBOIeUGLXyIMJWQiODyGVzhWamOxjVHotJEbHVbgaVgEonM9AQagU940unUAAWqDZeGZbI5XJePMpn0Qq2FpjCTgmwR2FhkYohCBmrkI7icVmCcesxlGmuO2sIutxhsJZRNZotGCt9Na7V4TvZnK6bt6709KxsUJcrjs4WMtimxjDJgslgsaqsStBTYSSTRKdOaZx+rxRuzJLJ5vdlqu2W4VXupXKEDwOGEruUC75gwQ+kD0NMFgse2Mqx+djW7elKybf1ccxsJjM0SbVkSw-QBTg2haqc3JVgeApWNYUZIhGMzhK4MJhvo2zBJYYrBNYcTBu4NjJqkY5kBQNB0AwuDMKwIG8h8AwCiYMiELEdbbO4sxInMiH-F2hiGOMypuCGdisbhGJnNkeT-hRHrUUMwLQo2oJxK4EGAreYZnvKb4gg4jhqg4Qmpumk6Zsas54OS+5UXuoEWYeRimJG0zTCxMJ2QhD7bIE-yvqEt5zMYeljgZBr4lm5Tsrm5kSdWUlHoYIRBMYNhhDYF6OMExiGGGjmEGMThnjEiVJj+QA */
     id: "lonboard",
 
     types: {
@@ -28,6 +28,9 @@ export const machine = createMachine(
           }
         | {
             type: "Clear BBox";
+          }
+        | {
+            type: "Cancel BBox draw";
           },
       actions: {} as
         | {
@@ -57,7 +60,10 @@ export const machine = createMachine(
 
       "Pan mode": {
         on: {
-          "BBox select button clicked": "Selecting bbox start position",
+          "BBox select button clicked": {
+            target: "Selecting bbox start position",
+            actions: "clearBboxSelect",
+          },
 
           "Clear BBox": {
             target: "Pan mode",
@@ -71,6 +77,12 @@ export const machine = createMachine(
           "Map click event": {
             target: "Selecting bbox end position",
             actions: "setBboxSelectStart",
+          },
+
+          "Cancel BBox draw": {
+            target: "Pan mode",
+            reenter: true,
+            actions: "clearBboxSelect",
           },
         },
       },
