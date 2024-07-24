@@ -287,7 +287,6 @@ class BaseArrowLayer(BaseLayer):
         default_value=None,
     ).tag(sync=True)
 
-
     def __init__(
         self,
         *,
