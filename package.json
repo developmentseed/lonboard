@@ -12,7 +12,7 @@
     "@geoarrow/deck.gl-layers": "^0.3.0-beta.16",
     "@nextui-org/react": "^2.4.6",
     "@xstate/react": "^4.1.1",
-    "apache-arrow": "^16.1.0",
+    "apache-arrow": "^17.0.0",
     "esbuild-sass-plugin": "^3.3.1",
     "framer-motion": "^11.3.12",
     "maplibre-gl": "^3.6.2",
@@ -41,7 +41,7 @@
     "prettier": "^3.3.3",
     "tailwindcss": "^3.4.6",
     "typescript": "^5.5.3",
-    "vitest": "^2.0.2"
+    "vitest": "^2.0.3"
   },
   "scripts": {
     "build": "node ./build.mjs",
