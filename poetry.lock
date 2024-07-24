@@ -4319,10 +4319,10 @@ doc = ["furo", "jaraco.packaging (>=9.3)", "jaraco.tidelift (>=1.4)", "rst.linke
 test = ["big-O", "importlib-resources", "jaraco.functools", "jaraco.itertools", "jaraco.test", "more-itertools", "pytest (>=6,!=8.1.*)", "pytest-checkdocs (>=2.4)", "pytest-cov", "pytest-enabler (>=2.2)", "pytest-ignore-flaky", "pytest-mypy", "pytest-ruff (>=0.2.1)"]
 
 [extras]
-cli = ["click", "pyogrio"]
+cli = ["click", "pyogrio", "shapely"]
 geopandas = ["geopandas", "pandas", "shapely"]
 
 [metadata]
 lock-version = "2.0"
 python-versions = "^3.8"
-content-hash = "39ff1e994a00cd81037ad6facbeda46d95b4d7a3b394a21df6a6a08ee9866419"
+content-hash = "59b9ebeeb5bbc4968ffb79ddf4c74696ff74d6c4495b379ba5c76e20f3ad5641"
