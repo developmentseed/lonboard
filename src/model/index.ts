@@ -10,5 +10,6 @@ export {
   BaseExtensionModel,
   BrushingExtension,
   CollisionFilterExtension,
+  PathStyleExtension,
   initializeExtension,
 } from "./extension.js";

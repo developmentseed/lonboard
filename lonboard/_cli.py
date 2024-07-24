@@ -10,6 +10,7 @@ import pyarrow.parquet as pq
 from pyproj import CRS
 
 from lonboard import viz
+from lonboard._constants import EXTENSION_NAME
 
 
 def read_pyogrio(path: Path) -> pa.Table:
@@ -42,12 +43,12 @@ def read_pyogrio(path: Path) -> pa.Table:
     field = schema.field(geometry_column_index)
 
     metadata: Dict[bytes, bytes] = field.metadata
-    if metadata.get(b"ARROW:extension:name") == b"ogc.wkb":
+    if metadata.get(b"ARROW:extension:name") == EXTENSION_NAME.OGC_WKB:
         # Parse CRS and create PROJJSON
         ext_meta = {"crs": CRS.from_user_input(meta["crs"]).to_json_dict()}
 
         # Replace metadata
-        metadata[b"ARROW:extension:name"] = b"geoarrow.wkb"
+        metadata[b"ARROW:extension:name"] = EXTENSION_NAME.WKB
         metadata[b"ARROW:extension:metadata"] = json.dumps(ext_meta).encode()
 
     new_field = field.with_name("geometry").with_metadata(metadata)
@@ -74,8 +75,8 @@ def read_geoparquet(path: Path):
         i for (i, name) in enumerate(table.schema.names) if name == geometry_column_name
     ][0]
 
-    metadata = {
-        b"ARROW:extension:name": b"geoarrow.wkb",
+    metadata: dict[bytes, bytes] = {
+        b"ARROW:extension:name": EXTENSION_NAME.WKB,
     }
     crs_dict = geo_meta["columns"][geometry_column_name].get("crs")
     if crs_dict:

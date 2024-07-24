@@ -1,12 +1,33 @@
 [tool.poetry]
 name = "lonboard"
-version = "0.8.0"
-description = "Python library for fast, interactive geospatial vector data visualization in Jupyter."
+version = "0.9.3"
+description = "Fast, interactive geospatial data visualization in Jupyter."
 authors = ["Kyle Barron <kyle@developmentseed.org>"]
 license = "MIT"
 readme = "README.md"
 packages = [{ include = "lonboard" }]
 include = ["lonboard/static/*.js", "lonboard/static/*.css", "MANIFEST.in"]
+repository = "https://github.com/developmentseed/lonboard"
+documentation = "https://developmentseed.org/lonboard/latest/"
+keywords = [
+    "GIS",
+    "cartography",
+    "visualization",
+    "geopandas",
+    "pandas",
+    "shapely",
+]
+classifiers = [
+    "Development Status :: 4 - Beta",
+    "Framework :: Jupyter",
+    "Framework :: Jupyter :: JupyterLab",
+    "Intended Audience :: Science/Research",
+    "License :: OSI Approved :: MIT License",
+    "Operating System :: OS Independent",
+    "Programming Language :: Python :: 3 :: Only",
+    "Programming Language :: Python :: 3",
+    "Topic :: Scientific/Engineering :: GIS",
+]
 
 [tool.poetry.dependencies]
 python = "^3.8"
@@ -31,18 +52,20 @@ shapely = "^2"
 jupyterlab = "^4.0.5"
 pre-commit = "^3.4.0"
 pytest = "^7.4.2"
-# We use ruff format ourselves, but mkdocstrings requires black to be installed
-# to format signatures in the docs
-black = "^23.10.1"
 geoarrow-rust-core = "^0.2.0"
 geodatasets = "^2023.12.0"
 pyogrio = "^0.7.2"
 geoarrow-pyarrow = "^0.1.1"
+duckdb = "^0.10.2"
 
 [tool.poetry.group.docs.dependencies]
+# We use ruff format ourselves, but mkdocstrings requires black to be installed
+# to format signatures in the docs
+black = "^23.10.1"
+griffe-inherited-docstrings = "^1.0.0"
 mkdocs = "^1.4.3"
 mkdocs-material = { version = "^9.5", extras = ["imaging"] }
-mkdocstrings = { version = "^0.23.0", extras = ["python"] }
+mkdocstrings = { version = "^0.25.1", extras = ["python"] }
 # This version only on 3.9+. Ok because it's a dev dependency
 mkdocs-jupyter = { version = "^0.24.5", python = "^3.9" }
 mike = "^2"

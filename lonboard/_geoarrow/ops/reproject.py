@@ -111,7 +111,10 @@ def reproject_column(
         transformer=transformer,
         max_workers=max_workers,
     )
-    return field.with_metadata(new_extension_metadata), new_chunked_array
+    new_field = field.with_type(new_chunked_array.type).with_metadata(
+        new_extension_metadata
+    )
+    return new_field, new_chunked_array
 
 
 def _reproject_column(
@@ -158,9 +161,7 @@ def _reproject_coords(arr: pa.FixedSizeListArray, transformer: Transformer):
         raise ValueError(f"Unexpected list size {list_size}")
 
     coord_field = pa.list_(pa.field(dims, pa.float64()), len(dims))
-    return pa.FixedSizeListArray.from_arrays(
-        output_np_arr.flatten("C"), type=coord_field
-    )
+    return pa.FixedSizeListArray.from_arrays(output_np_arr.ravel("C"), type=coord_field)
 
 
 def _reproject_chunk_nest_0(arr: pa.ListArray, transformer: Transformer):
