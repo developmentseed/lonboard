@@ -27,7 +27,7 @@ from numpy.typing import NDArray
 from lonboard._constants import EXTENSION_NAME
 from lonboard._geoarrow.extension_types import construct_geometry_array
 from lonboard._geoarrow.geopandas_interop import geopandas_to_geoarrow
-from lonboard._geoarrow.parse_wkb import parse_wkb_table
+from lonboard._geoarrow.parse_wkb import parse_serialized_table
 from lonboard._geoarrow.sanitize import remove_extension_classes
 from lonboard._layer import PathLayer, PolygonLayer, ScatterplotLayer
 from lonboard._map import Map
@@ -482,7 +482,7 @@ def _viz_geoarrow_table(
     polygon_kwargs: Optional[PolygonLayerKwargs] = None,
 ) -> List[Union[ScatterplotLayer, PathLayer, PolygonLayer]]:
     table = remove_extension_classes(table)
-    parsed_tables = parse_wkb_table(table)
+    parsed_tables = parse_serialized_table(table)
     if len(parsed_tables) > 1:
         output: List[Union[ScatterplotLayer, PathLayer, PolygonLayer]] = []
         for parsed_table in parsed_tables:
