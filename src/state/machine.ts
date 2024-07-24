@@ -3,7 +3,7 @@ import { PickingInfo } from "@deck.gl/core/typed";
 
 export const machine = createMachine(
   {
-    /** @xstate-layout N4IgpgJg5mDOIC5QBsD2A7ARqghgJwgDoB1AS2jABcACU2atHCU9KAYgBEwBjAa0KjJqAdxz1GESAG0ADAF1EoAA6pYpSqQyKQAD0QBaAEwA2AMyFTADmM2ALJYCshgIwBOGc4DsAGhABPRAcLS08HW1tjZyjLV1dLSwBfBN80LFwCQgAFHHRqAFtUSTYAIWLUHWpYMGQeGkwAV0pKDGpuZFI+aXltFTUNLSRdA0MYwhlje2dHW2cHY1djB18AhC9PMdNQ109TGQdPbZlDJJSMbHwiAGVq2pYoakxsCthKfBpe9U10NgBZHCVWu0+NQwAA3MDoSiyBSDD79dDaPQIIz7QieLwYkYyUzuJb+RA48yWGTYwwOWKzOITE4gVLnDLXGrcDSsB5PEHoCDUOFfX7-agAC1Q4LwIPBkOhPVUnwGoCRXjRrhxMk8liie1sHkMy0QMyCDhJOyizlspmM4xpdPSVxuzLubPKHK5PIwfIBbQ6vDFEKh3Vh0vhiMQXmMFk8oRiC02jmMOoQJlshHCcVMZPcMUSNPQhTg2itFylfS+QeRplNhDCYVmM1iDjccf0zjMYxCm1MqbM5uMlrO1pI5BgNDoDFwzFYhZlCMGSJR5m2ExJhkMtn2ZtsDdChHcJPczkMO0cXh7aQuWRy+RzE8D0+G+8IsxiR0cZZk9h8+IQrkTIX3sXixLieJj3pG0mRZe5HkdF43m5ANi39ItZSGZFDFcfUVz1Gs0PrD9dnWFw5nRKxQhsYC+0ZW5WUgioIWdOCkJdKc5WGVxnC3Ywdm2WxVQ8YxtQ-KtCAXA5bEMFVdm7JIEiAA */
+    /** @xstate-layout N4IgpgJg5mDOIC5QBsD2A7ARqghgJwgDoB1AS2jABcACU2atHCU9KAYgBEwBjAa0KjJqAdxz1GESAG0ADAF1EoAA6pYpSqQyKQAD0QBaAEwA2AMyFTADmM2ALJYCshgIwBOGc4DsAGhABPRAcLS08HW1tjZyjLV1dLSwBfBN80LFwCQgAFHHRqAFtUSTYAIWLUHWpYMGQeGkwAV0pKDGpuZFI+aXltFTUNLSRdA0MYwhlje2dHW2cHY1djB18AhC9PMdNQ109TGQdPbZlDJJSMbHwiAGVq2pYoakxsCthKfBpe9U10NgBZHCVWu0+NQwAA3MDoSiyBSDD79dDaPQIIz7QieLwYkYyUzuJb+RA48yWGTYwwOWKzOITE4gVLnDLXGrcDSsB5PEHoCDUOFfX7-agAC1Q4LwIPBkOhPVUnwGoCRXjRrhxMk8liie1sHkMy0QMyCDhJOyizlspmM4xpdPSVxuzLubPKHK5PIwfIBbQ6vDFEKh3Vh0vhiMQXmMFk8oRiC02jmMOoQJlshHCcVMZPcMUSyVpZ2tWRy+UKYDYAGEavgHTpJf6+l8g-GLF4ZK4ZkqFkdPIYfPj46YieNPE2rIZwvtjjT0IX4IMrRcpTXZUNkaZTYQwmFZi3XA43HH9M4zGMQsurA5l6bTM5LTmLiRyDAaHQGLhmKw5zKEYMkSjzNsJiTDMO+xmrYu6hIQ7gku4zidieXhXmkN7ZLkBSSG+gafsMnaELMMRHI4y4yPYXYrM2hAhJ2sTxMScTxPB9I2kyLL3I8jovG83IBrW1bvnWRhbqutjruusTbq4ca7OsLhzOiVihDYdG5oytysixFQQs6nELi6H5ysMrjOOBxg7Nstiqh4xjat266EH+By2IYKq7MYSRJEAA */
     id: "lonboard",
 
     types: {
@@ -25,6 +25,9 @@ export const machine = createMachine(
         | {
             type: "Map hover event";
             data: PickingInfo;
+          }
+        | {
+            type: "Clear BBox";
           },
       actions: {} as
         | {
@@ -54,8 +57,10 @@ export const machine = createMachine(
 
       "Pan mode": {
         on: {
-          "BBox select button clicked": {
-            target: "Selecting bbox start position",
+          "BBox select button clicked": "Selecting bbox start position",
+
+          "Clear BBox": {
+            target: "Pan mode",
             actions: "clearBboxSelect",
           },
         },

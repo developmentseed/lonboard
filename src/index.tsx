@@ -19,8 +19,11 @@ import { useViewStateDebounced } from "./state";
 import { MachineContext, MachineProvider } from "./state/index.js";
 import * as selectors from "./state/selectors.js";
 
+import "./globals.css";
 import "maplibre-gl/dist/maplibre-gl.css";
+import { NextUIProvider } from "@nextui-org/react";
 import { PolygonLayer, PolygonLayerProps } from "@deck.gl/layers/typed";
+import Toolbar from "./toolbar.js";
 
 await initParquetWasm();
 
@@ -227,22 +230,7 @@ function App() {
 
   return (
     <div id={`map-${mapId}`} style={{ height: mapHeight || "100%" }}>
-      <div
-        style={{
-          position: "absolute",
-          top: "2px",
-          right: "2px",
-          backgroundColor: "#fff",
-          padding: "2px",
-          zIndex: "1000",
-          height: "12px",
-        }}
-        onClick={() => {
-          actorRef.send({ type: "BBox select button clicked" });
-        }}
-      >
-        {buttonLabel}
-      </div>
+      <Toolbar />
       <DeckGL
         initialViewState={
           ["longitude", "latitude", "zoom"].every((key) =>
@@ -296,14 +284,16 @@ function App() {
   );
 }
 
-const MachineApp = () => (
-  <MachineProvider>
-    <App />
-  </MachineProvider>
+const WrappedApp = () => (
+  <NextUIProvider>
+    <MachineProvider>
+      <App />
+    </MachineProvider>
+  </NextUIProvider>
 );
 
 const module: { render: Render; initialize?: Initialize } = {
-  render: createRender(MachineApp),
+  render: createRender(WrappedApp),
 };
 
 export default module;

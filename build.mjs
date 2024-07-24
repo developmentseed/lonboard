@@ -1,6 +1,10 @@
-// build.js
 import esbuild from "esbuild";
 import dotenv from "dotenv";
+import { sassPlugin } from "esbuild-sass-plugin";
+import tailwindcss from "tailwindcss";
+import autoprefixer from "autoprefixer";
+import postcss from "postcss";
+import postcssPresetEnv from "postcss-preset-env";
 
 // Load environment variables from .env file
 dotenv.config();
@@ -24,6 +28,18 @@ esbuild.build({
     "define.amd": "false",
     ...env,
   },
+  plugins: [
+    sassPlugin({
+      async transform(source) {
+        const { css } = await postcss([
+          tailwindcss,
+          autoprefixer,
+          postcssPresetEnv({ stage: 0 }),
+        ]).process(source, { from: undefined });
+        return css;
+      },
+    }),
+  ],
   // Code splitting didn't work initially because it tried to load from a local
   // relative path ./chunk.js
   // splitting: true,
