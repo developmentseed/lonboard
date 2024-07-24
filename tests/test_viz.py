@@ -4,12 +4,14 @@ import geoarrow.pyarrow as gap
 import geodatasets
 import geopandas as gpd
 import numpy as np
+import pyarrow as pa
 import pyarrow.parquet as pq
 import shapely
 from geoarrow.rust.core import read_pyogrio
 from pyogrio.raw import read_arrow
 
 from lonboard import PathLayer, PolygonLayer, ScatterplotLayer, viz
+from lonboard._constants import EXTENSION_NAME
 
 fixtures_dir = Path(__file__).parent / "fixtures"
 
@@ -50,6 +52,24 @@ def test_viz_wkb_mixed_pyarrow():
     assert isinstance(map_.layers[0], PolygonLayer)
     assert isinstance(map_.layers[1], PathLayer)
     assert isinstance(map_.layers[2], ScatterplotLayer)
+
+
+def test_viz_wkt_pyarrow():
+    path = geodatasets.get_path("naturalearth.land")
+    meta, table = read_arrow(path)
+
+    # Parse WKB to WKT
+    geo_col_idx = table.schema.get_field_index("wkb_geometry")
+    wkt_col = shapely.to_wkt(shapely.from_wkb(table.column(geo_col_idx)))
+    new_field = pa.field(
+        "geometry",
+        type=pa.string(),
+        nullable=True,
+        metadata={b"ARROW:extension:name": EXTENSION_NAME.WKT},
+    )
+    wkt_table = table.set_column(geo_col_idx, new_field, pa.array(wkt_col))
+    map_ = viz(wkt_table)
+    assert isinstance(map_.layers[0], PolygonLayer)
 
 
 def test_viz_reproject():
