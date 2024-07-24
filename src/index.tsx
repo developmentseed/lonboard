@@ -16,8 +16,8 @@ import { Message } from "./types.js";
 import { flyTo } from "./actions/fly-to.js";
 import { useViewStateDebounced } from "./state";
 
-import { MachineContext, MachineProvider } from "./state/index.js";
-import * as selectors from "./state/selectors.js";
+import { MachineContext, MachineProvider } from "./xstate";
+import * as selectors from "./xstate/selectors";
 
 import "./globals.css";
 import "maplibre-gl/dist/maplibre-gl.css";

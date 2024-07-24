@@ -1,6 +1,6 @@
 import React from "react";
-import { MachineContext } from "./state/index.js";
-import * as selectors from "./state/selectors.js";
+import { MachineContext } from "./xstate";
+import * as selectors from "./xstate/selectors";
 import { Button, ButtonGroup, Tooltip } from "@nextui-org/react";
 import { SquareIcon } from "./icons/square";
 
