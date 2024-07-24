@@ -3,7 +3,7 @@ import { PickingInfo } from "@deck.gl/core/typed";
 
 export const machine = createMachine(
   {
-    /** @xstate-layout N4IgpgJg5mDOIC5QBsD2A7ARqghgJwgDoB1AS2jABcACU2atHCU9KAYgBEwBjAa0KjJqAdxz1GESAG0ADAF1EoAA6pYpSqQyKQAD0QBaAEwA2AJyEALAGYA7AA47M+7ZsBWGVYA0IAJ4HTNoSmAIxWpiE2Hq6GMoZ2AL7x3mhYuASEAAo46NQAtqiSbABCRag61LBgyDw0mACulJQY1NzIpHzS8toqahpaSLoGceYyxhZ2wXauFsGuZsau3n4IwTaBHm4BVjKuNgGxickY2PhEWTn5hQDC1fjUJWWyCgM96pro2noIdoaEhqsycaGPamWJTJYGYyEYIBWY2UJmCy7caHEApE7pADKVRqLCg1Ew2HKsEo+Borz66DYAFkcEoWm0+NQwAA3MDoShPbqqN79UBfIy7QjwkXBOIeUGLXyIMJWQiODyGVzhWamOxjVHotJEbHVbgaVgEonM9AQagU940unUAAWqDZeGZbI5XJePMpn0Qq2FpjCTgmwR2FhkYohCBmrkI7icVmCcesxlGmuO2sIutxhsJZRNZotGCt9Na7V4TvZnK6bt6709KxsUJcrjs4WMtimxjDJgslgsaqsStBTYSSTRKdOaZx+rxRuzJLJ5vdlqu2W4VXupXKEDwOGEruUC75gwQ+kD0NMFgse2Mqx+djW7elKybf1ccxsJjM0SbVkSw-QBTg2haqc3JVgeApWNYUZIhGMzhK4MJhvo2zBJYYrBNYcTBu4NjJqkY5kBQNB0AwuDMKwIG8h8AwCiYMiELEdbbO4sxInMiH-F2hiGOMypuCGdisbhGJnNkeT-hRHrUUMwLQo2oJxK4EGAreYZnvKb4gg4jhqg4Qmpumk6Zsas54OS+5UXuoEWYeRimJG0zTCxMJ2QhD7bIE-yvqEt5zMYeljgZBr4lm5Tsrm5kSdWUlHoYIRBMYNhhDYF6OMExiGGGjmEGMThnjEiVJj+QA */
+    /** @xstate-layout N4IgpgJg5mDOIC5QBsD2A7ARqghgJwgDoB1AS2jABcACU2atHCU9KAYgBEwBjAa0KjJqAdxz1GESAG0ADAF1EoAA6pYpSqQyKQAD0QBaAEwA2AJyEALAGYA7AA47M+7ZsBWGVYA0IAJ4HTNoSmAIxWpiE2Hq6GMoZ2AL7x3mhYuASEAAo46NQAtqiSbABCRag61LBgyDw0mACulJQY1NzIpHzS8toqahpaSLoGceYyxhZ2wXauFsGuZsau3n4IwTaBHm4BVjKuNgGxickY2PhEWTn5hQDC1fjUJWWyCgM96pro2noIdoaEhqsycaGPamWJTJYGYyEYIBWY2UJmCy7caHEApE7pADKVRqLCg1Ew2HKsEo+Borz66DYAFkcEoWm0+NQwAA3MDoShPbqqN79UBfIy7QjwkXBOIeUGLXyIMJWQiODyGVzhWamOxjVHotJEbHVbgaVgEonM9AQagU940unUAAWqDZeGZbI5XJePMpn0Qq2FpjCTgmwR2FhkYohCBmrkI7icVmCcesxlGmuO2sIutxhsJZRNZotGCt9Na7V4TvZnK6bt6709KxsUJcrjs4WMtimxjDJgslgsaqsStBTYSSTRKdOaZx+rxRuzJLJ5vdlqu2W4VXupXKEDwOGEruUC75gwQ+nGXasfcDY1jxhsVjsHeBUeikwscWMhjV1mTqTH6cnmeN7K5vuVJLugK5CA8G5bjuFZ7lWB4Co2cqmNe17BrESI9mG0yBIYwKNrEZ6Jk4iTDugBRwNoWqnNy8EfAMAotsEQSoTY6GGJhphhvo2zMTM-zBpEIb2F+GJEGQFA0HQDC4MwrC0by9H8kMiaELEdbbO4sxInM3ECX8HFTAEWl2DpompuceQUQpHoMUMD6zE2YKuFYwbjDYYamF2dg2MC4QOI4aoOOZP4Tga+JZsSpJ4OSwE2dWdlHu+kbTNM2kwqYrgwmG2y4bM16hD5czGCFWJhVOkU5vOdHxQhQwhCxN7+UhkoWNhMzQlEcw-LY2ymKR8RAA */
     id: "lonboard",
 
     types: {
@@ -93,9 +93,16 @@ export const machine = createMachine(
             target: "Selecting bbox end position",
             actions: "setBboxSelectEnd",
           },
+
           "Map click event": {
             target: "Pan mode",
             actions: "setBboxSelectEnd",
+          },
+
+          "Cancel BBox draw": {
+            target: "Pan mode",
+            reenter: true,
+            actions: "clearBboxSelect",
           },
         },
       },
