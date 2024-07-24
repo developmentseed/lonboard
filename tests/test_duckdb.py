@@ -1,15 +1,15 @@
 from tempfile import TemporaryDirectory
 
 import duckdb
-import geopandas as gpd
 import pytest
 
 from lonboard import PolygonLayer, ScatterplotLayer, SolidPolygonLayer, viz
 
-points_path = gpd.datasets.get_path("naturalearth_cities")
-
 
 def test_viz_geometry():
+    gpd = pytest.importorskip("geopandas")
+    points_path = gpd.datasets.get_path("naturalearth_cities")
+
     con = duckdb.connect()
     sql = f"""
         INSTALL spatial;
@@ -23,6 +23,9 @@ def test_viz_geometry():
 
 
 def test_viz_wkb_blob():
+    gpd = pytest.importorskip("geopandas")
+    points_path = gpd.datasets.get_path("naturalearth_cities")
+
     con = duckdb.connect()
     sql = f"""
         INSTALL spatial;
@@ -36,6 +39,9 @@ def test_viz_wkb_blob():
 
 
 def test_viz_point_2d():
+    gpd = pytest.importorskip("geopandas")
+    points_path = gpd.datasets.get_path("naturalearth_cities")
+
     con = duckdb.connect()
     sql = f"""
         INSTALL spatial;
@@ -49,6 +55,8 @@ def test_viz_point_2d():
 
 
 def test_viz_bbox_2d():
+    gpd = pytest.importorskip("geopandas")
+
     with TemporaryDirectory() as tmpdir:
         nybb = gpd.read_file(gpd.datasets.get_path("nybb"))
         nybb = nybb.to_crs("EPSG:4326")
@@ -69,6 +77,9 @@ def test_viz_bbox_2d():
 
 
 def test_layer_geometry():
+    gpd = pytest.importorskip("geopandas")
+    points_path = gpd.datasets.get_path("naturalearth_cities")
+
     con = duckdb.connect()
     sql = f"""
         INSTALL spatial;
@@ -82,6 +93,9 @@ def test_layer_geometry():
 
 
 def test_layer_wkb_blob():
+    gpd = pytest.importorskip("geopandas")
+    points_path = gpd.datasets.get_path("naturalearth_cities")
+
     con = duckdb.connect()
     sql = f"""
         INSTALL spatial;
@@ -95,6 +109,9 @@ def test_layer_wkb_blob():
 
 
 def test_layer_point_2d():
+    gpd = pytest.importorskip("geopandas")
+    points_path = gpd.datasets.get_path("naturalearth_cities")
+
     con = duckdb.connect()
     sql = f"""
         INSTALL spatial;
@@ -108,6 +125,8 @@ def test_layer_point_2d():
 
 
 def test_layer_bbox_2d():
+    gpd = pytest.importorskip("geopandas")
+
     with TemporaryDirectory() as tmpdir:
         nybb = gpd.read_file(gpd.datasets.get_path("nybb"))
         tmp_path = f"{tmpdir}/nybb.shp"
@@ -127,6 +146,8 @@ def test_layer_bbox_2d():
 
 
 def test_solid_polygon_layer_bbox_2d():
+    gpd = pytest.importorskip("geopandas")
+
     with TemporaryDirectory() as tmpdir:
         nybb = gpd.read_file(gpd.datasets.get_path("nybb"))
         tmp_path = f"{tmpdir}/nybb.shp"
@@ -147,6 +168,9 @@ def test_solid_polygon_layer_bbox_2d():
 
 @pytest.mark.skip("Skip because it mutates global state")
 def test_create_table_as():
+    gpd = pytest.importorskip("geopandas")
+    points_path = gpd.datasets.get_path("naturalearth_cities")
+
     sql = f"""
         INSTALL spatial;
         LOAD spatial;
@@ -158,6 +182,9 @@ def test_create_table_as():
 
 
 def test_create_table_as_custom_con():
+    gpd = pytest.importorskip("geopandas")
+    points_path = gpd.datasets.get_path("naturalearth_cities")
+
     sql = f"""
         INSTALL spatial;
         LOAD spatial;

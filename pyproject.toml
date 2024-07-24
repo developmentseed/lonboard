@@ -48,7 +48,7 @@ pyproj = ">=3.3"
 
 
 [tool.poetry.extras]
-cli = ["click", "pyogrio"]
+cli = ["click", "pyogrio", "shapely"]
 geopandas = ["geopandas", "pandas", "shapely"]
 
 [tool.poetry.group.dev.dependencies]

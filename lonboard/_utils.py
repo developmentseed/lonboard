@@ -4,8 +4,6 @@ from typing import TYPE_CHECKING, Any, Dict, List, Optional, Sequence, TypeVar
 
 import numpy as np
 import pyarrow as pa
-import shapely
-from shapely import GeometryType
 
 from lonboard._base import BaseExtension
 from lonboard._constants import EXTENSION_NAME
@@ -119,6 +117,8 @@ def remove_extension_kwargs(
 
 def split_mixed_gdf(gdf: gpd.GeoDataFrame) -> List[gpd.GeoDataFrame]:
     """Split a GeoDataFrame into one or more GeoDataFrames with unique geometry type"""
+    import shapely
+    from shapely import GeometryType
 
     type_ids = np.array(shapely.get_type_id(gdf.geometry))
     unique_type_ids = set(np.unique(type_ids))

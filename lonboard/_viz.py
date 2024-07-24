@@ -20,8 +20,6 @@ from typing import (
 import numpy as np
 import pyarrow as pa
 import pyarrow.compute as pc
-import shapely.geometry
-import shapely.geometry.base
 from numpy.typing import NDArray
 
 from lonboard._constants import EXTENSION_NAME
@@ -37,6 +35,8 @@ from lonboard.basemap import CartoBasemap
 if TYPE_CHECKING:
     import duckdb
     import geopandas as gpd
+    import shapely.geometry
+    import shapely.geometry.base
 
     from lonboard.types.layer import (
         PathLayerKwargs,
@@ -290,8 +290,10 @@ def create_layers_from_data_input(
         return _viz_shapely_array(data, **kwargs)
 
     # Shapely scalar
-    if isinstance(data, shapely.geometry.base.BaseGeometry):
-        return _viz_shapely_scalar(data, **kwargs)
+    if data.__class__.__module__.startswith("shapely") and any(
+        (cls.__name__ == "BaseGeometry" for cls in data.__class__.__mro__)
+    ):
+        return _viz_shapely_scalar(data, **kwargs)  # type: ignore
 
     # Anything with __arrow_c_array__
     if hasattr(data, "__arrow_c_array__"):
@@ -382,6 +384,8 @@ def _viz_shapely_array(
 def _viz_geo_interface(
     data: dict, **kwargs
 ) -> List[Union[ScatterplotLayer, PathLayer, PolygonLayer]]:
+    import shapely
+
     if data["type"] in [
         "Point",
         "LineString",

@@ -9,6 +9,7 @@ import pytest
 from geoarrow.rust.core import read_pyogrio
 from pyogrio.raw import read_arrow
 
+import lonboard._compat as compat
 from lonboard import PathLayer, PolygonLayer, ScatterplotLayer, viz
 from lonboard._constants import EXTENSION_NAME
 
@@ -42,6 +43,7 @@ class GeoInterfaceHolder:
         return self.geom.__geo_interface__
 
 
+@pytest.mark.skipif(not compat.HAS_SHAPELY, reason="shapely not available")
 def test_viz_wkb_pyarrow():
     path = geodatasets.get_path("naturalearth.land")
     meta, table = read_arrow(path)
@@ -49,6 +51,7 @@ def test_viz_wkb_pyarrow():
     assert isinstance(map_.layers[0], PolygonLayer)
 
 
+@pytest.mark.skipif(not compat.HAS_SHAPELY, reason="shapely not available")
 def test_viz_wkb_mixed_pyarrow():
     table = pq.read_table(fixtures_dir / "monaco_nofilter_noclip_compact.parquet")
     map_ = viz(table)
@@ -157,6 +160,7 @@ def test_viz_geoarrow_rust_array():
     assert isinstance(map_.layers[0], PolygonLayer)
 
 
+@pytest.mark.skipif(not compat.HAS_SHAPELY, reason="shapely not available")
 def test_viz_geoarrow_rust_wkb_array():
     table = read_pyogrio(geodatasets.get_path("naturalearth.land"))
     arr = table.geometry.chunk(0)

@@ -7,6 +7,7 @@ import pytest
 from pyogrio.raw import read_arrow
 from traitlets import TraitError
 
+import lonboard._compat as compat
 from lonboard import (
     BitmapLayer,
     Map,
@@ -98,12 +99,14 @@ def test_layer_from_geoarrow_pyarrow():
     _layer = ScatterplotLayer(table=table)
 
 
+@pytest.mark.skipif(not compat.HAS_SHAPELY, reason="shapely not available")
 def test_layer_wkb_geoarrow():
     path = geodatasets.get_path("naturalearth.land")
     meta, table = read_arrow(path)
     _layer = SolidPolygonLayer(table=table)
 
 
+@pytest.mark.skipif(not compat.HAS_SHAPELY, reason="shapely not available")
 def test_layer_wkb_geoarrow_wrong_geom_type():
     path = geodatasets.get_path("naturalearth.land")
     meta, table = read_arrow(path)
