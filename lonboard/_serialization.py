@@ -5,6 +5,7 @@ from typing import List, Optional, Tuple, Union
 import numpy as np
 import pyarrow as pa
 import pyarrow.parquet as pq
+from arro3.core import Array, Table
 from numpy.typing import NDArray
 from traitlets import TraitError
 
@@ -22,7 +23,7 @@ DEFAULT_ARROW_CHUNK_BYTES_SIZE = 5 * 1024 * 1024  # 5MB
 DEFAULT_MAX_NUM_CHUNKS = 32
 
 
-def serialize_table_to_parquet(table: pa.Table, *, max_chunksize: int) -> List[bytes]:
+def serialize_table_to_parquet(table: Table, *, max_chunksize: int) -> List[bytes]:
     buffers: List[bytes] = []
     # NOTE: passing `max_chunksize=0` creates an infinite loop
     # https://github.com/apache/arrow/issues/39788
@@ -49,9 +50,9 @@ def serialize_table_to_parquet(table: pa.Table, *, max_chunksize: int) -> List[b
     return buffers
 
 
-def serialize_pyarrow_column(data: pa.Array, *, max_chunksize: int) -> List[bytes]:
+def serialize_pyarrow_column(data: Array, *, max_chunksize: int) -> List[bytes]:
     """Serialize a pyarrow column to a Parquet file with one column"""
-    pyarrow_table = pa.table({"value": data})
+    pyarrow_table = Table({"value": data})
     return serialize_table_to_parquet(pyarrow_table, max_chunksize=max_chunksize)
 
 
@@ -70,11 +71,11 @@ def serialize_accessor(data: Union[List[int], Tuple[int], NDArray[np.uint8]], ob
 
 
 def serialize_table(data, obj):
-    assert isinstance(data, pa.Table), "expected pyarrow table"
+    assert isinstance(data, Table), "expected Arrow table"
     return serialize_table_to_parquet(data, max_chunksize=obj._rows_per_chunk)
 
 
-def infer_rows_per_chunk(table: pa.Table) -> int:
+def infer_rows_per_chunk(table: Table) -> int:
     # At least one chunk
     num_chunks = max(round(table.nbytes / DEFAULT_ARROW_CHUNK_BYTES_SIZE), 1)
 
