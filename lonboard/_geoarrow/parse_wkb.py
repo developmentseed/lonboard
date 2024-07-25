@@ -5,6 +5,7 @@ from typing import List
 
 import numpy as np
 import pyarrow as pa
+from arro3.core import Table
 
 from lonboard._constants import EXTENSION_NAME, OGC_84
 from lonboard._geoarrow.crs import get_field_crs
@@ -13,7 +14,7 @@ from lonboard._geoarrow.utils import is_native_geoarrow
 from lonboard._utils import get_geometry_column_index
 
 
-def parse_serialized_table(table: pa.Table) -> List[pa.Table]:
+def parse_serialized_table(table: Table) -> List[Table]:
     """Parse a table with a serialized WKB/WKT column into GeoArrow-native geometries.
 
     If no columns are WKB/WKT-encoded, returns the input. Note that WKB columns must be

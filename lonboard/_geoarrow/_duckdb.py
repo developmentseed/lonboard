@@ -5,8 +5,8 @@ import re
 from typing import TYPE_CHECKING, Optional, Union
 
 import numpy as np
-import pyarrow as pa
 import pyarrow.compute as pc
+from arro3.core import Field, Table
 
 from lonboard._constants import EXTENSION_NAME
 
@@ -29,7 +29,7 @@ def from_duckdb(
     *,
     con: Optional[duckdb.DuckDBPyConnection] = None,
     crs: Optional[Union[str, pyproj.CRS]] = None,
-) -> pa.Table:
+) -> Table:
     geom_col_idxs = [
         i for i, t in enumerate(rel.types) if str(t) in DUCKDB_SPATIAL_TYPES
     ]
@@ -89,7 +89,7 @@ def _from_geometry(
     con: Optional[duckdb.DuckDBPyConnection] = None,
     geom_col_idx: int,
     crs: Optional[Union[str, pyproj.CRS]] = None,
-) -> pa.Table:
+) -> Table:
     other_col_names = [name for i, name in enumerate(rel.columns) if i != geom_col_idx]
     non_geo_table = rel.select(*other_col_names).arrow()
     geom_col_name = rel.columns[geom_col_idx]
@@ -140,8 +140,8 @@ def _from_geoarrow(
     extension_type: EXTENSION_NAME,
     geom_col_idx: int,
     crs: Optional[Union[str, pyproj.CRS]] = None,
-) -> pa.Table:
-    table = rel.arrow()
+) -> Table:
+    table = Table.from_arrow(rel.arrow())
     metadata = _make_geoarrow_field_metadata(extension_type, crs)
     geom_field = table.schema.field(geom_col_idx).with_metadata(metadata)
     return table.set_column(geom_col_idx, geom_field, table.column(geom_col_idx))
@@ -152,7 +152,7 @@ def _from_box2d(
     *,
     geom_col_idx: int,
     crs: Optional[Union[str, pyproj.CRS]] = None,
-) -> pa.Table:
+) -> Table:
     table = rel.arrow()
     geom_col = table.column(geom_col_idx)
 
@@ -160,7 +160,7 @@ def _from_box2d(
 
     metadata = _make_geoarrow_field_metadata(EXTENSION_NAME.POLYGON, crs)
     prev_field = table.schema.field(geom_col_idx)
-    geom_field = pa.field(prev_field.name, polygon_array.type, metadata=metadata)
+    geom_field = Field(prev_field.name, polygon_array.type, metadata=metadata)
     return table.set_column(geom_col_idx, geom_field, polygon_array)
 
 

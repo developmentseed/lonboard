@@ -4,10 +4,11 @@ import json
 from typing import Tuple
 
 import pyarrow as pa
+from arro3.core import ChunkedArray, Field, Table
 from pyproj import CRS
 
 
-def remove_extension_classes(table: pa.Table) -> pa.Table:
+def remove_extension_classes(table: Table) -> pa.Table:
     """
     Convert any registered geoarrow.pyarrow extension fields and arrays to plain
     metadata
@@ -24,9 +25,8 @@ def remove_extension_classes(table: pa.Table) -> pa.Table:
     return table
 
 
-def sanitize_column(
-    field: pa.Field, column: pa.ChunkedArray
-) -> Tuple[pa.Field, pa.ChunkedArray]:
+# TODO: need to check but I think this function isn't necessary anymore with arro3
+def sanitize_column(field: Field, column: ChunkedArray) -> Tuple[Field, ChunkedArray]:
     """
     Convert a registered geoarrow.pyarrow extension field and column to plain metadata
     """

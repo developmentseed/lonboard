@@ -8,7 +8,7 @@ from typing import Callable, Optional, Tuple, Union
 from warnings import warn
 
 import numpy as np
-import pyarrow as pa
+from arro3.core import ChunkedArray, Field, Table
 from pyproj import CRS, Transformer
 
 from lonboard._constants import EPSG_4326, EXTENSION_NAME, OGC_84
@@ -27,11 +27,11 @@ def no_crs_warning():
 
 
 def reproject_table(
-    table: pa.Table,
+    table: Table,
     *,
     to_crs: Union[str, CRS] = OGC_84,
     max_workers: Optional[int] = None,
-) -> pa.Table:
+) -> Table:
     """Reproject a GeoArrow table to a new CRS
 
     Args:
@@ -63,11 +63,11 @@ def reproject_table(
 
 def reproject_column(
     *,
-    field: pa.Field,
-    column: pa.ChunkedArray,
+    field: Field,
+    column: ChunkedArray,
     to_crs: Union[str, CRS] = OGC_84,
     max_workers: Optional[int] = None,
-) -> Tuple[pa.Field, pa.ChunkedArray]:
+) -> Tuple[Field, ChunkedArray]:
     """Reproject a GeoArrow array to a new CRS
 
     Args:
@@ -118,12 +118,12 @@ def reproject_column(
 
 
 def _reproject_column(
-    column: pa.ChunkedArray,
+    column: ChunkedArray,
     *,
     extension_type_name: EXTENSION_NAME,
     transformer: Transformer,
     max_workers: Optional[int] = None,
-) -> pa.ChunkedArray:
+) -> ChunkedArray:
     if extension_type_name == EXTENSION_NAME.POINT:
         func = partial(_reproject_chunk_nest_0, transformer=transformer)
     elif extension_type_name in [EXTENSION_NAME.LINESTRING, EXTENSION_NAME.MULTIPOINT]:
@@ -140,7 +140,7 @@ def _reproject_column(
         raise ValueError(f"Unexpected extension type name {extension_type_name}")
 
     with ThreadPoolExecutor(max_workers=max_workers) as executor:
-        return pa.chunked_array(executor.map(func, column.chunks))
+        return ChunkedArray(list(executor.map(func, column.chunks)))
 
 
 def _reproject_coords(arr: pa.FixedSizeListArray, transformer: Transformer):

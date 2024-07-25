@@ -12,8 +12,8 @@ from urllib.parse import urlparse
 
 import matplotlib as mpl
 import numpy as np
-import pyarrow as pa
 import traitlets
+from arro3.core import Table
 from traitlets import TraitError
 from traitlets.traitlets import TraitType
 from traitlets.utils.descriptions import class_of, describe
@@ -154,7 +154,7 @@ class PyarrowTableTrait(FixedErrorTraitType):
         )
 
     def validate(self, obj: Self, value: Any):
-        if not isinstance(value, pa.Table):
+        if not isinstance(value, Table):
             self.error(obj, value)
 
         allowed_geometry_types = self.metadata.get("allowed_geometry_types")
@@ -164,6 +164,9 @@ class PyarrowTableTrait(FixedErrorTraitType):
         allowed_dimensions = cast(Optional[Set[int]], allowed_dimensions)
 
         geom_col_idx = get_geometry_column_index(value.schema)
+
+        if geom_col_idx is None:
+            return self.error(obj, value, info="geometry column in table")
 
         # No restriction on the allowed geometry types in this table
         if allowed_geometry_types:

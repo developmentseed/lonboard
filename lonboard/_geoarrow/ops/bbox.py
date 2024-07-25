@@ -8,6 +8,7 @@ from typing import Tuple
 
 import numpy as np
 import pyarrow as pa
+from arro3.core import ChunkedArray, Field
 
 from lonboard._constants import EXTENSION_NAME
 
@@ -33,7 +34,7 @@ class Bbox:
         return (self.minx, self.miny, self.maxx, self.maxy)
 
 
-def total_bounds(field: pa.Field, column: pa.ChunkedArray) -> Bbox:
+def total_bounds(field: Field, column: ChunkedArray) -> Bbox:
     """Compute the total bounds of a geometry column"""
     extension_type_name = field.metadata[b"ARROW:extension:name"]
 
@@ -59,7 +60,7 @@ def _coords_bbox(arr: pa.FixedSizeListArray) -> Bbox:
     return Bbox(minx=min_vals[0], miny=min_vals[1], maxx=max_vals[0], maxy=max_vals[1])
 
 
-def _total_bounds_nest_0(column: pa.ChunkedArray) -> Bbox:
+def _total_bounds_nest_0(column: ChunkedArray) -> Bbox:
     bbox = Bbox()
     for chunk in column.chunks:
         coords = chunk
@@ -68,7 +69,7 @@ def _total_bounds_nest_0(column: pa.ChunkedArray) -> Bbox:
     return bbox
 
 
-def _total_bounds_nest_1(column: pa.ChunkedArray) -> Bbox:
+def _total_bounds_nest_1(column: ChunkedArray) -> Bbox:
     bbox = Bbox()
     for chunk in column.chunks:
         coords = chunk.flatten()
@@ -77,7 +78,7 @@ def _total_bounds_nest_1(column: pa.ChunkedArray) -> Bbox:
     return bbox
 
 
-def _total_bounds_nest_2(column: pa.ChunkedArray) -> Bbox:
+def _total_bounds_nest_2(column: ChunkedArray) -> Bbox:
     bbox = Bbox()
     for chunk in column.chunks:
         coords = chunk.flatten().flatten()
@@ -86,7 +87,7 @@ def _total_bounds_nest_2(column: pa.ChunkedArray) -> Bbox:
     return bbox
 
 
-def _total_bounds_nest_3(column: pa.ChunkedArray) -> Bbox:
+def _total_bounds_nest_3(column: ChunkedArray) -> Bbox:
     bbox = Bbox()
     for chunk in column.chunks:
         coords = chunk.flatten().flatten().flatten()

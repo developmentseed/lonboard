@@ -38,7 +38,7 @@ palettable = "^3.3.3"
 # future to remove the matplotlib dependency.
 matplotlib = "^3.7"
 click = { version = "^8.1.7", optional = true }
-pyogrio = { version = "^0.7.2", optional = true }
+pyogrio = { version = ">=0.8", optional = true }
 typing-extensions = { version = "^4.6.0", python = "<3.12" }
 geopandas = { version = ">=0.13", optional = true }
 pandas = { version = "^2", optional = true }
@@ -58,7 +58,7 @@ pre-commit = "^3.4.0"
 pytest = "^7.4.2"
 geoarrow-rust-core = "^0.2.0"
 geodatasets = "^2023.12.0"
-pyogrio = "^0.7.2"
+pyogrio = "^0.8"
 geoarrow-pyarrow = "^0.1.1"
 duckdb = "^0.10.2"
 
