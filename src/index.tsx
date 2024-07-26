@@ -156,7 +156,7 @@ function App() {
         );
         setSubModelState(newSubModelState);
 
-        if (!isDrawingBBoxSelection && bboxSelectBounds) {
+        if (!isDrawingBBoxSelection) {
           childModels.forEach((layer) => {
             layer.set("selected_bounds", bboxSelectBounds);
             layer.save_changes();
