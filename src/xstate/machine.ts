@@ -3,7 +3,7 @@ import { PickingInfo } from "@deck.gl/core/typed";
 
 export const machine = createMachine(
   {
-    /** @xstate-layout N4IgpgJg5mDOIC5QBsD2A7ARqghgJwgDoB1AS2jABcACU2atHCU9KAYgBEwBjAa0KjJqAdxz1GESAG0ADAF1EoAA6pYpSqQyKQAD0QBaAEwA2AJyEALAGYA7AA47M+7ZsBWGVYA0IAJ4HTNoSmAIxWpiE2Hq6GMoZ2AL7x3mhYuASEAAo46NQAtqiSbABCRag61LBgyDw0mACulJQY1NzIpHzS8toqahpaSLoGceYyxhZ2wXauFsGuZsau3n4IwTaBHm4BVjKuNgGxickY2PhEWTn5hQDC1fjUJWWyCgM96pro2noIdoaEhqsycaGPamWJTJYGYyEYIBWY2UJmCy7caHEApE7pADKVRqLCg1Ew2HKsEo+Borz66DYAFkcEoWm0+NQwAA3MDoShPbqqN79UBfIy7QjwkXBOIeUGLXyIMJWQiODyGVzhWamOxjVHotJEbHVbgaVgEonM9AQagU940unUAAWqDZeGZbI5XJePMpn0Qq2FpjCTgmwR2FhkYohCBmrkI7icVmCcesxlGmuO2sIutxhsJZRNZotGCt9Na7V4TvZnK6bt6709KxsUJcrjs4WMtimxjDJgslgsaqsStBTYSSTRKdOaZx+rxRuzJLJ5vdlqu2W4VXupXKEDwOGEruUC75gwQ+nGXasfcDY1jxhsVjsHeBUeikwscWMhjV1mTqTH6cnmeN7K5vuVJLugK5CA8G5bjuFZ7lWB4Co2cqmNe17BrESI9mG0yBIYwKNrEZ6Jk4iTDugBRwNoWqnNy8EfAMAotsEQSoTY6GGJhphhvo2zMTM-zBpEIb2F+GJEGQFA0HQDC4MwrC0by9H8kMiaELEdbbO4sxInM3ECX8HFTAEWl2DpompuceQUQpHoMUMD6zE2YKuFYwbjDYYamF2dg2MC4QOI4aoOOZP4Tga+JZsSpJ4OSwE2dWdlHu+kbTNM2kwqYrgwmG2y4bM16hD5czGCFWJhVOkU5vOdHxQhQwhCxN7+UhkoWNhMzQlEcw-LY2ymKR8RAA */
+    /** @xstate-layout N4IgpgJg5mDOIC5QBsD2A7ARqghgJwgDoAFHdAAgFtUIwBiAIQdQA9zYxkwBjAF3MwBXXrwzluyAJbcA1pADaABgC6iUAAdUsSb0kY1IFogC0AJgAcATkKKAbABZzARnMBWe09e3Lt1wBoQAE9EJwB2UJsAZlDXS1DIxVdQuMVTAF80gLQsXAISMioaegBhLnxyJlYlVSQQTW1dfVqjBHNTQlMwxUdTZMtUtwDghGNbQic4z1CnSO97JMcMrIxsfCIAZU4eXXQoAWw2WF58fnqdPXQ6AFkcdXEpWXIwADcwdF5qgzPG9AMWsyShGmwKcFkUkX6-iCiAhkUI5kU4NMsUsnks5gcSxA2VWeU2XD4kl2+1Y7GOeFOWnOGDoxTI3E4FWYbAgeBwAHdPrVvhc-iZHPZCJFIp07PZIk5bPFzENEKZeoRXK5OuZ7BZbKZ0eKsTjchstoTiZgDk90BByDyaTc7gALVCvPBPV7vLkaKk-PkIMJAywQxShZxORL2RSg2UIDyuRWI+JOOPi2x2HUrPWEfHbIl7Y2kt7my2Xa33aQyJ1vD4qL7u3nNEKhMbRGJWHzRNy2cOmByEez2dEi2KKKzmZM5NZpg07LMm3MWqs0unoBnIJmk1kc111We-GsjVzmOE+OuhEOpeY98PuCLyxupYWJ-0ZTIgdBFeC1XVrSsNaugf62CWEA8pWPUxT0scNjF9IVVTVSIMVCAdEVcYdcSIUgKGoWhP2pLcfxMK9xl3foLFcSIQ0cUJw0sQVzFCXpLHRcwEQYodH3fPFx0zElDnJSkvyaN0+Jwww8MsKN3HcTwPHo1wJnDBJL08KUZhorxbGQ1N00NScczNGdBKwj1tzMVEAKlCF0V3P13HPDxxnBJVbDaaIEksB80iAA */
     id: "lonboard",
 
     types: {
@@ -50,14 +50,6 @@ export const machine = createMachine(
     },
 
     states: {
-      "Widget is loading": {
-        on: {
-          "Deck.gl was loaded": {
-            target: "Pan mode",
-          },
-        },
-      },
-
       "Pan mode": {
         on: {
           "BBox select button clicked": {
@@ -107,8 +99,7 @@ export const machine = createMachine(
         },
       },
     },
-
-    initial: "Widget is loading",
+    initial: "Pan mode",
   },
   {
     actions: {
