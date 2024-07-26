@@ -4,8 +4,8 @@ from typing import List, Optional, Tuple, Union
 
 import numpy as np
 import pyarrow as pa
-import pyarrow.parquet as pq
 from arro3.core import Array, Table
+from arro3.io import write_parquet
 from numpy.typing import NDArray
 from traitlets import TraitError
 
@@ -29,22 +29,23 @@ def serialize_table_to_parquet(table: Table, *, max_chunksize: int) -> List[byte
     # https://github.com/apache/arrow/issues/39788
     assert max_chunksize > 0
 
+    compression_string = (
+        f"{DEFAULT_PARQUET_COMPRESSION}({DEFAULT_PARQUET_COMPRESSION_LEVEL})"
+    )
     for record_batch in table.to_batches(max_chunksize=max_chunksize):
         with BytesIO() as bio:
-            with pq.ParquetWriter(
+            # Occasionally it's possible for there to be empty batches in the
+            # pyarrow table. This will error when writing to parquet. We want to
+            # give a more informative error.
+            if record_batch.num_rows == 0:
+                raise ValueError("Batch with 0 rows.")
+
+            write_parquet(
+                table,
                 bio,
-                schema=table.schema,
-                compression=DEFAULT_PARQUET_COMPRESSION,
-                compression_level=DEFAULT_PARQUET_COMPRESSION_LEVEL,
-            ) as writer:
-                # Occasionally it's possible for there to be empty batches in the
-                # pyarrow table. This will error when writing to parquet. We want to
-                # give a more informative error.
-                if record_batch.num_rows == 0:
-                    raise ValueError("Batch with 0 rows.")
-
-                writer.write_batch(record_batch, row_group_size=record_batch.num_rows)
-
+                compression=compression_string,
+                max_row_group_size=record_batch.num_rows,
+            )
             buffers.append(bio.getvalue())
 
     return buffers
