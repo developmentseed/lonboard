@@ -4,7 +4,7 @@
   },
   "dependencies": {
     "@anywidget/react": "^0.0.7",
-    "@babel/runtime": "^7.24.8",
+    "@babel/runtime": "^7.25.0",
     "@deck.gl/core": "^8.9.35",
     "@deck.gl/extensions": "^8.9.35",
     "@deck.gl/layers": "^8.9.35",
@@ -27,8 +27,8 @@
     "esbuild": "^0.23.0",
     "nodemon": "^3.1.4",
     "prettier": "^3.3.3",
-    "typescript": "^5.5.3",
-    "vitest": "^2.0.3"
+    "typescript": "^5.5.4",
+    "vitest": "^2.0.4"
   },
   "scripts": {
     "build": "node ./build.mjs",
