@@ -5,8 +5,15 @@ import re
 from typing import TYPE_CHECKING, Optional, Union
 
 import numpy as np
-import pyarrow.compute as pc
-from arro3.core import Field, Table
+from arro3.compute import struct_field
+from arro3.core import (
+    Array,
+    DataType,
+    Field,
+    Table,
+    fixed_size_list_array,
+    list_array,
+)
 
 from lonboard._constants import EXTENSION_NAME
 
@@ -166,7 +173,7 @@ def _from_box2d(
 
 def _convert_box2d_to_geoarrow_polygon_array(
     geom_col: pa.StructArray,
-) -> pa.ListArray:
+) -> Array:
     """
     This is a manual conversion of the duckdb box_2d type to a GeoArrow Polygon array.
 
@@ -176,10 +183,10 @@ def _convert_box2d_to_geoarrow_polygon_array(
     # Extract the bounding box columns from the Arrow struct
     # NOTE: this assumes that the box ordering is minx, miny, maxx, maxy
     # Note sure whether the positional ordering or the named fields is more stable
-    min_x = pc.struct_field(geom_col, 0)
-    min_y = pc.struct_field(geom_col, 1)
-    max_x = pc.struct_field(geom_col, 2)
-    max_y = pc.struct_field(geom_col, 3)
+    min_x = struct_field(geom_col, 0)
+    min_y = struct_field(geom_col, 1)
+    max_x = struct_field(geom_col, 2)
+    max_y = struct_field(geom_col, 3)
 
     # Provision memory for the output coordinates. For closed polygons, each input box
     # becomes 5 coordinates.
@@ -208,9 +215,14 @@ def _convert_box2d_to_geoarrow_polygon_array(
     geom_offsets = np.arange(0, len(ring_offsets), dtype=np.int32)
 
     # Construct the final PolygonArray
-    coords = pa.FixedSizeListArray.from_arrays(coords.ravel("C"), 2)
-    ring_array = pa.ListArray.from_arrays(ring_offsets, coords)
-    polygon_array = pa.ListArray.from_arrays(geom_offsets, ring_array)
+    flat_coords: Array = Array.from_numpy(coords.ravel("C"), type=DataType.float64())
+    coords = fixed_size_list_array(flat_coords, 2)
+    ring_array = list_array(
+        Array.from_numpy(ring_offsets, type=DataType.int32()), coords
+    )
+    polygon_array = list_array(
+        Array.from_numpy(geom_offsets, type=DataType.int32()), ring_array
+    )
     return polygon_array
 
 

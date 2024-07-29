@@ -8,7 +8,16 @@ from typing import Callable, Optional, Tuple, Union
 from warnings import warn
 
 import numpy as np
-from arro3.core import ChunkedArray, Field, Table
+from arro3.compute import list_flatten
+from arro3.core import (
+    Array,
+    ChunkedArray,
+    DataType,
+    Field,
+    Table,
+    fixed_size_list_array,
+    list_array,
+)
 from pyproj import CRS, Transformer
 
 from lonboard._constants import EPSG_4326, EXTENSION_NAME, OGC_84
@@ -107,7 +116,7 @@ def reproject_column(
 
     new_chunked_array = _reproject_column(
         column,
-        extension_type_name=extension_type_name,
+        extension_type_name=extension_type_name,  # type: ignore
         transformer=transformer,
         max_workers=max_workers,
     )
@@ -143,9 +152,9 @@ def _reproject_column(
         return ChunkedArray(list(executor.map(func, column.chunks)))
 
 
-def _reproject_coords(arr: pa.FixedSizeListArray, transformer: Transformer):
+def _reproject_coords(arr: Array, transformer: Transformer):
     list_size = arr.type.list_size
-    np_arr = arr.flatten().to_numpy().reshape(-1, list_size)
+    np_arr = list_flatten(arr).to_numpy().reshape(-1, list_size)
 
     if list_size == 2:
         output_np_arr = np.column_stack(
@@ -160,26 +169,30 @@ def _reproject_coords(arr: pa.FixedSizeListArray, transformer: Transformer):
     else:
         raise ValueError(f"Unexpected list size {list_size}")
 
-    coord_field = pa.list_(pa.field(dims, pa.float64()), len(dims))
-    return pa.FixedSizeListArray.from_arrays(output_np_arr.ravel("C"), type=coord_field)
+    coord_field = DataType.list(Field(dims, DataType.float64()), len(dims))
+    return fixed_size_list_array(
+        Array.from_numpy(output_np_arr.ravel("C"), DataType.float64()),
+        len(dims),
+        type=coord_field,
+    )
 
 
-def _reproject_chunk_nest_0(arr: pa.ListArray, transformer: Transformer):
+def _reproject_chunk_nest_0(arr: Array, transformer: Transformer):
     callback = partial(_reproject_coords, transformer=transformer)
     return _map_coords_nest_0(arr, callback)
 
 
-def _reproject_chunk_nest_1(arr: pa.ListArray, transformer: Transformer):
+def _reproject_chunk_nest_1(arr: Array, transformer: Transformer):
     callback = partial(_reproject_coords, transformer=transformer)
     return _map_coords_nest_1(arr, callback)
 
 
-def _reproject_chunk_nest_2(arr: pa.ListArray, transformer: Transformer):
+def _reproject_chunk_nest_2(arr: Array, transformer: Transformer):
     callback = partial(_reproject_coords, transformer=transformer)
     return _map_coords_nest_2(arr, callback)
 
 
-def _reproject_chunk_nest_3(arr: pa.ListArray, transformer: Transformer):
+def _reproject_chunk_nest_3(arr: Array, transformer: Transformer):
     callback = partial(_reproject_coords, transformer=transformer)
     return _map_coords_nest_3(arr, callback)
 
@@ -198,47 +211,47 @@ def _copy_sliced_offsets(offsets: pa.Int32Array) -> pa.Int32Array:
 
 
 def _map_coords_nest_0(
-    arr: pa.FixedSizeListArray,
-    callback: Callable[[pa.FixedSizeListArray], pa.FixedSizeListArray],
-):
+    arr: Array,
+    callback: Callable[[Array], Array],
+) -> Array:
     new_coords = callback(arr)
     return new_coords
 
 
 def _map_coords_nest_1(
-    arr: pa.ListArray,
-    callback: Callable[[pa.FixedSizeListArray], pa.FixedSizeListArray],
-):
+    arr: Array,
+    callback: Callable[[Array], Array],
+) -> Array:
     geom_offsets = _copy_sliced_offsets(arr.offsets)
-    coords = arr.flatten()
+    coords = list_flatten(arr)
     new_coords = callback(coords)
-    new_geometry_array = pa.ListArray.from_arrays(geom_offsets, new_coords)
+    new_geometry_array = list_array(geom_offsets, new_coords)
     return new_geometry_array
 
 
 def _map_coords_nest_2(
-    arr: pa.ListArray,
-    callback: Callable[[pa.FixedSizeListArray], pa.FixedSizeListArray],
+    arr: Array,
+    callback: Callable[[Array], Array],
 ):
     geom_offsets = _copy_sliced_offsets(arr.offsets)
     ring_offsets = _copy_sliced_offsets(arr.flatten().offsets)
     coords = arr.flatten().flatten()
     new_coords = callback(coords)
-    new_ring_array = pa.ListArray.from_arrays(ring_offsets, new_coords)
-    new_geometry_array = pa.ListArray.from_arrays(geom_offsets, new_ring_array)
+    new_ring_array = list_array(ring_offsets, new_coords)
+    new_geometry_array = list_array(geom_offsets, new_ring_array)
     return new_geometry_array
 
 
 def _map_coords_nest_3(
-    arr: pa.ListArray,
-    callback: Callable[[pa.FixedSizeListArray], pa.FixedSizeListArray],
+    arr: Array,
+    callback: Callable[[Array], Array],
 ):
     geom_offsets = _copy_sliced_offsets(arr.offsets)
     polygon_offsets = _copy_sliced_offsets(arr.flatten().offsets)
     ring_offsets = _copy_sliced_offsets(arr.flatten().flatten().offsets)
     coords = arr.flatten().flatten().flatten()
     new_coords = callback(coords)
-    new_ring_array = pa.ListArray.from_arrays(ring_offsets, new_coords)
-    new_polygon_array = pa.ListArray.from_arrays(polygon_offsets, new_ring_array)
-    new_geometry_array = pa.ListArray.from_arrays(geom_offsets, new_polygon_array)
+    new_ring_array = list_array(ring_offsets, new_coords)
+    new_polygon_array = list_array(polygon_offsets, new_ring_array)
+    new_geometry_array = list_array(geom_offsets, new_polygon_array)
     return new_geometry_array
