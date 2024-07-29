@@ -32,6 +32,7 @@ export abstract class BaseLayerModel extends BaseModel {
     this.initRegularAttribute("visible", "visible");
     this.initRegularAttribute("opacity", "opacity");
     this.initRegularAttribute("auto_highlight", "autoHighlight");
+    this.initRegularAttribute("selected_bounds", "selectedBounds");
 
     this.extensions = [];
   }
