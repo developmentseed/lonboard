@@ -22,7 +22,6 @@ import * as selectors from "./xstate/selectors";
 import "./globals.css";
 import "maplibre-gl/dist/maplibre-gl.css";
 import { NextUIProvider } from "@nextui-org/react";
-import { PolygonLayer, PolygonLayerProps } from "@deck.gl/layers/typed";
 import Toolbar from "./toolbar.js";
 
 await initParquetWasm();
@@ -256,11 +255,6 @@ function App() {
         _typedArrayManagerProps={{
           overAlloc: 1,
           poolSize: 0,
-        }}
-        onLoad={() => {
-          actorRef.send({
-            type: "Deck.gl was loaded",
-          });
         }}
         onViewStateChange={(event) => {
           const { viewState } = event;

@@ -13,9 +13,6 @@ export const machine = createMachine(
       },
       events: {} as
         | {
-            type: "Deck.gl was loaded";
-          }
-        | {
             type: "BBox select button clicked";
           }
         | {
