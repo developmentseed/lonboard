@@ -194,6 +194,22 @@ class BaseLayer(BaseWidget):
     - Default: `False`
     """
 
+    selected_bounds = traitlets.Tuple(
+        traitlets.Float(),
+        traitlets.Float(),
+        traitlets.Float(),
+        traitlets.Float(),
+        allow_none=True,
+        default_value=None,
+    ).tag(sync=True)
+    """
+    Bounds selected by the user, represented as a tuple of floats ordered as
+
+    ```
+    (minx, miny, maxx, maxy)
+    ```
+    """
+
     selected_index = traitlets.Int(None, allow_none=True).tag(sync=True)
     """
     The positional index of the most-recently clicked on row of data.
