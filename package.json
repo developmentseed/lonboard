@@ -27,6 +27,7 @@
   "type": "module",
   "devDependencies": {
     "@anywidget/types": "^0.1.5",
+    "@eslint/js": "^9.8.0",
     "@jupyter-widgets/base": "^6.0.8",
     "@statelyai/inspect": "^0.4.0",
     "@types/react": "^18.3.3",
@@ -34,6 +35,9 @@
     "autoprefixer": "^10.4.19",
     "dotenv": "^16.4.5",
     "esbuild": "^0.23.0",
+    "eslint": "^9.8.0",
+    "eslint-plugin-react": "^7.35.0",
+    "globals": "^15.8.0",
     "nodemon": "^3.1.4",
     "postcss": "^8.4.40",
     "postcss-modules": "^6.0.0",
@@ -41,6 +45,7 @@
     "prettier": "^3.3.3",
     "tailwindcss": "^3.4.7",
     "typescript": "^5.5.4",
+    "typescript-eslint": "^8.0.0-alpha.58",
     "vitest": "^2.0.4"
   },
   "scripts": {
@@ -49,7 +54,8 @@
     "fmt:check": "prettier './src/**/*.{ts,tsx,css}' --check",
     "fmt": "prettier './src/**/*.{ts,tsx,css}' --write",
     "test": "vitest run",
-    "typecheck": "tsc --build"
+    "typecheck": "tsc --build",
+    "lint": "eslint src"
   },
   "resolutions": {
     "@deck.gl/core": "8.9.30",
