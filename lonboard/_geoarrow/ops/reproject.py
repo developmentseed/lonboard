@@ -154,6 +154,7 @@ def _reproject_column(
 
 def _reproject_coords(arr: Array, transformer: Transformer):
     list_size = arr.type.list_size
+    assert list_size is not None
     np_arr = list_flatten(arr).to_numpy().reshape(-1, list_size)
 
     if list_size == 2:

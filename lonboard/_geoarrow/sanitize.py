@@ -1,13 +1,6 @@
 """Remove custom geoarrow.pyarrow types from input geoarrow data"""
 # TODO: need to check but I think this file isn't necessary anymore with arro3
 
-import json
-from typing import Tuple
-
-import pyarrow as pa
-from arro3.core import ChunkedArray, Field, Table
-from pyproj import CRS
-
 
 # def remove_extension_classes(table: Table) -> pa.Table:
 #     """
