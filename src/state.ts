@@ -26,10 +26,10 @@ const debouncedModelSaveViewState = debounce((model: AnyModel) => {
 
 // TODO: add a `wait` parameter here, instead of having it hard-coded?
 export function useViewStateDebounced<T>(key: string): [T, (value: T) => void] {
-  let model = useModel();
-  let [value, setValue] = React.useState(model.get(key));
+  const model = useModel();
+  const [value, setValue] = React.useState(model.get(key));
   React.useEffect(() => {
-    let callback = () => {
+    const callback = () => {
       setValue(model.get(key));
     };
     model.on(`change:${key}`, callback);

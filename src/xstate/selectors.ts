@@ -1,5 +1,5 @@
 import { type SnapshotFrom } from "xstate";
-import { machine } from "./machine";
+import type { machine } from "./machine";
 import { PolygonLayer, PolygonLayerProps } from "@deck.gl/layers/typed";
 
 type Snapshot = SnapshotFrom<typeof machine>;
@@ -34,7 +34,7 @@ export const getBboxSelectPolygonLayer = (state: Snapshot) => {
           [state.context.bboxSelectStart[0], state.context.bboxSelectEnd[1]],
         ],
       ],
-      getPolygon: (d: any) => d,
+      getPolygon: (d) => d,
       getFillColor: [0, 0, 0, 50],
       getLineColor: [0, 0, 0, 130],
       stroked: true,
