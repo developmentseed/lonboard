@@ -19,7 +19,8 @@ from typing import (
 
 import numpy as np
 import pyarrow as pa
-import pyarrow.compute as pc
+from arro3.compute import struct_field
+from arro3.core import Array, Field, Table
 from numpy.typing import NDArray
 
 from lonboard._compat import check_pandas_version
@@ -27,7 +28,8 @@ from lonboard._constants import EXTENSION_NAME
 from lonboard._geoarrow.extension_types import construct_geometry_array
 from lonboard._geoarrow.geopandas_interop import geopandas_to_geoarrow
 from lonboard._geoarrow.parse_wkb import parse_serialized_table
-from lonboard._geoarrow.sanitize import remove_extension_classes
+
+# from lonboard._geoarrow.sanitize import remove_extension_classes
 from lonboard._layer import PathLayer, PolygonLayer, ScatterplotLayer
 from lonboard._map import Map
 from lonboard._utils import get_geometry_column_index, split_mixed_gdf
@@ -36,6 +38,7 @@ from lonboard.basemap import CartoBasemap
 if TYPE_CHECKING:
     import duckdb
     import geopandas as gpd
+    import pyarrow
     import shapely.geometry
     import shapely.geometry.base
 
@@ -63,7 +66,7 @@ if TYPE_CHECKING:
     VizDataInput = Union[
         gpd.GeoDataFrame,
         gpd.GeoSeries,
-        pa.Table,
+        pyarrow.Table,
         NDArray[np.object_],
         shapely.geometry.base.BaseGeometry,
         ArrowArrayExportable,
@@ -282,10 +285,6 @@ def create_layers_from_data_input(
     ):
         raise TypeError(DUCKDB_PY_CONN_ERROR)
 
-    # pyarrow table
-    if isinstance(data, pa.Table):
-        return _viz_geoarrow_table(data, **kwargs)
-
     # Shapely array
     if isinstance(data, np.ndarray) and np.issubdtype(data.dtype, np.object_):
         return _viz_shapely_array(data, **kwargs)
@@ -304,7 +303,7 @@ def create_layers_from_data_input(
     # Anything with __arrow_c_stream__
     if hasattr(data, "__arrow_c_stream__"):
         data = cast("ArrowStreamExportable", data)
-        return _viz_geoarrow_table(pa.table(data), **kwargs)
+        return _viz_geoarrow_table(Table.from_arrow(data), **kwargs)
 
     # Anything with __geo_interface__
     if hasattr(data, "__geo_interface__"):
@@ -420,7 +419,7 @@ def _viz_geo_interface(
         arrays = []
         for field_idx in range(attribute_columns_struct.type.num_fields):
             fields.append(attribute_columns_struct.type.field(field_idx))
-            arrays.append(pc.struct_field(attribute_columns_struct, field_idx))  # type: ignore
+            arrays.append(struct_field(attribute_columns_struct, field_idx))  # type: ignore
 
         table = pa.Table.from_arrays(arrays, schema=pa.schema(fields))
         df = table.to_pandas(types_mapper=pd.ArrowDtype)
@@ -439,32 +438,38 @@ def _viz_geoarrow_array(
     data: ArrowArrayExportable,
     **kwargs,
 ) -> List[Union[ScatterplotLayer, PathLayer, PolygonLayer]]:
-    schema_capsule, array_capsule = data.__arrow_c_array__()
+    # TODO: need to double check this handling from geoarrow-python arrays!
 
-    # If the user doesn't have pyarrow extension types registered for geoarrow types,
-    # `pa.array()` will lose the extension metadata. Instead, we manually persist the
-    # extension metadata by extracting both the field and the array.
+    # schema_capsule, array_capsule = data.__arrow_c_array__()
 
-    class ArrayHolder:
-        schema_capsule: object
-        array_capsule: object
+    # # If the user doesn't have pyarrow extension types registered for geoarrow types,
+    # # `pa.array()` will lose the extension metadata. Instead, we manually persist the
+    # # extension metadata by extracting both the field and the array.
 
-        def __init__(self, schema_capsule, array_capsule) -> None:
-            self.schema_capsule = schema_capsule
-            self.array_capsule = array_capsule
+    # class ArrayHolder:
+    #     schema_capsule: object
+    #     array_capsule: object
 
-        def __arrow_c_array__(self, requested_schema):
-            return self.schema_capsule, self.array_capsule
+    #     def __init__(self, schema_capsule, array_capsule) -> None:
+    #         self.schema_capsule = schema_capsule
+    #         self.array_capsule = array_capsule
 
-    if not hasattr(pa.Field, "_import_from_c_capsule"):
-        raise KeyError(
-            "Incompatible version of pyarrow: pa.Field does not have"
-            "  _import_from_c_capsule method"
-        )
+    #     def __arrow_c_array__(self, requested_schema):
+    #         return self.schema_capsule, self.array_capsule
 
-    field = pa.Field._import_from_c_capsule(schema_capsule)
-    array = pa.array(ArrayHolder(field.__arrow_c_schema__(), array_capsule))
-    schema = pa.schema([field.with_name("geometry")])
+    # if not hasattr(pa.Field, "_import_from_c_capsule"):
+    #     raise KeyError(
+    #         "Incompatible version of pyarrow: pa.Field does not have"
+    #         "  _import_from_c_capsule method"
+    #     )
+
+    # field = pa.Field._import_from_c_capsule(schema_capsule)
+    # array = pa.array(ArrayHolder(field.__arrow_c_schema__(), array_capsule))
+
+    array = Array.from_arrow(data)
+    array.m
+    Field("geometry", array.type)
+    # schema = pa.schema([field.with_name("geometry")])
     table = pa.Table.from_arrays([array], schema=schema)
 
     num_rows = len(array)
@@ -482,14 +487,14 @@ def _viz_geoarrow_array(
 
 
 def _viz_geoarrow_table(
-    table: pa.Table,
+    table: Table,
     *,
     _viz_color: str,
     scatterplot_kwargs: Optional[ScatterplotLayerKwargs] = None,
     path_kwargs: Optional[PathLayerKwargs] = None,
     polygon_kwargs: Optional[PolygonLayerKwargs] = None,
 ) -> List[Union[ScatterplotLayer, PathLayer, PolygonLayer]]:
-    table = remove_extension_classes(table)
+    # table = remove_extension_classes(table)
     parsed_tables = parse_serialized_table(table)
     if len(parsed_tables) > 1:
         output: List[Union[ScatterplotLayer, PathLayer, PolygonLayer]] = []
@@ -509,6 +514,10 @@ def _viz_geoarrow_table(
         table = parsed_tables[0]
 
     geometry_column_index = get_geometry_column_index(table.schema)
+    assert (
+        geometry_column_index is not None
+    ), "One column must have GeoArrow extension metadata"
+
     geometry_field = table.schema.field(geometry_column_index)
     geometry_ext_type = geometry_field.metadata.get(b"ARROW:extension:name")
 

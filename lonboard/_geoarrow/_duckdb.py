@@ -19,6 +19,7 @@ from lonboard._constants import EXTENSION_NAME
 
 if TYPE_CHECKING:
     import duckdb
+    import pyarrow
     import pyproj
 
 DUCKDB_SPATIAL_TYPES = {
@@ -172,7 +173,7 @@ def _from_box2d(
 
 
 def _convert_box2d_to_geoarrow_polygon_array(
-    geom_col: pa.StructArray,
+    geom_col: pyarrow.StructArray,
 ) -> Array:
     """
     This is a manual conversion of the duckdb box_2d type to a GeoArrow Polygon array.

@@ -14,7 +14,6 @@ from urllib.parse import urlparse
 import matplotlib as mpl
 import numpy as np
 import traitlets
-from arro3.compute import cast
 from arro3.core import Array, ChunkedArray, DataType, Table, fixed_size_list_array
 from traitlets import TraitError
 from traitlets.traitlets import TraitType
@@ -403,10 +402,7 @@ class FloatAccessor(FixedErrorTraitType):
                     info="Float pyarrow array must be a floating point type.",
                 )
 
-            if isinstance(value, Array):
-                return cast(value, DataType.float32())
-            else:
-                return cast(value, DataType.float32()).read_all()
+            return value.cast(DataType.float32())
 
         self.error(obj, value)
         assert False

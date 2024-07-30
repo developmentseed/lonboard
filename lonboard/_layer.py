@@ -277,7 +277,7 @@ class BaseArrowLayer(BaseLayer):
     ):
         table_o3 = Table.from_arrow(table)
 
-        table_o3 = remove_extension_classes(table_o3)
+        # table_o3 = remove_extension_classes(table_o3)
         parsed_tables = parse_serialized_table(table_o3)
         assert len(parsed_tables) == 1, (
             "Mixed geometry type input not supported here. Use the top "
