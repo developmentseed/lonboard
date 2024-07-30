@@ -54,8 +54,8 @@
   "scripts": {
     "build": "node ./build.mjs",
     "build:watch": "nodemon --watch src/ --exec \"npm run build\" --ext js,json,ts,tsx,css",
-    "format:check": "prettier './src/**/*.{ts,tsx,css}' --check",
-    "format": "prettier './src/**/*.{ts,tsx,css}' --write",
+    "prettier:check": "prettier './src/**/*.{ts,tsx,css}' --check",
+    "prettier": "prettier './src/**/*.{ts,tsx,css}' --write",
     "lint": "eslint src",
     "test": "vitest run"
   },
