@@ -25,27 +25,3 @@ export function isDefined<T>(value: T | undefined | null): value is T {
 export function makePolygon(pt1: number[], pt2: number[]) {
   return [pt1, [pt1[0], pt2[1]], pt2, [pt2[0], pt1[1]], pt1];
 }
-
-// From https://gist.github.com/ca0v/73a31f57b397606c9813472f7493a940
-export function debounce<T extends Function>(cb: T, wait = 20) {
-  let h: ReturnType<typeof setTimeout> | undefined;
-  let callable = (...args: any) => {
-    clearTimeout(h);
-    h = setTimeout(() => cb(...args), wait);
-  };
-  return <T>(<any>callable);
-}
-
-export function throttle<T extends (...args: any[]) => any>(
-  func: T,
-  limit: number,
-): (...args: Parameters<T>) => void {
-  let inThrottle: boolean;
-  return function (this: any, ...args: Parameters<T>): void {
-    if (!inThrottle) {
-      func.apply(this, args);
-      inThrottle = true;
-      setTimeout(() => (inThrottle = false), limit);
-    }
-  };
-}

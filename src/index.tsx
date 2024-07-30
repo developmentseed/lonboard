@@ -10,7 +10,7 @@ import { BaseLayerModel, initializeLayer } from "./model/index.js";
 import type { WidgetModel } from "@jupyter-widgets/base";
 import { initParquetWasm } from "./parquet.js";
 import { getTooltip } from "./tooltip/index.js";
-import { isDefined, loadChildModels, throttle } from "./util.js";
+import { isDefined, loadChildModels } from "./util.js";
 import { v4 as uuidv4 } from "uuid";
 import { Message } from "./types.js";
 import { flyTo } from "./actions/fly-to.js";
@@ -23,6 +23,7 @@ import "./globals.css";
 import "maplibre-gl/dist/maplibre-gl.css";
 import { NextUIProvider } from "@nextui-org/react";
 import Toolbar from "./toolbar.js";
+import { throttle } from "lodash";
 
 await initParquetWasm();
 
