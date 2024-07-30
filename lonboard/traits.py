@@ -7,13 +7,15 @@ documentation on how to define new traitlet types.
 from __future__ import annotations
 
 import warnings
-from typing import Any, List, Optional, Set, Tuple, Union, cast
+from typing import Any, List, Optional, Set, Tuple, Union
+from typing import cast as type_cast
 from urllib.parse import urlparse
 
 import matplotlib as mpl
 import numpy as np
 import traitlets
-from arro3.core import Table
+from arro3.compute import cast
+from arro3.core import Array, ChunkedArray, DataType, Table, fixed_size_list_array
 from traitlets import TraitError
 from traitlets.traitlets import TraitType
 from traitlets.utils.descriptions import class_of, describe
@@ -158,10 +160,10 @@ class PyarrowTableTrait(FixedErrorTraitType):
             self.error(obj, value)
 
         allowed_geometry_types = self.metadata.get("allowed_geometry_types")
-        allowed_geometry_types = cast(Optional[Set[bytes]], allowed_geometry_types)
+        allowed_geometry_types = type_cast(Optional[Set[bytes]], allowed_geometry_types)
 
         allowed_dimensions = self.metadata.get("allowed_dimensions")
-        allowed_dimensions = cast(Optional[Set[int]], allowed_dimensions)
+        allowed_dimensions = type_cast(Optional[Set[int]], allowed_dimensions)
 
         geom_col_idx = get_geometry_column_index(value.schema)
 
@@ -239,7 +241,7 @@ class ColorAccessor(FixedErrorTraitType):
 
     def validate(
         self, obj, value
-    ) -> Union[Tuple[int, ...], List[int], pa.ChunkedArray, pa.FixedSizeListArray]:
+    ) -> Union[Tuple[int, ...], List[int], ChunkedArray, Array]:
         if isinstance(value, (tuple, list)):
             if len(value) < 3 or len(value) > 4:
                 self.error(obj, value, info="3 or 4 values if passed a tuple or list")
@@ -275,17 +277,19 @@ class ColorAccessor(FixedErrorTraitType):
                     info="Color array must have 3 or 4 as its second dimension.",
                 )
 
-            return pa.FixedSizeListArray.from_arrays(value.ravel("C"), list_size)
+            flat_values = Array.from_numpy(value.ravel("C"), pa.uint8())
+            return ChunkedArray([fixed_size_list_array(flat_values, list_size)])
 
         # Check for Arrow PyCapsule Interface
-        # https://arrow.apache.org/docs/format/CDataInterface/PyCapsuleInterface.html
-        # TODO: with pyarrow v16 also import chunked array from stream
-        if not isinstance(value, (pa.ChunkedArray, pa.Array)):
-            if hasattr(value, "__arrow_c_array__"):
-                value = pa.array(value)
+        if hasattr(value, "__arrow_c_array__"):
+            value = Array.from_arrow(value)
 
-        if isinstance(value, (pa.ChunkedArray, pa.Array)):
-            if not pa.types.is_fixed_size_list(value.type):
+        elif hasattr(value, "__arrow_c_stream__"):
+            value = ChunkedArray.from_arrow(value)
+            raise ValueError("todo")
+
+        if isinstance(value, (ChunkedArray, Array)):
+            if not DataType.is_fixed_size_list(value.type):
                 self.error(
                     obj, value, info="Color pyarrow array must be a FixedSizeList."
                 )
@@ -300,7 +304,7 @@ class ColorAccessor(FixedErrorTraitType):
                     ),
                 )
 
-            if not pa.types.is_uint8(value.type.value_type):
+            if not DataType.is_uint8(value.type.value_type):
                 self.error(
                     obj, value, info="Color pyarrow array must have a uint8 child."
                 )
@@ -311,7 +315,7 @@ class ColorAccessor(FixedErrorTraitType):
             try:
                 c = mpl.colors.to_rgba(value)  # type: ignore
             except ValueError:
-                self.error(
+                return self.error(
                     obj,
                     value,
                     info=(
@@ -319,7 +323,6 @@ class ColorAccessor(FixedErrorTraitType):
                         "matplotlib.colors.to_rgba."
                     ),
                 )
-                return
 
             return tuple(map(int, (np.array(c) * 255).astype(np.uint8)))
 
@@ -363,7 +366,7 @@ class FloatAccessor(FixedErrorTraitType):
         super().__init__(*args, **kwargs)
         self.tag(sync=True, **ACCESSOR_SERIALIZATION)
 
-    def validate(self, obj, value) -> Union[float, pa.ChunkedArray, pa.DoubleArray]:
+    def validate(self, obj, value) -> Union[float, Array, ChunkedArray]:
         if isinstance(value, (int, float)):
             return float(value)
 
@@ -381,24 +384,29 @@ class FloatAccessor(FixedErrorTraitType):
 
             # TODO: should we always be casting to float32? Should it be
             # possible/allowed to pass in ~int8 or a data type smaller than float32?
-            return pa.array(value.astype(np.float32))
+            return ChunkedArray(
+                [Array.from_numpy(value.astype(np.float32), DataType.float32())]
+            )
 
         # Check for Arrow PyCapsule Interface
-        # https://arrow.apache.org/docs/format/CDataInterface/PyCapsuleInterface.html
-        # TODO: with pyarrow v16 also import chunked array from stream
-        if not isinstance(value, (pa.ChunkedArray, pa.Array)):
-            if hasattr(value, "__arrow_c_array__"):
-                value = pa.array(value)
+        if hasattr(value, "__arrow_c_array__"):
+            value = Array.from_arrow(value)
 
-        if isinstance(value, (pa.ChunkedArray, pa.Array)):
-            if not pa.types.is_floating(value.type):
+        elif hasattr(value, "__arrow_c_stream__"):
+            value = ChunkedArray.from_arrow(value)
+
+        if isinstance(value, (ChunkedArray, Array)):
+            if not DataType.is_floating(value.type):
                 self.error(
                     obj,
                     value,
                     info="Float pyarrow array must be a floating point type.",
                 )
 
-            return value.cast(pa.float32())
+            if isinstance(value, Array):
+                return cast(value, DataType.float32())
+            else:
+                return cast(value, DataType.float32()).read_all()
 
         self.error(obj, value)
         assert False
@@ -433,7 +441,7 @@ class TextAccessor(FixedErrorTraitType):
         super().__init__(*args, **kwargs)
         self.tag(sync=True, **ACCESSOR_SERIALIZATION)
 
-    def validate(self, obj, value) -> Union[float, pa.ChunkedArray, pa.DoubleArray]:
+    def validate(self, obj, value) -> Union[float, str, ChunkedArray, Array]:
         if isinstance(value, str):
             return value
 
@@ -442,14 +450,35 @@ class TextAccessor(FixedErrorTraitType):
             value.__class__.__module__.startswith("pandas")
             and value.__class__.__name__ == "Series"
         ):
+            try:
+                import pyarrow as pa
+            except ImportError as e:
+                raise ImportError(
+                    "pyarrow is a required dependency when passing in a pandas series"
+                ) from e
+
             # Cast pandas Series to pyarrow array
             value = pa.array(value)
 
         if isinstance(value, np.ndarray):
+            try:
+                import pyarrow as pa
+            except ImportError as e:
+                raise ImportError(
+                    "pyarrow is a required dependency when passing in a pandas series"
+                ) from e
+
             value = pa.StringArray.from_pandas(value)
 
-        if isinstance(value, (pa.ChunkedArray, pa.Array)):
-            if not pa.types.is_string(value.type):
+        # Check for Arrow PyCapsule Interface
+        if hasattr(value, "__arrow_c_array__"):
+            value = Array.from_arrow(value)
+
+        elif hasattr(value, "__arrow_c_stream__"):
+            value = ChunkedArray.from_arrow(value)
+
+        if isinstance(value, (ChunkedArray, Array)):
+            if not DataType.is_string(value.type):
                 self.error(
                     obj,
                     value,
@@ -492,7 +521,7 @@ class PointAccessor(FixedErrorTraitType):
 
     def validate(
         self, obj, value
-    ) -> Union[Tuple[int, ...], List[int], pa.ChunkedArray, pa.FixedSizeListArray]:
+    ) -> Union[Tuple[int, ...], List[int], ChunkedArray, Array]:
         if isinstance(value, np.ndarray):
             if value.ndim != 2:
                 self.error(obj, value, info="Point array to have 2 dimensions")
@@ -505,10 +534,20 @@ class PointAccessor(FixedErrorTraitType):
                     info="Point array to have 2 or 3 as its second dimension",
                 )
 
-            return pa.FixedSizeListArray.from_arrays(value.ravel("C"), list_size)
+            assert np.issubdtype(value.dtype, np.float64)
+            return fixed_size_list_array(
+                Array.from_numpy(value.ravel("C"), DataType.float64()), list_size
+            )
 
-        if isinstance(value, (pa.ChunkedArray, pa.Array)):
-            if not pa.types.is_fixed_size_list(value.type):
+        # Check for Arrow PyCapsule Interface
+        if hasattr(value, "__arrow_c_array__"):
+            value = Array.from_arrow(value)
+
+        elif hasattr(value, "__arrow_c_stream__"):
+            value = ChunkedArray.from_arrow(value)
+
+        if isinstance(value, (ChunkedArray, Array)):
+            if not DataType.is_fixed_size_list(value.type):
                 self.error(obj, value, info="Point pyarrow array to be a FixedSizeList")
 
             if value.type.list_size not in (2, 3):
@@ -521,7 +560,7 @@ class PointAccessor(FixedErrorTraitType):
                     ),
                 )
 
-            if not pa.types.is_floating(value.type.value_type):
+            if not DataType.is_floating(value.type.value_type):
                 self.error(
                     obj,
                     value,
@@ -534,7 +573,7 @@ class PointAccessor(FixedErrorTraitType):
             try:
                 c = mpl.colors.to_rgba(value)  # type: ignore
             except ValueError:
-                self.error(
+                return self.error(
                     obj,
                     value,
                     info=(
@@ -542,7 +581,6 @@ class PointAccessor(FixedErrorTraitType):
                         "matplotlib.colors.to_rgba"
                     ),
                 )
-                return
 
             return tuple(map(int, (np.array(c) * 255).astype(np.uint8)))
 
@@ -687,16 +725,16 @@ class FilterValueAccessor(FixedErrorTraitType):
             return pa.FixedSizeListArray.from_arrays(value.ravel("C"), filter_size)
 
         # Check for Arrow PyCapsule Interface
-        # https://arrow.apache.org/docs/format/CDataInterface/PyCapsuleInterface.html
-        # TODO: with pyarrow v16 also import chunked array from stream
-        if not isinstance(value, (pa.ChunkedArray, pa.Array)):
-            if hasattr(value, "__arrow_c_array__"):
-                value = pa.array(value)
+        if hasattr(value, "__arrow_c_array__"):
+            value = Array.from_arrow(value)
 
-        if isinstance(value, (pa.ChunkedArray, pa.Array)):
+        elif hasattr(value, "__arrow_c_stream__"):
+            value = ChunkedArray.from_arrow(value)
+
+        if isinstance(value, (ChunkedArray, Array)):
             # Allowed inputs are either a FixedSizeListArray or numeric array.
             # If not a fixed size list array, check for floating and cast to float32
-            if not pa.types.is_fixed_size_list(value.type):
+            if not DataType.is_fixed_size_list(value.type):
                 if filter_size != 1:
                     self.error(
                         obj,
@@ -704,14 +742,14 @@ class FilterValueAccessor(FixedErrorTraitType):
                         info="filter_size==1 with non-FixedSizeList type arrow array",
                     )
 
-                if not pa.types.is_floating(value.type):
+                if not DataType.is_floating(value.type):
                     self.error(
                         obj,
                         value,
                         info="arrow array to be a floating point type",
                     )
 
-                return value.cast(pa.float32())
+                return value.cast(DataType.float32())
 
             # We have a FixedSizeListArray
             if filter_size != value.type.list_size:
@@ -724,7 +762,7 @@ class FilterValueAccessor(FixedErrorTraitType):
                     ),
                 )
 
-            if not pa.types.is_floating(value.type.value_type):
+            if not DataType.is_floating(value.type.value_type):
                 self.error(
                     obj,
                     value,
@@ -732,7 +770,7 @@ class FilterValueAccessor(FixedErrorTraitType):
                 )
 
             # Cast values to float32
-            return value.cast(pa.list_(pa.float32(), value.type.list_size))
+            return value.cast(DataType.list(DataType.float32(), value.type.list_size))
 
         self.error(obj, value)
         assert False
@@ -773,7 +811,7 @@ class NormalAccessor(FixedErrorTraitType):
 
     def validate(
         self, obj, value
-    ) -> Union[Tuple[int, ...], List[int], pa.ChunkedArray, pa.FixedSizeListArray]:
+    ) -> Union[Tuple[int, ...], List[int], ChunkedArray, Array]:
         if isinstance(value, (tuple, list)):
             if len(value) != 3:
                 self.error(
@@ -806,14 +844,14 @@ class NormalAccessor(FixedErrorTraitType):
             return pa.FixedSizeListArray.from_arrays(value.ravel("C"), 3)
 
         # Check for Arrow PyCapsule Interface
-        # https://arrow.apache.org/docs/format/CDataInterface/PyCapsuleInterface.html
-        # TODO: with pyarrow v16 also import chunked array from stream
-        if not isinstance(value, (pa.ChunkedArray, pa.Array)):
-            if hasattr(value, "__arrow_c_array__"):
-                value = pa.array(value)
+        if hasattr(value, "__arrow_c_array__"):
+            value = Array.from_arrow(value)
 
-        if isinstance(value, (pa.ChunkedArray, pa.Array)):
-            if not pa.types.is_fixed_size_list(value.type):
+        elif hasattr(value, "__arrow_c_stream__"):
+            value = ChunkedArray.from_arrow(value)
+
+        if isinstance(value, (ChunkedArray, Array)):
+            if not DataType.is_fixed_size_list(value.type):
                 self.error(
                     obj, value, info="normal pyarrow array to be a FixedSizeList."
                 )
@@ -825,14 +863,14 @@ class NormalAccessor(FixedErrorTraitType):
                     info=("normal pyarrow array to have an inner size of 3."),
                 )
 
-            if not pa.types.is_floating(value.type.value_type):
+            if not DataType.is_floating(value.type.value_type):
                 self.error(
                     obj,
                     value,
                     info="pyarrow array to be floating point type",
                 )
 
-            return value.cast(pa.list_(pa.float32(), 3))
+            return value.cast(DataType.list(DataType.float32(), 3))
 
         self.error(obj, value)
         assert False
@@ -902,7 +940,7 @@ class DashArrayAccessor(FixedErrorTraitType):
 
     def validate(
         self, obj, value
-    ) -> Union[Tuple[int, ...], List[int], pa.ChunkedArray, pa.FixedSizeListArray]:
+    ) -> Union[Tuple[int, ...], List[int], ChunkedArray, Array]:
         if isinstance(value, (tuple, list)):
             if len(value) != 2:
                 self.error(obj, value, info="2 value list only")
@@ -938,14 +976,14 @@ class DashArrayAccessor(FixedErrorTraitType):
             return pa.FixedSizeListArray.from_arrays(value.ravel("C"), list_size)
 
         # Check for Arrow PyCapsule Interface
-        # https://arrow.apache.org/docs/format/CDataInterface/PyCapsuleInterface.html
-        # TODO: with pyarrow v16 also import chunked array from stream
-        if not isinstance(value, (pa.ChunkedArray, pa.Array)):
-            if hasattr(value, "__arrow_c_array__"):
-                value = pa.array(value)
+        if hasattr(value, "__arrow_c_array__"):
+            value = Array.from_arrow(value)
 
-        if isinstance(value, (pa.ChunkedArray, pa.Array)):
-            if not pa.types.is_fixed_size_list(value.type):
+        elif hasattr(value, "__arrow_c_stream__"):
+            value = ChunkedArray.from_arrow(value)
+
+        if isinstance(value, (ChunkedArray, Array)):
+            if not DataType.is_fixed_size_list(value.type):
                 self.error(obj, value, info="Pyarrow array must be a FixedSizeList.")
 
             if value.type.list_size != 2:
@@ -956,17 +994,19 @@ class DashArrayAccessor(FixedErrorTraitType):
                 )
 
             if not (
-                pa.types.is_integer(value.type.value_type)
-                or pa.types.is_signed_integer(value.type.value_type)
-                or pa.types.is_floating(value.type.value_type)
+                DataType.is_integer(value.type.value_type)
+                or DataType.is_signed_integer(value.type.value_type)
+                or DataType.is_floating(value.type.value_type)
             ):
                 self.error(
                     obj, value, info="Pyarrow array to have a numeric type child."
                 )
 
             # Cast float64 to float32; leave other data types the same
-            if pa.types.is_float64(value.type.value_type):
-                value = value.cast(pa.list_(pa.float32(), value.type.list_size))
+            if DataType.is_float64(value.type.value_type):
+                value = value.cast(
+                    DataType.list(DataType.float32(), value.type.list_size)
+                )
 
             return value
 
