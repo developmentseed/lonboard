@@ -1,3 +1,5 @@
+from __future__ import annotations
+
 import math
 from io import BytesIO
 from typing import TYPE_CHECKING, List, Optional, Tuple, Union
@@ -34,7 +36,9 @@ def serialize_table_to_parquet(table: Table, *, max_chunksize: int) -> List[byte
     compression_string = (
         f"{DEFAULT_PARQUET_COMPRESSION}({DEFAULT_PARQUET_COMPRESSION_LEVEL})"
     )
-    for record_batch in table.to_batches(max_chunksize=max_chunksize):
+    # TODO: restore rechunking
+    # max_chunksize=max_chunksize
+    for record_batch in table.to_batches():
         with BytesIO() as bio:
             # Occasionally it's possible for there to be empty batches in the
             # pyarrow table. This will error when writing to parquet. We want to
