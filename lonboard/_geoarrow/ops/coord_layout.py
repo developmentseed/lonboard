@@ -3,11 +3,11 @@
 from typing import Tuple
 
 import numpy as np
-import pyarrow as pa
 from arro3.compute import struct_field
 from arro3.core import (
     Array,
     ChunkedArray,
+    DataType,
     Field,
     Table,
     fixed_size_list_array,
@@ -73,18 +73,18 @@ def _transpose_column(
     else:
         raise ValueError(f"Unexpected extension type name {extension_type_name}")
 
-    return pa.chunked_array([func(chunk) for chunk in column.chunks])
+    return ChunkedArray([func(chunk) for chunk in column.chunks])
 
 
 def _transpose_coords(arr: Array):
-    if isinstance(arr, pa.FixedSizeListArray):
+    if DataType.is_fixed_size_list(arr.type):
         return arr
 
     if arr.type.num_fields == 2:
         x = struct_field(arr, [0]).to_numpy()
         y = struct_field(arr, [1]).to_numpy()
         coords = np.column_stack([x, y]).ravel("C")
-        flat_coords = Array.from_numpy(coords, pa.float64())
+        flat_coords = Array.from_numpy(coords, DataType.float64())
         return fixed_size_list_array(flat_coords, 2)
 
     if arr.type.num_fields == 3:
@@ -92,7 +92,7 @@ def _transpose_coords(arr: Array):
         y = struct_field(arr, [1]).to_numpy()
         z = struct_field(arr, [2]).to_numpy()
         coords = np.column_stack([x, y, z]).ravel("C")
-        flat_coords = Array.from_numpy(coords, pa.float64())
+        flat_coords = Array.from_numpy(coords, DataType.float64())
         return fixed_size_list_array(flat_coords, 3)
 
     raise ValueError(f"Expected struct with 2 or 3 fields, got {arr.type.num_fields}")

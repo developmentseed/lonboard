@@ -7,7 +7,7 @@ documentation on how to define new traitlet types.
 from __future__ import annotations
 
 import warnings
-from typing import Any, List, Optional, Set, Tuple, Union
+from typing import TYPE_CHECKING
 from typing import cast as type_cast
 from urllib.parse import urlparse
 
@@ -18,7 +18,6 @@ from arro3.core import Array, ChunkedArray, DataType, Table, fixed_size_list_arr
 from traitlets import TraitError
 from traitlets.traitlets import TraitType
 from traitlets.utils.descriptions import class_of, describe
-from typing_extensions import Self
 
 from lonboard._serialization import (
     ACCESSOR_SERIALIZATION,
@@ -27,6 +26,11 @@ from lonboard._serialization import (
 )
 from lonboard._utils import get_geometry_column_index
 from lonboard.models import ViewState
+
+if TYPE_CHECKING:
+    from typing import Any, List, NoReturn, Optional, Set, Tuple, Union
+
+    from traitlets import HasTraits
 
 DEFAULT_INITIAL_VIEW_STATE = {
     "latitude": 10,
@@ -41,7 +45,13 @@ DEFAULT_INITIAL_VIEW_STATE = {
 # the `info` passed in. See https://github.com/developmentseed/lonboard/issues/71 and
 # https://github.com/ipython/traitlets/pull/884
 class FixedErrorTraitType(traitlets.TraitType):
-    def error(self, obj: Self, value, error=None, info=None):
+    def error(
+        self,
+        obj: HasTraits | None,
+        value: Any,
+        error: Exception | None = None,
+        info: str | None = None,
+    ) -> NoReturn:
         """Raise a TraitError
 
         Parameters
@@ -154,7 +164,7 @@ class PyarrowTableTrait(FixedErrorTraitType):
             **TABLE_SERIALIZATION,
         )
 
-    def validate(self, obj: Self, value: Any):
+    def validate(self, obj: HasTraits | None, value: Any):
         if not isinstance(value, Table):
             self.error(obj, value)
 
@@ -188,10 +198,12 @@ class PyarrowTableTrait(FixedErrorTraitType):
 
         if allowed_dimensions:
             typ = value.column(geom_col_idx).type
-            while isinstance(typ, pa.ListType):
-                typ = typ.value_type
+            while DataType.is_list(typ):
+                value_type = typ.value_type
+                assert value_type is not None
+                typ = value_type
 
-            assert isinstance(typ, pa.FixedSizeListType)
+            assert DataType.is_fixed_size_list(typ)
             if typ.list_size not in allowed_dimensions:
                 msg = " or ".join(map(str, list(allowed_dimensions)))
                 self.error(obj, value, info=f"{msg}-dimensional points")
@@ -239,8 +251,8 @@ class ColorAccessor(FixedErrorTraitType):
         self.tag(sync=True, **ACCESSOR_SERIALIZATION)
 
     def validate(
-        self, obj, value
-    ) -> Union[Tuple[int, ...], List[int], ChunkedArray, Array]:
+        self, obj: HasTraits | None, value
+    ) -> Union[tuple, list, ChunkedArray, Array]:
         if isinstance(value, (tuple, list)):
             if len(value) < 3 or len(value) > 4:
                 self.error(obj, value, info="3 or 4 values if passed a tuple or list")
@@ -276,7 +288,7 @@ class ColorAccessor(FixedErrorTraitType):
                     info="Color array must have 3 or 4 as its second dimension.",
                 )
 
-            flat_values = Array.from_numpy(value.ravel("C"), pa.uint8())
+            flat_values = Array.from_numpy(value.ravel("C"), DataType.uint8())
             return ChunkedArray([fixed_size_list_array(flat_values, list_size)])
 
         # Check for Arrow PyCapsule Interface
@@ -303,7 +315,9 @@ class ColorAccessor(FixedErrorTraitType):
                     ),
                 )
 
-            if not DataType.is_uint8(value.type.value_type):
+            value_type = value.type.value_type
+            assert value_type is not None
+            if not DataType.is_uint8(value_type):
                 self.error(
                     obj, value, info="Color pyarrow array must have a uint8 child."
                 )
@@ -365,7 +379,9 @@ class FloatAccessor(FixedErrorTraitType):
         super().__init__(*args, **kwargs)
         self.tag(sync=True, **ACCESSOR_SERIALIZATION)
 
-    def validate(self, obj, value) -> Union[float, Array, ChunkedArray]:
+    def validate(
+        self, obj: HasTraits | None, value
+    ) -> Union[float, Array, ChunkedArray]:
         if isinstance(value, (int, float)):
             return float(value)
 
@@ -437,7 +453,9 @@ class TextAccessor(FixedErrorTraitType):
         super().__init__(*args, **kwargs)
         self.tag(sync=True, **ACCESSOR_SERIALIZATION)
 
-    def validate(self, obj, value) -> Union[float, str, ChunkedArray, Array]:
+    def validate(
+        self, obj: HasTraits | None, value
+    ) -> Union[float, str, ChunkedArray, Array]:
         if isinstance(value, str):
             return value
 
@@ -516,7 +534,7 @@ class PointAccessor(FixedErrorTraitType):
         self.tag(sync=True, **ACCESSOR_SERIALIZATION)
 
     def validate(
-        self, obj, value
+        self, obj: HasTraits | None, value
     ) -> Union[Tuple[int, ...], List[int], ChunkedArray, Array]:
         if isinstance(value, np.ndarray):
             if value.ndim != 2:
@@ -556,7 +574,9 @@ class PointAccessor(FixedErrorTraitType):
                     ),
                 )
 
-            if not DataType.is_floating(value.type.value_type):
+            value_type = value.type.value_type
+            assert value_type is not None
+            if not DataType.is_floating(value_type):
                 self.error(
                     obj,
                     value,
@@ -646,7 +666,7 @@ class FilterValueAccessor(FixedErrorTraitType):
         super().__init__(*args, **kwargs)
         self.tag(sync=True, **ACCESSOR_SERIALIZATION)
 
-    def validate(self, obj, value) -> Union[float, pa.ChunkedArray, pa.DoubleArray]:
+    def validate(self, obj, value) -> Union[float, tuple, list, ChunkedArray, Array]:
         # Find the data filter extension in the attributes of the parent object so we
         # can validate against the filter size.
         data_filter_extension = [
@@ -703,7 +723,7 @@ class FilterValueAccessor(FixedErrorTraitType):
                 if filter_size != 1:
                     self.error(obj, value, info="filter_size==1 with 1-D numpy array")
 
-                return pa.array(value)
+                return Array.from_numpy(value, DataType.float32())
 
             if len(value.shape) != 2:
                 self.error(obj, value, info="1-D or 2-D numpy array")
@@ -718,7 +738,13 @@ class FilterValueAccessor(FixedErrorTraitType):
                     ),
                 )
 
-            return pa.FixedSizeListArray.from_arrays(value.ravel("C"), filter_size)
+            return fixed_size_list_array(
+                Array.from_numpy(
+                    value.ravel("C"),
+                    DataType.float32(),
+                ),
+                filter_size,
+            )
 
         # Check for Arrow PyCapsule Interface
         if hasattr(value, "__arrow_c_array__"):
@@ -758,7 +784,9 @@ class FilterValueAccessor(FixedErrorTraitType):
                     ),
                 )
 
-            if not DataType.is_floating(value.type.value_type):
+            value_type = value.type.value_type
+            assert value_type is not None
+            if not DataType.is_floating(value_type):
                 self.error(
                     obj,
                     value,
@@ -806,7 +834,7 @@ class NormalAccessor(FixedErrorTraitType):
         self.tag(sync=True, **ACCESSOR_SERIALIZATION)
 
     def validate(
-        self, obj, value
+        self, obj: HasTraits | None, value
     ) -> Union[Tuple[int, ...], List[int], ChunkedArray, Array]:
         if isinstance(value, (tuple, list)):
             if len(value) != 3:
@@ -837,7 +865,13 @@ class NormalAccessor(FixedErrorTraitType):
                 )
                 value = value.astype(np.float32)
 
-            return pa.FixedSizeListArray.from_arrays(value.ravel("C"), 3)
+            return fixed_size_list_array(
+                Array.from_numpy(
+                    value.ravel("C"),
+                    DataType.float32(),
+                ),
+                3,
+            )
 
         # Check for Arrow PyCapsule Interface
         if hasattr(value, "__arrow_c_array__"):
@@ -859,7 +893,9 @@ class NormalAccessor(FixedErrorTraitType):
                     info=("normal pyarrow array to have an inner size of 3."),
                 )
 
-            if not DataType.is_floating(value.type.value_type):
+            value_type = value.type.value_type
+            assert value_type is not None
+            if not DataType.is_floating(value_type):
                 self.error(
                     obj,
                     value,
@@ -935,7 +971,7 @@ class DashArrayAccessor(FixedErrorTraitType):
         self.tag(sync=True, **ACCESSOR_SERIALIZATION)
 
     def validate(
-        self, obj, value
+        self, obj: HasTraits | None, value
     ) -> Union[Tuple[int, ...], List[int], ChunkedArray, Array]:
         if isinstance(value, (tuple, list)):
             if len(value) != 2:
@@ -969,7 +1005,12 @@ class DashArrayAccessor(FixedErrorTraitType):
             if np.issubdtype(value.dtype, np.float64):
                 value = value.astype(np.float32)
 
-            return pa.FixedSizeListArray.from_arrays(value.ravel("C"), list_size)
+            return fixed_size_list_array(
+                Array.from_numpy(
+                    value.ravel("C"),
+                ),
+                list_size,
+            )
 
         # Check for Arrow PyCapsule Interface
         if hasattr(value, "__arrow_c_array__"):
@@ -989,17 +1030,19 @@ class DashArrayAccessor(FixedErrorTraitType):
                     info="Pyarrow array must have a FixedSizeList inner size of 2.",
                 )
 
+            value_type = value.type.value_type
+            assert value_type is not None
             if not (
-                DataType.is_integer(value.type.value_type)
-                or DataType.is_signed_integer(value.type.value_type)
-                or DataType.is_floating(value.type.value_type)
+                DataType.is_integer(value_type)
+                or DataType.is_signed_integer(value_type)
+                or DataType.is_floating(value_type)
             ):
                 self.error(
                     obj, value, info="Pyarrow array to have a numeric type child."
                 )
 
             # Cast float64 to float32; leave other data types the same
-            if DataType.is_float64(value.type.value_type):
+            if DataType.is_float64(value_type):
                 value = value.cast(
                     DataType.list(DataType.float32(), value.type.list_size)
                 )
@@ -1019,7 +1062,7 @@ class BasemapUrl(traitlets.Unicode):
         super().__init__(*args, **kwargs)
         self.tag(sync=True)
 
-    def validate(self, obj: Any, value: Any) -> Any:
+    def validate(self, obj: HasTraits | None, value: Any) -> Any:
         value = super().validate(obj, value)
 
         try:
