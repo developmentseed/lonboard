@@ -23,7 +23,7 @@ import "./globals.css";
 import "maplibre-gl/dist/maplibre-gl.css";
 import { NextUIProvider } from "@nextui-org/react";
 import Toolbar from "./toolbar.js";
-import { throttle } from "lodash";
+import throttle from "lodash.throttle";
 
 await initParquetWasm();
 

@@ -1,7 +1,7 @@
 import * as React from "react";
 import { useModel } from "@anywidget/react";
 import type { AnyModel } from "@anywidget/types";
-import { debounce } from "lodash";
+import debounce from "lodash.debounce";
 
 const debouncedModelSaveViewState = debounce((model: AnyModel) => {
   // TODO: this and below is hard-coded to the view_state model property!
