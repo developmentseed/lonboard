@@ -5,7 +5,7 @@ import "./index.css";
 
 const rowIndexSymbol = Symbol.for("rowIndex");
 
-function toHtmlTable(featureProperties: Record<string, any>): string {
+function toHtmlTable(featureProperties: Record<string, unknown>): string {
   return `<table>
       <tbody>
         ${Object.keys(featureProperties)

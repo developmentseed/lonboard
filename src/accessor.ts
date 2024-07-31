@@ -2,6 +2,8 @@ import * as arrow from "apache-arrow";
 import { parseParquetBuffers } from "./parquet.js";
 import { useState, useEffect } from "react";
 
+type AccessorRaw = DataView[] | unknown;
+
 export function useTableBufferState(
   wasmReady: boolean,
   dataRaw: DataView[],
@@ -26,8 +28,11 @@ export function useTableBufferState(
   return [dataTable];
 }
 
-export function useAccessorState(wasmReady: boolean, accessorRaw: any): any {
-  const [accessorValue, setAccessorValue] = useState(null);
+export function useAccessorState(
+  wasmReady: boolean,
+  accessorRaw: AccessorRaw,
+): [arrow.Vector | null] {
+  const [accessorValue, setAccessorValue] = useState<arrow.Vector | null>(null);
 
   // Only parse the parquet buffer when the data itself or wasmReady has changed
   useEffect(() => {
@@ -37,7 +42,7 @@ export function useAccessorState(wasmReady: boolean, accessorRaw: any): any {
           ? wasmReady && accessorRaw?.[0].byteLength > 0
             ? parseParquetBuffers(accessorRaw).getChildAt(0)
             : null
-          : accessorRaw,
+          : (accessorRaw as arrow.Vector | null),
       );
     };
     callback();
@@ -46,10 +51,10 @@ export function useAccessorState(wasmReady: boolean, accessorRaw: any): any {
   return [accessorValue];
 }
 
-export function parseAccessor(accessorRaw: unknown): any {
+export function parseAccessor(accessorRaw: AccessorRaw): arrow.Vector | null {
   return accessorRaw instanceof Array && accessorRaw?.[0] instanceof DataView
     ? accessorRaw?.[0].byteLength > 0
       ? parseParquetBuffers(accessorRaw).getChildAt(0)
       : null
-    : accessorRaw;
+    : (accessorRaw as arrow.Vector | null);
 }
