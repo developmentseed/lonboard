@@ -198,19 +198,6 @@ def _reproject_chunk_nest_3(arr: Array, transformer: Transformer):
     return _map_coords_nest_3(arr, callback)
 
 
-def _copy_sliced_offsets(offsets: pa.Int32Array) -> pa.Int32Array:
-    """
-    When operating on _sliced_ input, the physical offsets are incorrect because the
-    current array points to a range not at the beginning of the array. So when creating
-    new arrays that are not sliced, we need to subtract off the original offset of the
-    first element.
-    """
-    if offsets[0].as_py() == 0:
-        return offsets
-    else:
-        return pa.array(offsets.to_numpy() - offsets[0].as_py())
-
-
 def _map_coords_nest_0(
     arr: Array,
     callback: Callable[[Array], Array],
@@ -223,7 +210,7 @@ def _map_coords_nest_1(
     arr: Array,
     callback: Callable[[Array], Array],
 ) -> Array:
-    geom_offsets = _copy_sliced_offsets(list_offsets(arr))
+    geom_offsets = list_offsets(arr, logical=True)
     coords = list_flatten(arr)
     new_coords = callback(coords)
     new_geometry_array = list_array(geom_offsets, new_coords)
@@ -234,8 +221,8 @@ def _map_coords_nest_2(
     arr: Array,
     callback: Callable[[Array], Array],
 ):
-    geom_offsets = _copy_sliced_offsets(list_offsets(arr))
-    ring_offsets = _copy_sliced_offsets(list_offsets(list_flatten(arr)))
+    geom_offsets = list_offsets(arr, logical=True)
+    ring_offsets = list_offsets(list_flatten(arr), logical=True)
     coords = list_flatten(list_flatten(arr))
     new_coords = callback(coords)
     new_ring_array = list_array(ring_offsets, new_coords)
@@ -247,9 +234,9 @@ def _map_coords_nest_3(
     arr: Array,
     callback: Callable[[Array], Array],
 ):
-    geom_offsets = _copy_sliced_offsets(list_offsets(arr))
-    polygon_offsets = _copy_sliced_offsets(list_offsets(list_flatten(arr)))
-    ring_offsets = _copy_sliced_offsets(list_offsets(list_flatten(list_flatten(arr))))
+    geom_offsets = list_offsets(arr, logical=True)
+    polygon_offsets = list_offsets(list_flatten(arr), logical=True)
+    ring_offsets = list_offsets(list_flatten(list_flatten(arr)), logical=True)
     coords = list_flatten(list_flatten(list_flatten(arr)))
     new_coords = callback(coords)
     new_ring_array = list_array(ring_offsets, new_coords)
