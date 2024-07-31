@@ -79,7 +79,7 @@ def parse_serialized_table(table: Table) -> List[Table]:
     # Starting from polygons, then linestrings, then points,
     # so that the order of generated layers is polygon, then path then scatterplot.
     # This ensures that points are rendered on top and polygons on the bottom.
-    parsed_tables = []
+    parsed_tables: List[Table] = []
     for single_type_geometry_indices in (
         polygon_indices,
         linestring_indices,

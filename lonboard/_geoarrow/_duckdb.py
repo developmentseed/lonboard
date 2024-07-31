@@ -2,12 +2,13 @@ from __future__ import annotations
 
 import json
 import re
-from typing import TYPE_CHECKING, Optional, Union
+from typing import TYPE_CHECKING, List, Optional, Union
 
 import numpy as np
 from arro3.compute import struct_field
 from arro3.core import (
     Array,
+    ChunkedArray,
     Field,
     Table,
     fixed_size_list_array,
@@ -18,7 +19,6 @@ from lonboard._constants import EXTENSION_NAME
 
 if TYPE_CHECKING:
     import duckdb
-    import pyarrow
     import pyproj
 
 DUCKDB_SPATIAL_TYPES = {
@@ -98,7 +98,7 @@ def _from_geometry(
     crs: Optional[Union[str, pyproj.CRS]] = None,
 ) -> Table:
     other_col_names = [name for i, name in enumerate(rel.columns) if i != geom_col_idx]
-    non_geo_table = rel.select(*other_col_names).arrow()
+    non_geo_table = Table.from_arrow(rel.select(*other_col_names).arrow())
     geom_col_name = rel.columns[geom_col_idx]
 
     # A poor-man's string interpolation check
@@ -109,9 +109,11 @@ def _from_geometry(
     ), f"Expected geometry column name to match regex: {re_match}"
 
     if con is not None:
-        geom_table = con.sql(f"""
+        geom_table = Table.from_arrow(
+            con.sql(f"""
         SELECT ST_AsWKB( {geom_col_name} ) as {geom_col_name} FROM rel;
         """).arrow()
+        )
     else:
         import duckdb
 
@@ -126,9 +128,9 @@ def _from_geometry(
             SELECT ST_AsWKB( {geom_col_name} ) as {geom_col_name} FROM rel;
             """
         try:
-            geom_table = duckdb.execute(
-                sql, connection=duckdb.default_connection
-            ).arrow()
+            geom_table = Table.from_arrow(
+                duckdb.execute(sql, connection=duckdb.default_connection).arrow()
+            )
         except duckdb.CatalogException as err:
             msg = (
                 "Could not coerce type GEOMETRY to WKB.\n"
@@ -162,19 +164,22 @@ def _from_box2d(
     geom_col_idx: int,
     crs: Optional[Union[str, pyproj.CRS]] = None,
 ) -> Table:
-    table = rel.arrow()
+    table = Table.from_arrow(rel.arrow())
     geom_col = table.column(geom_col_idx)
 
-    polygon_array = _convert_box2d_to_geoarrow_polygon_array(geom_col)
+    polygon_chunks: List[Array] = []
+    for geom_chunk in geom_col.chunks:
+        polygon_array = _convert_box2d_to_geoarrow_polygon_array(geom_chunk)
+        polygon_chunks.append(polygon_array)
 
     metadata = _make_geoarrow_field_metadata(EXTENSION_NAME.POLYGON, crs)
     prev_field = table.schema.field(geom_col_idx)
-    geom_field = Field(prev_field.name, polygon_array.type, metadata=metadata)
-    return table.set_column(geom_col_idx, geom_field, polygon_array)
+    geom_field = Field(prev_field.name, polygon_chunks[0].type, metadata=metadata)
+    return table.set_column(geom_col_idx, geom_field, ChunkedArray(polygon_chunks))
 
 
 def _convert_box2d_to_geoarrow_polygon_array(
-    geom_col: pyarrow.StructArray,
+    geom_col: Array,
 ) -> Array:
     """
     This is a manual conversion of the duckdb box_2d type to a GeoArrow Polygon array.

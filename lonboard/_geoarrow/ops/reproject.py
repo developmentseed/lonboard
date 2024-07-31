@@ -111,7 +111,7 @@ def reproject_column(
     new_extension_meta_meta = {"crs": CRS(to_crs).to_json()}
     new_extension_metadata = {
         b"ARROW:extension:name": extension_type_name,
-        b"ARROW:extension:metadata": json.dumps(new_extension_meta_meta),
+        b"ARROW:extension:metadata": json.dumps(new_extension_meta_meta).encode(),
     }
 
     new_chunked_array = _reproject_column(

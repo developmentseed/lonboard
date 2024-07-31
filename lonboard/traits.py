@@ -7,7 +7,7 @@ documentation on how to define new traitlet types.
 from __future__ import annotations
 
 import warnings
-from typing import TYPE_CHECKING
+from typing import TYPE_CHECKING, Any, List, NoReturn, Optional, Set, Tuple, Union
 from typing import cast as type_cast
 from urllib.parse import urlparse
 
@@ -28,8 +28,6 @@ from lonboard._utils import get_geometry_column_index
 from lonboard.models import ViewState
 
 if TYPE_CHECKING:
-    from typing import Any, List, NoReturn, Optional, Set, Tuple, Union
-
     from traitlets import HasTraits
 
 DEFAULT_INITIAL_VIEW_STATE = {
