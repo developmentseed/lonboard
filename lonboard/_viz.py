@@ -20,7 +20,6 @@ from typing import (
 import numpy as np
 from arro3.compute import struct_field
 from arro3.core import Array, DataType, Field, Schema, Table
-from numpy.typing import NDArray
 
 from lonboard._compat import check_pandas_version
 from lonboard._constants import EXTENSION_NAME
@@ -38,6 +37,7 @@ if TYPE_CHECKING:
     import pyarrow
     import shapely.geometry
     import shapely.geometry.base
+    from numpy.typing import NDArray
 
     from lonboard.types.arrow import ArrowArrayExportable, ArrowStreamExportable
     from lonboard.types.layer import (

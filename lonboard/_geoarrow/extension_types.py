@@ -1,10 +1,12 @@
 import json
 from enum import Enum
-from typing import Dict, Optional, Sequence, Tuple
+from typing import TYPE_CHECKING, Dict, Optional, Sequence, Tuple
 
 import numpy as np
 from arro3.core import Array, DataType, Field, fixed_size_list_array, list_array
-from numpy.typing import NDArray
+
+if TYPE_CHECKING:
+    from numpy.typing import NDArray
 
 
 class CoordinateDimension(str, Enum):

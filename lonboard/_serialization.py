@@ -1,14 +1,17 @@
 import math
 from io import BytesIO
-from typing import List, Optional, Tuple, Union
+from typing import TYPE_CHECKING, List, Optional, Tuple, Union
 
 import numpy as np
 from arro3.core import Array, ChunkedArray, Table
 from arro3.io import write_parquet
-from numpy.typing import NDArray
 from traitlets import TraitError
 
 from lonboard.models import ViewState
+
+if TYPE_CHECKING:
+    from numpy.typing import NDArray
+
 
 DEFAULT_PARQUET_COMPRESSION = "ZSTD"
 DEFAULT_PARQUET_COMPRESSION_LEVEL = 7
