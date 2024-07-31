@@ -84,7 +84,7 @@ def _transpose_coords(arr: Array):
         x = struct_field(arr, [0]).to_numpy()
         y = struct_field(arr, [1]).to_numpy()
         coords = np.column_stack([x, y]).ravel("C")
-        flat_coords = Array.from_numpy(coords, DataType.float64())
+        flat_coords = Array.from_numpy(coords)
         return fixed_size_list_array(flat_coords, 2)
 
     if arr.type.num_fields == 3:
@@ -92,7 +92,7 @@ def _transpose_coords(arr: Array):
         y = struct_field(arr, [1]).to_numpy()
         z = struct_field(arr, [2]).to_numpy()
         coords = np.column_stack([x, y, z]).ravel("C")
-        flat_coords = Array.from_numpy(coords, DataType.float64())
+        flat_coords = Array.from_numpy(coords)
         return fixed_size_list_array(flat_coords, 3)
 
     raise ValueError(f"Expected struct with 2 or 3 fields, got {arr.type.num_fields}")

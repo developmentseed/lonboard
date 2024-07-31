@@ -172,7 +172,7 @@ def _reproject_coords(arr: Array, transformer: Transformer):
 
     coord_field = DataType.list(Field(dims, DataType.float64()), len(dims))
     return fixed_size_list_array(
-        Array.from_numpy(output_np_arr.ravel("C"), DataType.float64()),
+        Array.from_numpy(output_np_arr.ravel("C")),
         len(dims),
         type=coord_field,
     )

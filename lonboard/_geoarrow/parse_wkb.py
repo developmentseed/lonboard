@@ -4,7 +4,7 @@ import json
 from typing import List
 
 import numpy as np
-from arro3.core import Array, DataType, Table
+from arro3.core import Array, Table
 
 from lonboard._constants import EXTENSION_NAME, OGC_84
 from lonboard._geoarrow.crs import get_field_crs
@@ -99,7 +99,7 @@ def parse_serialized_table(table: Table) -> List[Table]:
 
         assert single_type_geometry_indices.dtype == np.int64
         single_type_geometry_indices_arrow = Array.from_numpy(
-            single_type_geometry_indices, DataType.int64()
+            single_type_geometry_indices
         )
 
         single_type_geometry_record_batch = (

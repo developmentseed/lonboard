@@ -288,7 +288,7 @@ class ColorAccessor(FixedErrorTraitType):
                     info="Color array must have 3 or 4 as its second dimension.",
                 )
 
-            flat_values = Array.from_numpy(value.ravel("C"), DataType.uint8())
+            flat_values = Array.from_numpy(value.ravel("C"))
             return ChunkedArray([fixed_size_list_array(flat_values, list_size)])
 
         # Check for Arrow PyCapsule Interface
@@ -399,9 +399,7 @@ class FloatAccessor(FixedErrorTraitType):
 
             # TODO: should we always be casting to float32? Should it be
             # possible/allowed to pass in ~int8 or a data type smaller than float32?
-            return ChunkedArray(
-                [Array.from_numpy(value.astype(np.float32), DataType.float32())]
-            )
+            return ChunkedArray([Array.from_numpy(value.astype(np.float32))])
 
         # Check for Arrow PyCapsule Interface
         if hasattr(value, "__arrow_c_array__"):
@@ -550,7 +548,8 @@ class PointAccessor(FixedErrorTraitType):
 
             assert np.issubdtype(value.dtype, np.float64)
             return fixed_size_list_array(
-                Array.from_numpy(value.ravel("C"), DataType.float64()), list_size
+                Array.from_numpy(value.ravel("C")),
+                list_size,
             )
 
         # Check for Arrow PyCapsule Interface
@@ -723,7 +722,7 @@ class FilterValueAccessor(FixedErrorTraitType):
                 if filter_size != 1:
                     self.error(obj, value, info="filter_size==1 with 1-D numpy array")
 
-                return Array.from_numpy(value, DataType.float32())
+                return Array.from_numpy(value)
 
             if len(value.shape) != 2:
                 self.error(obj, value, info="1-D or 2-D numpy array")
@@ -739,10 +738,7 @@ class FilterValueAccessor(FixedErrorTraitType):
                 )
 
             return fixed_size_list_array(
-                Array.from_numpy(
-                    value.ravel("C"),
-                    DataType.float32(),
-                ),
+                Array.from_numpy(value.ravel("C")),
                 filter_size,
             )
 
@@ -866,10 +862,7 @@ class NormalAccessor(FixedErrorTraitType):
                 value = value.astype(np.float32)
 
             return fixed_size_list_array(
-                Array.from_numpy(
-                    value.ravel("C"),
-                    DataType.float32(),
-                ),
+                Array.from_numpy(value.ravel("C")),
                 3,
             )
 
@@ -1006,9 +999,7 @@ class DashArrayAccessor(FixedErrorTraitType):
                 value = value.astype(np.float32)
 
             return fixed_size_list_array(
-                Array.from_numpy(
-                    value.ravel("C"),
-                ),
+                Array.from_numpy(value.ravel("C")),
                 list_size,
             )
 

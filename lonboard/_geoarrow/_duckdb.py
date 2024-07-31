@@ -8,7 +8,6 @@ import numpy as np
 from arro3.compute import struct_field
 from arro3.core import (
     Array,
-    DataType,
     Field,
     Table,
     fixed_size_list_array,
@@ -218,14 +217,10 @@ def _convert_box2d_to_geoarrow_polygon_array(
     geom_offsets = np.arange(0, len(ring_offsets), dtype=np.int32)
 
     # Construct the final PolygonArray
-    flat_coords: Array = Array.from_numpy(coords.ravel("C"), type=DataType.float64())
+    flat_coords: Array = Array.from_numpy(coords.ravel("C"))
     coords = fixed_size_list_array(flat_coords, 2)
-    ring_array = list_array(
-        Array.from_numpy(ring_offsets, type=DataType.int32()), coords
-    )
-    polygon_array = list_array(
-        Array.from_numpy(geom_offsets, type=DataType.int32()), ring_array
-    )
+    ring_array = list_array(Array.from_numpy(ring_offsets), coords)
+    polygon_array = list_array(Array.from_numpy(geom_offsets), ring_array)
     return polygon_array
 
 
