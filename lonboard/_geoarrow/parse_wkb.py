@@ -4,8 +4,7 @@ import json
 from typing import List
 
 import numpy as np
-import pyarrow as pa
-from arro3.core import Table
+from arro3.core import Array, DataType, Table
 
 from lonboard._constants import EXTENSION_NAME, OGC_84
 from lonboard._geoarrow.crs import get_field_crs
@@ -86,24 +85,34 @@ def parse_serialized_table(table: Table) -> List[Table]:
         linestring_indices,
         point_indices,
     ):
-        if len(single_type_geometry_indices) > 0:
-            single_type_geometry_field, single_type_geometry_arr = (
-                construct_geometry_array(
-                    shapely_arr[single_type_geometry_indices],
-                    crs_str=crs_str,
-                )
-            )
-            single_type_geometry_table = table.take(
-                single_type_geometry_indices
-            ).set_column(
-                field_idx, single_type_geometry_field, single_type_geometry_arr
-            )
-            parsed_tables.append(single_type_geometry_table)
+        if len(single_type_geometry_indices) == 0:
+            continue
+
+        single_type_geometry_field, single_type_geometry_arr = construct_geometry_array(
+            shapely_arr[single_type_geometry_indices],
+            crs_str=crs_str,
+        )
+
+        concatted_table = table.combine_chunks()
+        batches = concatted_table.to_batches()
+        assert len(batches) == 1
+
+        assert single_type_geometry_indices.dtype == np.int64
+        single_type_geometry_indices_arrow = Array.from_numpy(
+            single_type_geometry_indices, DataType.int64()
+        )
+
+        single_type_geometry_record_batch = (
+            batches[0]
+            .take(single_type_geometry_indices_arrow)
+            .set_column(field_idx, single_type_geometry_field, single_type_geometry_arr)
+        )
+        parsed_tables.append(Table.from_batches([single_type_geometry_record_batch]))
 
     return parsed_tables
 
 
-def parse_geoparquet_table(table: pa.Table) -> pa.Table:
+def parse_geoparquet_table(table: Table) -> Table:
     """Parse GeoParquet table metadata, assigning it to GeoArrow metadata"""
     # If a column already has geoarrow metadata, don't parse from GeoParquet metadata
     if get_geometry_column_index(table.schema) is not None:

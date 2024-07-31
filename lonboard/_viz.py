@@ -18,9 +18,8 @@ from typing import (
 )
 
 import numpy as np
-import pyarrow as pa
 from arro3.compute import struct_field
-from arro3.core import Array, Field, Schema, Table
+from arro3.core import Array, DataType, Field, Schema, Table
 from numpy.typing import NDArray
 
 from lonboard._compat import check_pandas_version
@@ -40,6 +39,7 @@ if TYPE_CHECKING:
     import shapely.geometry
     import shapely.geometry.base
 
+    from lonboard.types.arrow import ArrowArrayExportable, ArrowStreamExportable
     from lonboard.types.layer import (
         PathLayerKwargs,
         PolygonLayerKwargs,
@@ -50,16 +50,6 @@ if TYPE_CHECKING:
     class GeoInterfaceProtocol(Protocol):
         @property
         def __geo_interface__(self) -> dict: ...
-
-    class ArrowArrayExportable(Protocol):
-        def __arrow_c_array__(
-            self, requested_schema: object | None = None
-        ) -> Tuple[object, object]: ...
-
-    class ArrowStreamExportable(Protocol):
-        def __arrow_c_stream__(
-            self, requested_schema: object | None = None
-        ) -> object: ...
 
     VizDataInput = Union[
         gpd.GeoDataFrame,
@@ -382,6 +372,7 @@ def _viz_shapely_array(
 def _viz_geo_interface(
     data: dict, **kwargs
 ) -> List[Union[ScatterplotLayer, PathLayer, PolygonLayer]]:
+    import pyarrow as pa
     import shapely
 
     if data["type"] in [
@@ -443,15 +434,23 @@ def _viz_geoarrow_array(
 
     num_rows = len(array)
     if num_rows <= np.iinfo(np.uint8).max:
-        arange_col = np.arange(num_rows, dtype=np.uint8)
+        arange_col = Array.from_numpy(
+            np.arange(num_rows, dtype=np.uint8), DataType.uint8()
+        )
     elif num_rows <= np.iinfo(np.uint16).max:
-        arange_col = np.arange(num_rows, dtype=np.uint16)
+        arange_col = Array.from_numpy(
+            np.arange(num_rows, dtype=np.uint16), DataType.uint16()
+        )
     elif num_rows <= np.iinfo(np.uint32).max:
-        arange_col = np.arange(num_rows, dtype=np.uint32)
+        arange_col = Array.from_numpy(
+            np.arange(num_rows, dtype=np.uint32), DataType.uint32()
+        )
     else:
-        arange_col = np.arange(num_rows, dtype=np.uint64)
+        arange_col = Array.from_numpy(
+            np.arange(num_rows, dtype=np.uint64), DataType.uint64()
+        )
 
-    table = table.append_column("row_index", pa.array(arange_col))
+    table = table.append_column("row_index", arange_col)
     return _viz_geoarrow_table(table, **kwargs)
 
 

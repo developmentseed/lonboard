@@ -35,13 +35,13 @@ from lonboard._geoarrow.parse_wkb import parse_serialized_table
 from lonboard._serialization import infer_rows_per_chunk
 from lonboard._utils import auto_downcast as _auto_downcast
 from lonboard._utils import get_geometry_column_index, remove_extension_kwargs
-from lonboard._viz import ArrowStreamExportable
 from lonboard.traits import (
     ColorAccessor,
     FloatAccessor,
     NormalAccessor,
     PyarrowTableTrait,
 )
+from lonboard.types.arrow import ArrowStreamExportable
 
 if TYPE_CHECKING:
     import geopandas as gpd
