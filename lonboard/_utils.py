@@ -57,7 +57,7 @@ def auto_downcast(df: DF) -> DF:
     # `convert_dtypes(dtype_backend="pyarrow")` fails on the geometory column, but we
     # also have to manually cast to a non-geo data frame because it'll fail to convert
     # dtypes on a GeoDataFrame without a geom col
-    casted_df = pd.DataFrame(df.select_dtypes(exclude="geometry")).convert_dtypes(
+    casted_df = pd.DataFrame(df.select_dtypes(exclude="geometry")).convert_dtypes(  # type: ignore
         infer_objects=True,
         convert_string=True,
         convert_integer=True,

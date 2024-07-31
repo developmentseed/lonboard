@@ -275,8 +275,6 @@ class BaseArrowLayer(BaseLayer):
         **kwargs: Unpack[BaseLayerKwargs],
     ):
         table_o3 = Table.from_arrow(table)
-
-        # table_o3 = remove_extension_classes(table_o3)
         parsed_tables = parse_serialized_table(table_o3)
         assert len(parsed_tables) == 1, (
             "Mixed geometry type input not supported here. Use the top "
@@ -294,7 +292,7 @@ class BaseArrowLayer(BaseLayer):
             self._bbox = default_viewport[0]
             self._weighted_centroid = default_viewport[1]
 
-        rows_per_chunk = _rows_per_chunk or infer_rows_per_chunk(table)
+        rows_per_chunk = _rows_per_chunk or infer_rows_per_chunk(table_o3)
         if rows_per_chunk <= 0:
             raise ValueError("Cannot serialize table with 0 rows per chunk.")
 

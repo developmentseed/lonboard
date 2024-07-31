@@ -3,8 +3,7 @@ from io import BytesIO
 from typing import List, Optional, Tuple, Union
 
 import numpy as np
-import pyarrow as pa
-from arro3.core import Array, Table
+from arro3.core import Array, ChunkedArray, Table
 from arro3.io import write_parquet
 from numpy.typing import NDArray
 from traitlets import TraitError
@@ -51,9 +50,11 @@ def serialize_table_to_parquet(table: Table, *, max_chunksize: int) -> List[byte
     return buffers
 
 
-def serialize_pyarrow_column(data: Array, *, max_chunksize: int) -> List[bytes]:
+def serialize_pyarrow_column(
+    data: Array | ChunkedArray, *, max_chunksize: int
+) -> List[bytes]:
     """Serialize a pyarrow column to a Parquet file with one column"""
-    pyarrow_table = Table({"value": data})
+    pyarrow_table = Table.from_pydict({"value": data})
     return serialize_table_to_parquet(pyarrow_table, max_chunksize=max_chunksize)
 
 
@@ -66,7 +67,7 @@ def serialize_accessor(data: Union[List[int], Tuple[int], NDArray[np.uint8]], ob
     if isinstance(data, (str, int, float, list, tuple, bytes)):
         return data
 
-    assert isinstance(data, (pa.ChunkedArray, pa.Array))
+    assert isinstance(data, (ChunkedArray, Array))
     validate_accessor_length_matches_table(data, obj.table)
     return serialize_pyarrow_column(data, max_chunksize=obj._rows_per_chunk)
 
@@ -87,7 +88,9 @@ def infer_rows_per_chunk(table: Table) -> int:
     return rows_per_chunk
 
 
-def validate_accessor_length_matches_table(accessor, table):
+def validate_accessor_length_matches_table(
+    accessor: Array | ChunkedArray, table: Table
+):
     if len(accessor) != len(table):
         raise TraitError("accessor must have same length as table")
 

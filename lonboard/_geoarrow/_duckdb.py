@@ -127,7 +127,9 @@ def _from_geometry(
             SELECT ST_AsWKB( {geom_col_name} ) as {geom_col_name} FROM rel;
             """
         try:
-            geom_table = duckdb.execute(sql).arrow()
+            geom_table = duckdb.execute(
+                sql, connection=duckdb.default_connection
+            ).arrow()
         except duckdb.CatalogException as err:
             msg = (
                 "Could not coerce type GEOMETRY to WKB.\n"

@@ -20,7 +20,7 @@ from typing import (
 import numpy as np
 import pyarrow as pa
 from arro3.compute import struct_field
-from arro3.core import Array, Field, Table
+from arro3.core import Array, Field, Schema, Table
 from numpy.typing import NDArray
 
 from lonboard._compat import check_pandas_version
@@ -28,8 +28,6 @@ from lonboard._constants import EXTENSION_NAME
 from lonboard._geoarrow.extension_types import construct_geometry_array
 from lonboard._geoarrow.geopandas_interop import geopandas_to_geoarrow
 from lonboard._geoarrow.parse_wkb import parse_serialized_table
-
-# from lonboard._geoarrow.sanitize import remove_extension_classes
 from lonboard._layer import PathLayer, PolygonLayer, ScatterplotLayer
 from lonboard._map import Map
 from lonboard._utils import get_geometry_column_index, split_mixed_gdf
@@ -438,39 +436,10 @@ def _viz_geoarrow_array(
     data: ArrowArrayExportable,
     **kwargs,
 ) -> List[Union[ScatterplotLayer, PathLayer, PolygonLayer]]:
-    # TODO: need to double check this handling from geoarrow-python arrays!
-
-    # schema_capsule, array_capsule = data.__arrow_c_array__()
-
-    # # If the user doesn't have pyarrow extension types registered for geoarrow types,
-    # # `pa.array()` will lose the extension metadata. Instead, we manually persist the
-    # # extension metadata by extracting both the field and the array.
-
-    # class ArrayHolder:
-    #     schema_capsule: object
-    #     array_capsule: object
-
-    #     def __init__(self, schema_capsule, array_capsule) -> None:
-    #         self.schema_capsule = schema_capsule
-    #         self.array_capsule = array_capsule
-
-    #     def __arrow_c_array__(self, requested_schema):
-    #         return self.schema_capsule, self.array_capsule
-
-    # if not hasattr(pa.Field, "_import_from_c_capsule"):
-    #     raise KeyError(
-    #         "Incompatible version of pyarrow: pa.Field does not have"
-    #         "  _import_from_c_capsule method"
-    #     )
-
-    # field = pa.Field._import_from_c_capsule(schema_capsule)
-    # array = pa.array(ArrayHolder(field.__arrow_c_schema__(), array_capsule))
-
     array = Array.from_arrow(data)
-    array.m
-    Field("geometry", array.type)
-    # schema = pa.schema([field.with_name("geometry")])
-    table = pa.Table.from_arrays([array], schema=schema)
+    field = Field("geometry", array.type)
+    schema = Schema([field.with_name("geometry")])
+    table = Table.from_arrays([array], schema=schema)
 
     num_rows = len(array)
     if num_rows <= np.iinfo(np.uint8).max:
@@ -494,7 +463,6 @@ def _viz_geoarrow_table(
     path_kwargs: Optional[PathLayerKwargs] = None,
     polygon_kwargs: Optional[PolygonLayerKwargs] = None,
 ) -> List[Union[ScatterplotLayer, PathLayer, PolygonLayer]]:
-    # table = remove_extension_classes(table)
     parsed_tables = parse_serialized_table(table)
     if len(parsed_tables) > 1:
         output: List[Union[ScatterplotLayer, PathLayer, PolygonLayer]] = []
