@@ -46,7 +46,7 @@ export abstract class BaseLayerModel extends BaseModel {
   }
 
   extensionProps() {
-    let props: Record<string, any> = {};
+    const props: Record<string, unknown> = {};
     for (const layerPropertyName of this.extensionLayerPropertyNames) {
       if (isDefined(this[layerPropertyName as keyof this])) {
         props[layerPropertyName] = this[layerPropertyName as keyof this];

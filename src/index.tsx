@@ -1,16 +1,16 @@
 import * as React from "react";
-import { useEffect, useCallback, useRef, useState } from "react";
+import { useEffect, useCallback, useState } from "react";
 import { createRender, useModelState, useModel } from "@anywidget/react";
 import type { Initialize, Render } from "@anywidget/types";
 import Map from "react-map-gl/maplibre";
-import DeckGL, { DeckGLRef } from "@deck.gl/react/typed";
+import DeckGL from "@deck.gl/react/typed";
 import type { PickingInfo } from "@deck.gl/core/typed";
 import { MapViewState, type Layer } from "@deck.gl/core/typed";
 import { BaseLayerModel, initializeLayer } from "./model/index.js";
 import type { WidgetModel } from "@jupyter-widgets/base";
 import { initParquetWasm } from "./parquet.js";
 import { getTooltip } from "./tooltip/index.js";
-import { isDefined, loadChildModels, throttle } from "./util.js";
+import { isDefined, loadChildModels } from "./util.js";
 import { v4 as uuidv4 } from "uuid";
 import { Message } from "./types.js";
 import { flyTo } from "./actions/fly-to.js";
@@ -23,6 +23,7 @@ import "./globals.css";
 import "maplibre-gl/dist/maplibre-gl.css";
 import { NextUIProvider } from "@nextui-org/react";
 import Toolbar from "./toolbar.js";
+import throttle from "lodash.throttle";
 
 await initParquetWasm();
 
@@ -82,7 +83,6 @@ function App() {
   const isTooltipEnabled = MachineContext.useSelector(
     selectors.isTooltipEnabled,
   );
-  const buttonLabel = MachineContext.useSelector(selectors.getButtonLabel);
 
   const bboxSelectPolygonLayer = MachineContext.useSelector(
     selectors.getBboxSelectPolygonLayer,
@@ -118,7 +118,7 @@ function App() {
     useViewStateDebounced<MapViewState>("view_state");
 
   // Handle custom messages
-  model.on("msg:custom", (msg: Message, buffers) => {
+  model.on("msg:custom", (msg: Message) => {
     switch (msg.type) {
       case "fly-to":
         flyTo(msg, setViewState);
@@ -137,6 +137,7 @@ function App() {
   const [childLayerIds] = useModelState<string[]>("layers");
 
   // Fake state just to get react to re-render when a model callback is called
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
   const [stateCounter, setStateCounter] = useState<Date>(new Date());
 
   useEffect(() => {
@@ -244,8 +245,9 @@ function App() {
             ? layers.concat(bboxSelectPolygonLayer)
             : layers
         }
-        // @ts-expect-error
-        getTooltip={showTooltip && isTooltipEnabled && getTooltip}
+        getTooltip={
+          (showTooltip && isTooltipEnabled && getTooltip) || undefined
+        }
         getCursor={() => (isDrawingBBoxSelection ? "crosshair" : "grab")}
         pickingRadius={pickingRadius}
         onClick={onMapClickHandler}
