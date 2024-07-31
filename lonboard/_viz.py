@@ -19,7 +19,7 @@ from typing import (
 
 import numpy as np
 from arro3.compute import struct_field
-from arro3.core import Array, DataType, Field, Schema, Table
+from arro3.core import Array, ChunkedArray, DataType, Field, Schema, Table
 
 from lonboard._compat import check_pandas_version
 from lonboard._constants import EXTENSION_NAME
@@ -450,7 +450,7 @@ def _viz_geoarrow_array(
             np.arange(num_rows, dtype=np.uint64), DataType.uint64()
         )
 
-    table = table.append_column("row_index", arange_col)
+    table = table.append_column("row_index", ChunkedArray([arange_col]))
     return _viz_geoarrow_table(table, **kwargs)
 
 
