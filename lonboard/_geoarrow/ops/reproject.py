@@ -8,7 +8,7 @@ from typing import Callable, Optional, Tuple, Union
 from warnings import warn
 
 import numpy as np
-from arro3.compute import list_flatten
+from arro3.compute import list_flatten, list_offsets
 from arro3.core import (
     Array,
     ChunkedArray,
@@ -223,7 +223,7 @@ def _map_coords_nest_1(
     arr: Array,
     callback: Callable[[Array], Array],
 ) -> Array:
-    geom_offsets = _copy_sliced_offsets(arr.offsets)
+    geom_offsets = _copy_sliced_offsets(list_offsets(arr))
     coords = list_flatten(arr)
     new_coords = callback(coords)
     new_geometry_array = list_array(geom_offsets, new_coords)
@@ -234,9 +234,9 @@ def _map_coords_nest_2(
     arr: Array,
     callback: Callable[[Array], Array],
 ):
-    geom_offsets = _copy_sliced_offsets(arr.offsets)
-    ring_offsets = _copy_sliced_offsets(arr.flatten().offsets)
-    coords = arr.flatten().flatten()
+    geom_offsets = _copy_sliced_offsets(list_offsets(arr))
+    ring_offsets = _copy_sliced_offsets(list_offsets(list_flatten(arr)))
+    coords = list_flatten(list_flatten(arr))
     new_coords = callback(coords)
     new_ring_array = list_array(ring_offsets, new_coords)
     new_geometry_array = list_array(geom_offsets, new_ring_array)
@@ -247,10 +247,10 @@ def _map_coords_nest_3(
     arr: Array,
     callback: Callable[[Array], Array],
 ):
-    geom_offsets = _copy_sliced_offsets(arr.offsets)
-    polygon_offsets = _copy_sliced_offsets(arr.flatten().offsets)
-    ring_offsets = _copy_sliced_offsets(arr.flatten().flatten().offsets)
-    coords = arr.flatten().flatten().flatten()
+    geom_offsets = _copy_sliced_offsets(list_offsets(arr))
+    polygon_offsets = _copy_sliced_offsets(list_offsets(list_flatten(arr)))
+    ring_offsets = _copy_sliced_offsets(list_offsets(list_flatten(list_flatten(arr))))
+    coords = list_flatten(list_flatten(list_flatten(arr)))
     new_coords = callback(coords)
     new_ring_array = list_array(ring_offsets, new_coords)
     new_polygon_array = list_array(polygon_offsets, new_ring_array)
