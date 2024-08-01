@@ -794,7 +794,9 @@ class FilterValueAccessor(FixedErrorTraitType):
                 )
 
             # Cast values to float32
-            return value.cast(DataType.list(DataType.float32(), value.type.list_size))
+            return value.cast(
+                DataType.list(Field("", DataType.float32()), value.type.list_size)
+            )
 
         self.error(obj, value)
         assert False
