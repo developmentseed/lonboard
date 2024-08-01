@@ -428,8 +428,8 @@ def _viz_geoarrow_array(
     **kwargs,
 ) -> List[Union[ScatterplotLayer, PathLayer, PolygonLayer]]:
     array = Array.from_arrow(data)
-    field = Field("geometry", array.type)
-    schema = Schema([field.with_name("geometry")])
+    field = array.field.with_name("geometry")
+    schema = Schema([field])
     table = Table.from_arrays([array], schema=schema)
 
     num_rows = len(array)
