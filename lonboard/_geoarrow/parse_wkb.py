@@ -1,7 +1,7 @@
 """Handle GeoArrow tables with WKB-encoded geometry"""
 
 import json
-from typing import List
+from typing import Dict, List
 
 import numpy as np
 from arro3.core import Array, Table
@@ -139,9 +139,9 @@ def parse_geoparquet_table(table: Table) -> Table:
         existing_field = table.schema.field(column_idx)
         existing_column = table.column(column_idx)
         crs_metadata = {"crs": column_meta.get("crs", OGC_84.to_json_dict())}
-        metadata = {
+        metadata: Dict[bytes, bytes] = {
             b"ARROW:extension:name": EXTENSION_NAME.WKB,
-            b"ARROW:extension:metadata": json.dumps(crs_metadata),
+            b"ARROW:extension:metadata": json.dumps(crs_metadata).encode(),
         }
         new_field = existing_field.with_metadata(metadata)
         table = table.set_column(column_idx, new_field, existing_column)
