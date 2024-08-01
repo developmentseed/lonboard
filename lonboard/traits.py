@@ -14,7 +14,14 @@ from urllib.parse import urlparse
 import matplotlib as mpl
 import numpy as np
 import traitlets
-from arro3.core import Array, ChunkedArray, DataType, Table, fixed_size_list_array
+from arro3.core import (
+    Array,
+    ChunkedArray,
+    DataType,
+    Field,
+    Table,
+    fixed_size_list_array,
+)
 from traitlets import TraitError
 from traitlets.traitlets import TraitType
 from traitlets.utils.descriptions import class_of, describe
@@ -295,7 +302,6 @@ class ColorAccessor(FixedErrorTraitType):
 
         elif hasattr(value, "__arrow_c_stream__"):
             value = ChunkedArray.from_arrow(value)
-            raise ValueError("todo")
 
         if isinstance(value, (ChunkedArray, Array)):
             if not DataType.is_fixed_size_list(value.type):
@@ -893,7 +899,7 @@ class NormalAccessor(FixedErrorTraitType):
                     info="pyarrow array to be floating point type",
                 )
 
-            return value.cast(DataType.list(DataType.float32(), 3))
+            return value.cast(DataType.list(Field("", DataType.float32()), 3))
 
         self.error(obj, value)
         assert False
