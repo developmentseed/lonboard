@@ -28,9 +28,6 @@ def geopandas_to_geoarrow(
         np.array(gdf.geometry),
         crs_str=gdf.crs.to_json() if gdf.crs is not None else None,
     )
-
-    # Using Table.from_batches is a workaround around
-    # PanicException: All batches must have same schema
-    return Table.from_batches(pyarrow_table.to_batches()).append_column(
+    return Table.from_arrow(pyarrow_table).append_column(
         field, ChunkedArray([geom_arr])
     )
