@@ -79,6 +79,11 @@ jobs:
       - name: Run tests
         run: poetry run pytest
 
+      - name: Run tests (all deps)
+        run: |
+          poetry install -E geopandas -E cli
+          poetry run pytest
+
       # Ensure docs build without warnings
       - name: Check docs
         if: matrix.python-version == 3.9

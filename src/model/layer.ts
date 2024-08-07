@@ -268,7 +268,8 @@ export class ColumnModel extends BaseArrowLayerModel {
   protected radius: GeoArrowColumnLayerProps["radius"] | null;
   protected angle: GeoArrowColumnLayerProps["angle"] | null;
 
-  protected vertices: GeoArrowColumnLayerProps["vertices"] | null;
+  // Note: not yet exposed to Python
+  // protected vertices: GeoArrowColumnLayerProps["vertices"] | null;
   protected offset: GeoArrowColumnLayerProps["offset"] | null;
   protected coverage: GeoArrowColumnLayerProps["coverage"] | null;
   protected elevationScale: GeoArrowColumnLayerProps["elevationScale"] | null;
@@ -286,7 +287,9 @@ export class ColumnModel extends BaseArrowLayerModel {
   protected lineWidthMaxPixels:
     | GeoArrowColumnLayerProps["lineWidthMaxPixels"]
     | null;
-  protected material: GeoArrowColumnLayerProps["material"] | null;
+  // Note: not yet exposed to Python
+  // protected material: GeoArrowColumnLayerProps["material"] | null;
+
   protected getPosition: GeoArrowColumnLayerProps["getPosition"] | null;
   protected getFillColor: GeoArrowColumnLayerProps["getFillColor"] | null;
   protected getLineColor: GeoArrowColumnLayerProps["getLineColor"] | null;
@@ -299,7 +302,7 @@ export class ColumnModel extends BaseArrowLayerModel {
     this.initRegularAttribute("disk_resolution", "diskResolution");
     this.initRegularAttribute("radius", "radius");
     this.initRegularAttribute("angle", "angle");
-    this.initRegularAttribute("vertices", "vertices");
+    // this.initRegularAttribute("vertices", "vertices");
     this.initRegularAttribute("offset", "offset");
     this.initRegularAttribute("coverage", "coverage");
     this.initRegularAttribute("elevation_scale", "elevationScale");
@@ -313,7 +316,7 @@ export class ColumnModel extends BaseArrowLayerModel {
     this.initRegularAttribute("line_width_scale", "lineWidthScale");
     this.initRegularAttribute("line_width_min_pixels", "lineWidthMinPixels");
     this.initRegularAttribute("line_width_max_pixels", "lineWidthMaxPixels");
-    this.initRegularAttribute("material", "material");
+    // this.initRegularAttribute("material", "material");
 
     this.initVectorizedAccessor("get_position", "getPosition");
     this.initVectorizedAccessor("get_fill_color", "getFillColor");
@@ -330,8 +333,8 @@ export class ColumnModel extends BaseArrowLayerModel {
       }),
       ...(isDefined(this.radius) && { radius: this.radius }),
       ...(isDefined(this.angle) && { angle: this.angle }),
-      ...(isDefined(this.vertices) &&
-        this.vertices !== undefined && { vertices: this.vertices }),
+      // ...(isDefined(this.vertices) &&
+      //   this.vertices !== undefined && { vertices: this.vertices }),
       ...(isDefined(this.offset) && { offset: this.offset }),
       ...(isDefined(this.coverage) && { coverage: this.coverage }),
       ...(isDefined(this.elevationScale) && {
@@ -355,7 +358,7 @@ export class ColumnModel extends BaseArrowLayerModel {
       ...(isDefined(this.lineWidthMaxPixels) && {
         lineWidthMaxPixels: this.lineWidthMaxPixels,
       }),
-      ...(isDefined(this.material) && { material: this.material }),
+      // ...(isDefined(this.material) && { material: this.material }),
       ...(isDefined(this.getPosition) && { getPosition: this.getPosition }),
       ...(isDefined(this.getFillColor) && { getFillColor: this.getFillColor }),
       ...(isDefined(this.getLineColor) && { getLineColor: this.getLineColor }),

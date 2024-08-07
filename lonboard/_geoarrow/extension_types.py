@@ -4,9 +4,7 @@ from typing import Dict, Optional, Tuple
 
 import numpy as np
 import pyarrow as pa
-import shapely
 from numpy.typing import NDArray
-from shapely import GeometryType
 
 
 class CoordinateDimension(str, Enum):
@@ -286,6 +284,9 @@ def construct_geometry_array(
     field_name: str = "geometry",
     crs_str: Optional[str] = None,
 ) -> Tuple[pa.Field, pa.Array]:
+    import shapely
+    from shapely import GeometryType
+
     # NOTE: this implementation returns a (field, array) pair so that it can set the
     # extension metadata on the field without instantiating extension types into the
     # global pyarrow registry

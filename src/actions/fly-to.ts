@@ -4,7 +4,7 @@ import { isDefined } from "../util";
 
 export function flyTo(
   msg: FlyToMessage,
-  setInitialViewState: (value: MapViewState) => void,
+  setInitialViewState: (viewState: MapViewState) => void,
 ) {
   const {
     longitude,

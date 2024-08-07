@@ -32,6 +32,7 @@ export abstract class BaseLayerModel extends BaseModel {
     this.initRegularAttribute("visible", "visible");
     this.initRegularAttribute("opacity", "opacity");
     this.initRegularAttribute("auto_highlight", "autoHighlight");
+    this.initRegularAttribute("selected_bounds", "selectedBounds");
 
     this.extensions = [];
   }
@@ -45,7 +46,7 @@ export abstract class BaseLayerModel extends BaseModel {
   }
 
   extensionProps() {
-    let props: Record<string, any> = {};
+    const props: Record<string, unknown> = {};
     for (const layerPropertyName of this.extensionLayerPropertyNames) {
       if (isDefined(this[layerPropertyName as keyof this])) {
         props[layerPropertyName] = this[layerPropertyName as keyof this];
@@ -62,8 +63,6 @@ export abstract class BaseLayerModel extends BaseModel {
   }
 
   baseLayerProps(): LayerProps {
-    // console.log("extensions", this.extensionInstances());
-    // console.log("extensionprops", this.extensionProps());
     return {
       extensions: this.extensionInstances(),
       ...this.extensionProps(),

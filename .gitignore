@@ -24,3 +24,8 @@ static
 .pnp.loader.mjs
 node_modules
 *.h5
+
+# Ignore environment variable files
+.env
+.env.local
+.env.*.local

@@ -1,7 +1,7 @@
 import * as React from "react";
 import { useModel } from "@anywidget/react";
 import type { AnyModel } from "@anywidget/types";
-import { debounce } from "./util";
+import debounce from "lodash.debounce";
 
 const debouncedModelSaveViewState = debounce((model: AnyModel) => {
   // TODO: this and below is hard-coded to the view_state model property!
@@ -26,10 +26,10 @@ const debouncedModelSaveViewState = debounce((model: AnyModel) => {
 
 // TODO: add a `wait` parameter here, instead of having it hard-coded?
 export function useViewStateDebounced<T>(key: string): [T, (value: T) => void] {
-  let model = useModel();
-  let [value, setValue] = React.useState(model.get(key));
+  const model = useModel();
+  const [value, setValue] = React.useState(model.get(key));
   React.useEffect(() => {
-    let callback = () => {
+    const callback = () => {
       setValue(model.get(key));
     };
     model.on(`change:${key}`, callback);
