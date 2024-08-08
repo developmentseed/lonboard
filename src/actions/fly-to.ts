@@ -1,5 +1,5 @@
 import { FlyToMessage } from "../types";
-import { FlyToInterpolator, MapViewState } from "@deck.gl/core/typed";
+import { FlyToInterpolator, MapViewState } from "@deck.gl/core";
 import { isDefined } from "../util";
 
 export function flyTo(

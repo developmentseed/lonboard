@@ -3,9 +3,8 @@ import { useEffect, useCallback, useState } from "react";
 import { createRender, useModelState, useModel } from "@anywidget/react";
 import type { Initialize, Render } from "@anywidget/types";
 import Map from "react-map-gl/maplibre";
-import DeckGL from "@deck.gl/react/typed";
-import type { PickingInfo } from "@deck.gl/core/typed";
-import { MapViewState, type Layer } from "@deck.gl/core/typed";
+import DeckGL from "@deck.gl/react";
+import { MapViewState, PickingInfo, type Layer } from "@deck.gl/core";
 import { BaseLayerModel, initializeLayer } from "./model/index.js";
 import type { WidgetModel } from "@jupyter-widgets/base";
 import { initParquetWasm } from "./parquet.js";
@@ -260,14 +259,19 @@ function App() {
         }}
         onViewStateChange={(event) => {
           const { viewState } = event;
-          const { longitude, latitude, zoom, pitch, bearing } = viewState;
-          setViewState({
-            longitude,
-            latitude,
-            zoom,
-            pitch,
-            bearing,
-          });
+
+          // This condition is necessary to confirm that the viewState is
+          // of type MapViewState.
+          if ("latitude" in viewState) {
+            const { longitude, latitude, zoom, pitch, bearing } = viewState;
+            setViewState({
+              longitude,
+              latitude,
+              zoom,
+              pitch,
+              bearing,
+            });
+          }
         }}
         parameters={parameters || {}}
       >

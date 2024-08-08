@@ -5,7 +5,7 @@ import type {
   LayerExtension,
   LayerProps,
   PickingInfo,
-} from "@deck.gl/core/typed";
+} from "@deck.gl/core";
 import type { WidgetModel } from "@jupyter-widgets/base";
 import { isDefined, loadChildModels } from "../util.js";
 import { initializeExtension } from "./extension.js";
