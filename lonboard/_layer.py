@@ -20,8 +20,8 @@ from typing import (
 )
 
 import ipywidgets
-import pyarrow as pa
 import traitlets
+from arro3.core import Table
 
 from lonboard._base import BaseExtension, BaseWidget
 from lonboard._constants import EXTENSION_NAME, OGC_84
@@ -32,7 +32,6 @@ from lonboard._geoarrow.ops.bbox import Bbox, total_bounds
 from lonboard._geoarrow.ops.centroid import WeightedCentroid, weighted_centroid
 from lonboard._geoarrow.ops.coord_layout import transpose_table
 from lonboard._geoarrow.parse_wkb import parse_serialized_table
-from lonboard._geoarrow.sanitize import remove_extension_classes
 from lonboard._serialization import infer_rows_per_chunk
 from lonboard._utils import auto_downcast as _auto_downcast
 from lonboard._utils import get_geometry_column_index, remove_extension_kwargs
@@ -42,6 +41,7 @@ from lonboard.traits import (
     NormalAccessor,
     PyarrowTableTrait,
 )
+from lonboard.types.arrow import ArrowStreamExportable
 
 if TYPE_CHECKING:
     import geopandas as gpd
@@ -233,7 +233,7 @@ class BaseLayer(BaseWidget):
 
 
 def default_geoarrow_viewport(
-    table: pa.Table,
+    table: Table,
 ) -> Optional[Tuple[Bbox, WeightedCentroid]]:
     # Note: in the ArcLayer we won't necessarily have a column with a geoarrow
     # extension type/metadata
@@ -286,40 +286,35 @@ class BaseArrowLayer(BaseLayer):
     def __init__(
         self,
         *,
-        table: pa.Table,
+        table: ArrowStreamExportable,
         _rows_per_chunk: Optional[int] = None,
         **kwargs: Unpack[BaseLayerKwargs],
     ):
-        # Check for Arrow PyCapsule Interface
-        # https://arrow.apache.org/docs/format/CDataInterface/PyCapsuleInterface.html
-        if not isinstance(table, pa.Table) and hasattr(table, "__arrow_c_stream__"):
-            table = pa.table(table)
-
-        table = remove_extension_classes(table)
-        parsed_tables = parse_serialized_table(table)
+        table_o3 = Table.from_arrow(table)
+        parsed_tables = parse_serialized_table(table_o3)
         assert len(parsed_tables) == 1, (
             "Mixed geometry type input not supported here. Use the top "
             "level viz() function or separate your geometry types in advanced."
         )
-        table = parsed_tables[0]
-        table = transpose_table(table)
+        table_o3 = parsed_tables[0]
+        table_o3 = transpose_table(table_o3)
 
         # Reproject table to WGS84 if needed
         # Note this must happen before calculating the default viewport
-        table = reproject_table(table, to_crs=OGC_84)
+        table_o3 = reproject_table(table_o3, to_crs=OGC_84)
 
-        default_viewport = default_geoarrow_viewport(table)
+        default_viewport = default_geoarrow_viewport(table_o3)
         if default_viewport is not None:
             self._bbox = default_viewport[0]
             self._weighted_centroid = default_viewport[1]
 
-        rows_per_chunk = _rows_per_chunk or infer_rows_per_chunk(table)
+        rows_per_chunk = _rows_per_chunk or infer_rows_per_chunk(table_o3)
         if rows_per_chunk <= 0:
             raise ValueError("Cannot serialize table with 0 rows per chunk.")
 
         self._rows_per_chunk = rows_per_chunk
 
-        super().__init__(table=table, **kwargs)
+        super().__init__(table=table_o3, **kwargs)
 
     @classmethod
     def from_geopandas(
@@ -688,7 +683,7 @@ class ColumnLayer(BaseArrowLayer):
     def __init__(
         self,
         *,
-        table: pa.Table,
+        table: ArrowStreamExportable,
         _rows_per_chunk: Optional[int] = None,
         **kwargs: Unpack[ColumnLayerKwargs],
     ):
@@ -975,7 +970,7 @@ class PolygonLayer(BaseArrowLayer):
     def __init__(
         self,
         *,
-        table: pa.Table,
+        table: ArrowStreamExportable,
         _rows_per_chunk: Optional[int] = None,
         **kwargs: Unpack[PolygonLayerKwargs],
     ):
@@ -1220,7 +1215,7 @@ class ScatterplotLayer(BaseArrowLayer):
     def __init__(
         self,
         *,
-        table: pa.Table,
+        table: ArrowStreamExportable,
         _rows_per_chunk: Optional[int] = None,
         **kwargs: Unpack[ScatterplotLayerKwargs],
     ):
@@ -1462,7 +1457,7 @@ class PathLayer(BaseArrowLayer):
     def __init__(
         self,
         *,
-        table: pa.Table,
+        table: ArrowStreamExportable,
         _rows_per_chunk: Optional[int] = None,
         **kwargs: Unpack[PathLayerKwargs],
     ):
@@ -1633,7 +1628,7 @@ class PointCloudLayer(BaseArrowLayer):
     def __init__(
         self,
         *,
-        table: pa.Table,
+        table: ArrowStreamExportable,
         _rows_per_chunk: Optional[int] = None,
         **kwargs: Unpack[PointCloudLayerKwargs],
     ):
@@ -1766,7 +1761,7 @@ class SolidPolygonLayer(BaseArrowLayer):
     def __init__(
         self,
         *,
-        table: pa.Table,
+        table: ArrowStreamExportable,
         _rows_per_chunk: Optional[int] = None,
         **kwargs: Unpack[SolidPolygonLayerKwargs],
     ):
@@ -1930,10 +1925,13 @@ class HeatmapLayer(BaseArrowLayer):
 
     """
 
-    def __init__(self, *, table: pa.Table, **kwargs: Unpack[HeatmapLayerKwargs]):
+    def __init__(
+        self, *, table: ArrowStreamExportable, **kwargs: Unpack[HeatmapLayerKwargs]
+    ):
         # NOTE: we override the default for _rows_per_chunk because otherwise we render
         # one heatmap per _chunk_ not for the entire dataset.
-        super().__init__(table=table, _rows_per_chunk=len(table), **kwargs)
+        table_o3 = Table.from_arrow(table)
+        super().__init__(table=table, _rows_per_chunk=len(table_o3), **kwargs)
 
     @classmethod
     def from_geopandas(

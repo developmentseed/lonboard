@@ -5,29 +5,32 @@ from tempfile import NamedTemporaryFile
 from typing import Dict, List, Optional
 
 import click
-import pyarrow as pa
 import pyarrow.parquet as pq
+from arro3.core import Table
 from pyproj import CRS
 
 from lonboard import viz
 from lonboard._constants import EXTENSION_NAME
 
 
-def read_pyogrio(path: Path) -> pa.Table:
+def read_pyogrio(path: Path) -> Table:
     """Read path using pyogrio and convert field metadata to geoarrow
 
     Args:
         path: Path to file readable by pyogrio
     """
     try:
-        from pyogrio.raw import read_arrow
+        from pyogrio.raw import open_arrow
     except ImportError as e:
         raise ImportError(
             "pyogrio is a required dependency for the CLI. "
             "Install with `pip install pyogrio`."
         ) from e
 
-    meta, table = read_arrow(path)
+    with open_arrow(path, use_pyarrow=False) as source:
+        meta, stream = source
+        table = Table.from_arrow(stream)
+
     # The `geometry_name` key always exists but can be an empty string. In the case of
     # an empty string, we want to default to `wkb_geometry`
     geometry_column_name = meta.get("geometry_name") or "wkb_geometry"
@@ -53,10 +56,10 @@ def read_pyogrio(path: Path) -> pa.Table:
 
     new_field = field.with_name("geometry").with_metadata(metadata)
     new_schema = schema.set(geometry_column_index, new_field)
-    return pa.Table.from_arrays(table.columns, schema=new_schema)
+    return table.with_schema(new_schema)
 
 
-def read_geoparquet(path: Path):
+def read_geoparquet(path: Path) -> Table:
     """Read GeoParquet file at path using pyarrow
 
     Args:
@@ -67,7 +70,8 @@ def read_geoparquet(path: Path):
     if not geo_meta:
         raise ValueError("Expected geo metadata in Parquet file")
 
-    table = file.read()
+    pyarrow_table = file.read()
+    table = Table.from_arrow(pyarrow_table)
 
     geo_meta = json.loads(geo_meta)
     geometry_column_name = geo_meta["primary_column"]
@@ -86,7 +90,7 @@ def read_geoparquet(path: Path):
 
     new_field = table.schema.field(geometry_column_index).with_metadata(metadata)
     new_schema = table.schema.set(geometry_column_index, new_field)
-    return pa.Table.from_arrays(table.columns, schema=new_schema)
+    return table.with_schema(new_schema)
 
 
 @click.command()

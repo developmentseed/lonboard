@@ -3,7 +3,7 @@ from __future__ import annotations
 from typing import TYPE_CHECKING, Any, Dict, List, Optional, Sequence, TypeVar
 
 import numpy as np
-import pyarrow as pa
+from arro3.core import Schema
 
 from lonboard._base import BaseExtension
 from lonboard._compat import check_pandas_version
@@ -18,7 +18,7 @@ if TYPE_CHECKING:
 GEOARROW_EXTENSION_TYPE_NAMES = {e.value for e in EXTENSION_NAME}
 
 
-def get_geometry_column_index(schema: pa.Schema) -> Optional[int]:
+def get_geometry_column_index(schema: Schema) -> Optional[int]:
     """Get the positional index of the geometry column in a pyarrow Schema"""
     field_idxs = []
 
@@ -57,7 +57,7 @@ def auto_downcast(df: DF) -> DF:
     # `convert_dtypes(dtype_backend="pyarrow")` fails on the geometory column, but we
     # also have to manually cast to a non-geo data frame because it'll fail to convert
     # dtypes on a GeoDataFrame without a geom col
-    casted_df = pd.DataFrame(df.select_dtypes(exclude="geometry")).convert_dtypes(
+    casted_df = pd.DataFrame(df.select_dtypes(exclude="geometry")).convert_dtypes(  # type: ignore
         infer_objects=True,
         convert_string=True,
         convert_integer=True,

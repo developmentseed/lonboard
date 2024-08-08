@@ -1,10 +1,10 @@
 """Handle GeoArrow tables with WKB-encoded geometry"""
 
 import json
-from typing import List
+from typing import Dict, List
 
 import numpy as np
-import pyarrow as pa
+from arro3.core import Array, Table
 
 from lonboard._constants import EXTENSION_NAME, OGC_84
 from lonboard._geoarrow.crs import get_field_crs
@@ -13,7 +13,7 @@ from lonboard._geoarrow.utils import is_native_geoarrow
 from lonboard._utils import get_geometry_column_index
 
 
-def parse_serialized_table(table: pa.Table) -> List[pa.Table]:
+def parse_serialized_table(table: Table) -> List[Table]:
     """Parse a table with a serialized WKB/WKT column into GeoArrow-native geometries.
 
     If no columns are WKB/WKT-encoded, returns the input. Note that WKB columns must be
@@ -79,30 +79,40 @@ def parse_serialized_table(table: pa.Table) -> List[pa.Table]:
     # Starting from polygons, then linestrings, then points,
     # so that the order of generated layers is polygon, then path then scatterplot.
     # This ensures that points are rendered on top and polygons on the bottom.
-    parsed_tables = []
+    parsed_tables: List[Table] = []
     for single_type_geometry_indices in (
         polygon_indices,
         linestring_indices,
         point_indices,
     ):
-        if len(single_type_geometry_indices) > 0:
-            single_type_geometry_field, single_type_geometry_arr = (
-                construct_geometry_array(
-                    shapely_arr[single_type_geometry_indices],
-                    crs_str=crs_str,
-                )
-            )
-            single_type_geometry_table = table.take(
-                single_type_geometry_indices
-            ).set_column(
-                field_idx, single_type_geometry_field, single_type_geometry_arr
-            )
-            parsed_tables.append(single_type_geometry_table)
+        if len(single_type_geometry_indices) == 0:
+            continue
+
+        single_type_geometry_field, single_type_geometry_arr = construct_geometry_array(
+            shapely_arr[single_type_geometry_indices],
+            crs_str=crs_str,
+        )
+
+        concatted_table = table.combine_chunks()
+        batches = concatted_table.to_batches()
+        assert len(batches) == 1
+
+        assert single_type_geometry_indices.dtype == np.int64
+        single_type_geometry_indices_arrow = Array.from_numpy(
+            single_type_geometry_indices
+        )
+
+        single_type_geometry_record_batch = (
+            batches[0]
+            .take(single_type_geometry_indices_arrow)
+            .set_column(field_idx, single_type_geometry_field, single_type_geometry_arr)
+        )
+        parsed_tables.append(Table.from_batches([single_type_geometry_record_batch]))
 
     return parsed_tables
 
 
-def parse_geoparquet_table(table: pa.Table) -> pa.Table:
+def parse_geoparquet_table(table: Table) -> Table:
     """Parse GeoParquet table metadata, assigning it to GeoArrow metadata"""
     # If a column already has geoarrow metadata, don't parse from GeoParquet metadata
     if get_geometry_column_index(table.schema) is not None:
@@ -129,9 +139,9 @@ def parse_geoparquet_table(table: pa.Table) -> pa.Table:
         existing_field = table.schema.field(column_idx)
         existing_column = table.column(column_idx)
         crs_metadata = {"crs": column_meta.get("crs", OGC_84.to_json_dict())}
-        metadata = {
+        metadata: Dict[bytes, bytes] = {
             b"ARROW:extension:name": EXTENSION_NAME.WKB,
-            b"ARROW:extension:metadata": json.dumps(crs_metadata),
+            b"ARROW:extension:metadata": json.dumps(crs_metadata).encode(),
         }
         new_field = existing_field.with_metadata(metadata)
         table = table.set_column(column_idx, new_field, existing_column)
