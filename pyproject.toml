@@ -32,7 +32,6 @@ classifiers = [
 [tool.poetry.dependencies]
 python = "^3.8"
 anywidget = "^0.9.0"
-pyarrow = ">=14.0.1"
 palettable = "^3.3.3"
 # We use the colormap module from matplotlib. This module may be vendored in the
 # future to remove the matplotlib dependency.
@@ -45,6 +44,9 @@ pandas = { version = "^2", optional = true }
 shapely = { version = "^2", optional = true }
 # The same version pin as geopandas
 pyproj = ">=3.3"
+arro3-core = "^0.2.0b3"
+arro3-io = "^0.2.0b3"
+arro3-compute = "^0.2.0b3"
 
 
 [tool.poetry.extras]
@@ -61,6 +63,7 @@ geodatasets = "^2023.12.0"
 pyogrio = "^0.8"
 geoarrow-pyarrow = "^0.1.1"
 duckdb = "^0.10.2"
+pyarrow = ">=14.0.1"
 
 [tool.poetry.group.docs.dependencies]
 # We use ruff format ourselves, but mkdocstrings requires black to be installed
