@@ -6,7 +6,8 @@ from dataclasses import dataclass
 from typing import Optional
 
 import numpy as np
-import pyarrow as pa
+from arro3.compute import list_flatten
+from arro3.core import Array, ChunkedArray, DataType, Field
 
 from lonboard._constants import EXTENSION_NAME
 
@@ -49,7 +50,7 @@ class WeightedCentroid:
         )
         self.num_items += new_chunk_len
 
-    def update_coords(self, coords: pa.FixedSizeListArray):
+    def update_coords(self, coords: Array):
         """Update the average for x and y based on a new chunk of data
 
         Note that this does not keep a cumulative sum due to precision concerns. Rather
@@ -59,13 +60,17 @@ class WeightedCentroid:
         Note: this currently computes the mean weighted _per coordinate_ and not _per
         geometry_.
         """
-        np_arr = coords.flatten().to_numpy().reshape(-1, coords.type.list_size)
+        assert DataType.is_fixed_size_list(coords.type)
+        list_size = coords.type.list_size
+        assert list_size is not None
+
+        np_arr = list_flatten(coords).to_numpy().reshape(-1, list_size)
         new_chunk_len = np_arr.shape[0]
 
         if self.x is None or self.y is None:
             assert self.x is None and self.y is None and self.num_items == 0
-            self.x = np.mean(np_arr[:, 0])
-            self.y = np.mean(np_arr[:, 1])
+            self.x = float(np.mean(np_arr[:, 0]))
+            self.y = float(np.mean(np_arr[:, 1]))
             self.num_items = new_chunk_len
             return
 
@@ -78,16 +83,16 @@ class WeightedCentroid:
         existing_x_avg = self.x
         existing_y_avg = self.y
 
-        self.x = (
+        self.x = float(
             existing_x_avg * existing_modifier + new_chunk_avg_x * new_chunk_modifier
         )
-        self.y = (
+        self.y = float(
             existing_y_avg * existing_modifier + new_chunk_avg_y * new_chunk_modifier
         )
         self.num_items += new_chunk_len
 
 
-def weighted_centroid(field: pa.Field, column: pa.ChunkedArray) -> WeightedCentroid:
+def weighted_centroid(field: Field, column: ChunkedArray) -> WeightedCentroid:
     """Get the bounding box and geometric (weighted) center of the geometries in the
     table."""
     extension_type_name = field.metadata[b"ARROW:extension:name"]
@@ -107,7 +112,7 @@ def weighted_centroid(field: pa.Field, column: pa.ChunkedArray) -> WeightedCentr
     assert False
 
 
-def _weighted_centroid_nest_0(column: pa.ChunkedArray) -> WeightedCentroid:
+def _weighted_centroid_nest_0(column: ChunkedArray) -> WeightedCentroid:
     centroid = WeightedCentroid()
     for chunk in column.chunks:
         coords = chunk
@@ -116,28 +121,28 @@ def _weighted_centroid_nest_0(column: pa.ChunkedArray) -> WeightedCentroid:
     return centroid
 
 
-def _weighted_centroid_nest_1(column: pa.ChunkedArray) -> WeightedCentroid:
+def _weighted_centroid_nest_1(column: ChunkedArray) -> WeightedCentroid:
     centroid = WeightedCentroid()
-    for chunk in column.chunks:
-        coords = chunk.flatten()
+    flat_array = list_flatten(column)
+    for coords in flat_array:
         centroid.update_coords(coords)
 
     return centroid
 
 
-def _weighted_centroid_nest_2(column: pa.ChunkedArray) -> WeightedCentroid:
+def _weighted_centroid_nest_2(column: ChunkedArray) -> WeightedCentroid:
     centroid = WeightedCentroid()
-    for chunk in column.chunks:
-        coords = chunk.flatten().flatten()
+    flat_array = list_flatten(list_flatten(column))
+    for coords in flat_array:
         centroid.update_coords(coords)
 
     return centroid
 
 
-def _weighted_centroid_nest_3(column: pa.ChunkedArray) -> WeightedCentroid:
+def _weighted_centroid_nest_3(column: ChunkedArray) -> WeightedCentroid:
     centroid = WeightedCentroid()
-    for chunk in column.chunks:
-        coords = chunk.flatten().flatten().flatten()
+    flat_array = list_flatten(list_flatten(list_flatten(column)))
+    for coords in flat_array:
         centroid.update_coords(coords)
 
     return centroid

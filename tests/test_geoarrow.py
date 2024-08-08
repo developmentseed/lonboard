@@ -2,8 +2,10 @@ import json
 from tempfile import NamedTemporaryFile
 
 import geodatasets
+import pyarrow
 import pyarrow.parquet as pq
 import pytest
+from arro3.core import Table
 from pyproj import CRS
 
 from lonboard import SolidPolygonLayer
@@ -66,7 +68,7 @@ def test_reproject_sliced_array():
 
     gdf = gpd.read_file(geodatasets.get_path("nybb"))
     table = geopandas_to_geoarrow(gdf)
-    sliced_table = table.slice(2)
+    sliced_table = Table.from_arrow(pyarrow.table(table).slice(2))
     # This should work even with a sliced array.
     _reprojected = reproject_table(sliced_table, to_crs=OGC_84)
 

@@ -12,7 +12,7 @@ from typing import (
 
 import numpy as np
 import pandas as pd
-import pyarrow as pa
+import pyarrow
 from numpy.typing import NDArray
 
 from lonboard._base import BaseExtension
@@ -38,8 +38,8 @@ ColorAccessorInput = Union[
     Tuple[int, ...],
     str,
     NDArray[np.uint8],
-    pa.FixedSizeListArray,
-    pa.ChunkedArray,
+    pyarrow.FixedSizeListArray,
+    pyarrow.ChunkedArray,
     ArrowArrayExportable,
 ]
 FloatAccessorInput = Union[
@@ -47,8 +47,8 @@ FloatAccessorInput = Union[
     float,
     NDArray[np.number],
     pd.Series,
-    pa.FloatingPointArray,
-    pa.ChunkedArray,
+    pyarrow.FloatingPointArray,
+    pyarrow.ChunkedArray,
     ArrowArrayExportable,
 ]
 NormalAccessorInput = Union[
@@ -56,17 +56,17 @@ NormalAccessorInput = Union[
     Tuple[int, int, int],
     Tuple[int, ...],
     NDArray[np.floating],
-    pa.FixedSizeListArray,
-    pa.ChunkedArray,
+    pyarrow.FixedSizeListArray,
+    pyarrow.ChunkedArray,
     ArrowArrayExportable,
 ]
 TextAccessorInput = Union[
     str,
     NDArray[np.str_],
     pd.Series,
-    pa.StringArray,
-    pa.LargeStringArray,
-    pa.ChunkedArray,
+    pyarrow.StringArray,
+    pyarrow.LargeStringArray,
+    pyarrow.ChunkedArray,
     ArrowArrayExportable,
 ]
 
