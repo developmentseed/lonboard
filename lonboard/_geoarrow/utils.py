@@ -1,3 +1,5 @@
+from __future__ import annotations
+
 from lonboard._constants import EXTENSION_NAME
 
 
