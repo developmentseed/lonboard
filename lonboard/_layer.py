@@ -10,6 +10,8 @@
 from __future__ import annotations
 
 import sys
+import warnings
+from textwrap import dedent
 from typing import (
     TYPE_CHECKING,
     List,
@@ -1928,6 +1930,19 @@ class HeatmapLayer(BaseArrowLayer):
     def __init__(
         self, *, table: ArrowStreamExportable, **kwargs: Unpack[HeatmapLayerKwargs]
     ):
+        err_msg = """\
+        The `HeatmapLayer` is not currently working.
+
+        As of Lonboard v0.10, Lonboard upgraded to version 9.0 of the underlying
+        [deck.gl](https://deck.gl/) library. deck.gl [appears to have a
+        bug](https://github.com/visgl/deck.gl/issues/8960#issuecomment-2284791644) with
+        the HeatmapLayer in 9.0, that has not yet been fixed.
+
+        Please temporarily downgrade to Lonboard v0.9 if you would like to use the
+        `HeatmapLayer`.
+        """
+        warnings.warn(dedent(err_msg), UserWarning)
+
         # NOTE: we override the default for _rows_per_chunk because otherwise we render
         # one heatmap per _chunk_ not for the entire dataset.
         table_o3 = Table.from_arrow(table)
