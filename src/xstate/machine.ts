@@ -1,5 +1,5 @@
 import { assign, createMachine } from "xstate";
-import { PickingInfo } from "@deck.gl/core/typed";
+import { PickingInfo } from "@deck.gl/core";
 
 export const machine = createMachine(
   {

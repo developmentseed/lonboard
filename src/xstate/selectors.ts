@@ -1,6 +1,6 @@
 import { type SnapshotFrom } from "xstate";
 import type { machine } from "./machine";
-import { PolygonLayer, PolygonLayerProps } from "@deck.gl/layers/typed";
+import { PolygonLayer, PolygonLayerProps } from "@deck.gl/layers";
 
 type Snapshot = SnapshotFrom<typeof machine>;
 

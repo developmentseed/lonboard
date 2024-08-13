@@ -4,12 +4,12 @@
   },
   "dependencies": {
     "@anywidget/react": "^0.0.7",
+    "@deck.gl/core": "^9.0.27",
+    "@deck.gl/extensions": "^9.0.27",
+    "@deck.gl/layers": "^9.0.27",
+    "@deck.gl/react": "^9.0.27",
+    "@geoarrow/deck.gl-layers": "^0.3.0-beta.17",
     "@babel/runtime": "^7.25.0",
-    "@deck.gl/core": "^8.9.35",
-    "@deck.gl/extensions": "^8.9.35",
-    "@deck.gl/layers": "^8.9.35",
-    "@deck.gl/react": "^8.9.35",
-    "@geoarrow/deck.gl-layers": "^0.3.0-beta.16",
     "@nextui-org/react": "^2.4.6",
     "@xstate/react": "^4.1.1",
     "apache-arrow": "^17.0.0",
@@ -61,11 +61,6 @@
     "prettier": "prettier './src/**/*.{ts,tsx,css}' --write",
     "lint": "eslint src",
     "test": "vitest run"
-  },
-  "resolutions": {
-    "@deck.gl/core": "8.9.30",
-    "@deck.gl/layers": "8.9.30",
-    "@deck.gl/react": "8.9.30"
   },
   "volta": {
     "node": "18.18.2",
