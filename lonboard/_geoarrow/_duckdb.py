@@ -2,11 +2,18 @@ from __future__ import annotations
 
 import json
 import re
-from typing import TYPE_CHECKING, Optional, Union
+from typing import TYPE_CHECKING, List, Optional, Union
 
 import numpy as np
-import pyarrow as pa
-import pyarrow.compute as pc
+from arro3.compute import struct_field
+from arro3.core import (
+    Array,
+    ChunkedArray,
+    Field,
+    Table,
+    fixed_size_list_array,
+    list_array,
+)
 
 from lonboard._constants import EXTENSION_NAME
 
@@ -29,7 +36,7 @@ def from_duckdb(
     *,
     con: Optional[duckdb.DuckDBPyConnection] = None,
     crs: Optional[Union[str, pyproj.CRS]] = None,
-) -> pa.Table:
+) -> Table:
     geom_col_idxs = [
         i for i, t in enumerate(rel.types) if str(t) in DUCKDB_SPATIAL_TYPES
     ]
@@ -89,9 +96,9 @@ def _from_geometry(
     con: Optional[duckdb.DuckDBPyConnection] = None,
     geom_col_idx: int,
     crs: Optional[Union[str, pyproj.CRS]] = None,
-) -> pa.Table:
+) -> Table:
     other_col_names = [name for i, name in enumerate(rel.columns) if i != geom_col_idx]
-    non_geo_table = rel.select(*other_col_names).arrow()
+    non_geo_table = Table.from_arrow(rel.select(*other_col_names).arrow())
     geom_col_name = rel.columns[geom_col_idx]
 
     # A poor-man's string interpolation check
@@ -102,9 +109,11 @@ def _from_geometry(
     ), f"Expected geometry column name to match regex: {re_match}"
 
     if con is not None:
-        geom_table = con.sql(f"""
+        geom_table = Table.from_arrow(
+            con.sql(f"""
         SELECT ST_AsWKB( {geom_col_name} ) as {geom_col_name} FROM rel;
         """).arrow()
+        )
     else:
         import duckdb
 
@@ -119,7 +128,9 @@ def _from_geometry(
             SELECT ST_AsWKB( {geom_col_name} ) as {geom_col_name} FROM rel;
             """
         try:
-            geom_table = duckdb.execute(sql).arrow()
+            geom_table = Table.from_arrow(
+                duckdb.execute(sql, connection=duckdb.default_connection).arrow()
+            )
         except duckdb.CatalogException as err:
             msg = (
                 "Could not coerce type GEOMETRY to WKB.\n"
@@ -140,8 +151,8 @@ def _from_geoarrow(
     extension_type: EXTENSION_NAME,
     geom_col_idx: int,
     crs: Optional[Union[str, pyproj.CRS]] = None,
-) -> pa.Table:
-    table = rel.arrow()
+) -> Table:
+    table = Table.from_arrow(rel.arrow())
     metadata = _make_geoarrow_field_metadata(extension_type, crs)
     geom_field = table.schema.field(geom_col_idx).with_metadata(metadata)
     return table.set_column(geom_col_idx, geom_field, table.column(geom_col_idx))
@@ -152,21 +163,24 @@ def _from_box2d(
     *,
     geom_col_idx: int,
     crs: Optional[Union[str, pyproj.CRS]] = None,
-) -> pa.Table:
-    table = rel.arrow()
+) -> Table:
+    table = Table.from_arrow(rel.arrow())
     geom_col = table.column(geom_col_idx)
 
-    polygon_array = _convert_box2d_to_geoarrow_polygon_array(geom_col)
+    polygon_chunks: List[Array] = []
+    for geom_chunk in geom_col.chunks:
+        polygon_array = _convert_box2d_to_geoarrow_polygon_array(geom_chunk)
+        polygon_chunks.append(polygon_array)
 
     metadata = _make_geoarrow_field_metadata(EXTENSION_NAME.POLYGON, crs)
     prev_field = table.schema.field(geom_col_idx)
-    geom_field = pa.field(prev_field.name, polygon_array.type, metadata=metadata)
-    return table.set_column(geom_col_idx, geom_field, polygon_array)
+    geom_field = Field(prev_field.name, polygon_chunks[0].type, metadata=metadata)
+    return table.set_column(geom_col_idx, geom_field, ChunkedArray(polygon_chunks))
 
 
 def _convert_box2d_to_geoarrow_polygon_array(
-    geom_col: pa.StructArray,
-) -> pa.ListArray:
+    geom_col: Array,
+) -> Array:
     """
     This is a manual conversion of the duckdb box_2d type to a GeoArrow Polygon array.
 
@@ -176,10 +190,10 @@ def _convert_box2d_to_geoarrow_polygon_array(
     # Extract the bounding box columns from the Arrow struct
     # NOTE: this assumes that the box ordering is minx, miny, maxx, maxy
     # Note sure whether the positional ordering or the named fields is more stable
-    min_x = pc.struct_field(geom_col, 0)
-    min_y = pc.struct_field(geom_col, 1)
-    max_x = pc.struct_field(geom_col, 2)
-    max_y = pc.struct_field(geom_col, 3)
+    min_x = struct_field(geom_col, 0)
+    min_y = struct_field(geom_col, 1)
+    max_x = struct_field(geom_col, 2)
+    max_y = struct_field(geom_col, 3)
 
     # Provision memory for the output coordinates. For closed polygons, each input box
     # becomes 5 coordinates.
@@ -208,9 +222,10 @@ def _convert_box2d_to_geoarrow_polygon_array(
     geom_offsets = np.arange(0, len(ring_offsets), dtype=np.int32)
 
     # Construct the final PolygonArray
-    coords = pa.FixedSizeListArray.from_arrays(coords.ravel("C"), 2)
-    ring_array = pa.ListArray.from_arrays(ring_offsets, coords)
-    polygon_array = pa.ListArray.from_arrays(geom_offsets, ring_array)
+    flat_coords: Array = Array.from_numpy(coords.ravel("C"))
+    coords = fixed_size_list_array(flat_coords, 2)
+    ring_array = list_array(Array.from_numpy(ring_offsets), coords)
+    polygon_array = list_array(Array.from_numpy(geom_offsets), ring_array)
     return polygon_array
 
 

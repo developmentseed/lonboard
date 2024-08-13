@@ -87,10 +87,11 @@ def test_viz_reproject():
     map_ = viz(gdf)
 
     # Assert table was reprojected
-    first_coord = map_.layers[0].table["geometry"][0][0][0][0]
+    scalar = pa.chunked_array(map_.layers[0].table["geometry"])[0]
+    first_coord = scalar.as_py()[0][0][0]
     expected_coord = -74.05050951794041, 40.56643026026788
-    assert (first_coord[0].as_py() - expected_coord[0]) < 0.0001
-    assert (first_coord[1].as_py() - expected_coord[1]) < 0.0001
+    assert (first_coord[0] - expected_coord[0]) < 0.0001
+    assert (first_coord[1] - expected_coord[1]) < 0.0001
 
 
 def test_viz_geo_interface_geometry():
