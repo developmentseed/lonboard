@@ -37,9 +37,9 @@ if TYPE_CHECKING:
     import pyarrow
     import shapely.geometry
     import shapely.geometry.base
+    from arro3.core.types import ArrowArrayExportable, ArrowStreamExportable
     from numpy.typing import NDArray
 
-    from lonboard.types.arrow import ArrowArrayExportable, ArrowStreamExportable
     from lonboard.types.layer import (
         PathLayerKwargs,
         PolygonLayerKwargs,
@@ -372,8 +372,21 @@ def _viz_shapely_array(
 def _viz_geo_interface(
     data: dict, **kwargs
 ) -> List[Union[ScatterplotLayer, PathLayer, PolygonLayer]]:
-    import pyarrow as pa
-    import shapely
+    try:
+        import pyarrow as pa
+    except ImportError as e:
+        raise ImportError(
+            "pyarrow required for visualizing __geo_interface__ objects.\n"
+            "Run `pip install pyarrow`."
+        ) from e
+
+    try:
+        import shapely
+    except ImportError as e:
+        raise ImportError(
+            "shapely required for visualizing __geo_interface__ objects.\n"
+            "Run `pip install shapely`."
+        ) from e
 
     if data["type"] in [
         "Point",

@@ -137,7 +137,7 @@ class FixedErrorTraitType(traitlets.TraitType):
                 raise TraitError(e)
 
 
-class PyarrowTableTrait(FixedErrorTraitType):
+class ArrowTableTrait(FixedErrorTraitType):
     """A trait to validate input for a geospatial Arrow-backed table
 
     Allowed input includes:
@@ -152,7 +152,10 @@ class PyarrowTableTrait(FixedErrorTraitType):
     """
 
     default_value = None
-    info_text = "a pyarrow or GeoArrow Table"
+    info_text = (
+        "a table-like Arrow object, such as a pyarrow or arro3 Table or "
+        "RecordBatchReader"
+    )
 
     def __init__(
         self: TraitType,

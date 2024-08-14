@@ -16,7 +16,13 @@ def geopandas_to_geoarrow(
     columns: Optional[List[str]] = None,
     preserve_index: Optional[bool] = None,
 ) -> Table:
-    import pyarrow
+    try:
+        import pyarrow
+    except ImportError as e:
+        raise ImportError(
+            "pyarrow required for converting GeoPandas to arrow.\n"
+            "Run `pip install pyarrow`."
+        ) from e
 
     df_attr = gdf.drop(columns=[gdf._geometry_column_name])
 
