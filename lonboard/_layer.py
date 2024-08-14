@@ -21,6 +21,7 @@ from typing import (
     Union,
 )
 
+import anywidget
 import ipywidgets
 import traitlets
 from arro3.core import Table
@@ -537,6 +538,10 @@ class BitmapTileLayer(BaseLayer):
         print("before on msg")
         self.on_msg(_handle_anywidget_dispatch)
         super().__init__(**kwargs)  # type: ignore
+
+    @anywidget.experimental.command
+    def helloworld(self, msg, buffers):
+        return "hello world", buffers
 
     _layer_type = traitlets.Unicode("bitmap-tile").tag(sync=True)
 

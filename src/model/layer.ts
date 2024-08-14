@@ -284,9 +284,13 @@ export class BitmapTileModel extends BaseLayerModel {
   }
 
   async getTileData(tile: TileLoadProps) {
+    console.log("in getTileData");
     const { invoke } = this.anywidgetExperimental;
+
     console.log(invoke);
+    console.log("calling invoke");
     const out = await invoke("helloworld");
+    console.log("returned from invoke");
     console.log(out);
 
     // const { data, getTileData, fetch } = this.props;
