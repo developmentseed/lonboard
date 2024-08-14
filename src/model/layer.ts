@@ -177,37 +177,6 @@ export class BitmapModel extends BaseLayerModel {
   }
 }
 
-export type ZRange = [minZ: number, maxZ: number];
-
-export type Bounds = [minX: number, minY: number, maxX: number, maxY: number];
-
-export type GeoBoundingBox = {
-  west: number;
-  north: number;
-  east: number;
-  south: number;
-};
-export type NonGeoBoundingBox = {
-  left: number;
-  top: number;
-  right: number;
-  bottom: number;
-};
-
-export type TileBoundingBox = NonGeoBoundingBox | GeoBoundingBox;
-
-export type TileIndex = { x: number; y: number; z: number };
-
-export type TileLoadProps = {
-  index: TileIndex;
-  id: string;
-  bbox: TileBoundingBox;
-  url?: string | null;
-  signal?: AbortSignal;
-  userData?: Record<string, any>; // eslint-disable-line @typescript-eslint/no-explicit-any
-  zoom?: number;
-};
-
 export class BitmapTileModel extends BaseLayerModel {
   static layerType = "bitmap-tile";
 
@@ -274,7 +243,8 @@ export class BitmapTileModel extends BaseLayerModel {
     };
   }
 
-  async getTileData(tile: TileLoadProps) {
+  // Alternate function form so that we can assign the upstream getTileData type
+  getTileData: TileLayerProps["getTileData"] = async (tile) => {
     console.log("in getTileData");
     // const { invoke } = this.anywidgetExperimental;
 
@@ -300,13 +270,13 @@ export class BitmapTileModel extends BaseLayerModel {
     //   return fetch(tile.url, { propName: "data", layer: this, signal });
     // }
     return null;
-  }
+  };
 
   render(): TileLayer {
     return new TileLayer({
       ...this.baseLayerProps(),
       ...this.layerProps(),
-      getTileData: this.getTileData.bind(this),
+      getTileData: this.getTileData?.bind(this),
       renderSubLayers: (props) => {
         const [min, max] = props.tile.boundingBox;
 
