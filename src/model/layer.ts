@@ -28,6 +28,7 @@ import { BitmapLayer, BitmapLayerProps } from "@deck.gl/layers";
 import { TileLayer, TileLayerProps } from "@deck.gl/geo-layers";
 import { isDefined } from "../util.js";
 import { dispatch } from "../dispatch.js";
+import { Experimental } from "@anywidget/types";
 
 /**
  * An abstract base class for a layer that uses an Arrow Table as the data prop.
@@ -226,7 +227,13 @@ export class BitmapTileModel extends BaseLayerModel {
   protected transparentColor: BitmapLayerProps["transparentColor"];
   protected tintColor: BitmapLayerProps["tintColor"];
 
-  constructor(model: WidgetModel, updateStateCallback: () => void) {
+  protected anywidgetExperimental: Experimental;
+
+  constructor(
+    model: WidgetModel,
+    updateStateCallback: () => void,
+    anywidgetExperimental: Experimental,
+  ) {
     super(model, updateStateCallback);
 
     this.initRegularAttribute("data", "data");
@@ -243,6 +250,8 @@ export class BitmapTileModel extends BaseLayerModel {
     this.initRegularAttribute("desaturate", "desaturate");
     this.initRegularAttribute("transparent_color", "transparentColor");
     this.initRegularAttribute("tint_color", "tintColor");
+
+    this.anywidgetExperimental = anywidgetExperimental;
   }
 
   bitmapLayerProps(): Omit<BitmapLayerProps, "id" | "data"> {
@@ -275,8 +284,13 @@ export class BitmapTileModel extends BaseLayerModel {
   }
 
   async getTileData(tile: TileLoadProps) {
+    const { invoke } = this.anywidgetExperimental;
+    console.log(invoke);
+    const out = await invoke("helloworld");
+    console.log(out);
+
     // const { data, getTileData, fetch } = this.props;
-    const { signal } = tile;
+    // const { signal } = tile;
 
     console.log(tile);
     console.log("making dispatch");
@@ -962,7 +976,10 @@ export class TextModel extends BaseArrowLayerModel {
 
 export async function initializeLayer(
   model: WidgetModel,
-  updateStateCallback: () => void,
+  {
+    updateStateCallback,
+    anywidgetExperimental,
+  }: { updateStateCallback: () => void; anywidgetExperimental: Experimental },
 ): Promise<BaseLayerModel> {
   const layerType = model.get("_layer_type");
   let layerModel: BaseLayerModel;
@@ -976,7 +993,11 @@ export async function initializeLayer(
       break;
 
     case BitmapTileModel.layerType:
-      layerModel = new BitmapTileModel(model, updateStateCallback);
+      layerModel = new BitmapTileModel(
+        model,
+        updateStateCallback,
+        anywidgetExperimental,
+      );
       break;
 
     case ColumnModel.layerType:
