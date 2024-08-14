@@ -1,8 +1,9 @@
 from __future__ import annotations
 
 import sys
+from io import StringIO
 from pathlib import Path
-from typing import IO, TYPE_CHECKING, Optional, Sequence, TextIO, Union
+from typing import IO, TYPE_CHECKING, Optional, Sequence, TextIO, Union, overload
 
 import ipywidgets
 import traitlets
@@ -13,9 +14,12 @@ from lonboard._environment import DEFAULT_HEIGHT
 from lonboard._layer import BaseLayer
 from lonboard._viewport import compute_view
 from lonboard.basemap import CartoBasemap
+from lonboard.traits import DEFAULT_INITIAL_VIEW_STATE, BasemapUrl, ViewStateTrait
 from lonboard.types.map import MapKwargs
 
 if TYPE_CHECKING:
+    from IPython.display import HTML  # type: ignore
+
     if sys.version_info >= (3, 12):
         from typing import Unpack
     else:
@@ -95,32 +99,28 @@ class Map(BaseAnyWidget):
     _esm = bundler_output_dir / "index.js"
     _css = bundler_output_dir / "index.css"
 
-    _initial_view_state = traitlets.Dict().tag(sync=True)
+    view_state = ViewStateTrait()
     """
-    The initial view state of the map.
+    The view state of the map.
 
-    - Type: `dict`, optional
+    - Type: [`ViewState`][lonboard.models.ViewState]
     - Default: Automatically inferred from the data passed to the map.
 
-    The keys _must_ include:
+    You can initialize the map to a specific view state using this property:
 
-    - `longitude`: longitude at the map center.
-    - `latitude`: latitude at the map center.
-    - `zoom`: zoom level.
+    ```py
+    Map(
+        layers,
+        view_state={"longitude": -74.0060, "latitude": 40.7128, "zoom": 7}
+    )
+    ```
 
-    Keys may additionally include:
+    !!! note
 
-    - `pitch` (float, optional) - pitch angle in degrees. Default `0` (top-down).
-    - `bearing` (float, optional) - bearing angle in degrees. Default `0` (north).
-    - `maxZoom` (float, optional) - max zoom level. Default `20`.
-    - `minZoom` (float, optional) - min zoom level. Default `0`.
-    - `maxPitch` (float, optional) - max pitch angle. Default `60`.
-    - `minPitch` (float, optional) - min pitch angle. Default `0`.
+        The properties of the view state are immutable. Use
+        [`set_view_state`][lonboard.Map.set_view_state] to modify a map's view state
+        once it's been initially rendered.
 
-    Note that currently no camel-case/snake-case translation occurs for this method, and
-    so keys must be in camel case.
-
-    This API is not yet stabilized and may change in the future.
     """
 
     _height = traitlets.Int(default_value=DEFAULT_HEIGHT, allow_none=True).tag(
@@ -156,15 +156,53 @@ class Map(BaseAnyWidget):
     - Default: `5`
     """
 
-    basemap_style = traitlets.Unicode(CartoBasemap.PositronNoLabels).tag(sync=True)
+    basemap_style = BasemapUrl(CartoBasemap.PositronNoLabels)
     """
-    A MapLibre-compatible basemap style.
+    A URL to a MapLibre-compatible basemap style.
 
     Various styles are provided in [`lonboard.basemap`](https://developmentseed.org/lonboard/latest/api/basemap/).
 
-    - Type: `str`
+    - Type: `str`, holding a URL hosting a basemap style.
     - Default
       [`lonboard.basemap.CartoBasemap.PositronNoLabels`][lonboard.basemap.CartoBasemap.PositronNoLabels]
+    """
+
+    custom_attribution = traitlets.Union(
+        [
+            traitlets.Unicode(allow_none=True),
+            traitlets.List(traitlets.Unicode(allow_none=False)),
+        ]
+    ).tag(sync=True)
+    """
+    Custom attribution to display on the map.
+
+    This attribute supports the same format as the `attribution` property in the
+    Maplibre API.
+
+    - Type: `str` or `List[str]`
+    - Default: `None`
+
+    You can provide either a single string or a list of strings for custom attributions.
+    If an attribution value is set in the map style, it will be displayed in addition to
+    this custom attribution.
+
+    **Example:**
+
+        ```py
+        m = Map(
+            layers,
+            custom_attribution="Development Seed"
+        )
+        ```
+
+    **Example:**
+
+        ```py
+        m = Map(
+            layers,
+            custom_attribution=["Development Seed", "OpenStreetMap"]
+        )
+        ```
     """
 
     # TODO: We'd prefer a "Strict union of bool and float" but that doesn't
@@ -268,12 +306,51 @@ class Map(BaseAnyWidget):
       global `parameters` when that layer is rendered.
     """
 
+    def set_view_state(
+        self,
+        *,
+        longitude: Optional[float] = None,
+        latitude: Optional[float] = None,
+        zoom: Optional[float] = None,
+        pitch: Optional[float] = None,
+        bearing: Optional[float] = None,
+    ) -> None:
+        """Set the view state of the map.
+
+        Any parameters that are unset will not be changed.
+
+        Keyword Args:
+            longitude: the new longitude to set on the map. Defaults to None.
+            latitude: the new latitude to set on the map. Defaults to None.
+            zoom: the new zoom to set on the map. Defaults to None.
+            pitch: the new pitch to set on the map. Defaults to None.
+            bearing: the new bearing to set on the map. Defaults to None.
+        """
+        view_state = (
+            self.view_state._asdict()  # type: ignore
+            if self.view_state is not None
+            else DEFAULT_INITIAL_VIEW_STATE
+        )
+
+        if longitude is not None:
+            view_state["longitude"] = longitude
+        if latitude is not None:
+            view_state["latitude"] = latitude
+        if zoom is not None:
+            view_state["zoom"] = zoom
+        if pitch is not None:
+            view_state["pitch"] = pitch
+        if bearing is not None:
+            view_state["bearing"] = bearing
+
+        self.view_state = view_state
+
     def fly_to(
         self,
         *,
         longitude: Union[int, float],
         latitude: Union[int, float],
-        zoom: int,
+        zoom: Union[int, float],
         duration: int = 4000,
         pitch: Union[int, float] = 0,
         bearing: Union[int, float] = 0,
@@ -300,6 +377,19 @@ class Map(BaseAnyWidget):
                 second. Similar to speed it linearly affects the duration, when
                 specified speed is ignored.
         """
+        if not isinstance(longitude, (int, float)):
+            raise TypeError(
+                f"Expected longitude to be an int or float, got {type(longitude)}"
+            )
+
+        if not isinstance(latitude, (int, float)):
+            raise TypeError(
+                f"Expected latitude to be an int or float, got {type(latitude)}"
+            )
+
+        if not isinstance(zoom, (int, float)):
+            raise TypeError(f"Expected zoom to be an int or float, got {type(zoom)}")
+
         data = {
             "type": "fly-to",
             "longitude": longitude,
@@ -314,25 +404,82 @@ class Map(BaseAnyWidget):
         }
         self.send(data)
 
+    @overload
     def to_html(
-        self, filename: Union[str, Path, TextIO, IO[str]], title: Optional[str] = None
-    ) -> None:
+        self,
+        filename: None = None,
+        title: Optional[str] = None,
+    ) -> str: ...
+
+    @overload
+    def to_html(
+        self,
+        filename: Union[str, Path, TextIO, IO[str]],
+        title: Optional[str] = None,
+    ) -> None: ...
+
+    def to_html(
+        self,
+        filename: Union[str, Path, TextIO, IO[str], None] = None,
+        title: Optional[str] = None,
+    ) -> Union[None, str]:
         """Save the current map as a standalone HTML file.
 
         Args:
             filename: where to save the generated HTML file.
 
-        Other args:
+        Keyword Args:
             title: A title for the exported map. This will show as the browser tab name.
-        """
-        embed_minimal_html(
-            filename,
-            views=[self],
-            title=title or "Lonboard export",
-            template=_HTML_TEMPLATE,
-            drop_defaults=False,
-        )
 
-    @traitlets.default("_initial_view_state")
+        Returns:
+            If `filename` is not passed, returns the HTML content as a `str`.
+        """
+
+        def inner(fp):
+            embed_minimal_html(
+                fp,
+                views=[self],
+                title=title or "Lonboard export",
+                template=_HTML_TEMPLATE,
+                drop_defaults=False,
+            )
+
+        if filename is None:
+            with StringIO() as sio:
+                inner(sio)
+                return sio.getvalue()
+
+        else:
+            inner(filename)
+
+    def as_html(self) -> HTML:
+        """Render the current map as a static HTML file in IPython.
+
+        !!! warning
+
+            The primary, recommended way to display a map is by
+            leaving it as the last line in a cell.
+
+            ```py
+            from lonboard import Map
+
+            m = Map(layers=[])
+            m
+            ```
+
+            This method exists to support environments that are unable to display
+            Jupyter Widgets. Some aspects of Lonboard are unavailable with this display
+            method. In particular, the map is unable to send any information back to
+            Python. So [`selected_index`][lonboard.BaseArrowLayer.selected_index] will
+            never be populated, for example.
+
+        Returns:
+            IPython HTML object.
+        """
+        from IPython.display import HTML  # type: ignore
+
+        return HTML(self.to_html())
+
+    @traitlets.default("view_state")
     def _default_initial_view_state(self):
         return compute_view(self.layers)

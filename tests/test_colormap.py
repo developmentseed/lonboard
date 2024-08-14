@@ -1,9 +1,11 @@
-import pandas as pd
+import pytest
 
 from lonboard.colormap import apply_categorical_cmap
 
 
 def test_discrete_cmap():
+    pd = pytest.importorskip("pandas")
+
     values = ["red", "green", "blue", "blue", "red"]
     df = pd.DataFrame({"val": values})
     cmap = {

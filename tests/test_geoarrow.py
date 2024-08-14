@@ -2,8 +2,10 @@ import json
 from tempfile import NamedTemporaryFile
 
 import geodatasets
-import geopandas as gpd
+import pyarrow
 import pyarrow.parquet as pq
+import pytest
+from arro3.core import Table
 from pyproj import CRS
 
 from lonboard import SolidPolygonLayer
@@ -14,6 +16,8 @@ from lonboard._utils import get_geometry_column_index
 
 
 def test_geopandas_table_reprojection():
+    gpd = pytest.importorskip("geopandas")
+
     gdf = gpd.read_file(geodatasets.get_path("nybb"))
     layer = SolidPolygonLayer.from_geopandas(gdf)
 
@@ -29,6 +33,8 @@ def test_geopandas_table_reprojection():
 
 
 def test_geoarrow_table_reprojection():
+    gpd = pytest.importorskip("geopandas")
+
     gdf = gpd.read_file(geodatasets.get_path("nybb"))
     table = geopandas_to_geoarrow(gdf)
 
@@ -58,14 +64,18 @@ def test_geoarrow_table_reprojection():
 
 def test_reproject_sliced_array():
     """See https://github.com/developmentseed/lonboard/issues/390"""
+    gpd = pytest.importorskip("geopandas")
+
     gdf = gpd.read_file(geodatasets.get_path("nybb"))
     table = geopandas_to_geoarrow(gdf)
-    sliced_table = table.slice(2)
+    sliced_table = Table.from_arrow(pyarrow.table(table).slice(2))
     # This should work even with a sliced array.
     _reprojected = reproject_table(sliced_table, to_crs=OGC_84)
 
 
 def test_geoparquet_metadata():
+    gpd = pytest.importorskip("geopandas")
+
     gdf = gpd.read_file(geodatasets.get_path("nybb"))
 
     with NamedTemporaryFile("+wb", suffix=".parquet") as f:

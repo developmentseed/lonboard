@@ -1,14 +1,16 @@
 from __future__ import annotations
 
-from typing import Any, Dict, Optional, Sequence, Tuple, Union
+from typing import TYPE_CHECKING, Any, Dict, Optional, Sequence, Tuple, Union
 
 import matplotlib as mpl
 import numpy as np
-import pandas as pd
-import pyarrow as pa
-import pyarrow.compute as pc
-from numpy.typing import NDArray
 from palettable.palette import Palette
+
+if TYPE_CHECKING:
+    import pandas as pd
+    import pyarrow as pa
+    from numpy.typing import NDArray
+
 
 __all__ = (
     "apply_continuous_cmap",
@@ -94,7 +96,7 @@ def apply_continuous_cmap(
         cmap: Any matplotlib `Colormap` or `Palette` object from the
             [`palettable`](https://github.com/jiffyclub/palettable) package.
 
-    Other Args:
+    Keyword Args:
         alpha: Alpha must be a scalar between 0 and 1, a sequence of such floats with
             shape matching `values`, or None.
 
@@ -142,7 +144,7 @@ def apply_categorical_cmap(
         cmap: A dictionary mapping keys to colors. See [DiscreteColormap] for more
             information.
 
-    Other Args:
+    Keyword Args:
         alpha: The _default_ alpha value for entries in the colormap that do not have an
             alpha value defined. Alpha must be an integer between 0 and 255 (inclusive).
 
@@ -151,7 +153,22 @@ def apply_categorical_cmap(
             dimension will have a length of either `3` if `alpha` is `None`, or `4` is
             each color has an alpha value.
     """
+    try:
+        import pyarrow as pa
+        import pyarrow.compute as pc
+    except ImportError as e:
+        raise ImportError(
+            "pyarrow required for apply_categorical_cmap.\n"
+            "Run `pip install pyarrow`."
+        ) from e
 
+    # Import from PyCapsule interface
+    if hasattr(values, "__arrow_c_array__"):
+        values = pa.array(values)
+    elif hasattr(values, "__arrow_c_stream__"):
+        values = pa.chunked_array(values)
+
+    # Construct from non-arrow data
     if not isinstance(values, (pa.Array, pa.ChunkedArray)):
         values = pa.array(values)
 

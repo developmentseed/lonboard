@@ -3,13 +3,12 @@ name: CI
 on:
   push:
     branches:
-      - 'main'
+      - "main"
   pull_request:
 
 concurrency:
   group: ${{ github.workflow }}-${{ github.ref }}
   cancel-in-progress: true
-
 
 jobs:
   lint-and-test:
@@ -39,10 +38,10 @@ jobs:
         run: npm install
 
       - name: Prettier check
-        run: npm run fmt:check
+        run: npm run prettier:check
 
-      - name: Type check
-        run: npm run typecheck
+      - name: Lint check
+        run: npm run lint
 
       - name: Test
         run: npm run test

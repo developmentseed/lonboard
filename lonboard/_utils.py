@@ -1,19 +1,27 @@
-from typing import Any, Dict, Optional, Sequence, TypeVar
+from __future__ import annotations
+
+from typing import TYPE_CHECKING, Any, Dict, List, Optional, Sequence, TypeVar
 
 import numpy as np
-import pandas as pd
-import pyarrow as pa
+from arro3.core import Schema
 
 from lonboard._base import BaseExtension
+from lonboard._compat import check_pandas_version
 from lonboard._constants import EXTENSION_NAME
 
-DF = TypeVar("DF", bound=pd.DataFrame)
+if TYPE_CHECKING:
+    import geopandas as gpd
+    import pandas as pd
+
+    DF = TypeVar("DF", bound=pd.DataFrame)
 
 GEOARROW_EXTENSION_TYPE_NAMES = {e.value for e in EXTENSION_NAME}
 
 
-def get_geometry_column_index(schema: pa.Schema) -> Optional[int]:
+def get_geometry_column_index(schema: Schema) -> Optional[int]:
     """Get the positional index of the geometry column in a pyarrow Schema"""
+    field_idxs = []
+
     for field_idx in range(len(schema)):
         field_metadata = schema.field(field_idx).metadata
         if (
@@ -21,9 +29,14 @@ def get_geometry_column_index(schema: pa.Schema) -> Optional[int]:
             and field_metadata.get(b"ARROW:extension:name")
             in GEOARROW_EXTENSION_TYPE_NAMES
         ):
-            return field_idx
+            field_idxs.append(field_idx)
 
-    return None
+    if len(field_idxs) > 1:
+        raise ValueError("Multiple geometry columns not supported.")
+    elif len(field_idxs) == 1:
+        return field_idxs[0]
+    else:
+        return None
 
 
 def auto_downcast(df: DF) -> DF:
@@ -35,12 +48,16 @@ def auto_downcast(df: DF) -> DF:
     Returns:
         DataFrame with downcasted data types
     """
+    import pandas as pd
+
+    check_pandas_version()
+
     # Convert objects to numeric types where possible.
     # Note: we have to exclude geometry because
     # `convert_dtypes(dtype_backend="pyarrow")` fails on the geometory column, but we
     # also have to manually cast to a non-geo data frame because it'll fail to convert
     # dtypes on a GeoDataFrame without a geom col
-    casted_df = pd.DataFrame(df.select_dtypes(exclude="geometry")).convert_dtypes(
+    casted_df = pd.DataFrame(df.select_dtypes(exclude="geometry")).convert_dtypes(  # type: ignore
         infer_objects=True,
         convert_string=True,
         convert_integer=True,
@@ -99,3 +116,59 @@ def remove_extension_kwargs(
                     )
 
     return extension_kwargs
+
+
+def split_mixed_gdf(gdf: gpd.GeoDataFrame) -> List[gpd.GeoDataFrame]:
+    """Split a GeoDataFrame into one or more GeoDataFrames with unique geometry type"""
+    import shapely
+    from shapely import GeometryType
+
+    type_ids = np.array(shapely.get_type_id(gdf.geometry))
+    unique_type_ids = set(np.unique(type_ids))
+
+    if GeometryType.GEOMETRYCOLLECTION in unique_type_ids:
+        raise ValueError("GeometryCollections not currently supported")
+
+    if GeometryType.LINEARRING in unique_type_ids:
+        raise ValueError("LinearRings not currently supported")
+
+    if len(unique_type_ids) == 1:
+        return [gdf]
+
+    if len(unique_type_ids) == 2:
+        if unique_type_ids == {GeometryType.POINT, GeometryType.MULTIPOINT}:
+            return [gdf]
+
+        if unique_type_ids == {GeometryType.LINESTRING, GeometryType.MULTILINESTRING}:
+            return [gdf]
+
+        if unique_type_ids == {GeometryType.POLYGON, GeometryType.MULTIPOLYGON}:
+            return [gdf]
+
+    point_indices = np.where(
+        (type_ids == GeometryType.POINT) | (type_ids == GeometryType.MULTIPOINT)
+    )[0]
+
+    linestring_indices = np.where(
+        (type_ids == GeometryType.LINESTRING)
+        | (type_ids == GeometryType.MULTILINESTRING)
+    )[0]
+
+    polygon_indices = np.where(
+        (type_ids == GeometryType.POLYGON) | (type_ids == GeometryType.MULTIPOLYGON)
+    )[0]
+
+    # Here we intentionally check geometries in a specific order.
+    # Starting from polygons, then linestrings, then points,
+    # so that the order of generated layers is polygon, then path then scatterplot.
+    # This ensures that points are rendered on top and polygons on the bottom.
+    gdfs = []
+    for single_type_geometry_indices in (
+        polygon_indices,
+        linestring_indices,
+        point_indices,
+    ):
+        if len(single_type_geometry_indices) > 0:
+            gdfs.append(gdf.iloc[single_type_geometry_indices])
+
+    return gdfs

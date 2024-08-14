@@ -62,6 +62,18 @@ def compute_view(layers: List[BaseLayer]):
     # When no geo column is found, bbox will have inf values
     try:
         zoom = bbox_to_zoom_level(bbox)
-        return {"longitude": center.x, "latitude": center.y, "zoom": zoom}
+        return {
+            "longitude": center.x,
+            "latitude": center.y,
+            "zoom": zoom,
+            "pitch": 0,
+            "bearing": 0,
+        }
     except OverflowError:
-        return {"longitude": center.x or 0, "latitude": center.y or 0, "zoom": 0}
+        return {
+            "longitude": center.x or 0,
+            "latitude": center.y or 0,
+            "zoom": 0,
+            "pitch": 0,
+            "bearing": 0,
+        }

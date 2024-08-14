@@ -1,19 +1,20 @@
+import geoarrow.pyarrow as gap
 import ipywidgets
 import numpy as np
-import pandas as pd
 import pyarrow as pa
 import pytest
 import traitlets
+from arro3.core import Table
 from traitlets import TraitError
 
 from lonboard._base import BaseExtension
 from lonboard._layer import BaseArrowLayer, BaseLayer
 from lonboard.layer_extension import DataFilterExtension
 from lonboard.traits import (
+    ArrowTableTrait,
     ColorAccessor,
     FloatAccessor,
     NormalAccessor,
-    PyarrowTableTrait,
 )
 
 
@@ -143,6 +144,8 @@ class FloatAccessorWidget(BaseLayer):
 
 
 def test_float_accessor_validation_type():
+    pd = pytest.importorskip("pandas")
+
     # must be int or float scalar
     with pytest.raises(TraitError):
         FloatAccessorWidget(value=())
@@ -167,79 +170,101 @@ def test_float_accessor_validation_type():
     FloatAccessorWidget(value=pa.array(np.array([2, 3, 4], dtype=np.float64)))
 
 
-class GetFilterValueAccessorWidget(BaseArrowLayer):
+class FilterValueAccessorWidget(BaseArrowLayer):
     # This needs a data filter extension in the extensions array to validate filter_size
     extensions = traitlets.List(trait=traitlets.Instance(BaseExtension)).tag(
         sync=True, **ipywidgets.widget_serialization
     )
 
-    table = PyarrowTableTrait()
+    table = ArrowTableTrait()
 
     def __init__(self, *args, **kwargs):
         # Any tests that are intended to pass validation checks must also have 3 rows,
         # since there's another length check in the serialization code.
-        table = pa.table({"data": [1, 2, 3]})
+        geometry = gap.as_geoarrow(["POINT (0 1)", "POINT (0 1)", "POINT (0 1)"])
+        table = Table.from_arrow(pa.table({"data": [1, 2, 3], "geometry": geometry}))
         super().__init__(*args, table=table, _rows_per_chunk=3, **kwargs)
 
 
 def test_filter_value_validation_filter_size_1():
+    pd = pytest.importorskip("pandas")
+
     extensions = [DataFilterExtension(filter_size=1)]
 
     # Must pass a value
     with pytest.raises(TraitError):
-        GetFilterValueAccessorWidget(extensions=extensions, get_filter_value=())
+        FilterValueAccessorWidget(extensions=extensions, get_filter_value=())
 
     # Strings not allowed
     with pytest.raises(TraitError):
-        GetFilterValueAccessorWidget(extensions=extensions, get_filter_value="2")
+        FilterValueAccessorWidget(extensions=extensions, get_filter_value="2")
 
     # Lists and tuples must match filter_size
     with pytest.raises(TraitError):
-        GetFilterValueAccessorWidget(extensions=extensions, get_filter_value=[1, 2])
+        FilterValueAccessorWidget(extensions=extensions, get_filter_value=[1, 2])
     with pytest.raises(TraitError):
-        GetFilterValueAccessorWidget(extensions=extensions, get_filter_value=(1, 2))
-    GetFilterValueAccessorWidget(extensions=extensions, get_filter_value=[1])
-    GetFilterValueAccessorWidget(extensions=extensions, get_filter_value=(1,))
+        FilterValueAccessorWidget(extensions=extensions, get_filter_value=(1, 2))
+    FilterValueAccessorWidget(
+        extensions=extensions, get_filter_value=[1], filter_range=(0, 1)
+    )
+    FilterValueAccessorWidget(
+        extensions=extensions, get_filter_value=(1,), filter_range=(0, 1)
+    )
 
     # Allow floats and ints
-    GetFilterValueAccessorWidget(extensions=extensions, get_filter_value=2)
-    GetFilterValueAccessorWidget(extensions=extensions, get_filter_value=2.0)
+    FilterValueAccessorWidget(
+        extensions=extensions, get_filter_value=2, filter_range=(0, 1)
+    )
+    FilterValueAccessorWidget(
+        extensions=extensions, get_filter_value=2.0, filter_range=(0, 1)
+    )
 
     # Numpy arrays
-    GetFilterValueAccessorWidget(
-        extensions=extensions, get_filter_value=np.array([2, 3, 4])
+    FilterValueAccessorWidget(
+        extensions=extensions, get_filter_value=np.array([2, 3, 4]), filter_range=(0, 1)
     )
-    GetFilterValueAccessorWidget(
-        extensions=extensions, get_filter_value=np.array([2, 3, 4], dtype=np.float32)
+    FilterValueAccessorWidget(
+        extensions=extensions,
+        get_filter_value=np.array([2, 3, 4], dtype=np.float32),
+        filter_range=(0, 1),
     )
-    GetFilterValueAccessorWidget(
-        extensions=extensions, get_filter_value=np.array([2, 3, 4], dtype=np.float64)
+    FilterValueAccessorWidget(
+        extensions=extensions,
+        get_filter_value=np.array([2, 3, 4], dtype=np.float64),
+        filter_range=(0, 1),
     )
-    GetFilterValueAccessorWidget(
-        extensions=extensions, get_filter_value=pd.Series([2, 3, 4])
+    FilterValueAccessorWidget(
+        extensions=extensions,
+        get_filter_value=pd.Series([2, 3, 4]),
+        filter_range=(0, 1),
     )
-    GetFilterValueAccessorWidget(
-        extensions=extensions, get_filter_value=pd.Series([2, 3, 4], dtype=np.float32)
+    FilterValueAccessorWidget(
+        extensions=extensions,
+        get_filter_value=pd.Series([2, 3, 4], dtype=np.float32),
+        filter_range=(0, 1),
     )
-    GetFilterValueAccessorWidget(
-        extensions=extensions, get_filter_value=pd.Series([2, 3, 4], dtype=np.float64)
+    FilterValueAccessorWidget(
+        extensions=extensions,
+        get_filter_value=pd.Series([2, 3, 4], dtype=np.float64),
+        filter_range=(0, 1),
     )
 
     # Raises for non-numeric numpy array
     with pytest.raises(TraitError):
-        GetFilterValueAccessorWidget(
+        FilterValueAccessorWidget(
             extensions=extensions, get_filter_value=np.array(["2", "3", "4"])
         )
 
     # Accept 2D numpy arrays where the second dimension is 1
-    GetFilterValueAccessorWidget(
+    FilterValueAccessorWidget(
         extensions=extensions,
         get_filter_value=np.array([2, 3, 4], dtype=np.float32).reshape(-1, 1),
+        filter_range=(0, 1),
     )
 
     # Raises for 2D numpy array with second dim >1
     with pytest.raises(TraitError):
-        GetFilterValueAccessorWidget(
+        FilterValueAccessorWidget(
             extensions=extensions,
             get_filter_value=np.array([2, 3, 4, 6, 7, 8], dtype=np.float32).reshape(
                 -1, 2
@@ -248,87 +273,97 @@ def test_filter_value_validation_filter_size_1():
 
     # Must be floating-point pyarrow array type
     with pytest.raises(TraitError):
-        GetFilterValueAccessorWidget(
+        FilterValueAccessorWidget(
             extensions=extensions,
             get_filter_value=pa.array(np.array([2, 3, 4], dtype=np.int64)),
         )
 
     # Accept floating point pyarrow arrays
-    GetFilterValueAccessorWidget(
+    FilterValueAccessorWidget(
         extensions=extensions,
         get_filter_value=pa.array(np.array([2, 3, 4], dtype=np.float32)),
+        filter_range=(0, 1),
     )
-    GetFilterValueAccessorWidget(
+    FilterValueAccessorWidget(
         extensions=extensions,
         get_filter_value=pa.array(np.array([2, 3, 4], dtype=np.float64)),
+        filter_range=(0, 1),
     )
 
 
 def test_filter_value_validation_filter_size_3():
+    pd = pytest.importorskip("pandas")
+
     extensions = [DataFilterExtension(filter_size=3)]
 
     # Must pass a value
     with pytest.raises(TraitError):
-        GetFilterValueAccessorWidget(extensions=extensions, get_filter_value=())
+        FilterValueAccessorWidget(extensions=extensions, get_filter_value=())
 
     # Strings not allowed
     with pytest.raises(TraitError):
-        GetFilterValueAccessorWidget(extensions=extensions, get_filter_value="2")
+        FilterValueAccessorWidget(extensions=extensions, get_filter_value="2")
 
     # Lists and tuples must match filter_size
     with pytest.raises(TraitError):
-        GetFilterValueAccessorWidget(extensions=extensions, get_filter_value=[1, 2])
+        FilterValueAccessorWidget(extensions=extensions, get_filter_value=[1, 2])
     with pytest.raises(TraitError):
-        GetFilterValueAccessorWidget(extensions=extensions, get_filter_value=(1, 2))
-    GetFilterValueAccessorWidget(extensions=extensions, get_filter_value=[1, 2, 3])
-    GetFilterValueAccessorWidget(extensions=extensions, get_filter_value=(1, 2, 3))
+        FilterValueAccessorWidget(extensions=extensions, get_filter_value=(1, 2))
+    FilterValueAccessorWidget(
+        extensions=extensions, get_filter_value=[1, 2, 3], filter_range=(0, 1)
+    )
+    FilterValueAccessorWidget(
+        extensions=extensions, get_filter_value=(1, 2, 3), filter_range=(0, 1)
+    )
 
     # Disallow floats and ints
     with pytest.raises(TraitError):
-        GetFilterValueAccessorWidget(extensions=extensions, get_filter_value=2)
+        FilterValueAccessorWidget(extensions=extensions, get_filter_value=2)
     with pytest.raises(TraitError):
-        GetFilterValueAccessorWidget(extensions=extensions, get_filter_value=2.0)
+        FilterValueAccessorWidget(extensions=extensions, get_filter_value=2.0)
 
     # Numpy arrays
     with pytest.raises(TraitError):
-        GetFilterValueAccessorWidget(
+        FilterValueAccessorWidget(
             extensions=extensions, get_filter_value=np.array([2, 3, 4])
         )
-    GetFilterValueAccessorWidget(
+    FilterValueAccessorWidget(
         extensions=extensions,
         get_filter_value=np.array(
             [1, 2, 3, 4, 5, 6, 7, 8, 9], dtype=np.float32
         ).reshape(-1, 3),
+        filter_range=(0, 1),
     )
-    GetFilterValueAccessorWidget(
+    FilterValueAccessorWidget(
         extensions=extensions,
         get_filter_value=np.array(
             [1, 2, 3, 4, 5, 6, 7, 8, 9], dtype=np.float64
         ).reshape(-1, 3),
+        filter_range=(0, 1),
     )
 
     # Disallow pandas series
     with pytest.raises(TraitError):
-        GetFilterValueAccessorWidget(
+        FilterValueAccessorWidget(
             extensions=extensions, get_filter_value=pd.Series([2, 3, 4])
         )
 
     # Raises for non-numeric numpy array
     with pytest.raises(TraitError):
-        GetFilterValueAccessorWidget(
+        FilterValueAccessorWidget(
             extensions=extensions, get_filter_value=np.array(["2", "3", "4"])
         )
 
     # Disallow 2D numpy arrays where the second dimension is 1
     with pytest.raises(TraitError):
-        GetFilterValueAccessorWidget(
+        FilterValueAccessorWidget(
             extensions=extensions,
             get_filter_value=np.array([2, 3, 4], dtype=np.float32).reshape(-1, 1),
         )
 
     # Must be floating-point pyarrow array type
     with pytest.raises(TraitError):
-        GetFilterValueAccessorWidget(
+        FilterValueAccessorWidget(
             extensions=extensions,
             get_filter_value=pa.FixedSizeListArray.from_arrays(
                 np.array([1, 2, 3, 4, 5, 6, 7, 8, 9], dtype=np.int64), 3
@@ -336,17 +371,19 @@ def test_filter_value_validation_filter_size_3():
         )
 
     # Accept floating point pyarrow arrays
-    GetFilterValueAccessorWidget(
+    FilterValueAccessorWidget(
         extensions=extensions,
         get_filter_value=pa.FixedSizeListArray.from_arrays(
             np.array([1, 2, 3, 4, 5, 6, 7, 8, 9], dtype=np.float32), 3
         ),
+        filter_range=(0, 1),
     )
-    GetFilterValueAccessorWidget(
+    FilterValueAccessorWidget(
         extensions=extensions,
         get_filter_value=pa.FixedSizeListArray.from_arrays(
             np.array([1, 2, 3, 4, 5, 6, 7, 8, 9], dtype=np.float64), 3
         ),
+        filter_range=(0, 1),
     )
 
 
