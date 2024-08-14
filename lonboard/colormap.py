@@ -153,8 +153,14 @@ def apply_categorical_cmap(
             dimension will have a length of either `3` if `alpha` is `None`, or `4` is
             each color has an alpha value.
     """
-    import pyarrow as pa
-    import pyarrow.compute as pc
+    try:
+        import pyarrow as pa
+        import pyarrow.compute as pc
+    except ImportError as e:
+        raise ImportError(
+            "pyarrow required for apply_categorical_cmap.\n"
+            "Run `pip install pyarrow`."
+        ) from e
 
     # Import from PyCapsule interface
     if hasattr(values, "__arrow_c_array__"):

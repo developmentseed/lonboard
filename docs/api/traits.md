@@ -6,4 +6,4 @@
 ::: lonboard.traits.FilterValueAccessor
 ::: lonboard.traits.NormalAccessor
 ::: lonboard.traits.PointAccessor
-::: lonboard.traits.PyarrowTableTrait
+::: lonboard.traits.ArrowTableTrait

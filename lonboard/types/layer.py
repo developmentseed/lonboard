@@ -4,7 +4,6 @@ import sys
 from typing import (
     List,
     Literal,
-    Protocol,
     Sequence,
     Tuple,
     Union,
@@ -13,6 +12,7 @@ from typing import (
 import numpy as np
 import pandas as pd
 import pyarrow
+from arro3.core.types import ArrowArrayExportable, ArrowStreamExportable
 from numpy.typing import NDArray
 
 from lonboard._base import BaseExtension
@@ -21,12 +21,6 @@ if sys.version_info >= (3, 12):
     from typing import TypedDict
 else:
     from typing_extensions import TypedDict
-
-
-class ArrowArrayExportable(Protocol):
-    def __arrow_c_array__(
-        self, requested_schema: object | None = None
-    ) -> Tuple[object, object]: ...
 
 
 IntFloat = Union[int, float]
@@ -41,6 +35,7 @@ ColorAccessorInput = Union[
     pyarrow.FixedSizeListArray,
     pyarrow.ChunkedArray,
     ArrowArrayExportable,
+    ArrowStreamExportable,
 ]
 FloatAccessorInput = Union[
     int,
@@ -50,6 +45,7 @@ FloatAccessorInput = Union[
     pyarrow.FloatingPointArray,
     pyarrow.ChunkedArray,
     ArrowArrayExportable,
+    ArrowStreamExportable,
 ]
 NormalAccessorInput = Union[
     List[int],
@@ -59,6 +55,7 @@ NormalAccessorInput = Union[
     pyarrow.FixedSizeListArray,
     pyarrow.ChunkedArray,
     ArrowArrayExportable,
+    ArrowStreamExportable,
 ]
 TextAccessorInput = Union[
     str,
@@ -68,6 +65,7 @@ TextAccessorInput = Union[
     pyarrow.LargeStringArray,
     pyarrow.ChunkedArray,
     ArrowArrayExportable,
+    ArrowStreamExportable,
 ]
 
 
