@@ -64,6 +64,7 @@ pyogrio = "^0.8"
 geoarrow-pyarrow = "^0.1.1"
 duckdb = "^0.10.2"
 pyarrow = ">=14.0.1"
+rio-tiler = "^6.6.1"
 
 [tool.poetry.group.docs.dependencies]
 # We use ruff format ourselves, but mkdocstrings requires black to be installed

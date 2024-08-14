@@ -27,6 +27,7 @@ import { BaseLayerModel } from "./base-layer.js";
 import { BitmapLayer, BitmapLayerProps } from "@deck.gl/layers";
 import { TileLayer, TileLayerProps } from "@deck.gl/geo-layers";
 import { isDefined } from "../util.js";
+import { invoke } from "./invoke.js";
 
 /**
  * An abstract base class for a layer that uses an Arrow Table as the data prop.
@@ -242,12 +243,73 @@ export class BitmapTileModel extends BaseLayerModel {
     };
   }
 
+  // Alternate function form so that we can assign the upstream getTileData type
+  getTileData: TileLayerProps["getTileData"] = async (tile) => {
+    const { signal } = tile;
+    const signals: AbortSignal[] = [AbortSignal.timeout(10_000)];
+    if (signal !== undefined) {
+      signals.push(signal);
+    }
+
+    const compositeSignal = AbortSignal.any(signals);
+    console.log("in getTileData");
+    // const { invoke } = this.anywidgetExperimental;
+
+    console.log("calling invoke");
+    console.log(tile);
+    const [message, buffer] = await invoke(
+      this.model,
+      {
+        tile_id: tile.id,
+      },
+      { signal: compositeSignal },
+    );
+
+    if (compositeSignal.aborted) {
+      return null;
+    }
+
+    if (buffer.length === 0) {
+      return null;
+    }
+
+    console.log("returned from invoke");
+    console.log(message);
+    console.log(buffer.length);
+    console.log(buffer[0]);
+    console.log(buffer[0].byteLength);
+    console.log(tile);
+
+    const blob = new Blob([buffer[0]], { type: "image/png" });
+    const url = URL.createObjectURL(blob);
+    return url;
+    const image = new Response(buffer[0]);
+    return image;
+
+    // const { data, getTileData, fetch } = this.props;
+    // const { signal } = tile;
+
+    // // tile.url =
+    // //   typeof data === "string" || Array.isArray(data)
+    // //     ? getURLFromTemplate(data, tile)
+    // //     : null;
+
+    // if (getTileData) {
+    //   return getTileData(tile);
+    // }
+    // if (fetch && tile.url) {
+    //   return fetch(tile.url, { propName: "data", layer: this, signal });
+    // }
+    return null;
+  };
+
   render(): TileLayer {
     return new TileLayer({
       ...this.baseLayerProps(),
       ...this.layerProps(),
-
+      getTileData: this.getTileData?.bind(this),
       renderSubLayers: (props) => {
+        console.log("in renderSubLayers", props);
         const [min, max] = props.tile.boundingBox;
 
         return new BitmapLayer(props, {
