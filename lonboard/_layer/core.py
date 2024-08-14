@@ -515,7 +515,7 @@ class BitmapTileLayer(BaseLayer):
 
     called = 0
 
-    def __init__(self, **kwargs: BitmapTileLayerKwargs):
+    def __init__(self, **kwargs: Unpack[BitmapTileLayerKwargs]):
         def _handle_anywidget_dispatch(
             widget: ipywidgets.Widget, msg: Union[str, list, dict], buffers: List[bytes]
         ) -> None:
@@ -541,12 +541,14 @@ class BitmapTileLayer(BaseLayer):
 
         print("before on msg")
         self.on_msg(_handle_anywidget_dispatch)
-        super().__init__(**kwargs)  # type: ignore
+        super().__init__(**kwargs)
 
     _layer_type = traitlets.Unicode("bitmap-tile").tag(sync=True)
 
     data = traitlets.Union(
-        [traitlets.Unicode(), traitlets.List(traitlets.Unicode(), minlen=1)]
+        [traitlets.Unicode(), traitlets.List(traitlets.Unicode(), minlen=1)],
+        default_value=None,
+        allow_none=True,
     ).tag(sync=True)
     """
     Either a URL template or an array of URL templates from which the tile data should
