@@ -27,7 +27,6 @@ import { BaseLayerModel } from "./base-layer.js";
 import { BitmapLayer, BitmapLayerProps } from "@deck.gl/layers";
 import { TileLayer, TileLayerProps } from "@deck.gl/geo-layers";
 import { isDefined } from "../util.js";
-import { dispatch } from "../dispatch.js";
 import { Experimental } from "@anywidget/types";
 import { invoke } from "./invoke.js";
 
@@ -206,7 +205,7 @@ export type TileLoadProps = {
   bbox: TileBoundingBox;
   url?: string | null;
   signal?: AbortSignal;
-  userData?: Record<string, any>;
+  userData?: Record<string, any>; // eslint-disable-line @typescript-eslint/no-explicit-any
   zoom?: number;
 };
 
@@ -293,17 +292,10 @@ export class BitmapTileModel extends BaseLayerModel {
     const out = await invoke(this.model, "helloworld", {});
     console.log("returned from invoke");
     console.log(out);
+    console.log(tile);
 
     // const { data, getTileData, fetch } = this.props;
     // const { signal } = tile;
-
-    console.log(tile);
-    console.log("making dispatch");
-    console.log("this");
-    console.log(this);
-    const x = await dispatch(this.model, "getTileData");
-    console.log("received dispatch");
-    console.log(x);
 
     // // tile.url =
     // //   typeof data === "string" || Array.isArray(data)
