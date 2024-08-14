@@ -1,12 +1,7 @@
 import * as React from "react";
 import { useEffect, useCallback, useState } from "react";
-import {
-  createRender,
-  useModelState,
-  useModel,
-  useExperimental,
-} from "@anywidget/react";
-import type { Experimental, Initialize, Render } from "@anywidget/types";
+import { createRender, useModelState, useModel } from "@anywidget/react";
+import type { Initialize, Render } from "@anywidget/types";
 import Map from "react-map-gl/maplibre";
 import DeckGL from "@deck.gl/react";
 import { MapViewState, PickingInfo, type Layer } from "@deck.gl/core";
@@ -47,7 +42,6 @@ async function getChildModelState(
   childLayerIds: string[],
   previousSubModelState: Record<string, BaseLayerModel>,
   setStateCounter: React.Dispatch<React.SetStateAction<Date>>,
-  anywidgetExperimental: Experimental,
 ): Promise<Record<string, BaseLayerModel>> {
   const newSubModelState: Record<string, BaseLayerModel> = {};
   const updateStateCallback = () => setStateCounter(new Date());
@@ -65,10 +59,7 @@ async function getChildModelState(
       continue;
     }
 
-    const childLayer = await initializeLayer(childModel, {
-      updateStateCallback,
-      anywidgetExperimental,
-    });
+    const childLayer = await initializeLayer(childModel, updateStateCallback);
     newSubModelState[childLayerId] = childLayer;
   }
 
@@ -112,7 +103,6 @@ function App() {
   );
   const [parameters] = useModelState<object>("parameters");
   const [customAttribution] = useModelState<string>("custom_attribution");
-  const anywidgetExperimental = useExperimental();
 
   // initialViewState is the value of view_state on the Python side. This is
   // called `initial` here because it gets passed in to deck's
@@ -162,7 +152,6 @@ function App() {
           childLayerIds,
           subModelState,
           setStateCounter,
-          anywidgetExperimental,
         );
         setSubModelState(newSubModelState);
 

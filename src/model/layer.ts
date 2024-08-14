@@ -27,7 +27,6 @@ import { BaseLayerModel } from "./base-layer.js";
 import { BitmapLayer, BitmapLayerProps } from "@deck.gl/layers";
 import { TileLayer, TileLayerProps } from "@deck.gl/geo-layers";
 import { isDefined } from "../util.js";
-import { Experimental } from "@anywidget/types";
 import { invoke } from "./invoke.js";
 
 /**
@@ -227,13 +226,7 @@ export class BitmapTileModel extends BaseLayerModel {
   protected transparentColor: BitmapLayerProps["transparentColor"];
   protected tintColor: BitmapLayerProps["tintColor"];
 
-  protected anywidgetExperimental: Experimental;
-
-  constructor(
-    model: WidgetModel,
-    updateStateCallback: () => void,
-    anywidgetExperimental: Experimental,
-  ) {
+  constructor(model: WidgetModel, updateStateCallback: () => void) {
     super(model, updateStateCallback);
 
     this.initRegularAttribute("data", "data");
@@ -250,8 +243,6 @@ export class BitmapTileModel extends BaseLayerModel {
     this.initRegularAttribute("desaturate", "desaturate");
     this.initRegularAttribute("transparent_color", "transparentColor");
     this.initRegularAttribute("tint_color", "tintColor");
-
-    this.anywidgetExperimental = anywidgetExperimental;
   }
 
   bitmapLayerProps(): Omit<BitmapLayerProps, "id" | "data"> {
@@ -973,10 +964,7 @@ export class TextModel extends BaseArrowLayerModel {
 
 export async function initializeLayer(
   model: WidgetModel,
-  {
-    updateStateCallback,
-    anywidgetExperimental,
-  }: { updateStateCallback: () => void; anywidgetExperimental: Experimental },
+  updateStateCallback: () => void,
 ): Promise<BaseLayerModel> {
   const layerType = model.get("_layer_type");
   let layerModel: BaseLayerModel;
@@ -990,11 +978,7 @@ export async function initializeLayer(
       break;
 
     case BitmapTileModel.layerType:
-      layerModel = new BitmapTileModel(
-        model,
-        updateStateCallback,
-        anywidgetExperimental,
-      );
+      layerModel = new BitmapTileModel(model, updateStateCallback);
       break;
 
     case ColumnModel.layerType:
