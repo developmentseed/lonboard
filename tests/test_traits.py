@@ -11,10 +11,10 @@ from lonboard._base import BaseExtension
 from lonboard._layer import BaseArrowLayer, BaseLayer
 from lonboard.layer_extension import DataFilterExtension
 from lonboard.traits import (
+    ArrowTableTrait,
     ColorAccessor,
     FloatAccessor,
     NormalAccessor,
-    PyarrowTableTrait,
 )
 
 
@@ -176,7 +176,7 @@ class FilterValueAccessorWidget(BaseArrowLayer):
         sync=True, **ipywidgets.widget_serialization
     )
 
-    table = PyarrowTableTrait()
+    table = ArrowTableTrait()
 
     def __init__(self, *args, **kwargs):
         # Any tests that are intended to pass validation checks must also have 3 rows,

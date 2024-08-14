@@ -24,6 +24,7 @@ from typing import (
 import ipywidgets
 import traitlets
 from arro3.core import Table
+from arro3.core.types import ArrowStreamExportable
 
 from lonboard._base import BaseExtension, BaseWidget
 from lonboard._constants import EXTENSION_NAME, OGC_84
@@ -38,12 +39,11 @@ from lonboard._serialization import infer_rows_per_chunk
 from lonboard._utils import auto_downcast as _auto_downcast
 from lonboard._utils import get_geometry_column_index, remove_extension_kwargs
 from lonboard.traits import (
+    ArrowTableTrait,
     ColorAccessor,
     FloatAccessor,
     NormalAccessor,
-    PyarrowTableTrait,
 )
-from lonboard.types.arrow import ArrowStreamExportable
 
 if TYPE_CHECKING:
     import geopandas as gpd
@@ -283,7 +283,7 @@ class BaseArrowLayer(BaseLayer):
 
     # The following traitlets **are** serialized to JS
 
-    table: traitlets.TraitType
+    table: ArrowTableTrait
 
     def __init__(
         self,
@@ -714,7 +714,7 @@ class ColumnLayer(BaseArrowLayer):
 
     _layer_type = traitlets.Unicode("column").tag(sync=True)
 
-    table = PyarrowTableTrait(allowed_geometry_types={EXTENSION_NAME.POINT})
+    table = ArrowTableTrait(allowed_geometry_types={EXTENSION_NAME.POINT})
     """A GeoArrow table with a Point or MultiPoint column.
 
     This is the fastest way to plot data from an existing GeoArrow source, such as
@@ -1001,7 +1001,7 @@ class PolygonLayer(BaseArrowLayer):
 
     _layer_type = traitlets.Unicode("polygon").tag(sync=True)
 
-    table = PyarrowTableTrait(
+    table = ArrowTableTrait(
         allowed_geometry_types={EXTENSION_NAME.POLYGON, EXTENSION_NAME.MULTIPOLYGON}
     )
     """A GeoArrow table with a Polygon or MultiPolygon column.
@@ -1246,7 +1246,7 @@ class ScatterplotLayer(BaseArrowLayer):
 
     _layer_type = traitlets.Unicode("scatterplot").tag(sync=True)
 
-    table = PyarrowTableTrait(
+    table = ArrowTableTrait(
         allowed_geometry_types={EXTENSION_NAME.POINT, EXTENSION_NAME.MULTIPOINT}
     )
     """A GeoArrow table with a Point or MultiPoint column.
@@ -1488,7 +1488,7 @@ class PathLayer(BaseArrowLayer):
 
     _layer_type = traitlets.Unicode("path").tag(sync=True)
 
-    table = PyarrowTableTrait(
+    table = ArrowTableTrait(
         allowed_geometry_types={
             EXTENSION_NAME.LINESTRING,
             EXTENSION_NAME.MULTILINESTRING,
@@ -1659,7 +1659,7 @@ class PointCloudLayer(BaseArrowLayer):
 
     _layer_type = traitlets.Unicode("point-cloud").tag(sync=True)
 
-    table = PyarrowTableTrait(
+    table = ArrowTableTrait(
         allowed_geometry_types={EXTENSION_NAME.POINT}, allowed_dimensions={3}
     )
     """A GeoArrow table with a Point column.
@@ -1792,7 +1792,7 @@ class SolidPolygonLayer(BaseArrowLayer):
 
     _layer_type = traitlets.Unicode("solid-polygon").tag(sync=True)
 
-    table = PyarrowTableTrait(
+    table = ArrowTableTrait(
         allowed_geometry_types={EXTENSION_NAME.POLYGON, EXTENSION_NAME.MULTIPOLYGON}
     )
     """A GeoArrow table with a Polygon or MultiPolygon column.
@@ -1971,7 +1971,7 @@ class HeatmapLayer(BaseArrowLayer):
 
     _layer_type = traitlets.Unicode("heatmap").tag(sync=True)
 
-    table = PyarrowTableTrait(allowed_geometry_types={EXTENSION_NAME.POINT})
+    table = ArrowTableTrait(allowed_geometry_types={EXTENSION_NAME.POINT})
     """A GeoArrow table with a Point column.
 
     This is the fastest way to plot data from an existing GeoArrow source, such as

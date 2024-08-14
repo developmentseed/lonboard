@@ -5,7 +5,6 @@ from tempfile import NamedTemporaryFile
 from typing import Dict, List, Optional
 
 import click
-import pyarrow.parquet as pq
 from arro3.core import Table
 from pyproj import CRS
 
@@ -65,6 +64,14 @@ def read_geoparquet(path: Path) -> Table:
     Args:
         path: Path to GeoParquet file
     """
+    try:
+        import pyarrow.parquet as pq
+    except ImportError as e:
+        raise ImportError(
+            "pyarrow currently required for reading GeoParquet files.\n"
+            "Run `pip install pyarrow`."
+        ) from e
+
     file = pq.ParquetFile(path)
     geo_meta = file.metadata.metadata.get(b"geo")
     if not geo_meta:
