@@ -29,6 +29,7 @@ import { TileLayer, TileLayerProps } from "@deck.gl/geo-layers";
 import { isDefined } from "../util.js";
 import { dispatch } from "../dispatch.js";
 import { Experimental } from "@anywidget/types";
+import { invoke } from "./invoke.js";
 
 /**
  * An abstract base class for a layer that uses an Arrow Table as the data prop.
@@ -285,11 +286,11 @@ export class BitmapTileModel extends BaseLayerModel {
 
   async getTileData(tile: TileLoadProps) {
     console.log("in getTileData");
-    const { invoke } = this.anywidgetExperimental;
+    // const { invoke } = this.anywidgetExperimental;
 
     console.log(invoke);
     console.log("calling invoke");
-    const out = await invoke("helloworld");
+    const out = await invoke(this.model, "helloworld", {});
     console.log("returned from invoke");
     console.log(out);
 
