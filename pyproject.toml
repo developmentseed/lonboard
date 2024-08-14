@@ -44,9 +44,9 @@ pandas = { version = "^2", optional = true }
 shapely = { version = "^2", optional = true }
 # The same version pin as geopandas
 pyproj = ">=3.3"
-arro3-core = "^0.2.0b3"
-arro3-io = "^0.2.0b3"
-arro3-compute = "^0.2.0b3"
+arro3-core = "^0.2.1"
+arro3-io = "^0.2.1"
+arro3-compute = "^0.2.1"
 
 
 [tool.poetry.extras]

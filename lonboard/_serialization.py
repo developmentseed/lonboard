@@ -29,16 +29,12 @@ DEFAULT_MAX_NUM_CHUNKS = 32
 
 def serialize_table_to_parquet(table: Table, *, max_chunksize: int) -> List[bytes]:
     buffers: List[bytes] = []
-    # NOTE: passing `max_chunksize=0` creates an infinite loop
-    # https://github.com/apache/arrow/issues/39788
     assert max_chunksize > 0
 
     compression_string = (
         f"{DEFAULT_PARQUET_COMPRESSION}({DEFAULT_PARQUET_COMPRESSION_LEVEL})"
     )
-    # TODO: restore rechunking
-    # max_chunksize=max_chunksize
-    for record_batch in table.to_batches():
+    for record_batch in table.rechunk(max_chunksize=max_chunksize).to_batches():
         with BytesIO() as bio:
             # Occasionally it's possible for there to be empty batches in the
             # pyarrow table. This will error when writing to parquet. We want to
