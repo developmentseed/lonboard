@@ -17,7 +17,6 @@ type InvokeOptions = {
 
 export async function invoke<T>(
   model: AnyModel,
-  name: string,
   msg: object,
   options: InvokeOptions = {},
 ): Promise<[T, DataView[]]> {
@@ -28,9 +27,11 @@ export async function invoke<T>(
 
   return new Promise((resolve, reject) => {
     if (signal.aborted) {
+      console.log("signal already aborted");
       reject(signal.reason);
     }
     signal.addEventListener("abort", () => {
+      console.log("aborting from signal again");
       model.off("msg:custom", handler);
       reject(signal.reason);
     });
@@ -45,7 +46,7 @@ export async function invoke<T>(
     }
     model.on("msg:custom", handler);
     model.send(
-      { id, kind: "anywidget-command", name, msg },
+      { id, kind: "anywidget-command", msg },
       undefined,
       options.buffers ?? [],
     );
