@@ -21,7 +21,6 @@ from typing import (
     Union,
 )
 
-import anywidget
 import ipywidgets
 import traitlets
 from arro3.core import Table
@@ -522,26 +521,27 @@ class BitmapTileLayer(BaseLayer):
         ) -> None:
             self.called += 1
             print(msg)
-            if not isinstance(msg, dict) or msg.get("kind") != "anywidget-dispatch":
+
+            if not isinstance(msg, dict) or msg.get("kind") != "anywidget-command":
                 return
 
             print("test")
             print(msg)
+
+            response = "helloworld from init"
+            buffers = [b"hello world"]
             self.send(
                 {
                     "id": msg["id"],
-                    "kind": "anywidget-dispatch-response",
-                    "response": "hello world",
-                }
+                    "kind": "anywidget-command-response",
+                    "response": response,
+                },
+                buffers,
             )
 
         print("before on msg")
         self.on_msg(_handle_anywidget_dispatch)
         super().__init__(**kwargs)  # type: ignore
-
-    @anywidget.experimental.command
-    def helloworld(self, msg, buffers):
-        return "hello world", buffers
 
     _layer_type = traitlets.Unicode("bitmap-tile").tag(sync=True)
 
