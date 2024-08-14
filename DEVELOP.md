@@ -56,9 +56,25 @@ We use ESBuild to bundle into an ES Module, which the Jupyter Widget will then l
 npm run build:watch
 ```
 
+### Environment Variables
+
+To use custom environment variables, copy the example environment file:
+
+```sh
+cp .env.example .env
+```
+
+This file contains the list of environment variables for the JavaScript component, and the build task will use them when available.
+
+**Note: `.env` is in `.gitignore` and should never be committed.**
+
+### Architectural notes
+
 All models on the TypeScript side are combined into a single entry point, which is compiled by ESBuild and loaded by the Python `Map` class. (Refer to the `_esm` key on the `Map` class, which tells Jupyter/ipywidgets where to load the JavaScript bundle.)
 
 Anywidget and its dependency ipywidgets handles the serialization from Python into JS, automatically keeping each side in sync.
+
+State management is implemented using [XState](https://stately.ai/docs/xstate). The app is instrumented with [Stately Inspector](https://stately.ai/docs/inspector), and the use of the [VS Code extension](https://stately.ai/docs/xstate-vscode-extension) is highly recommended.
 
 ## Publishing
 

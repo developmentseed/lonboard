@@ -1,11 +1,11 @@
-import { TooltipContent } from "@deck.gl/core/typed/lib/tooltip.js";
+import { TooltipContent } from "@deck.gl/core/dist/lib/tooltip";
 import type { GeoArrowPickingInfo } from "@geoarrow/deck.gl-layers";
 
 import "./index.css";
 
 const rowIndexSymbol = Symbol.for("rowIndex");
 
-function toHtmlTable(featureProperties: Record<string, any>): string {
+function toHtmlTable(featureProperties: Record<string, unknown>): string {
   return `<table>
       <tbody>
         ${Object.keys(featureProperties)

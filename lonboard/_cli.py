@@ -5,64 +5,80 @@ from tempfile import NamedTemporaryFile
 from typing import Dict, List, Optional
 
 import click
-import pyarrow as pa
-import pyarrow.parquet as pq
+from arro3.core import Table
 from pyproj import CRS
 
 from lonboard import viz
+from lonboard._constants import EXTENSION_NAME
 
 
-def read_pyogrio(path: Path) -> pa.Table:
+def read_pyogrio(path: Path) -> Table:
     """Read path using pyogrio and convert field metadata to geoarrow
 
     Args:
         path: Path to file readable by pyogrio
     """
     try:
-        from pyogrio.raw import read_arrow
+        from pyogrio.raw import open_arrow
     except ImportError as e:
         raise ImportError(
             "pyogrio is a required dependency for the CLI. "
             "Install with `pip install pyogrio`."
         ) from e
 
-    meta, table = read_arrow(path)
-    # TODO: assert there are not two column names of wkb_geometry
+    with open_arrow(path, use_pyarrow=False) as source:
+        meta, stream = source
+        table = Table.from_arrow(stream)
+
+    # The `geometry_name` key always exists but can be an empty string. In the case of
+    # an empty string, we want to default to `wkb_geometry`
+    geometry_column_name = meta.get("geometry_name") or "wkb_geometry"
+    # TODO: assert there are not two column names of wkb_geometry, nor an existing
+    # column named "geometry"
 
     # Rename wkb_geometry to geometry
     geometry_column_index = [
-        i for (i, name) in enumerate(table.column_names) if name == "wkb_geometry"
+        i for (i, name) in enumerate(table.column_names) if name == geometry_column_name
     ][0]
 
     schema = table.schema
     field = schema.field(geometry_column_index)
 
     metadata: Dict[bytes, bytes] = field.metadata
-    if metadata.get(b"ARROW:extension:name") == b"ogc.wkb":
+    if metadata.get(b"ARROW:extension:name") == EXTENSION_NAME.OGC_WKB:
         # Parse CRS and create PROJJSON
         ext_meta = {"crs": CRS.from_user_input(meta["crs"]).to_json_dict()}
 
         # Replace metadata
-        metadata[b"ARROW:extension:name"] = b"geoarrow.wkb"
+        metadata[b"ARROW:extension:name"] = EXTENSION_NAME.WKB
         metadata[b"ARROW:extension:metadata"] = json.dumps(ext_meta).encode()
 
     new_field = field.with_name("geometry").with_metadata(metadata)
     new_schema = schema.set(geometry_column_index, new_field)
-    return pa.Table.from_arrays(table.columns, schema=new_schema)
+    return table.with_schema(new_schema)
 
 
-def read_geoparquet(path: Path):
+def read_geoparquet(path: Path) -> Table:
     """Read GeoParquet file at path using pyarrow
 
     Args:
         path: Path to GeoParquet file
     """
+    try:
+        import pyarrow.parquet as pq
+    except ImportError as e:
+        raise ImportError(
+            "pyarrow currently required for reading GeoParquet files.\n"
+            "Run `pip install pyarrow`."
+        ) from e
+
     file = pq.ParquetFile(path)
     geo_meta = file.metadata.metadata.get(b"geo")
     if not geo_meta:
         raise ValueError("Expected geo metadata in Parquet file")
 
-    table = file.read()
+    pyarrow_table = file.read()
+    table = Table.from_arrow(pyarrow_table)
 
     geo_meta = json.loads(geo_meta)
     geometry_column_name = geo_meta["primary_column"]
@@ -70,8 +86,8 @@ def read_geoparquet(path: Path):
         i for (i, name) in enumerate(table.schema.names) if name == geometry_column_name
     ][0]
 
-    metadata = {
-        b"ARROW:extension:name": b"geoarrow.wkb",
+    metadata: dict[bytes, bytes] = {
+        b"ARROW:extension:name": EXTENSION_NAME.WKB,
     }
     crs_dict = geo_meta["columns"][geometry_column_name].get("crs")
     if crs_dict:
@@ -81,7 +97,7 @@ def read_geoparquet(path: Path):
 
     new_field = table.schema.field(geometry_column_index).with_metadata(metadata)
     new_schema = table.schema.set(geometry_column_index, new_field)
-    return pa.Table.from_arrays(table.columns, schema=new_schema)
+    return table.with_schema(new_schema)
 
 
 @click.command()

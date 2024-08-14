@@ -1,12 +1,19 @@
+from __future__ import annotations
+
 import math
 from io import BytesIO
-from typing import List, Tuple, Union
+from typing import TYPE_CHECKING, List, Optional, Tuple, Union
 
 import numpy as np
-import pyarrow as pa
-import pyarrow.parquet as pq
-from numpy.typing import NDArray
+from arro3.core import Array, ChunkedArray, Table
+from arro3.io import write_parquet
 from traitlets import TraitError
+
+from lonboard.models import ViewState
+
+if TYPE_CHECKING:
+    from numpy.typing import NDArray
+
 
 DEFAULT_PARQUET_COMPRESSION = "ZSTD"
 DEFAULT_PARQUET_COMPRESSION_LEVEL = 7
@@ -20,36 +27,37 @@ DEFAULT_ARROW_CHUNK_BYTES_SIZE = 5 * 1024 * 1024  # 5MB
 DEFAULT_MAX_NUM_CHUNKS = 32
 
 
-def serialize_table_to_parquet(table: pa.Table, *, max_chunksize: int) -> List[bytes]:
+def serialize_table_to_parquet(table: Table, *, max_chunksize: int) -> List[bytes]:
     buffers: List[bytes] = []
-    # NOTE: passing `max_chunksize=0` creates an infinite loop
-    # https://github.com/apache/arrow/issues/39788
     assert max_chunksize > 0
 
-    for record_batch in table.to_batches(max_chunksize=max_chunksize):
+    compression_string = (
+        f"{DEFAULT_PARQUET_COMPRESSION}({DEFAULT_PARQUET_COMPRESSION_LEVEL})"
+    )
+    for record_batch in table.rechunk(max_chunksize=max_chunksize).to_batches():
         with BytesIO() as bio:
-            with pq.ParquetWriter(
+            # Occasionally it's possible for there to be empty batches in the
+            # pyarrow table. This will error when writing to parquet. We want to
+            # give a more informative error.
+            if record_batch.num_rows == 0:
+                raise ValueError("Batch with 0 rows.")
+
+            write_parquet(
+                table,
                 bio,
-                schema=table.schema,
-                compression=DEFAULT_PARQUET_COMPRESSION,
-                compression_level=DEFAULT_PARQUET_COMPRESSION_LEVEL,
-            ) as writer:
-                # Occasionally it's possible for there to be empty batches in the
-                # pyarrow table. This will error when writing to parquet. We want to
-                # give a more informative error.
-                if record_batch.num_rows == 0:
-                    raise ValueError("Batch with 0 rows.")
-
-                writer.write_batch(record_batch, row_group_size=record_batch.num_rows)
-
+                compression=compression_string,
+                max_row_group_size=record_batch.num_rows,
+            )
             buffers.append(bio.getvalue())
 
     return buffers
 
 
-def serialize_pyarrow_column(data: pa.Array, *, max_chunksize: int) -> List[bytes]:
+def serialize_pyarrow_column(
+    data: Array | ChunkedArray, *, max_chunksize: int
+) -> List[bytes]:
     """Serialize a pyarrow column to a Parquet file with one column"""
-    pyarrow_table = pa.table({"value": data})
+    pyarrow_table = Table.from_pydict({"value": data})
     return serialize_table_to_parquet(pyarrow_table, max_chunksize=max_chunksize)
 
 
@@ -62,17 +70,17 @@ def serialize_accessor(data: Union[List[int], Tuple[int], NDArray[np.uint8]], ob
     if isinstance(data, (str, int, float, list, tuple, bytes)):
         return data
 
-    assert isinstance(data, (pa.ChunkedArray, pa.Array))
+    assert isinstance(data, (ChunkedArray, Array))
     validate_accessor_length_matches_table(data, obj.table)
     return serialize_pyarrow_column(data, max_chunksize=obj._rows_per_chunk)
 
 
 def serialize_table(data, obj):
-    assert isinstance(data, pa.Table), "expected pyarrow table"
+    assert isinstance(data, Table), "expected Arrow table"
     return serialize_table_to_parquet(data, max_chunksize=obj._rows_per_chunk)
 
 
-def infer_rows_per_chunk(table: pa.Table) -> int:
+def infer_rows_per_chunk(table: Table) -> int:
     # At least one chunk
     num_chunks = max(round(table.nbytes / DEFAULT_ARROW_CHUNK_BYTES_SIZE), 1)
 
@@ -83,9 +91,18 @@ def infer_rows_per_chunk(table: pa.Table) -> int:
     return rows_per_chunk
 
 
-def validate_accessor_length_matches_table(accessor, table):
+def validate_accessor_length_matches_table(
+    accessor: Array | ChunkedArray, table: Table
+):
     if len(accessor) != len(table):
         raise TraitError("accessor must have same length as table")
+
+
+def serialize_view_state(data: Optional[ViewState], obj):
+    if data is None:
+        return None
+
+    return data._asdict()
 
 
 ACCESSOR_SERIALIZATION = {"to_json": serialize_accessor}

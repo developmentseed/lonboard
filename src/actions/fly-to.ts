@@ -1,11 +1,10 @@
-import { SetStateAction } from "react";
 import { FlyToMessage } from "../types";
-import { FlyToInterpolator, MapViewState } from "@deck.gl/core/typed";
+import { FlyToInterpolator, MapViewState } from "@deck.gl/core";
 import { isDefined } from "../util";
 
 export function flyTo(
   msg: FlyToMessage,
-  setInitialViewState: (value: SetStateAction<MapViewState>) => void,
+  setInitialViewState: (viewState: MapViewState) => void,
 ) {
   const {
     longitude,

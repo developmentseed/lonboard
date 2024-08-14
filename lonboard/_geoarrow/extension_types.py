@@ -1,12 +1,14 @@
+from __future__ import annotations
+
 import json
 from enum import Enum
-from typing import Dict, Optional, Tuple
+from typing import TYPE_CHECKING, Dict, Optional, Sequence, Tuple
 
 import numpy as np
-import pyarrow as pa
-import shapely
-from numpy.typing import NDArray
-from shapely import GeometryType
+from arro3.core import Array, DataType, Field, fixed_size_list_array, list_array
+
+if TYPE_CHECKING:
+    from numpy.typing import NDArray
 
 
 class CoordinateDimension(str, Enum):
@@ -16,12 +18,7 @@ class CoordinateDimension(str, Enum):
     XYZM = "xyzm"
 
 
-class BaseGeometryType(pa.ExtensionType):
-    extension_name: str
-    coord_dimension: CoordinateDimension
-
-
-def coord_storage_type(*, interleaved: bool, dims: CoordinateDimension) -> pa.DataType:
+def coord_storage_type(*, interleaved: bool, dims: CoordinateDimension) -> DataType:
     """Generate the storage type of a geoarrow coordinate array
 
     Args:
@@ -29,46 +26,46 @@ def coord_storage_type(*, interleaved: bool, dims: CoordinateDimension) -> pa.Da
         dims: The number of dimensions
     """
     if interleaved:
-        return pa.list_(pa.field(dims, pa.float64()), len(dims))
+        return DataType.list(Field(dims, DataType.float64()), len(dims))
 
     else:
         if dims == CoordinateDimension.XY:
-            return pa.struct(
+            return DataType.struct(
                 [
-                    ("x", pa.float64()),
-                    ("y", pa.float64()),
+                    Field("x", DataType.float64()),
+                    Field("y", DataType.float64()),
                 ]
             )
         if dims == CoordinateDimension.XYZ:
-            return pa.struct(
+            return DataType.struct(
                 [
-                    ("x", pa.float64()),
-                    ("y", pa.float64()),
-                    ("z", pa.float64()),
+                    Field("x", DataType.float64()),
+                    Field("y", DataType.float64()),
+                    Field("z", DataType.float64()),
                 ]
             )
         if dims == CoordinateDimension.XYM:
-            return pa.struct(
+            return DataType.struct(
                 [
-                    ("x", pa.float64()),
-                    ("y", pa.float64()),
-                    ("m", pa.float64()),
+                    Field("x", DataType.float64()),
+                    Field("y", DataType.float64()),
+                    Field("m", DataType.float64()),
                 ]
             )
         if dims == CoordinateDimension.XYZM:
-            return pa.struct(
+            return DataType.struct(
                 [
-                    ("x", pa.float64()),
-                    ("y", pa.float64()),
-                    ("z", pa.float64()),
-                    ("m", pa.float64()),
+                    Field("x", DataType.float64()),
+                    Field("y", DataType.float64()),
+                    Field("z", DataType.float64()),
+                    Field("m", DataType.float64()),
                 ]
             )
 
 
 def linestring_storage_type(
     *, interleaved: bool, dims: CoordinateDimension, large_list: bool = False
-) -> pa.DataType:
+) -> DataType:
     """Generate the storage type of a geoarrow.linestring array
 
     Args:
@@ -78,14 +75,14 @@ def linestring_storage_type(
     """
     vertices_type = coord_storage_type(interleaved=interleaved, dims=dims)
     if large_list:
-        return pa.large_list(pa.field("vertices", vertices_type))
+        return DataType.large_list(Field("vertices", vertices_type))
     else:
-        return pa.list_(pa.field("vertices", vertices_type))
+        return DataType.list(Field("vertices", vertices_type))
 
 
 def polygon_storage_type(
     *, interleaved: bool, dims: CoordinateDimension, large_list: bool = False
-) -> pa.DataType:
+) -> DataType:
     """Generate the storage type of a geoarrow.polygon array
 
     Args:
@@ -97,14 +94,14 @@ def polygon_storage_type(
         large_list=large_list, interleaved=interleaved, dims=dims
     )
     if large_list:
-        return pa.large_list(pa.field("rings", rings_type))
+        return DataType.large_list(Field("rings", rings_type))
     else:
-        return pa.list_(pa.field("rings", rings_type))
+        return DataType.list(Field("rings", rings_type))
 
 
 def multipoint_storage_type(
     *, interleaved: bool, dims: CoordinateDimension, large_list: bool = False
-) -> pa.DataType:
+) -> DataType:
     """Generate the storage type of a geoarrow.multipoint array
 
     Args:
@@ -114,14 +111,14 @@ def multipoint_storage_type(
     """
     points_type = coord_storage_type(interleaved=interleaved, dims=dims)
     if large_list:
-        return pa.large_list(pa.field("points", points_type))
+        return DataType.large_list(Field("points", points_type))
     else:
-        return pa.list_(pa.field("points", points_type))
+        return DataType.list(Field("points", points_type))
 
 
 def multilinestring_storage_type(
     *, interleaved: bool, dims: CoordinateDimension, large_list: bool = False
-) -> pa.DataType:
+) -> DataType:
     """Generate the storage type of a geoarrow.multilinestring array
 
     Args:
@@ -133,14 +130,14 @@ def multilinestring_storage_type(
         large_list=large_list, interleaved=interleaved, dims=dims
     )
     if large_list:
-        return pa.large_list(pa.field("linestrings", linestrings_type))
+        return DataType.large_list(Field("linestrings", linestrings_type))
     else:
-        return pa.list_(pa.field("linestrings", linestrings_type))
+        return DataType.list(Field("linestrings", linestrings_type))
 
 
 def multipolygon_storage_type(
     *, interleaved: bool, dims: CoordinateDimension, large_list: bool = False
-) -> pa.DataType:
+) -> DataType:
     """Generate the storage type of a geoarrow.multipolygon array
 
     Args:
@@ -152,131 +149,19 @@ def multipolygon_storage_type(
         large_list=large_list, interleaved=interleaved, dims=dims
     )
     if large_list:
-        return pa.large_list(pa.field("polygons", polygons_type))
+        return DataType.large_list(Field("polygons", polygons_type))
     else:
-        return pa.list_(pa.field("polygons", polygons_type))
+        return DataType.list(Field("polygons", polygons_type))
 
 
-class PointType(BaseGeometryType):
-    extension_name = "geoarrow.point"
+def offsets_to_arrow(
+    offsets: Tuple[NDArray[np.int64], ...],
+) -> Sequence[Array]:
+    # Shapely produces int64 offset arrays. We downcast those to int32 if possible
+    if any(offset_arr[-1] >= np.iinfo(np.int32).max for offset_arr in offsets):
+        return [Array.from_numpy(offset_arr) for offset_arr in offsets]
 
-    def __init__(self, *, interleaved: bool, dims: CoordinateDimension):
-        self.coord_dimension = dims
-
-        storage_type = coord_storage_type(interleaved=interleaved, dims=dims)
-        super().__init__(storage_type, self.extension_name)
-
-    def __arrow_ext_serialize__(self):
-        return b""
-
-    @classmethod
-    def __arrow_ext_deserialize__(cls, storage_type: pa.DataType, serialized: bytes):
-        return cls(interleaved=True, dims=CoordinateDimension.XY)
-
-
-class LineStringType(BaseGeometryType):
-    extension_name = "geoarrow.linestring"
-
-    def __init__(
-        self, *, interleaved: bool, dims: CoordinateDimension, large_list: bool = False
-    ):
-        self.coord_dimension = dims
-
-        storage_type = linestring_storage_type(
-            interleaved=interleaved, dims=dims, large_list=large_list
-        )
-        super().__init__(storage_type, self.extension_name)
-
-    def __arrow_ext_serialize__(self):
-        return b""
-
-    @classmethod
-    def __arrow_ext_deserialize__(cls, storage_type: pa.DataType, serialized: bytes):
-        return cls(interleaved=True, dims=CoordinateDimension.XY)
-
-
-class PolygonType(BaseGeometryType):
-    extension_name = "geoarrow.polygon"
-
-    def __init__(
-        self, *, interleaved: bool, dims: CoordinateDimension, large_list: bool = False
-    ):
-        self.coord_dimension = dims
-
-        storage_type = polygon_storage_type(
-            interleaved=interleaved, dims=dims, large_list=large_list
-        )
-        super().__init__(storage_type, self.extension_name)
-
-    def __arrow_ext_serialize__(self):
-        return b""
-
-    @classmethod
-    def __arrow_ext_deserialize__(cls, storage_type: pa.DataType, serialized: bytes):
-        return cls(interleaved=True, dims=CoordinateDimension.XY)
-
-
-class MultiPointType(BaseGeometryType):
-    extension_name = "geoarrow.multipoint"
-
-    def __init__(
-        self, *, interleaved: bool, dims: CoordinateDimension, large_list: bool = False
-    ):
-        self.coord_dimension = dims
-
-        storage_type = multipoint_storage_type(
-            interleaved=interleaved, dims=dims, large_list=large_list
-        )
-        super().__init__(storage_type, self.extension_name)
-
-    def __arrow_ext_serialize__(self):
-        return b""
-
-    @classmethod
-    def __arrow_ext_deserialize__(cls, storage_type: pa.DataType, serialized: bytes):
-        return cls(interleaved=True, dims=CoordinateDimension.XY)
-
-
-class MultiLineStringType(BaseGeometryType):
-    extension_name = "geoarrow.multilinestring"
-
-    def __init__(
-        self, *, interleaved: bool, dims: CoordinateDimension, large_list: bool = False
-    ):
-        self.coord_dimension = dims
-
-        storage_type = multilinestring_storage_type(
-            interleaved=interleaved, dims=dims, large_list=large_list
-        )
-        super().__init__(storage_type, self.extension_name)
-
-    def __arrow_ext_serialize__(self):
-        return b""
-
-    @classmethod
-    def __arrow_ext_deserialize__(cls, storage_type: pa.DataType, serialized: bytes):
-        return cls(interleaved=True, dims=CoordinateDimension.XY)
-
-
-class MultiPolygonType(BaseGeometryType):
-    extension_name = "geoarrow.multipolygon"
-
-    def __init__(
-        self, *, interleaved: bool, dims: CoordinateDimension, large_list: bool = False
-    ):
-        self.coord_dimension = dims
-
-        storage_type = multipolygon_storage_type(
-            interleaved=interleaved, dims=dims, large_list=large_list
-        )
-        super().__init__(storage_type, self.extension_name)
-
-    def __arrow_ext_serialize__(self):
-        return b""
-
-    @classmethod
-    def __arrow_ext_deserialize__(cls, storage_type: pa.DataType, serialized: bytes):
-        return cls(interleaved=True, dims=CoordinateDimension.XY)
+    return [Array.from_numpy(offset_arr.astype(np.int32)) for offset_arr in offsets]
 
 
 def construct_geometry_array(
@@ -285,13 +170,14 @@ def construct_geometry_array(
     *,
     field_name: str = "geometry",
     crs_str: Optional[str] = None,
-) -> Tuple[pa.Field, pa.Array]:
-    # NOTE: this implementation returns a (field, array) pair so that it can set the
-    # extension metadata on the field without instantiating extension types into the
-    # global pyarrow registry
+) -> Tuple[Field, Array]:
+    import shapely
+    from shapely import GeometryType
+
     geom_type, coords, offsets = shapely.to_ragged_array(
         shapely_arr, include_z=include_z
     )
+    offsets = offsets_to_arrow(offsets)
 
     if coords.shape[-1] == 2:
         dims = CoordinateDimension.XY
@@ -305,89 +191,101 @@ def construct_geometry_array(
         extension_metadata["ARROW:extension:metadata"] = json.dumps({"crs": crs_str})
 
     if geom_type == GeometryType.POINT:
-        parr = pa.FixedSizeListArray.from_arrays(coords.flatten(), len(dims))
+        arrow_coords = fixed_size_list_array(
+            Array.from_numpy(coords.ravel("C")), len(dims)
+        )
         extension_metadata["ARROW:extension:name"] = "geoarrow.point"
-        field = pa.field(
+        field = Field(
             field_name,
-            parr.type,
+            arrow_coords.type,
             nullable=True,
             metadata=extension_metadata,
         )
-        return field, parr
+        return field, arrow_coords
 
     elif geom_type == GeometryType.LINESTRING:
         assert len(offsets) == 1, "Expected one offsets array"
         (geom_offsets,) = offsets
-        _parr = pa.FixedSizeListArray.from_arrays(coords.flatten(), len(dims))
-        parr = pa.ListArray.from_arrays(pa.array(geom_offsets), _parr)
+        arrow_coords = fixed_size_list_array(
+            Array.from_numpy(coords.ravel("C")), len(dims)
+        )
+        arrow_geoms = list_array(geom_offsets, arrow_coords)
         extension_metadata["ARROW:extension:name"] = "geoarrow.linestring"
-        field = pa.field(
+        field = Field(
             field_name,
-            parr.type,
+            arrow_geoms.type,
             nullable=True,
             metadata=extension_metadata,
         )
-        return field, parr
+        return field, arrow_geoms
 
     elif geom_type == GeometryType.POLYGON:
         assert len(offsets) == 2, "Expected two offsets arrays"
         ring_offsets, geom_offsets = offsets
-        _parr = pa.FixedSizeListArray.from_arrays(coords.flatten(), len(dims))
-        _parr1 = pa.ListArray.from_arrays(pa.array(ring_offsets), _parr)
-        parr = pa.ListArray.from_arrays(pa.array(geom_offsets), _parr1)
+        arrow_coords = fixed_size_list_array(
+            Array.from_numpy(coords.ravel("C")), len(dims)
+        )
+        arrow_rings = list_array(ring_offsets, arrow_coords)
+        arrow_geoms = list_array(geom_offsets, arrow_rings)
         extension_metadata["ARROW:extension:name"] = "geoarrow.polygon"
-        field = pa.field(
+        field = Field(
             field_name,
-            parr.type,
+            arrow_geoms.type,
             nullable=True,
             metadata=extension_metadata,
         )
-        return field, parr
+        return field, arrow_geoms
 
     elif geom_type == GeometryType.MULTIPOINT:
         assert len(offsets) == 1, "Expected one offsets array"
         (geom_offsets,) = offsets
-        _parr = pa.FixedSizeListArray.from_arrays(coords.flatten(), len(dims))
-        parr = pa.ListArray.from_arrays(pa.array(geom_offsets), _parr)
+        arrow_coords = fixed_size_list_array(
+            Array.from_numpy(coords.ravel("C")), len(dims)
+        )
+        arrow_geoms = list_array(geom_offsets, arrow_coords)
         extension_metadata["ARROW:extension:name"] = "geoarrow.multipoint"
-        field = pa.field(
+        field = Field(
             field_name,
-            parr.type,
+            arrow_geoms.type,
             nullable=True,
             metadata=extension_metadata,
         )
-        return field, parr
+        return field, arrow_geoms
 
     elif geom_type == GeometryType.MULTILINESTRING:
         assert len(offsets) == 2, "Expected two offsets arrays"
         ring_offsets, geom_offsets = offsets
-        _parr = pa.FixedSizeListArray.from_arrays(coords.flatten(), len(dims))
-        _parr1 = pa.ListArray.from_arrays(pa.array(ring_offsets), _parr)
-        parr = pa.ListArray.from_arrays(pa.array(geom_offsets), _parr1)
+        arrow_coords = fixed_size_list_array(
+            Array.from_numpy(coords.ravel("C")), len(dims)
+        )
+        arrow_rings = list_array(ring_offsets, arrow_coords)
+        arrow_geoms = list_array(geom_offsets, arrow_rings)
         extension_metadata["ARROW:extension:name"] = "geoarrow.multilinestring"
-        field = pa.field(
+        field = Field(
             field_name,
-            parr.type,
+            arrow_geoms.type,
             nullable=True,
             metadata=extension_metadata,
         )
-        return field, parr
+        return field, arrow_geoms
 
     elif geom_type == GeometryType.MULTIPOLYGON:
         assert len(offsets) == 3, "Expected three offsets arrays"
         ring_offsets, polygon_offsets, geom_offsets = offsets
-        _parr = pa.FixedSizeListArray.from_arrays(coords.flatten(), len(dims))
-        _parr1 = pa.ListArray.from_arrays(pa.array(ring_offsets), _parr)
-        _parr2 = pa.ListArray.from_arrays(pa.array(polygon_offsets), _parr1)
-        parr = pa.ListArray.from_arrays(pa.array(geom_offsets), _parr2)
+        arrow_coords = fixed_size_list_array(
+            Array.from_numpy(coords.ravel("C")), len(dims)
+        )
+        arrow_rings = list_array(ring_offsets, arrow_coords)
+        arrow_polygons = list_array(polygon_offsets, arrow_rings)
+        arrow_geoms = list_array(geom_offsets, arrow_polygons)
         extension_metadata["ARROW:extension:name"] = "geoarrow.multipolygon"
-        field = pa.field(
+        field = Field(
             field_name,
-            parr.type,
+            arrow_geoms.type,
             nullable=True,
             metadata=extension_metadata,
         )
-        return field, parr
+        return field, arrow_geoms
 
     else:
         raise ValueError(f"Unsupported type for geoarrow: {geom_type}")
