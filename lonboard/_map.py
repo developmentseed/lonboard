@@ -5,6 +5,7 @@ from io import StringIO
 from pathlib import Path
 from typing import IO, TYPE_CHECKING, Optional, Sequence, TextIO, Union, overload
 
+import anywidget
 import ipywidgets
 import traitlets
 from ipywidgets.embed import embed_minimal_html
@@ -95,6 +96,10 @@ class Map(BaseAnyWidget):
             layers = [layers]
 
         super().__init__(layers=layers, **kwargs)
+
+    @anywidget.experimental.command
+    def helloworld(self, msg, buffers):
+        return "hello world from top-level map component", buffers
 
     _esm = bundler_output_dir / "index.js"
     _css = bundler_output_dir / "index.css"
