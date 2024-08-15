@@ -11,6 +11,17 @@ from pyproj import CRS
 from lonboard import viz
 from lonboard._constants import EXTENSION_NAME
 
+# import pyarrow.parquet as pq
+# from arro3.io import read_parquet, write_parquet, write_ipc
+# path = "/Users/kyle/Downloads/nz-building-outlines.parquet"
+# # path = "/Users/kyle/Downloads/yellow_tripdata_2010-01.parquet"
+# table = pq.read_table(path)
+# %time pq.write_table(table, "pyarrow.parquet")
+# %time write_parquet(table, "arro3.parquet")
+# %time write_ipc(table, Path("arro3.arrow"))
+# !ls -l *.parquet
+# !ls -l *.arrow
+
 
 def read_pyogrio(path: Path) -> Table:
     """Read path using pyogrio and convert field metadata to geoarrow
@@ -22,7 +33,8 @@ def read_pyogrio(path: Path) -> Table:
         from pyogrio.raw import open_arrow
     except ImportError as e:
         raise ImportError(
-            "pyogrio is a required dependency for the CLI. "
+            "pyogrio is a required dependency for the CLI for reading data sources \n"
+            "other than GeoParquet.\n"
             "Install with `pip install pyogrio`."
         ) from e
 
