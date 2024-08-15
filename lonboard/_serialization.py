@@ -5,8 +5,7 @@ from io import BytesIO
 from typing import TYPE_CHECKING, List, Optional, Tuple, Union
 
 import numpy as np
-from arro3.core import Array, ChunkedArray, Table
-from arro3.io import write_parquet
+from arro3.core import Array, ChunkedArray, RecordBatch, Table
 from traitlets import TraitError
 
 from lonboard.models import ViewState
@@ -27,28 +26,56 @@ DEFAULT_ARROW_CHUNK_BYTES_SIZE = 5 * 1024 * 1024  # 5MB
 DEFAULT_MAX_NUM_CHUNKS = 32
 
 
+def write_parquet_batch(record_batch: RecordBatch) -> bytes:
+    """Write a RecordBatch to a Parquet file
+
+    We still use pyarrow.parquet.ParquetWriter if pyarrow is installed because pyarrow
+    has better encoding defaults. So Parquet files written by pyarrow are smaller by
+    default than files written by arro3.io.write_parquet.
+    """
+    # Occasionally it's possible for there to be empty batches in the
+    # pyarrow table. This will error when writing to parquet. We want to
+    # give a more informative error.
+    if record_batch.num_rows == 0:
+        raise ValueError("Batch with 0 rows.")
+
+    try:
+        import pyarrow.parquet as pq
+
+        bio = BytesIO()
+        with pq.ParquetWriter(
+            bio,
+            schema=record_batch.schema,
+            compression=DEFAULT_PARQUET_COMPRESSION,
+            compression_level=DEFAULT_PARQUET_COMPRESSION_LEVEL,
+        ) as writer:
+            writer.write_batch(record_batch, row_group_size=record_batch.num_rows)
+
+        return bio.getvalue()
+
+    except ImportError:
+        from arro3.io import write_parquet
+
+        compression_string = (
+            f"{DEFAULT_PARQUET_COMPRESSION}({DEFAULT_PARQUET_COMPRESSION_LEVEL})"
+        )
+        bio = BytesIO()
+        write_parquet(
+            record_batch,
+            bio,
+            compression=compression_string,
+            max_row_group_size=record_batch.num_rows,
+        )
+
+        return bio.getvalue()
+
+
 def serialize_table_to_parquet(table: Table, *, max_chunksize: int) -> List[bytes]:
     buffers: List[bytes] = []
     assert max_chunksize > 0
 
-    compression_string = (
-        f"{DEFAULT_PARQUET_COMPRESSION}({DEFAULT_PARQUET_COMPRESSION_LEVEL})"
-    )
     for record_batch in table.rechunk(max_chunksize=max_chunksize).to_batches():
-        with BytesIO() as bio:
-            # Occasionally it's possible for there to be empty batches in the
-            # pyarrow table. This will error when writing to parquet. We want to
-            # give a more informative error.
-            if record_batch.num_rows == 0:
-                raise ValueError("Batch with 0 rows.")
-
-            write_parquet(
-                table,
-                bio,
-                compression=compression_string,
-                max_row_group_size=record_batch.num_rows,
-            )
-            buffers.append(bio.getvalue())
+        buffers.append(write_parquet_batch(record_batch))
 
     return buffers
 
