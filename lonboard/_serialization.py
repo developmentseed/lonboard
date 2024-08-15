@@ -40,12 +40,13 @@ def write_parquet_batch(record_batch: RecordBatch) -> bytes:
         raise ValueError("Batch with 0 rows.")
 
     try:
+        import pyarrow as pa
         import pyarrow.parquet as pq
 
         bio = BytesIO()
         with pq.ParquetWriter(
             bio,
-            schema=record_batch.schema,
+            schema=pa.schema(record_batch.schema),
             compression=DEFAULT_PARQUET_COMPRESSION,
             compression_level=DEFAULT_PARQUET_COMPRESSION_LEVEL,
         ) as writer:
