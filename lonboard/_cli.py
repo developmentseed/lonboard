@@ -58,29 +58,56 @@ def read_pyogrio(path: Path) -> Table:
     return table.with_schema(new_schema)
 
 
+def read_parquet(path: Path) -> tuple[Table, dict]:
+    """Read Parquet file using either pyarrow or arro3.
+
+    arro3.io.read_parquet is not multi-threaded (as of arro3 0.2.1), so pyarrow can be
+    up to 4x faster on an 8-core machine. Because of this, we prefer pyarrow if it's
+    installed, and fall back to arro3 otherwise.
+
+    Args:
+        path: path to Parquet file.
+
+    Raises:
+        ValueError: if there's no GeoParquet metadata in the file
+
+    Returns:
+        arro3 Table
+    """
+    try:
+        import pyarrow.parquet as pq
+
+        file = pq.ParquetFile(path)
+        if b"geo" not in file.metadata.metadata:
+            raise ValueError("Expected geo metadata in Parquet file")
+        geo_meta = json.loads(file.metadata.metadata.get(b"geo"))
+
+        table = Table.from_arrow(file.read())
+
+        return table, geo_meta
+
+    except ImportError:
+        from arro3.io import read_parquet
+
+        # TODO: remove cast to str, ensure Path works here
+        reader = read_parquet(str(path))
+
+        if "geo" not in reader.schema.metadata_str.keys():
+            raise ValueError("Expected geo metadata in Parquet file")
+
+        table = reader.read_all()
+        geo_meta = json.loads(table.schema.metadata_str["geo"])
+
+        return table, geo_meta
+
+
 def read_geoparquet(path: Path) -> Table:
-    """Read GeoParquet file at path using pyarrow
+    """Read GeoParquet file at path using pyarrow or arro3.io
 
     Args:
         path: Path to GeoParquet file
     """
-    try:
-        import pyarrow.parquet as pq
-    except ImportError as e:
-        raise ImportError(
-            "pyarrow currently required for reading GeoParquet files.\n"
-            "Run `pip install pyarrow`."
-        ) from e
-
-    file = pq.ParquetFile(path)
-    geo_meta = file.metadata.metadata.get(b"geo")
-    if not geo_meta:
-        raise ValueError("Expected geo metadata in Parquet file")
-
-    pyarrow_table = file.read()
-    table = Table.from_arrow(pyarrow_table)
-
-    geo_meta = json.loads(geo_meta)
+    table, geo_meta = read_parquet(path)
     geometry_column_name = geo_meta["primary_column"]
     geometry_column_index = [
         i for (i, name) in enumerate(table.schema.names) if name == geometry_column_name
