@@ -7,7 +7,6 @@ import pytest
 from pyogrio.raw import read_arrow
 from traitlets import TraitError
 
-import lonboard._compat as compat
 from lonboard import (
     BitmapLayer,
     Map,
@@ -18,6 +17,8 @@ from lonboard import (
 )
 from lonboard._geoarrow.geopandas_interop import geopandas_to_geoarrow
 from lonboard.layer_extension import DataFilterExtension
+
+from . import compat
 
 
 def test_accessor_length_validation():
