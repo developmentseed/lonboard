@@ -9,9 +9,10 @@ import pytest
 from geoarrow.rust.core import read_pyogrio
 from pyogrio.raw import read_arrow
 
-import lonboard._compat as compat
 from lonboard import PathLayer, PolygonLayer, ScatterplotLayer, viz
 from lonboard._constants import EXTENSION_NAME
+
+from . import compat
 
 fixtures_dir = Path(__file__).parent / "fixtures"
 
