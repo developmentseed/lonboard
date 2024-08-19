@@ -2,14 +2,14 @@ from __future__ import annotations
 
 from typing import TYPE_CHECKING, Any, Dict, Optional, Sequence, Tuple, Union
 
-import matplotlib as mpl
 import numpy as np
-from palettable.palette import Palette
 
 if TYPE_CHECKING:
+    import matplotlib as mpl
     import pandas as pd
     import pyarrow as pa
     from numpy.typing import NDArray
+    from palettable.palette import Palette
 
 
 __all__ = (
@@ -105,9 +105,19 @@ def apply_continuous_cmap(
             dimension will have a length of either `3` if `alpha` is `None`, or `4` is
             each color has an alpha value.
     """
-    if isinstance(cmap, Palette):
+    try:
+        from palettable.palette import Palette
+    except ImportError:
+        Palette = None
+
+    try:
+        import matplotlib
+    except ImportError:
+        matplotlib = None
+
+    if Palette is not None and isinstance(cmap, Palette):
         colors: NDArray[np.uint8] = cmap.mpl_colormap(values, alpha=alpha, bytes=True)  # type: ignore
-    elif isinstance(cmap, mpl.colors.Colormap):
+    elif matplotlib is not None and isinstance(cmap, matplotlib.colors.Colormap):
         colors: NDArray[np.uint8] = cmap(values, alpha=alpha, bytes=True)  # type: ignore
     else:
         raise TypeError("Expected cmap to be a palettable or matplotlib colormap.")
