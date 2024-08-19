@@ -3,6 +3,13 @@ from __future__ import annotations
 from typing import TYPE_CHECKING, Any, Dict, Optional, Sequence, Tuple, Union
 
 import numpy as np
+from arro3.compute import dictionary_encode
+from arro3.core import (
+    Array,
+    DataType,
+    dictionary_dictionary,
+    dictionary_indices,
+)
 
 if TYPE_CHECKING:
     import matplotlib as mpl
@@ -181,12 +188,19 @@ def apply_categorical_cmap(
     # Construct from non-arrow data
     if not isinstance(values, (pa.Array, pa.ChunkedArray)):
         values = pa.array(values)
+        dir(values)
+        values.to_pylist()
 
-    if not pa.types.is_dictionary(values.type):
-        values = pc.dictionary_encode(values)
+    values = Array.from_arrow(values)
+    if not DataType.is_dictionary(values.type):
+        values = dictionary_encode(values)
+
+    dictionary = dictionary_dictionary(values)
+    indices = dictionary_indices(values)
+    dictionary
 
     # Build lookup table
-    lut = np.zeros((len(values.dictionary), 4), dtype=np.uint8)
+    lut = np.zeros((len(dictionary), 4), dtype=np.uint8)
     if alpha is not None:
         assert isinstance(alpha, int), "alpha must be an integer"
         assert 0 <= alpha <= 255, "alpha must be between 0-255 (inclusive)."
@@ -195,7 +209,7 @@ def apply_categorical_cmap(
     else:
         lut[:, 3] = 255
 
-    for i, key in enumerate(values.dictionary):
+    for i, key in enumerate(dictionary):
         color = cmap[key.as_py()]
         if len(color) == 3:
             lut[i, :3] = color
@@ -206,7 +220,7 @@ def apply_categorical_cmap(
                 "Expected color to be 3 or 4 values representing RGB or RGBA."
             )
 
-    colors = lut[values.indices]
+    colors = lut[indices]
 
     # If the alpha values are all 255, don't serialize
     if (colors[:, 3] == 255).all():
