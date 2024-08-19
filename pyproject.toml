@@ -35,6 +35,7 @@ anywidget = "^0.9.0"
 arro3-core = "^0.2.1"
 arro3-io = "^0.2.1"
 arro3-compute = "^0.2.1"
+numpy = ">=1.14"
 # The same version pin as geopandas
 pyproj = ">=3.3"
 typing-extensions = { version = "^4.6.0", python = "<3.12" }
