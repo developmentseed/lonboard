@@ -32,9 +32,9 @@ classifiers = [
 [tool.poetry.dependencies]
 python = "^3.8"
 anywidget = "^0.9.0"
-arro3-core = "^0.2.1"
-arro3-io = "^0.2.1"
-arro3-compute = "^0.2.1"
+arro3-core = "^0.3.0-beta.1"
+arro3-io = "^0.3.0-beta.1"
+arro3-compute = "^0.3.0-beta.1"
 ipywidgets = ">=7.6.0"
 numpy = ">=1.14"
 # The same version pin as geopandas
