@@ -32,21 +32,17 @@ classifiers = [
 [tool.poetry.dependencies]
 python = "^3.8"
 anywidget = "^0.9.0"
-palettable = "^3.3.3"
-# We use the colormap module from matplotlib. This module may be vendored in the
-# future to remove the matplotlib dependency.
-matplotlib = "^3.7"
-click = { version = "^8.1.7", optional = true }
-pyogrio = { version = ">=0.8", optional = true }
-typing-extensions = { version = "^4.6.0", python = "<3.12" }
-geopandas = { version = ">=0.13", optional = true }
-pandas = { version = "^2", optional = true }
-shapely = { version = "^2", optional = true }
-# The same version pin as geopandas
-pyproj = ">=3.3"
 arro3-core = "^0.2.1"
 arro3-io = "^0.2.1"
 arro3-compute = "^0.2.1"
+# The same version pin as geopandas
+pyproj = ">=3.3"
+typing-extensions = { version = "^4.6.0", python = "<3.12" }
+click = { version = "^8.1.7", optional = true }
+geopandas = { version = ">=0.13", optional = true }
+pandas = { version = "^2", optional = true }
+pyogrio = { version = ">=0.8", optional = true }
+shapely = { version = "^2", optional = true }
 
 
 [tool.poetry.extras]
@@ -54,16 +50,17 @@ cli = ["click", "pyogrio", "shapely"]
 geopandas = ["geopandas", "pandas", "shapely"]
 
 [tool.poetry.group.dev.dependencies]
-
-jupyterlab = "^4.0.5"
-pre-commit = "^3.4.0"
-pytest = "^7.4.2"
+duckdb = "^0.10.2"
+geoarrow-pyarrow = "^0.1.1"
 geoarrow-rust-core = "^0.2.0"
 geodatasets = "^2023.12.0"
-pyogrio = "^0.8"
-geoarrow-pyarrow = "^0.1.1"
-duckdb = "^0.10.2"
+jupyterlab = "^4.0.5"
+matplotlib = "^3.7"
+palettable = "^3.3.3"
+pre-commit = "^3.4.0"
 pyarrow = ">=14.0.1"
+pyogrio = "^0.8"
+pytest = "^7.4.2"
 
 [tool.poetry.group.docs.dependencies]
 # We use ruff format ourselves, but mkdocstrings requires black to be installed
