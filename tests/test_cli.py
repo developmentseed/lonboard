@@ -2,9 +2,10 @@ from pathlib import Path
 
 import pytest
 
-import lonboard._compat as compat
 from lonboard import PathLayer, viz
 from lonboard._cli import read_pyogrio
+
+from . import compat
 
 fixtures_dir = Path(__file__).parent / "fixtures"
 
