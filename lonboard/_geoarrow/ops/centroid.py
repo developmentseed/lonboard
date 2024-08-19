@@ -6,8 +6,7 @@ from dataclasses import dataclass
 from typing import Optional
 
 import numpy as np
-from arro3.compute import list_flatten
-from arro3.core import Array, ChunkedArray, DataType, Field
+from arro3.core import Array, ChunkedArray, DataType, Field, list_flatten
 
 from lonboard._constants import EXTENSION_NAME
 

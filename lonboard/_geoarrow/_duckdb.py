@@ -5,7 +5,6 @@ import re
 from typing import TYPE_CHECKING, List, Optional, Union
 
 import numpy as np
-from arro3.compute import struct_field
 from arro3.core import (
     Array,
     ChunkedArray,
@@ -13,6 +12,7 @@ from arro3.core import (
     Table,
     fixed_size_list_array,
     list_array,
+    struct_field,
 )
 
 from lonboard._constants import EXTENSION_NAME

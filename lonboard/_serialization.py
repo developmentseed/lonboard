@@ -50,7 +50,9 @@ def write_parquet_batch(record_batch: RecordBatch) -> bytes:
             compression=DEFAULT_PARQUET_COMPRESSION,
             compression_level=DEFAULT_PARQUET_COMPRESSION_LEVEL,
         ) as writer:
-            writer.write_batch(record_batch, row_group_size=record_batch.num_rows)
+            writer.write_batch(
+                pa.record_batch(record_batch), row_group_size=record_batch.num_rows
+            )
 
         return bio.getvalue()
 
