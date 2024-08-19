@@ -11,7 +11,6 @@ from typing import TYPE_CHECKING, Any, List, NoReturn, Optional, Set, Tuple, Uni
 from typing import cast as type_cast
 from urllib.parse import urlparse
 
-import matplotlib as mpl
 import numpy as np
 import traitlets
 from arro3.core import (
@@ -33,6 +32,7 @@ from lonboard._serialization import (
 )
 from lonboard._utils import get_geometry_column_index
 from lonboard.models import ViewState
+from lonboard.vendor.matplotlib.colors import _to_rgba_no_colorcycle
 
 if TYPE_CHECKING:
     from traitlets import HasTraits
@@ -333,7 +333,7 @@ class ColorAccessor(FixedErrorTraitType):
 
         if isinstance(value, str):
             try:
-                c = mpl.colors.to_rgba(value)  # type: ignore
+                c = _to_rgba_no_colorcycle(value)  # type: ignore
             except ValueError:
                 return self.error(
                     obj,
@@ -593,7 +593,7 @@ class PointAccessor(FixedErrorTraitType):
 
         if isinstance(value, str):
             try:
-                c = mpl.colors.to_rgba(value)  # type: ignore
+                c = _to_rgba_no_colorcycle(value)  # type: ignore
             except ValueError:
                 return self.error(
                     obj,
