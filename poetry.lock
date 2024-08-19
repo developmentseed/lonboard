@@ -4431,4 +4431,4 @@ geopandas = ["geopandas", "pandas", "shapely"]
 [metadata]
 lock-version = "2.0"
 python-versions = "^3.8"
-content-hash = "296bf1432a1697c06735efe7709a9b3dbacbdccde5504ed7a4ed189a553d1b33"
+content-hash = "7909857b31d2675b2b2436a4ca782936ce7515c90bc964ec34bd357dd373d12d"
