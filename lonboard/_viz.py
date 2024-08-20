@@ -28,7 +28,11 @@ from lonboard._geoarrow.geopandas_interop import geopandas_to_geoarrow
 from lonboard._geoarrow.parse_wkb import parse_serialized_table
 from lonboard._layer import PathLayer, PolygonLayer, ScatterplotLayer
 from lonboard._map import Map
-from lonboard._utils import get_geometry_column_index, split_mixed_gdf
+from lonboard._utils import (
+    get_geometry_column_index,
+    split_mixed_gdf,
+    split_mixed_shapely_array,
+)
 from lonboard.basemap import CartoBasemap
 
 if TYPE_CHECKING:
@@ -361,12 +365,15 @@ def _viz_shapely_scalar(
 def _viz_shapely_array(
     data: NDArray[np.object_], **kwargs
 ) -> List[Union[ScatterplotLayer, PathLayer, PolygonLayer]]:
-    # Note: for now we pass this through a GeoDataFrame to handle mixed-type geometry
-    # arrays. Longer term we should do this without a GeoPandas dependency.
-    import geopandas as gpd
+    layers: List[Union[ScatterplotLayer, PathLayer, PolygonLayer]] = []
+    for partial_geometry_array in split_mixed_shapely_array(data):
+        field, geom_arr = construct_geometry_array(
+            partial_geometry_array,
+        )
+        table = Table.from_arrays([geom_arr], schema=Schema([field]))
+        layers.extend(_viz_geoarrow_table(table, **kwargs))
 
-    gdf = gpd.GeoDataFrame(geometry=data)  # type: ignore
-    return _viz_geopandas_geodataframe(gdf, **kwargs)
+    return layers
 
 
 def _viz_geo_interface(
