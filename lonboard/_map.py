@@ -125,16 +125,18 @@ class Map(BaseAnyWidget):
 
     """
 
-    height = traitlets.Int(default_value=DEFAULT_HEIGHT, allow_none=True).tag(
-        sync=True
-    )
+    height = traitlets.Union(
+        [traitlets.Int(),traitlets.Unicode()],
+        default_value=DEFAULT_HEIGHT, allow_none=True
+    ).tag(sync=True)
     """Height of the map in pixels.
 
     This API is not yet stabilized and may change in the future.
     """
-    width = traitlets.Int(default_value=DEFAULT_HEIGHT, allow_none=True).tag(
-        sync=True
-    )
+    width = traitlets.Union(
+        [traitlets.Int(),traitlets.Unicode()],
+        default_value=DEFAULT_HEIGHT, allow_none=True
+    ).tag(sync=True)
     """Width of the map in pixels.
 
     This API is not yet stabilized and may change in the future.
