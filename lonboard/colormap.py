@@ -3,6 +3,15 @@ from __future__ import annotations
 from typing import TYPE_CHECKING, Any, Dict, Optional, Sequence, Tuple, Union
 
 import numpy as np
+from arro3.compute import dictionary_encode
+from arro3.core import (
+    Array,
+    ChunkedArray,
+    DataType,
+    dictionary_dictionary,
+    dictionary_indices,
+)
+from arro3.core.types import ArrowArrayExportable, ArrowStreamExportable
 
 if TYPE_CHECKING:
     import matplotlib as mpl
@@ -130,7 +139,14 @@ def apply_continuous_cmap(
 
 
 def apply_categorical_cmap(
-    values: Union[NDArray, pd.Series, pa.Array, pa.ChunkedArray],
+    values: Union[
+        NDArray,
+        pd.Series,
+        pa.Array,
+        pa.ChunkedArray,
+        ArrowArrayExportable,
+        ArrowStreamExportable,
+    ],
     cmap: DiscreteColormap,
     *,
     alpha: Optional[int] = None,
@@ -163,30 +179,27 @@ def apply_categorical_cmap(
             dimension will have a length of either `3` if `alpha` is `None`, or `4` is
             each color has an alpha value.
     """
+    if isinstance(values, np.ndarray):
+        values = Array.from_numpy(values)
+
     try:
-        import pyarrow as pa
-        import pyarrow.compute as pc
-    except ImportError as e:
-        raise ImportError(
-            "pyarrow required for apply_categorical_cmap.\n"
-            "Run `pip install pyarrow`."
-        ) from e
+        import pandas as pd
 
-    # Import from PyCapsule interface
-    if hasattr(values, "__arrow_c_array__"):
-        values = pa.array(values)
-    elif hasattr(values, "__arrow_c_stream__"):
-        values = pa.chunked_array(values)
+        if isinstance(values, pd.Series):
+            values = Array.from_numpy(values)
+    except ImportError:
+        pass
 
-    # Construct from non-arrow data
-    if not isinstance(values, (pa.Array, pa.ChunkedArray)):
-        values = pa.array(values)
+    values = ChunkedArray(values)
 
-    if not pa.types.is_dictionary(values.type):
-        values = pc.dictionary_encode(values)
+    if not DataType.is_dictionary(values.type):
+        values = ChunkedArray(dictionary_encode(values))
+
+    dictionary = ChunkedArray(dictionary_dictionary(values))
+    indices = ChunkedArray(dictionary_indices(values))
 
     # Build lookup table
-    lut = np.zeros((len(values.dictionary), 4), dtype=np.uint8)
+    lut = np.zeros((len(dictionary), 4), dtype=np.uint8)
     if alpha is not None:
         assert isinstance(alpha, int), "alpha must be an integer"
         assert 0 <= alpha <= 255, "alpha must be between 0-255 (inclusive)."
@@ -195,7 +208,7 @@ def apply_categorical_cmap(
     else:
         lut[:, 3] = 255
 
-    for i, key in enumerate(values.dictionary):
+    for i, key in enumerate(dictionary):
         color = cmap[key.as_py()]
         if len(color) == 3:
             lut[i, :3] = color
@@ -206,7 +219,7 @@ def apply_categorical_cmap(
                 "Expected color to be 3 or 4 values representing RGB or RGBA."
             )
 
-    colors = lut[values.indices]
+    colors = lut[indices]
 
     # If the alpha values are all 255, don't serialize
     if (colors[:, 3] == 255).all():
