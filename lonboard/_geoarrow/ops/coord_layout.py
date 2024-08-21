@@ -3,7 +3,6 @@
 from typing import Tuple
 
 import numpy as np
-from arro3.compute import struct_field
 from arro3.core import (
     Array,
     ChunkedArray,
@@ -11,6 +10,7 @@ from arro3.core import (
     Field,
     Table,
     fixed_size_list_array,
+    struct_field,
 )
 
 from lonboard._constants import EXTENSION_NAME

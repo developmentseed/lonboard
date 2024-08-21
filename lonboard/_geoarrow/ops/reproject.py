@@ -8,7 +8,6 @@ from typing import Callable, Optional, Tuple, Union
 from warnings import warn
 
 import numpy as np
-from arro3.compute import list_flatten, list_offsets
 from arro3.core import (
     Array,
     ChunkedArray,
@@ -17,6 +16,8 @@ from arro3.core import (
     Table,
     fixed_size_list_array,
     list_array,
+    list_flatten,
+    list_offsets,
 )
 from pyproj import CRS, Transformer
 
