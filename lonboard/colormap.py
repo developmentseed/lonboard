@@ -6,10 +6,12 @@ import numpy as np
 from arro3.compute import dictionary_encode
 from arro3.core import (
     Array,
+    ChunkedArray,
     DataType,
     dictionary_dictionary,
     dictionary_indices,
 )
+from arro3.core.types import ArrowArrayExportable, ArrowStreamExportable
 
 if TYPE_CHECKING:
     import matplotlib as mpl
@@ -137,7 +139,14 @@ def apply_continuous_cmap(
 
 
 def apply_categorical_cmap(
-    values: Union[NDArray, pd.Series, pa.Array, pa.ChunkedArray],
+    values: Union[
+        NDArray,
+        pd.Series,
+        pa.Array,
+        pa.ChunkedArray,
+        ArrowArrayExportable,
+        ArrowStreamExportable,
+    ],
     cmap: DiscreteColormap,
     *,
     alpha: Optional[int] = None,
@@ -170,34 +179,24 @@ def apply_categorical_cmap(
             dimension will have a length of either `3` if `alpha` is `None`, or `4` is
             each color has an alpha value.
     """
+    if isinstance(values, np.ndarray):
+        values = Array.from_numpy(values)
+
     try:
-        import pyarrow as pa
-        import pyarrow.compute as pc
-    except ImportError as e:
-        raise ImportError(
-            "pyarrow required for apply_categorical_cmap.\n"
-            "Run `pip install pyarrow`."
-        ) from e
+        import pandas as pd
 
-    # Import from PyCapsule interface
-    if hasattr(values, "__arrow_c_array__"):
-        values = pa.array(values)
-    elif hasattr(values, "__arrow_c_stream__"):
-        values = pa.chunked_array(values)
+        if isinstance(values, pd.Series):
+            values = Array.from_numpy(values)
+    except ImportError:
+        pass
 
-    # Construct from non-arrow data
-    if not isinstance(values, (pa.Array, pa.ChunkedArray)):
-        values = pa.array(values)
-        dir(values)
-        values.to_pylist()
+    values = ChunkedArray(values)
 
-    values = Array.from_arrow(values)
     if not DataType.is_dictionary(values.type):
-        values = dictionary_encode(values)
+        values = ChunkedArray(dictionary_encode(values))
 
-    dictionary = dictionary_dictionary(values)
-    indices = dictionary_indices(values)
-    dictionary
+    dictionary = ChunkedArray(dictionary_dictionary(values))
+    indices = ChunkedArray(dictionary_indices(values))
 
     # Build lookup table
     lut = np.zeros((len(dictionary), 4), dtype=np.uint8)
