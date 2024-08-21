@@ -112,21 +112,21 @@ tests = ["pytest"]
 
 [[package]]
 name = "arro3-compute"
-version = "0.3.0b1"
+version = "0.3.0b2"
 description = "Rust-based compute kernels for Arrow in Python."
 optional = false
 python-versions = ">=3.8"
 files = [
-    {file = "arro3_compute-0.3.0b1-cp38-abi3-macosx_10_12_x86_64.whl", hash = "sha256:a1ef92b7e1b9018c8ae730119807c24320189c1540e794dbec73f3b0f34a8d3e"},
-    {file = "arro3_compute-0.3.0b1-cp38-abi3-macosx_11_0_arm64.whl", hash = "sha256:0a4193c0c42d07a73e8592bd90e5b1eb180ac55d058ea2c6443c9e383612adee"},
-    {file = "arro3_compute-0.3.0b1-cp38-abi3-manylinux_2_17_aarch64.manylinux2014_aarch64.whl", hash = "sha256:063bacf80705b852342d708fa86a655897c65efb1292ac3ab557eab6df02435b"},
-    {file = "arro3_compute-0.3.0b1-cp38-abi3-manylinux_2_17_armv7l.manylinux2014_armv7l.whl", hash = "sha256:b5413dd9cb9f06247dd781ff6b405f45730639db017704d5d1c5c0e52064644c"},
-    {file = "arro3_compute-0.3.0b1-cp38-abi3-manylinux_2_17_ppc64le.manylinux2014_ppc64le.whl", hash = "sha256:6907f1b972d1e49eaca6dc8cde56e56fa5bff32a951ffbc9b4ef9d45e9776e11"},
-    {file = "arro3_compute-0.3.0b1-cp38-abi3-manylinux_2_17_s390x.manylinux2014_s390x.whl", hash = "sha256:6ec6de235ce78a69035b44d3904b2c4e7317dbafa2563b42c08bdfa436a0542b"},
-    {file = "arro3_compute-0.3.0b1-cp38-abi3-manylinux_2_17_x86_64.manylinux2014_x86_64.whl", hash = "sha256:c915ca014dd38524e3fab122c048c7b7f97d6478d8f75b6148c104f8f12c3114"},
-    {file = "arro3_compute-0.3.0b1-cp38-abi3-manylinux_2_5_i686.manylinux1_i686.whl", hash = "sha256:12cebf071bc781554b3b91e857a9309a6208608efba337ce102011be6197b5d3"},
-    {file = "arro3_compute-0.3.0b1-cp38-abi3-win32.whl", hash = "sha256:b75c11e83ba0fef1a1b65100744a69d6bee8648d1359fa89c9f3052a846a8b48"},
-    {file = "arro3_compute-0.3.0b1-cp38-abi3-win_amd64.whl", hash = "sha256:4145810adf1af7938bd6a95ff7df45b1b0acd794c96f2fbdc711d0cf551fb663"},
+    {file = "arro3_compute-0.3.0b2-cp38-abi3-macosx_10_12_x86_64.whl", hash = "sha256:dac65a17bb9cbcfad899c5702faac94506a4b5d45a5efc4b8c5272a61afeb2b0"},
+    {file = "arro3_compute-0.3.0b2-cp38-abi3-macosx_11_0_arm64.whl", hash = "sha256:92a6b33c16306cf6f78ad0fff03048399fd32c5b2adf024af5c8f6ff2f2d13ee"},
+    {file = "arro3_compute-0.3.0b2-cp38-abi3-manylinux_2_17_aarch64.manylinux2014_aarch64.whl", hash = "sha256:22c5153eca546fec96c2f7981c2bfa8fad7aae0c52f48cdf04f32bfa7640a248"},
+    {file = "arro3_compute-0.3.0b2-cp38-abi3-manylinux_2_17_armv7l.manylinux2014_armv7l.whl", hash = "sha256:d7a594e8bb026adad243dfc8ac93a9af157e48c825372bc661a24878bb79e9c0"},
+    {file = "arro3_compute-0.3.0b2-cp38-abi3-manylinux_2_17_ppc64le.manylinux2014_ppc64le.whl", hash = "sha256:88b57224af9b7a31120bb39ad46c9136f50cddbe05ccea5731eb307d7933d22e"},
+    {file = "arro3_compute-0.3.0b2-cp38-abi3-manylinux_2_17_s390x.manylinux2014_s390x.whl", hash = "sha256:b614e84ad5c2fdd74c661acf2e2d11f190acbaa4011a878d87c640eb1a3c12f7"},
+    {file = "arro3_compute-0.3.0b2-cp38-abi3-manylinux_2_17_x86_64.manylinux2014_x86_64.whl", hash = "sha256:0a44dccae6c2546d0d59706bfbcf116257fab17cf45df1bc8fe1ad59a70b119f"},
+    {file = "arro3_compute-0.3.0b2-cp38-abi3-manylinux_2_5_i686.manylinux1_i686.whl", hash = "sha256:dd9ad616c58af495fad45f2babc4a8d122ad21def0b1a4f0b4cf4707e753e3b2"},
+    {file = "arro3_compute-0.3.0b2-cp38-abi3-win32.whl", hash = "sha256:f2bdc3c05dcea3d8b5a3becec1452e1b9ab9268c03fa8c7ba1f362be008f544e"},
+    {file = "arro3_compute-0.3.0b2-cp38-abi3-win_amd64.whl", hash = "sha256:8985ad85661e661c4a33e1013260a6a0add85a4849af9e848847cebfd25c9376"},
 ]
 
 [package.dependencies]
@@ -134,40 +134,40 @@ arro3-core = "*"
 
 [[package]]
 name = "arro3-core"
-version = "0.3.0b1"
+version = "0.3.0b2"
 description = "Core library for representing Arrow data in Python."
 optional = false
 python-versions = ">=3.8"
 files = [
-    {file = "arro3_core-0.3.0b1-cp38-abi3-macosx_10_12_x86_64.whl", hash = "sha256:83c8b0497d815c0e5add7c9c9ffa8aa1dfcbde0ae984aa5d164991726986d55f"},
-    {file = "arro3_core-0.3.0b1-cp38-abi3-macosx_11_0_arm64.whl", hash = "sha256:2b9bedda0d23beb45f7f048123086218a73e3552c1b745f2e54b43ea7e955eef"},
-    {file = "arro3_core-0.3.0b1-cp38-abi3-manylinux_2_17_aarch64.manylinux2014_aarch64.whl", hash = "sha256:63f90881e4fe0ff11375860fdcba36ea85fab9c4f2862f56ad7680099bee3ec0"},
-    {file = "arro3_core-0.3.0b1-cp38-abi3-manylinux_2_17_armv7l.manylinux2014_armv7l.whl", hash = "sha256:1eb6fb052e0e8fbdffb8b99439e7ae61243d26fb338c5fdccf6a156964bc09c3"},
-    {file = "arro3_core-0.3.0b1-cp38-abi3-manylinux_2_17_ppc64le.manylinux2014_ppc64le.whl", hash = "sha256:b3a427014ecb930bc4b5cb7100b5756012463e6ba402156b71d3d55d530c74ba"},
-    {file = "arro3_core-0.3.0b1-cp38-abi3-manylinux_2_17_s390x.manylinux2014_s390x.whl", hash = "sha256:b94e98681fc4ce9a7568447ef04eef0cdcbb90666b1f7bbc629e3c4e43c6e1dd"},
-    {file = "arro3_core-0.3.0b1-cp38-abi3-manylinux_2_17_x86_64.manylinux2014_x86_64.whl", hash = "sha256:c1a42e1e57087c23f061b2ad2d543462815012c4f84df3e17a3433be0c0ddb54"},
-    {file = "arro3_core-0.3.0b1-cp38-abi3-manylinux_2_5_i686.manylinux1_i686.whl", hash = "sha256:c38913f747ced8b05a0f5a2b609931b5ffb3f031a610821c12b805a4f7c30cdb"},
-    {file = "arro3_core-0.3.0b1-cp38-abi3-win32.whl", hash = "sha256:71127432676dcfb673b4c7924fd5c05379c60e3f499bd8eb0cae6f0f316749ca"},
-    {file = "arro3_core-0.3.0b1-cp38-abi3-win_amd64.whl", hash = "sha256:8ae6cd9e72b9162b4c8e1c215d8cd928415e184475e4f24aeb011248f206e35c"},
+    {file = "arro3_core-0.3.0b2-cp38-abi3-macosx_10_12_x86_64.whl", hash = "sha256:d5aac2a37ff624fdeef787909dcfeea83f3641bcc8749b14e765dba740038d90"},
+    {file = "arro3_core-0.3.0b2-cp38-abi3-macosx_11_0_arm64.whl", hash = "sha256:d5c9881f8ede7eedec22b5e8d2fa89dbf06eeb91b0d4b9a687d3ccc61da514a5"},
+    {file = "arro3_core-0.3.0b2-cp38-abi3-manylinux_2_17_aarch64.manylinux2014_aarch64.whl", hash = "sha256:45c7f6da94c8db538e7aff8a2f3fcc8959867d66f0ce1c3bd1e43b67540bf963"},
+    {file = "arro3_core-0.3.0b2-cp38-abi3-manylinux_2_17_armv7l.manylinux2014_armv7l.whl", hash = "sha256:c4eabe7b5b48995b9ed0654b48037c0f8c0ab401e567deb8872cc15d76b87537"},
+    {file = "arro3_core-0.3.0b2-cp38-abi3-manylinux_2_17_ppc64le.manylinux2014_ppc64le.whl", hash = "sha256:c3d35bcb6fd870fcb329facd8615fe94e3ecf99e28db533f882ffd51e6b79cb2"},
+    {file = "arro3_core-0.3.0b2-cp38-abi3-manylinux_2_17_s390x.manylinux2014_s390x.whl", hash = "sha256:150735a7fbdda544d9f0f1db04c8cfe7259bb618561166f221c597660023485d"},
+    {file = "arro3_core-0.3.0b2-cp38-abi3-manylinux_2_17_x86_64.manylinux2014_x86_64.whl", hash = "sha256:cac06b67cff8ffef04a224eb3b9b2fbdd4b0644d3f4416335c207ada590e517b"},
+    {file = "arro3_core-0.3.0b2-cp38-abi3-manylinux_2_5_i686.manylinux1_i686.whl", hash = "sha256:c843c9efde77228c5bff20e30e541f261b05ccb0a70a9841835886f63f12367c"},
+    {file = "arro3_core-0.3.0b2-cp38-abi3-win32.whl", hash = "sha256:6a7d054e37aca2434f6def788c1a583d22748ae603d2684fc298d4830823d687"},
+    {file = "arro3_core-0.3.0b2-cp38-abi3-win_amd64.whl", hash = "sha256:3536134ebe803d99d72d8efc53a99a94ef8e2d840ebbe88049552659d9792ff3"},
 ]
 
 [[package]]
 name = "arro3-io"
-version = "0.3.0b1"
+version = "0.3.0b2"
 description = "Rust-based readers and writers for Arrow in Python."
 optional = false
 python-versions = ">=3.8"
 files = [
-    {file = "arro3_io-0.3.0b1-cp38-abi3-macosx_10_12_x86_64.whl", hash = "sha256:c93613726aa8910873df213b8358280516d9e4b90ef1f858960158a8ff3054df"},
-    {file = "arro3_io-0.3.0b1-cp38-abi3-macosx_11_0_arm64.whl", hash = "sha256:1d5764c37a3405caf896c6ac53efce190b6b13ca8f84d80e20af4e9ca5bc6ce6"},
-    {file = "arro3_io-0.3.0b1-cp38-abi3-manylinux_2_17_aarch64.manylinux2014_aarch64.whl", hash = "sha256:21c3636b65833ecf5dbfd8f7247c56d879440c02a71d1f6cf5e34fe44d963d32"},
-    {file = "arro3_io-0.3.0b1-cp38-abi3-manylinux_2_17_armv7l.manylinux2014_armv7l.whl", hash = "sha256:eab21a38f71018d54a834d4b505f1e4362532c871cb980c293a4f3f07b3650ca"},
-    {file = "arro3_io-0.3.0b1-cp38-abi3-manylinux_2_17_ppc64le.manylinux2014_ppc64le.whl", hash = "sha256:cc333efc0271b2b1d31002f07e97340a7a0ce0cbb114809b01f45b2294292680"},
-    {file = "arro3_io-0.3.0b1-cp38-abi3-manylinux_2_17_s390x.manylinux2014_s390x.whl", hash = "sha256:aa582351467d1eaf6accd8d5868412203f7bf163a8797982421015c154f6def4"},
-    {file = "arro3_io-0.3.0b1-cp38-abi3-manylinux_2_17_x86_64.manylinux2014_x86_64.whl", hash = "sha256:e4bd7ad9d40f9f1f8a961be128db84b60e5963ad8752d9b4f8b16edfb9d46c41"},
-    {file = "arro3_io-0.3.0b1-cp38-abi3-manylinux_2_5_i686.manylinux1_i686.whl", hash = "sha256:b0ce69d1daccfb4ae3b2a1e4157fe9c49cd7a479316f32978a5c767d4a07b780"},
-    {file = "arro3_io-0.3.0b1-cp38-abi3-win32.whl", hash = "sha256:e424bf7951b8b6e14cfae72317d47a9d8ef4449c529e08d3ca9db65c316e4f67"},
-    {file = "arro3_io-0.3.0b1-cp38-abi3-win_amd64.whl", hash = "sha256:50cb3f068f440903969ab7b1797a20a1ffe905992c0972e63c0f21affc4914d8"},
+    {file = "arro3_io-0.3.0b2-cp38-abi3-macosx_10_12_x86_64.whl", hash = "sha256:cd4b282f88b2267382663b63f5d7e8d18f5f04fa84cab8551fd12e59856dde0d"},
+    {file = "arro3_io-0.3.0b2-cp38-abi3-macosx_11_0_arm64.whl", hash = "sha256:f07797cb2448b1c64cdffdbd46d337ae0eb831440c254500e9206ed399ec21a9"},
+    {file = "arro3_io-0.3.0b2-cp38-abi3-manylinux_2_17_aarch64.manylinux2014_aarch64.whl", hash = "sha256:c6caf2d4dc6d5a326f45b8b92c0ef585f108db093ec333963123b84b2e9d9326"},
+    {file = "arro3_io-0.3.0b2-cp38-abi3-manylinux_2_17_armv7l.manylinux2014_armv7l.whl", hash = "sha256:a4b11516b5a1d034ea9d14192bca5aa304b6ac6e847db47428a460258c4d4d78"},
+    {file = "arro3_io-0.3.0b2-cp38-abi3-manylinux_2_17_ppc64le.manylinux2014_ppc64le.whl", hash = "sha256:f33a2dac0e7e913d988aa91af2d3d5cae726b4c9a0bf2121613b2e98a7806c5c"},
+    {file = "arro3_io-0.3.0b2-cp38-abi3-manylinux_2_17_s390x.manylinux2014_s390x.whl", hash = "sha256:ab8170e857fc11f268dde04e243bd08966debe22259006c8bfc297e8a6f96330"},
+    {file = "arro3_io-0.3.0b2-cp38-abi3-manylinux_2_17_x86_64.manylinux2014_x86_64.whl", hash = "sha256:85d40baa9295c734455744ff78a0449368370c38efccd93d675268eb6af5d302"},
+    {file = "arro3_io-0.3.0b2-cp38-abi3-manylinux_2_5_i686.manylinux1_i686.whl", hash = "sha256:0a15fae688bd3dedaedb88a3581f9c8a0b3bdef45972579caf1d53f5542cc75f"},
+    {file = "arro3_io-0.3.0b2-cp38-abi3-win32.whl", hash = "sha256:c5ec6e94c57cbb31ff95ead54bcf265b37111af41a13cebc7fe69389d52f4069"},
+    {file = "arro3_io-0.3.0b2-cp38-abi3-win_amd64.whl", hash = "sha256:3346f240feeb6f8f9d5ca43f0ab546f68f1301a95c41374324e882ffe6e4edf1"},
 ]
 
 [package.dependencies]
@@ -1413,13 +1413,13 @@ files = [
 
 [[package]]
 name = "importlib-metadata"
-version = "8.3.0"
+version = "8.4.0"
 description = "Read metadata from Python packages"
 optional = false
 python-versions = ">=3.8"
 files = [
-    {file = "importlib_metadata-8.3.0-py3-none-any.whl", hash = "sha256:42817a4a0be5845d22c6e212db66a94ad261e2318d80b3e0d363894a79df2b67"},
-    {file = "importlib_metadata-8.3.0.tar.gz", hash = "sha256:9c8fa6e8ea0f9516ad5c8db9246a731c948193c7754d3babb0114a05b27dd364"},
+    {file = "importlib_metadata-8.4.0-py3-none-any.whl", hash = "sha256:66f342cc6ac9818fc6ff340576acd24d65ba0b3efabb2b4ac08b598965a4a2f1"},
+    {file = "importlib_metadata-8.4.0.tar.gz", hash = "sha256:9a547d3bc3608b025f93d403fdd1aae741c24fbb8314df4b155675742ce303c5"},
 ]
 
 [package.dependencies]
@@ -2337,13 +2337,13 @@ min-versions = ["babel (==2.9.0)", "click (==7.0)", "colorama (==0.4)", "ghp-imp
 
 [[package]]
 name = "mkdocs-autorefs"
-version = "1.0.1"
+version = "1.1.0"
 description = "Automatically link across pages in MkDocs."
 optional = false
 python-versions = ">=3.8"
 files = [
-    {file = "mkdocs_autorefs-1.0.1-py3-none-any.whl", hash = "sha256:aacdfae1ab197780fb7a2dac92ad8a3d8f7ca8049a9cbe56a4218cd52e8da570"},
-    {file = "mkdocs_autorefs-1.0.1.tar.gz", hash = "sha256:f684edf847eced40b570b57846b15f0bf57fb93ac2c510450775dcf16accb971"},
+    {file = "mkdocs_autorefs-1.1.0-py3-none-any.whl", hash = "sha256:492ac42f50214e81565e968f8cb0df9aba9d981542b9e7121b8f8ae9407fe6eb"},
+    {file = "mkdocs_autorefs-1.1.0.tar.gz", hash = "sha256:f2fd43b11f66284bd014f9b542a05c8ecbfaad4e0d7b30b68584788217b6c656"},
 ]
 
 [package.dependencies]
@@ -3896,13 +3896,13 @@ win32 = ["pywin32"]
 
 [[package]]
 name = "setuptools"
-version = "73.0.0"
+version = "73.0.1"
 description = "Easily download, build, install, upgrade, and uninstall Python packages"
 optional = false
 python-versions = ">=3.8"
 files = [
-    {file = "setuptools-73.0.0-py3-none-any.whl", hash = "sha256:f2bfcce7ae1784d90b04c57c2802e8649e1976530bb25dc72c2b078d3ecf4864"},
-    {file = "setuptools-73.0.0.tar.gz", hash = "sha256:3c08705fadfc8c7c445cf4d98078f0fafb9225775b2b4e8447e40348f82597c0"},
+    {file = "setuptools-73.0.1-py3-none-any.whl", hash = "sha256:b208925fcb9f7af924ed2dc04708ea89791e24bde0d3020b27df0e116088b34e"},
+    {file = "setuptools-73.0.1.tar.gz", hash = "sha256:d59a3e788ab7e012ab2c4baed1b376da6366883ee20d7a5fc426816e3d7b1193"},
 ]
 
 [package.extras]
@@ -4107,13 +4107,13 @@ test = ["argcomplete (>=3.0.3)", "mypy (>=1.7.0)", "pre-commit", "pytest (>=7.0,
 
 [[package]]
 name = "types-python-dateutil"
-version = "2.9.0.20240316"
+version = "2.9.0.20240821"
 description = "Typing stubs for python-dateutil"
 optional = false
 python-versions = ">=3.8"
 files = [
-    {file = "types-python-dateutil-2.9.0.20240316.tar.gz", hash = "sha256:5d2f2e240b86905e40944dd787db6da9263f0deabef1076ddaed797351ec0202"},
-    {file = "types_python_dateutil-2.9.0.20240316-py3-none-any.whl", hash = "sha256:6b8cb66d960771ce5ff974e9dd45e38facb81718cc1e208b10b1baccbfdbee3b"},
+    {file = "types-python-dateutil-2.9.0.20240821.tar.gz", hash = "sha256:9649d1dcb6fef1046fb18bebe9ea2aa0028b160918518c34589a46045f6ebd98"},
+    {file = "types_python_dateutil-2.9.0.20240821-py3-none-any.whl", hash = "sha256:f5889fcb4e63ed4aaa379b44f93c32593d50b9a94c9a60a0c854d8cc3511cd57"},
 ]
 
 [[package]]
@@ -4437,4 +4437,4 @@ geopandas = ["geopandas", "pandas", "shapely"]
 [metadata]
 lock-version = "2.0"
 python-versions = "^3.8"
-content-hash = "f60a6374b6922cb82b661be7853d41eeb2bbaae181a50ff8985c2d20b44f7555"
+content-hash = "f576a4af0e4c78d4e99c4ce4ffd7ba7f122b0071767d25f4fe2a3d31f3cebb4d"
