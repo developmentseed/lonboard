@@ -64,6 +64,7 @@ pyarrow = ">=14.0.1"
 pyogrio = "^0.8"
 pytest = "^7.4.2"
 quak = "^0.1.8"
+sqlglot = "^25.16.0"
 
 [tool.poetry.group.docs.dependencies]
 # We use ruff format ourselves, but mkdocstrings requires black to be installed

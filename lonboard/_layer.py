@@ -47,6 +47,7 @@ from lonboard.traits import (
 
 if TYPE_CHECKING:
     import geopandas as gpd
+    import quak
 
     from lonboard.types.layer import (
         BaseLayerKwargs,
@@ -389,6 +390,12 @@ class BaseArrowLayer(BaseLayer):
             table = _from_duckdb(sql, con=con, crs=crs)
 
         return cls(table=table, **kwargs)
+
+    def quak(self) -> quak.Widget:
+        import quak
+        import sqlglot
+
+        pass
 
 
 class BitmapLayer(BaseLayer):
