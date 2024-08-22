@@ -102,6 +102,9 @@ class BaseLayer(BaseWidget):
             self.set_trait(prop_name, prop_value)
             added_names.append(prop_name)
 
+        print("added_names")
+        print(added_names)
+
         self.send_state(added_names)
 
     # TODO: validate that only one extension per type is included. E.g. you can't have
@@ -139,6 +142,8 @@ class BaseLayer(BaseWidget):
             # the `Widget` implementation, `send_state` will fail, even if the user
             # passes in a value, because `send_state` is called before we call
             # `super().__init__()`
+            print("calling add traits")
+            print(extension._layer_traits)
             traitlets.HasTraits.add_traits(self, **extension._layer_traits)
 
             # Note: This is part of `Widget.add_traits` (in the direct superclass) that
@@ -146,6 +151,15 @@ class BaseLayer(BaseWidget):
             for name, trait in extension._layer_traits.items():
                 if trait.get_metadata("sync"):
                     self.keys.append(name)
+
+    def add_extension(self, extension: BaseExtension):
+        if any(isinstance(ext, extension.__class__) for ext in self.extensions):
+            raise ValueError("Cannot handle multiple of the same extension")
+
+        # Maybe keep a registry of which extensions have already been added?
+        self._add_extension_traits([extension])
+
+        self.extensions.append(extension)
 
     pickable = traitlets.Bool(True).tag(sync=True)
     """
