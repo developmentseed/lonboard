@@ -4017,6 +4017,21 @@ files = [
 ]
 
 [[package]]
+name = "sqlglot"
+version = "25.16.0"
+description = "An easily customizable SQL parser and transpiler"
+optional = false
+python-versions = ">=3.7"
+files = [
+    {file = "sqlglot-25.16.0-py3-none-any.whl", hash = "sha256:508575d2b6db7edd1cdc83a147a2bdc4cea38a4b68ec1c6314065798dd830b13"},
+    {file = "sqlglot-25.16.0.tar.gz", hash = "sha256:41c32c900629e7a28dd1b0411f82d84da77732bc69b21e2308bd2b00fa04cc3a"},
+]
+
+[package.extras]
+dev = ["duckdb (>=0.6)", "maturin (>=1.4,<2.0)", "mypy", "pandas", "pandas-stubs", "pdoc", "pre-commit", "python-dateutil", "pytz", "ruff (==0.4.3)", "types-python-dateutil", "types-pytz", "typing-extensions"]
+rs = ["sqlglotrs (==0.2.9)"]
+
+[[package]]
 name = "stack-data"
 version = "0.6.3"
 description = "Extract data from python stack frames and tracebacks for informative displays"
@@ -4452,4 +4467,4 @@ geopandas = ["geopandas", "pandas", "shapely"]
 [metadata]
 lock-version = "2.0"
 python-versions = "^3.8"
-content-hash = "b190501d7ef37ce6a1d92792f5094d08f19c209a2c9508d21917627d0a52764a"
+content-hash = "5250dda2671f246ec3173063a23c1440bec60cf8db1ec0dc1013b05d18077d7b"
