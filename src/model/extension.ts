@@ -136,7 +136,7 @@ export class DataFilterExtension extends BaseExtensionModel {
     // this extension
     layerModel.extensionLayerPropertyNames = [
       ...layerModel.extensionLayerPropertyNames,
-      "filter_categories",
+      "filterCategories",
       "filterEnabled",
       "filterRange",
       "filterSoftRange",

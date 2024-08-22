@@ -324,7 +324,9 @@ class DataFilterExtension(BaseExtension):
                     minlen=2,
                     maxlen=4,
                 ),
-            ]
+            ],
+            default_value=None,
+            allow_none=True,
         ).tag(sync=True),
         "filter_enabled": traitlets.Bool(True).tag(sync=True),
         "filter_range": traitlets.Union(
@@ -335,15 +337,17 @@ class DataFilterExtension(BaseExtension):
                     minlen=2,
                     maxlen=4,
                 ),
-            ]
+            ],
+            default_value=None,
+            allow_none=True,
         ).tag(sync=True),
         "filter_soft_range": traitlets.Tuple(
             traitlets.Float(), traitlets.Float(), default_value=None, allow_none=True
         ).tag(sync=True),
         "filter_transform_size": traitlets.Bool(True).tag(sync=True),
         "filter_transform_color": traitlets.Bool(True).tag(sync=True),
-        "get_filter_value": FilterValueAccessor(None, allow_none=False),
-        "get_filter_category": FilterValueAccessor(None, allow_none=False),
+        "get_filter_value": FilterValueAccessor(default_value=None, allow_none=True),
+        "get_filter_category": FilterValueAccessor(default_value=None, allow_none=True),
     }
 
     filter_size = traitlets.Int(1, min=1, max=4).tag(sync=True)
