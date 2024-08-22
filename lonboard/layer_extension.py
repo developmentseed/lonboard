@@ -219,6 +219,29 @@ class DataFilterExtension(BaseExtension):
     This extension dynamically enables the following properties onto the layer(s) where
     it is included:
 
+    ## `filter_categories`
+
+    The list of categories that should be rendered. If an object's filtered category is
+    in the list, the object will be rendered; otherwise it will be hidden. This prop can
+    be updated on user input or animation with very little cost.
+
+    Format:
+
+    - If category_size is 1: ['category1', 'category2']
+    - If category_size is 2 to 4:
+        [['category1', 'category2', ...], ['category3', ...], ...] for each filtered
+        property, respectively.
+
+    The maximum number of supported is determined by the category_size:
+
+    - If category_size is 1: 128 categories
+    - If category_size is 2: 64 categories per dimension
+    - If category_size is 3 or 4: 32 categories per dimension.
+
+    If this value is exceeded any categories beyond the limit will be ignored.
+
+    Default: `[0]`
+
     ## `filter_enabled`
 
     Enable/disable the data filter. If the data filter is disabled, all objects are
@@ -275,16 +298,34 @@ class DataFilterExtension(BaseExtension):
 
     Accessor to retrieve the value for each object that it will be filtered by.
 
-    - Type:
-      [FilterValueAccessor][lonboard.traits.FilterValueAccessor]
+    - Type: [FilterValueAccessor][lonboard.traits.FilterValueAccessor]
         - If a scalar value is provided, it is used as the value for all objects.
-        - If an array is provided, each value in the array will be used as the value
-          for the object at the same row index.
+        - If an array is provided, each value in the array will be used as the value for
+          the object at the same row index.
+
+    ## `get_filter_category`
+
+    Accessor to retrieve the category for each object that it will be filtered by.
+
+    - Type: [FilterValueAccessor][lonboard.traits.FilterValueAccessor]
+        - If a scalar value is provided, it is used as the value for all objects.
+        - If an array is provided, each value in the array will be used as the value for
+          the object at the same row index.
     """
 
     _extension_type = traitlets.Unicode("data-filter").tag(sync=True)
 
     _layer_traits = {
+        "filter_categories": traitlets.Union(
+            [
+                traitlets.List(traitlets.Any()),
+                traitlets.List(
+                    traitlets.List(traitlets.Any()),
+                    minlen=2,
+                    maxlen=4,
+                ),
+            ]
+        ).tag(sync=True),
         "filter_enabled": traitlets.Bool(True).tag(sync=True),
         "filter_range": traitlets.Union(
             [
@@ -302,6 +343,7 @@ class DataFilterExtension(BaseExtension):
         "filter_transform_size": traitlets.Bool(True).tag(sync=True),
         "filter_transform_color": traitlets.Bool(True).tag(sync=True),
         "get_filter_value": FilterValueAccessor(None, allow_none=False),
+        "get_filter_category": FilterValueAccessor(None, allow_none=False),
     }
 
     filter_size = traitlets.Int(1, min=1, max=4).tag(sync=True)
@@ -311,6 +353,15 @@ class DataFilterExtension(BaseExtension):
 
     - Type: `int`, optional
     - Default 1.
+    """
+
+    category_size = traitlets.Int(1, min=1, max=4).tag(sync=True)
+    """The size of the category filter (number of columns to filter by).
+
+    The category filter can show/hide data based on 1-4 properties of each object.
+
+    - Type: `int`, optional
+    - Default 0.
     """
 
 

@@ -106,9 +106,14 @@ export class DataFilterExtension extends BaseExtensionModel {
     // TODO: set filterSize, fp64, countItems in constructor
     // TODO: should filter_size automatically update from python?
     const filterSize = this.model.get("filter_size");
-    this.extensionInstance = new _DataFilterExtension({ filterSize });
+    const categorySize = this.model.get("category_size");
+    this.extensionInstance = new _DataFilterExtension({
+      ...(isDefined(filterSize) ? { filterSize } : {}),
+      ...(isDefined(categorySize) ? { categorySize } : {}),
+    });
 
     // Properties added by the extension onto the layer
+    layerModel.initRegularAttribute("filter_categories", "filterCategories");
     layerModel.initRegularAttribute("filter_enabled", "filterEnabled");
     layerModel.initRegularAttribute("filter_range", "filterRange");
     layerModel.initRegularAttribute("filter_soft_range", "filterSoftRange");
@@ -121,17 +126,23 @@ export class DataFilterExtension extends BaseExtensionModel {
       "filterTransformColor",
     );
 
+    layerModel.initVectorizedAccessor(
+      "get_filter_category",
+      "getFilterCategory",
+    );
     layerModel.initVectorizedAccessor("get_filter_value", "getFilterValue");
 
     // Update the layer model with the list of the JS property names added by
     // this extension
     layerModel.extensionLayerPropertyNames = [
       ...layerModel.extensionLayerPropertyNames,
+      "filter_categories",
       "filterEnabled",
       "filterRange",
       "filterSoftRange",
       "filterTransformSize",
       "filterTransformColor",
+      "getFilterCategory",
       "getFilterValue",
     ];
   }
