@@ -329,8 +329,8 @@ function App() {
         getCursor={() => (isDrawingBBoxSelection ? "crosshair" : "grab")}
         views={MAP_VIEW}
         widgets={deckWidgets}
-        width={mapWidth}
-        height={mapHeight}
+        width={mapWidth || "100%"}
+        height={mapHeight || "100%"}
         pickingRadius={pickingRadius}
         onClick={onMapClickHandler}
         onHover={onMapHoverHandler}
