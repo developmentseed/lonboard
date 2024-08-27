@@ -17,6 +17,8 @@
     "framer-motion": "^11.3.30",
     "lodash.debounce": "^4.0.8",
     "lodash.throttle": "^4.1.1",
+    "@deck.gl/widgets": "^9.0.16",
+    "html-to-image": "^1.11.11",
     "maplibre-gl": "^3.6.2",
     "memoize-one": "^6.0.0",
     "parquet-wasm": "0.6.1",

@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import sys
+from math import log2
 from io import StringIO
 from pathlib import Path
 from typing import IO, TYPE_CHECKING, Optional, Sequence, TextIO, Union, overload
@@ -12,6 +13,7 @@ from ipywidgets.embed import embed_minimal_html
 from lonboard._base import BaseAnyWidget
 from lonboard._environment import DEFAULT_HEIGHT
 from lonboard._layer import BaseLayer
+from lonboard._deck_widget import BaseDeckWidget
 from lonboard._viewport import compute_view
 from lonboard.basemap import CartoBasemap
 from lonboard.traits import DEFAULT_INITIAL_VIEW_STATE, BasemapUrl, ViewStateTrait
@@ -123,10 +125,19 @@ class Map(BaseAnyWidget):
 
     """
 
-    _height = traitlets.Int(default_value=DEFAULT_HEIGHT, allow_none=True).tag(
-        sync=True
-    )
+    height = traitlets.Union(
+        [traitlets.Int(),traitlets.Unicode()],
+        default_value=DEFAULT_HEIGHT, allow_none=True
+    ).tag(sync=True)
     """Height of the map in pixels.
+
+    This API is not yet stabilized and may change in the future.
+    """
+    width = traitlets.Union(
+        [traitlets.Int(),traitlets.Unicode()],
+        default_value=DEFAULT_HEIGHT, allow_none=True
+    ).tag(sync=True)
+    """Width of the map in pixels.
 
     This API is not yet stabilized and may change in the future.
     """
@@ -156,7 +167,17 @@ class Map(BaseAnyWidget):
     - Default: `5`
     """
 
-    basemap_style = BasemapUrl(CartoBasemap.PositronNoLabels)
+    deck_widgets = traitlets.List(trait=traitlets.Instance(BaseDeckWidget)).tag(
+        sync=True, **ipywidgets.widget_serialization
+    )
+    """One or more `Widget` objects to display on this map.
+    """
+
+    controller = traitlets.Bool(default_value=True).tag(sync=True)
+    """Whether or not the map is interactive
+    """
+
+    basemap_style = traitlets.Unicode(CartoBasemap.PositronNoLabels).tag(sync=True)
     """
     A URL to a MapLibre-compatible basemap style.
 

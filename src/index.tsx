@@ -4,7 +4,13 @@ import { createRender, useModelState, useModel } from "@anywidget/react";
 import type { Initialize, Render } from "@anywidget/types";
 import Map from "react-map-gl/maplibre";
 import DeckGL from "@deck.gl/react";
-import { MapViewState, PickingInfo, type Layer } from "@deck.gl/core";
+import {
+  MapView,
+  MapViewState,
+  PickingInfo,
+  Widget,
+  type Layer,
+} from "@deck.gl/core";
 import { BaseLayerModel, initializeLayer } from "./model/index.js";
 import type { WidgetModel } from "@jupyter-widgets/base";
 import { initParquetWasm } from "./parquet.js";
@@ -14,6 +20,12 @@ import { v4 as uuidv4 } from "uuid";
 import { Message } from "./types.js";
 import { flyTo } from "./actions/fly-to.js";
 import { useViewStateDebounced } from "./state";
+import {
+  BaseDeckWidgetModel,
+  initializeWidget,
+} from "./model/deck-widget-models.js";
+import "@deck.gl/widgets/stylesheet.css";
+import "./widget-style.css";
 
 import { MachineContext, MachineProvider } from "./xstate";
 import * as selectors from "./xstate/selectors";
@@ -33,6 +45,8 @@ const DEFAULT_INITIAL_VIEW_STATE = {
   bearing: 0,
   pitch: 0,
 };
+
+const MAP_VIEW = new MapView({ repeat: true });
 
 const DEFAULT_MAP_STYLE =
   "https://basemaps.cartocdn.com/gl/positron-nolabels-gl-style/style.json";
@@ -71,6 +85,44 @@ async function getChildModelState(
   return newSubModelState;
 }
 
+async function getDeckWidgetModelState(
+  deckWidgetModels: WidgetModel[],
+  deckWidgetIds: string[],
+  previousSubModelState: Record<string, BaseDeckWidgetModel>,
+  setStateCounter: React.Dispatch<React.SetStateAction<Date>>,
+): Promise<Record<string, BaseDeckWidgetModel>> {
+  const newDeckWidgetModelState: Record<string, BaseDeckWidgetModel> = {};
+  const updateStateCallback = () => setStateCounter(new Date());
+
+  for (let i = 0; i < deckWidgetIds.length; i++) {
+    const deckWidgetId = deckWidgetIds[i];
+    const deckWidgetModel = deckWidgetModels[i];
+
+    // If the layer existed previously, copy its model without constructing
+    // a new one
+    if (deckWidgetId in previousSubModelState) {
+      // pop from old state
+      newDeckWidgetModelState[deckWidgetId] =
+        previousSubModelState[deckWidgetId];
+      delete previousSubModelState[deckWidgetId];
+      continue;
+    }
+
+    const deckWidget = await initializeWidget(
+      deckWidgetModel,
+      updateStateCallback,
+    );
+    newDeckWidgetModelState[deckWidgetId] = deckWidget;
+  }
+
+  // finalize models that were deleted
+  for (const previousDeckWidgetModel of Object.values(previousSubModelState)) {
+    previousDeckWidgetModel.finalize();
+  }
+
+  return newDeckWidgetModelState;
+}
+
 function App() {
   const actorRef = MachineContext.useActorRef();
   const isDrawingBBoxSelection = MachineContext.useSelector(
@@ -96,6 +148,7 @@ function App() {
 
   const [mapStyle] = useModelState<string>("basemap_style");
   const [mapHeight] = useModelState<number>("_height");
+  const [mapWidth] = useModelState<number>("width");
   const [showTooltip] = useModelState<boolean>("show_tooltip");
   const [pickingRadius] = useModelState<number>("picking_radius");
   const [useDevicePixels] = useModelState<number | boolean>(
@@ -103,6 +156,7 @@ function App() {
   );
   const [parameters] = useModelState<object>("parameters");
   const [customAttribution] = useModelState<string>("custom_attribution");
+  const [controller] = useModelState<boolean>("controller");
 
   // initialViewState is the value of view_state on the Python side. This is
   // called `initial` here because it gets passed in to deck's
@@ -134,6 +188,11 @@ function App() {
   >({});
 
   const [childLayerIds] = useModelState<string[]>("layers");
+  const [deckWidgetState, setDeckWidgetState] = useState<
+    Record<string, BaseDeckWidgetModel>
+  >({});
+
+  const [deckWidgetIds] = useModelState<string[]>("deck_widgets");
 
   // Fake state just to get react to re-render when a model callback is called
   // eslint-disable-next-line @typescript-eslint/no-unused-vars
@@ -155,6 +214,18 @@ function App() {
         );
         setSubModelState(newSubModelState);
 
+        const deckWidgetModels = await loadChildModels(
+          model.widget_manager,
+          deckWidgetIds,
+        );
+        const newDeckWidgetState = await getDeckWidgetModelState(
+          deckWidgetModels,
+          deckWidgetIds,
+          deckWidgetState,
+          setStateCounter,
+        );
+        setDeckWidgetState(newDeckWidgetState);
+
         if (!isDrawingBBoxSelection) {
           childModels.forEach((layer) => {
             layer.set("selected_bounds", bboxSelectBounds);
@@ -172,6 +243,11 @@ function App() {
   const layers: Layer[] = [];
   for (const subModel of Object.values(subModelState)) {
     layers.push(subModel.render());
+  }
+
+  const deckWidgets: Widget[] = [];
+  for (const deckWidget of Object.values(deckWidgetState)) {
+    deckWidgets.push(deckWidget.render());
   }
 
   // This hook checks if the map container parent has a height set, which is
@@ -228,7 +304,10 @@ function App() {
   );
 
   return (
-    <div id={`map-${mapId}`} style={{ height: mapHeight || "100%" }}>
+    <div
+      id={`map-${mapId}`}
+      style={{ height: mapHeight || "100%", width: mapWidth || "100%" }}
+    >
       <Toolbar />
       <DeckGL
         initialViewState={
@@ -238,7 +317,7 @@ function App() {
             ? initialViewState
             : DEFAULT_INITIAL_VIEW_STATE
         }
-        controller={true}
+        controller={controller}
         layers={
           bboxSelectPolygonLayer
             ? layers.concat(bboxSelectPolygonLayer)
@@ -248,6 +327,10 @@ function App() {
           (showTooltip && isTooltipEnabled && getTooltip) || undefined
         }
         getCursor={() => (isDrawingBBoxSelection ? "crosshair" : "grab")}
+        views={MAP_VIEW}
+        widgets={deckWidgets}
+        width={mapWidth}
+        height={mapHeight}
         pickingRadius={pickingRadius}
         onClick={onMapClickHandler}
         onHover={onMapHoverHandler}
