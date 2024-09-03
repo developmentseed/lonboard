@@ -320,12 +320,21 @@ class Map(BaseAnyWidget):
     ):
         """Add one or more new layers to the map.
 
+        Examples:
+
+        ```py
+        from lonboard import viz
+
+        m = viz(some_data)
+        m.add_layer(viz(more_data), focus=True)
+        ```
+
         Args:
             layers: New layers to add to the map. This can be:
                 - a layer instance
                 - a list or tuple of layer instances
                 - another `Map` instance, in which case its layers will be added to this
-                  map.
+                  map. This lets you pass the result of `viz` into this method.
 
             focus: If True, set the view state of the map based on the _newly-added_
                 layers. Defaults to False.
