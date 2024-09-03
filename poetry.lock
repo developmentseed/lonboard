@@ -1505,13 +1505,13 @@ files = [
 
 [[package]]
 name = "geodatasets"
-version = "2023.12.0"
+version = "2024.8.0"
 description = "Spatial data examples"
 optional = false
 python-versions = ">=3.8"
 files = [
-    {file = "geodatasets-2023.12.0-py3-none-any.whl", hash = "sha256:6abf6dc2b5ec930465b19c33a1ba4211bf8aebbd544495ae9a5e81d9ca3ca294"},
-    {file = "geodatasets-2023.12.0.tar.gz", hash = "sha256:8867fa6966aeae3fe854697c9fb7d429666ae7ae8edda9b77c87c8e616ba6c65"},
+    {file = "geodatasets-2024.8.0-py3-none-any.whl", hash = "sha256:fd2a91618277553dbb180496bb952d496e4bc99e8c0066c5dc06701d66d53540"},
+    {file = "geodatasets-2024.8.0.tar.gz", hash = "sha256:ea1b0f885f1b3305d4a308b2ddee042e425c5288b5ff6b00e6b0ac74a4d5e8d9"},
 ]
 
 [package.dependencies]
@@ -2972,8 +2972,8 @@ files = [
 [package.dependencies]
 numpy = [
     {version = ">=1.20.3", markers = "python_version < \"3.10\""},
-    {version = ">=1.23.2", markers = "python_version >= \"3.11\""},
     {version = ">=1.21.0", markers = "python_version >= \"3.10\" and python_version < \"3.11\""},
+    {version = ">=1.23.2", markers = "python_version >= \"3.11\""},
 ]
 python-dateutil = ">=2.8.2"
 pytz = ">=2020.1"
@@ -3470,37 +3470,37 @@ extra = ["pygments (>=2.12)"]
 
 [[package]]
 name = "pyogrio"
-version = "0.8.0"
+version = "0.9.0"
 description = "Vectorized spatial vector file format I/O using GDAL/OGR"
 optional = false
 python-versions = ">=3.8"
 files = [
-    {file = "pyogrio-0.8.0-cp310-cp310-macosx_10_9_x86_64.whl", hash = "sha256:7434b5222e6c373c9fc01937fdea7e1cfa88030770efe650f296cdd7656f7c35"},
-    {file = "pyogrio-0.8.0-cp310-cp310-macosx_11_0_arm64.whl", hash = "sha256:4fc58e9e9201605bd5f9056734e67314a296a696f28a71c9a0fb0152108965b0"},
-    {file = "pyogrio-0.8.0-cp310-cp310-manylinux_2_17_x86_64.manylinux2014_x86_64.whl", hash = "sha256:3c2550195df759486337aea76353c467bb7f4b5287df6bc789756d4b7f84aab8"},
-    {file = "pyogrio-0.8.0-cp310-cp310-manylinux_2_28_aarch64.whl", hash = "sha256:ed10c44e7b2fe899ecd25e9bdd82a1b4ba5d2792850924858f7aea04cad3d801"},
-    {file = "pyogrio-0.8.0-cp310-cp310-win_amd64.whl", hash = "sha256:3a574acccec2a2d8af097a01975688bc059d8d03b49c56b4ee029eb3d9b384e2"},
-    {file = "pyogrio-0.8.0-cp311-cp311-macosx_10_9_x86_64.whl", hash = "sha256:dca63e63a50ca69e0334d6d4f8904e622974007ed072f179f5c26f81277a6dbe"},
-    {file = "pyogrio-0.8.0-cp311-cp311-macosx_11_0_arm64.whl", hash = "sha256:7a830a0a89f5846c4b7fbb9faf34d3ca5cdb56f427f0eb12dfa46bc2664affda"},
-    {file = "pyogrio-0.8.0-cp311-cp311-manylinux_2_17_x86_64.manylinux2014_x86_64.whl", hash = "sha256:63dc3ef1272c4b01b8dd6a5fd3c696ab81cc6f7030d2dcb266d01fb8909e27cf"},
-    {file = "pyogrio-0.8.0-cp311-cp311-manylinux_2_28_aarch64.whl", hash = "sha256:f67c0e68896fd49218e6451a95d2dee75816a715fb80048250c21e3b39babc48"},
-    {file = "pyogrio-0.8.0-cp311-cp311-win_amd64.whl", hash = "sha256:fc77e8b07cd971601868e1c8ff1fa231773df1c889ca6e2c99a0ad22380aefb2"},
-    {file = "pyogrio-0.8.0-cp312-cp312-macosx_10_9_x86_64.whl", hash = "sha256:2779f0c04573321b879570e07de3525cadb4e47efa4bc245ff655a419d84a3e2"},
-    {file = "pyogrio-0.8.0-cp312-cp312-macosx_11_0_arm64.whl", hash = "sha256:e83ddf7e821ec3c1376ab9cf57ba3def18f687a117e43f508c4be1174045ffc7"},
-    {file = "pyogrio-0.8.0-cp312-cp312-manylinux_2_17_x86_64.manylinux2014_x86_64.whl", hash = "sha256:12eaa1dd13d4632f12e334f7dccbbf7cea6ae3ed967d8db2b0ade44787f44cfa"},
-    {file = "pyogrio-0.8.0-cp312-cp312-manylinux_2_28_aarch64.whl", hash = "sha256:83bdf508a1903328731d3843955a951b717092317e6192ff6d882ceece559da7"},
-    {file = "pyogrio-0.8.0-cp312-cp312-win_amd64.whl", hash = "sha256:1bcca7902eb7c3c5d2d7528f6fa86cd9f0409a993e63c661dfec2415ad5a3a55"},
-    {file = "pyogrio-0.8.0-cp38-cp38-macosx_10_9_x86_64.whl", hash = "sha256:3b05184adb265d8b1d17b8da4a0d08c311ba09d38d843286184d399997028344"},
-    {file = "pyogrio-0.8.0-cp38-cp38-macosx_11_0_arm64.whl", hash = "sha256:b8fef111416d149d098e999cf2df2dd3cbe3d8dac2b7c63017b8b931dcbde51b"},
-    {file = "pyogrio-0.8.0-cp38-cp38-manylinux_2_17_x86_64.manylinux2014_x86_64.whl", hash = "sha256:bd4c7b294c62d48f4263db78d8998d27db29298cfbbbe244ba7687a6280853c7"},
-    {file = "pyogrio-0.8.0-cp38-cp38-manylinux_2_28_aarch64.whl", hash = "sha256:04e673fe5d712711eed4877aed069683f9734948a66e58785f045166343c5f3f"},
-    {file = "pyogrio-0.8.0-cp38-cp38-win_amd64.whl", hash = "sha256:e8cc26bb7685371da471e8b6107bed9fe4a56a4fe649c38dea8aaee99b26bf2e"},
-    {file = "pyogrio-0.8.0-cp39-cp39-macosx_10_9_x86_64.whl", hash = "sha256:56997a41ef9cf1e36996526e9f9c1f620d18cfc67cebe94afcd82d44315b490f"},
-    {file = "pyogrio-0.8.0-cp39-cp39-macosx_11_0_arm64.whl", hash = "sha256:d78585d100cb86b98582702416e56cd6bc10540a6cbedfd2b5d3d75b9a44e3d3"},
-    {file = "pyogrio-0.8.0-cp39-cp39-manylinux_2_17_x86_64.manylinux2014_x86_64.whl", hash = "sha256:e09b72756700537456007ee7c2734cc76cb2239e20617735b019a2c402b93a91"},
-    {file = "pyogrio-0.8.0-cp39-cp39-manylinux_2_28_aarch64.whl", hash = "sha256:00347b7187eb289819295333cf363161eb4cf8d8abb469af7f5bc84a00916ff5"},
-    {file = "pyogrio-0.8.0-cp39-cp39-win_amd64.whl", hash = "sha256:a06cfd08d9abcc28a1ae07f3c3def02c6698767a8200c0248f3cd06e50e27433"},
-    {file = "pyogrio-0.8.0.tar.gz", hash = "sha256:459ec590c3c1cda451f3f73c88a678c32b127de783bf54c41ea6ad708969f020"},
+    {file = "pyogrio-0.9.0-cp310-cp310-macosx_12_0_arm64.whl", hash = "sha256:1a495ca4fb77c69595747dd688f8f17bb7d2ea9cd86603aa71c7fc98cc8b4174"},
+    {file = "pyogrio-0.9.0-cp310-cp310-macosx_12_0_x86_64.whl", hash = "sha256:6dc94a67163218581c7df275223488ac9b31dc582ccd756da607c3338908566c"},
+    {file = "pyogrio-0.9.0-cp310-cp310-manylinux_2_17_x86_64.manylinux2014_x86_64.whl", hash = "sha256:e38c3c6d37cf2cc969407e4d051dcb507cfd948eb26c7b0840c4f7d7d4a71bd4"},
+    {file = "pyogrio-0.9.0-cp310-cp310-manylinux_2_28_aarch64.whl", hash = "sha256:f47c9b6818cc0f420015b672d5dcc488530a5ee63e5ba35a184957b21ea3922a"},
+    {file = "pyogrio-0.9.0-cp310-cp310-win_amd64.whl", hash = "sha256:fb04bd80964428491951766452f0071b0bc37c7d38c45ef02502dbd83e5d74a0"},
+    {file = "pyogrio-0.9.0-cp311-cp311-macosx_12_0_arm64.whl", hash = "sha256:f5d80eb846be4fc4e642cbedc1ed0c143e8d241653382ecc76a7620bbd2a5c3a"},
+    {file = "pyogrio-0.9.0-cp311-cp311-macosx_12_0_x86_64.whl", hash = "sha256:2f2ec57ab74785db9c2bf47c0a6731e5175595a13f8253f06fa84136adb310a9"},
+    {file = "pyogrio-0.9.0-cp311-cp311-manylinux_2_17_x86_64.manylinux2014_x86_64.whl", hash = "sha256:4a289584da6df7ca318947301fe0ba9177e7f863f63110e087c80ac5f3658de8"},
+    {file = "pyogrio-0.9.0-cp311-cp311-manylinux_2_28_aarch64.whl", hash = "sha256:13642608a1cd67797ae8b5d792b0518d8ef3eb76506c8232ab5eaa1ea1159dff"},
+    {file = "pyogrio-0.9.0-cp311-cp311-win_amd64.whl", hash = "sha256:9440466c0211ac81f3417f274da5903f15546b486f76b2f290e74a56aaf0e737"},
+    {file = "pyogrio-0.9.0-cp312-cp312-macosx_12_0_arm64.whl", hash = "sha256:2e98913fa183f7597c609e774820a149e9329fd2a0f8d33978252fbd00ae87e6"},
+    {file = "pyogrio-0.9.0-cp312-cp312-macosx_12_0_x86_64.whl", hash = "sha256:f8bf193269ea9d347ac3ddada960a59f1ab2e4a5c009be95dc70e6505346b2fc"},
+    {file = "pyogrio-0.9.0-cp312-cp312-manylinux_2_17_x86_64.manylinux2014_x86_64.whl", hash = "sha256:3f964002d445521ad5b8e732a6b5ef0e2d2be7fe566768e5075c1d71398da64a"},
+    {file = "pyogrio-0.9.0-cp312-cp312-manylinux_2_28_aarch64.whl", hash = "sha256:083351b258b3e08b6c6085dac560bd321b68de5cb4a66229095da68d5f3d696b"},
+    {file = "pyogrio-0.9.0-cp312-cp312-win_amd64.whl", hash = "sha256:796e4f6a4e769b2eb6fea9a10546ea4bdee16182d1e29802b4d6349363c3c1d7"},
+    {file = "pyogrio-0.9.0-cp38-cp38-macosx_12_0_arm64.whl", hash = "sha256:7fcafed24371fe6e23bcf5abebbb29269f8d79915f1dd818ac85453657ea714a"},
+    {file = "pyogrio-0.9.0-cp38-cp38-macosx_12_0_x86_64.whl", hash = "sha256:30cbeeaedb9bced7012487e7438919aa0c7dfba18ac3d4315182b46eb3139b9d"},
+    {file = "pyogrio-0.9.0-cp38-cp38-manylinux_2_17_x86_64.manylinux2014_x86_64.whl", hash = "sha256:4da0b9deb380bd9a200fee13182c4f95b02b4c554c923e2e0032f32aaf1439ed"},
+    {file = "pyogrio-0.9.0-cp38-cp38-manylinux_2_28_aarch64.whl", hash = "sha256:4e0f90a6c3771ee1f1fea857778b4b6a1b64000d851b819f435f9091b3c38c60"},
+    {file = "pyogrio-0.9.0-cp38-cp38-win_amd64.whl", hash = "sha256:959022f3ad04053f8072dc9a2ad110c46edd9e4f92352061ba835fc91df3ca96"},
+    {file = "pyogrio-0.9.0-cp39-cp39-macosx_12_0_arm64.whl", hash = "sha256:2829615cf58b1b24a9f96fea42abedaa1a800dd351c67374cc2f6341138608f3"},
+    {file = "pyogrio-0.9.0-cp39-cp39-macosx_12_0_x86_64.whl", hash = "sha256:17420febc17651876d5140b54b24749aa751d482b5f9ef6267b8053e6e962876"},
+    {file = "pyogrio-0.9.0-cp39-cp39-manylinux_2_17_x86_64.manylinux2014_x86_64.whl", hash = "sha256:3a2fcaa269031dbbc8ebd91243c6452c5d267d6df939c008ab7533413c9cf92d"},
+    {file = "pyogrio-0.9.0-cp39-cp39-manylinux_2_28_aarch64.whl", hash = "sha256:019731a856a9abfe909e86f50eb13f8362f6742337caf757c54b7c8acfe75b89"},
+    {file = "pyogrio-0.9.0-cp39-cp39-win_amd64.whl", hash = "sha256:d668cb10f2bf6ccd7c402f91e8b06290722dd09dbe265ae95b2c13db29ebeba0"},
+    {file = "pyogrio-0.9.0.tar.gz", hash = "sha256:6a6fa2e8cf95b3d4a7c0fac48bce6e5037579e28d3eb33b53349d6e11f15e5a8"},
 ]
 
 [package.dependencies]
@@ -3577,13 +3577,13 @@ certifi = "*"
 
 [[package]]
 name = "pytest"
-version = "7.4.4"
+version = "8.3.2"
 description = "pytest: simple powerful testing with Python"
 optional = false
-python-versions = ">=3.7"
+python-versions = ">=3.8"
 files = [
-    {file = "pytest-7.4.4-py3-none-any.whl", hash = "sha256:b090cdf5ed60bf4c45261be03239c2c1c22df034fbffe691abe93cd80cea01d8"},
-    {file = "pytest-7.4.4.tar.gz", hash = "sha256:2cf0005922c6ace4a3e2ec8b4080eb0d9753fdc93107415332f50ce9e7994280"},
+    {file = "pytest-8.3.2-py3-none-any.whl", hash = "sha256:4ba08f9ae7dcf84ded419494d229b48d0903ea6407b030eaec46df5e6a73bba5"},
+    {file = "pytest-8.3.2.tar.gz", hash = "sha256:c132345d12ce551242c87269de812483f5bcc87cdbb4722e48487ba194f9fdce"},
 ]
 
 [package.dependencies]
@@ -3591,11 +3591,11 @@ colorama = {version = "*", markers = "sys_platform == \"win32\""}
 exceptiongroup = {version = ">=1.0.0rc8", markers = "python_version < \"3.11\""}
 iniconfig = "*"
 packaging = "*"
-pluggy = ">=0.12,<2.0"
-tomli = {version = ">=1.0.0", markers = "python_version < \"3.11\""}
+pluggy = ">=1.5,<2"
+tomli = {version = ">=1", markers = "python_version < \"3.11\""}
 
 [package.extras]
-testing = ["argcomplete", "attrs (>=19.2.0)", "hypothesis (>=3.56)", "mock", "nose", "pygments (>=2.7.2)", "requests", "setuptools", "xmlschema"]
+dev = ["argcomplete", "attrs (>=19.2)", "hypothesis (>=3.56)", "mock", "pygments (>=2.7.2)", "requests", "setuptools", "xmlschema"]
 
 [[package]]
 name = "python-dateutil"
@@ -4696,4 +4696,4 @@ geopandas = ["geopandas", "pandas", "shapely"]
 [metadata]
 lock-version = "2.0"
 python-versions = "^3.8"
-content-hash = "0fafe3c587dd5bab04ad5827b3a699e4e7bf31de500d0277681240f0e9214fa2"
+content-hash = "b5899cf19b1b2d93344d31411701f1b0992d0b7a4c4c204c8869049a5610668c"
