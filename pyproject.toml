@@ -32,6 +32,8 @@ classifiers = [
 [tool.poetry.dependencies]
 python = "^3.8"
 anywidget = "^0.9.0"
+# Minimum version for generic type hints
+traitlets = ">=5.10"
 arro3-core = "^0.3.0-beta.2"
 arro3-io = "^0.3.0-beta.2"
 arro3-compute = "^0.3.0-beta.2"

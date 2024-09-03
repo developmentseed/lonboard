@@ -6,6 +6,7 @@ from lonboard.traits import (
     FilterValueAccessor,
     FloatAccessor,
     PointAccessor,
+    VariableLengthTuple,
 )
 
 
@@ -318,9 +319,9 @@ class DataFilterExtension(BaseExtension):
     _layer_traits = {
         "filter_categories": traitlets.Union(
             [
-                traitlets.List(traitlets.Any()),
-                traitlets.List(
-                    traitlets.List(traitlets.Any()),
+                VariableLengthTuple(traitlets.Any()),
+                VariableLengthTuple(
+                    VariableLengthTuple(traitlets.Any()),
                     minlen=2,
                     maxlen=4,
                 ),
@@ -331,9 +332,9 @@ class DataFilterExtension(BaseExtension):
         "filter_enabled": traitlets.Bool(True).tag(sync=True),
         "filter_range": traitlets.Union(
             [
-                traitlets.List(traitlets.Float(), minlen=2, maxlen=2),
-                traitlets.List(
-                    traitlets.List(traitlets.Float(), minlen=2, maxlen=2),
+                VariableLengthTuple(traitlets.Float(), minlen=2, maxlen=2),
+                VariableLengthTuple(
+                    VariableLengthTuple(traitlets.Float(), minlen=2, maxlen=2),
                     minlen=2,
                     maxlen=4,
                 ),

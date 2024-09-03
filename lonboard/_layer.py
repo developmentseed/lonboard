@@ -43,6 +43,7 @@ from lonboard.traits import (
     ColorAccessor,
     FloatAccessor,
     NormalAccessor,
+    VariableLengthTuple,
 )
 
 if TYPE_CHECKING:
@@ -105,23 +106,13 @@ class BaseLayer(BaseWidget):
 
     # TODO: validate that only one extension per type is included. E.g. you can't have
     # two data filter extensions.
-    extensions = traitlets.List(trait=traitlets.Instance(BaseExtension)).tag(
+    extensions = VariableLengthTuple(traitlets.Instance(BaseExtension)).tag(
         sync=True, **ipywidgets.widget_serialization
     )
     """
     A list of [layer extension](https://developmentseed.org/lonboard/latest/api/layer-extensions/)
     objects to add additional features to a layer.
     """
-
-    # TODO: the extensions list is not observed; separately, the list object itself does
-    # not propagate events, so an append wouldn't work.
-
-    # @traitlets.observe("extensions")
-    # def _observe_extensions(self, change):
-    #     """When a new extension is assigned, add its layer props to this layer."""
-    #     new_extensions: List[BaseExtension] = change["new"]
-    #     for extension in new_extensions:
-    #         self.add_traits(**extension._layer_traits)
 
     def _add_extension_traits(self, extensions: Sequence[BaseExtension]):
         """Assign selected traits from the extension onto this Layer."""
@@ -145,6 +136,48 @@ class BaseLayer(BaseWidget):
             for name, trait in extension._layer_traits.items():
                 if trait.get_metadata("sync"):
                     self.keys.append(name)
+
+    def add_extension(self, extension: BaseExtension, **props):
+        """Add a new layer extension to an existing layer instance.
+
+        Any properties for the added extension should also be passed as keyword
+        arguments to this function.
+
+        Examples:
+
+        ```py
+        from lonboard import ScatterplotLayer
+        from lonboard.layer_extension import DataFilterExtension
+
+        gdf = geopandas.GeoDataFrame(...)
+        layer = ScatterplotLayer.from_geopandas(gdf)
+
+        extension = DataFilterExtension(filter_size=1)
+        filter_values = gdf["filter_column"]
+
+        layer.add_extension(extension, get_filter_value=filter_values)
+        ```
+
+        Args:
+            extension: The new extension to add.
+
+        Raises:
+            ValueError: if another extension of the same type already exists on the
+                layer.
+        """
+        if any(isinstance(extension, type(ext)) for ext in self.extensions):
+            raise ValueError("Only one extension of each type permitted")
+
+        self._add_extension_traits([extension])
+        self.extensions += (extension,)
+
+        # Assign any extension properties
+        added_names: List[str] = []
+        for prop_name, prop_value in props.items():
+            self.set_trait(prop_name, prop_value)
+            added_names.append(prop_name)
+
+        self.send_state(added_names)
 
     pickable = traitlets.Bool(True).tag(sync=True)
     """
@@ -423,9 +456,9 @@ class BitmapLayer(BaseLayer):
 
     bounds = traitlets.Union(
         [
-            traitlets.List(traitlets.Float(), minlen=4, maxlen=4),
-            traitlets.List(
-                traitlets.List(traitlets.Float(), minlen=2, maxlen=2),
+            VariableLengthTuple(traitlets.Float(), minlen=4, maxlen=4),
+            VariableLengthTuple(
+                VariableLengthTuple(traitlets.Float(), minlen=2, maxlen=2),
                 minlen=4,
                 maxlen=4,
             ),
@@ -447,7 +480,7 @@ class BitmapLayer(BaseLayer):
     - Default: `0`
     """
 
-    transparent_color = traitlets.List(
+    transparent_color = VariableLengthTuple(
         traitlets.Float(), default_value=None, allow_none=True, minlen=3, maxlen=4
     )
     """The color to use for transparent pixels, in `[r, g, b, a]`.
@@ -456,7 +489,7 @@ class BitmapLayer(BaseLayer):
     - Default: `[0, 0, 0, 0]`
     """
 
-    tint_color = traitlets.List(
+    tint_color = VariableLengthTuple(
         traitlets.Float(), default_value=None, allow_none=True, minlen=3, maxlen=4
     )
     """The color to tint the bitmap by, in `[r, g, b]`.
@@ -519,7 +552,7 @@ class BitmapTileLayer(BaseLayer):
     _layer_type = traitlets.Unicode("bitmap-tile").tag(sync=True)
 
     data = traitlets.Union(
-        [traitlets.Unicode(), traitlets.List(traitlets.Unicode(), minlen=1)]
+        [traitlets.Unicode(), VariableLengthTuple(traitlets.Unicode(), minlen=1)]
     ).tag(sync=True)
     """
     Either a URL template or an array of URL templates from which the tile data should
@@ -574,7 +607,7 @@ class BitmapTileLayer(BaseLayer):
     - Default: `None`
     """
 
-    extent = traitlets.List(
+    extent = VariableLengthTuple(
         traitlets.Float(), minlen=4, maxlen=4, allow_none=True, default_value=None
     ).tag(sync=True)
     """
@@ -657,7 +690,7 @@ class BitmapTileLayer(BaseLayer):
     - Default: `0`
     """
 
-    transparent_color = traitlets.List(
+    transparent_color = VariableLengthTuple(
         traitlets.Float(), default_value=None, allow_none=True, minlen=3, maxlen=4
     )
     """The color to use for transparent pixels, in `[r, g, b, a]`.
@@ -666,7 +699,7 @@ class BitmapTileLayer(BaseLayer):
     - Default: `[0, 0, 0, 0]`
     """
 
-    tint_color = traitlets.List(
+    tint_color = VariableLengthTuple(
         traitlets.Float(), default_value=None, allow_none=True, minlen=3, maxlen=4
     )
     """The color to tint the bitmap by, in `[r, g, b]`.
@@ -2016,7 +2049,7 @@ class HeatmapLayer(BaseArrowLayer):
     - Default: `0.05`
     """
 
-    color_domain = traitlets.List(
+    color_domain = VariableLengthTuple(
         traitlets.Float(), default_value=None, allow_none=True, minlen=2, maxlen=2
     ).tag(sync=True)
     # """

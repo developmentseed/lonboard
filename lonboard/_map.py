@@ -14,7 +14,12 @@ from lonboard._environment import DEFAULT_HEIGHT
 from lonboard._layer import BaseLayer
 from lonboard._viewport import compute_view
 from lonboard.basemap import CartoBasemap
-from lonboard.traits import DEFAULT_INITIAL_VIEW_STATE, BasemapUrl, ViewStateTrait
+from lonboard.traits import (
+    DEFAULT_INITIAL_VIEW_STATE,
+    BasemapUrl,
+    VariableLengthTuple,
+    ViewStateTrait,
+)
 from lonboard.types.map import MapKwargs
 
 if TYPE_CHECKING:
@@ -131,7 +136,7 @@ class Map(BaseAnyWidget):
     This API is not yet stabilized and may change in the future.
     """
 
-    layers = traitlets.List(trait=traitlets.Instance(BaseLayer)).tag(
+    layers = VariableLengthTuple(traitlets.Instance(BaseLayer)).tag(
         sync=True, **ipywidgets.widget_serialization
     )
     """One or more `Layer` objects to display on this map.
@@ -170,7 +175,7 @@ class Map(BaseAnyWidget):
     custom_attribution = traitlets.Union(
         [
             traitlets.Unicode(allow_none=True),
-            traitlets.List(traitlets.Unicode(allow_none=False)),
+            VariableLengthTuple(traitlets.Unicode(allow_none=False)),
         ]
     ).tag(sync=True)
     """
@@ -305,6 +310,57 @@ class Map(BaseAnyWidget):
     - Any GPU `parameters` prop supplied to individual layers will still override the
       global `parameters` when that layer is rendered.
     """
+
+    def add_layer(
+        self,
+        layers: BaseLayer | Sequence[BaseLayer] | Map,
+        *,
+        focus: bool = False,
+        reset_zoom: bool = False,
+    ):
+        """Add one or more new layers to the map.
+
+        Args:
+            layers: New layers to add to the map. This can be:
+                - a layer instance
+                - a list or tuple of layer instances
+                - another `Map` instance, in which case its layers will be added to this
+                  map.
+
+            focus: If True, set the view state of the map based on the _newly-added_
+                layers. Defaults to False.
+            reset_zoom: If True, set the view state of the map based on _all_ layers.
+                Defaults to False.
+
+        Raises:
+            ValueError: _description_
+        """
+
+        if focus and reset_zoom:
+            raise ValueError("focus and reset_zoom may not both be set.")
+
+        if isinstance(layers, Map):
+            new_layers = layers.layers
+            self.layers += layers.layers
+            # self.layers =x
+            # layers = layers.layers
+        elif isinstance(layers, BaseLayer):
+            new_layers = (layers,)
+            layers = [layers]
+            self.layers += (layers,)
+        else:
+            new_layers = tuple(layers)
+            self.layers += tuple(layers)
+
+        self.layers += new_layers
+
+        # self.layers += tuple(layers)
+
+        if focus:
+            self.view_state = compute_view(new_layers)  # type: ignore
+
+        elif reset_zoom:
+            self.view_state = compute_view(self.layers)  # type: ignore
 
     def set_view_state(
         self,
@@ -482,4 +538,4 @@ class Map(BaseAnyWidget):
 
     @traitlets.default("view_state")
     def _default_initial_view_state(self):
-        return compute_view(self.layers)
+        return compute_view(self.layers)  # type: ignore
