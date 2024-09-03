@@ -712,10 +712,12 @@ export class ScatterplotModel extends BaseArrowLayerModel {
   }
 
   render(): GeoArrowScatterplotLayer {
-    return new GeoArrowScatterplotLayer({
+    const props = {
       ...this.baseLayerProps(),
       ...this.layerProps(),
-    });
+    };
+    // console.log(props);
+    return new GeoArrowScatterplotLayer(props);
   }
 }
 

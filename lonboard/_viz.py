@@ -3,7 +3,6 @@
 from __future__ import annotations
 
 import json
-from random import shuffle
 from textwrap import dedent
 from typing import (
     TYPE_CHECKING,
@@ -84,6 +83,7 @@ COLORS = [
     "#FFFF66",  # yellow
     "#00FFFF",  # turquoise
 ]
+COLOR_COUNTER = 0
 DEFAULT_POLYGON_LINE_COLOR = [0, 0, 0, 200]
 
 
@@ -166,6 +166,9 @@ def viz(
 
     Alternatively, you can pass a `list` or `tuple` of any of the above inputs.
 
+    If you want to easily add more data, to an existing map, you can pass the output of
+    `viz` into [`Map.add_layer`][lonboard.Map.add_layer].
+
     Args:
         data: a data object of any supported type.
 
@@ -188,30 +191,32 @@ def viz(
     Returns:
         widget visualizing the provided data.
     """
-    color_ordering = COLORS.copy()
-    shuffle(color_ordering)
+    global COLOR_COUNTER
 
     if isinstance(data, (list, tuple)):
         layers: List[Union[ScatterplotLayer, PathLayer, PolygonLayer]] = []
         for i, item in enumerate(data):
             ls = create_layers_from_data_input(
                 item,
-                _viz_color=color_ordering[i % len(color_ordering)],
+                _viz_color=COLORS[(COLOR_COUNTER + i) % len(COLORS)],
                 scatterplot_kwargs=scatterplot_kwargs,
                 path_kwargs=path_kwargs,
                 polygon_kwargs=polygon_kwargs,
                 con=con,
             )
             layers.extend(ls)
+
+        COLOR_COUNTER += len(layers)
     else:
         layers = create_layers_from_data_input(
             data,
-            _viz_color=color_ordering[0],
+            _viz_color=COLORS[COLOR_COUNTER % len(COLORS)],
             scatterplot_kwargs=scatterplot_kwargs,
             path_kwargs=path_kwargs,
             polygon_kwargs=polygon_kwargs,
             con=con,
         )
+        COLOR_COUNTER += 1
 
     map_kwargs = {} if not map_kwargs else map_kwargs
 

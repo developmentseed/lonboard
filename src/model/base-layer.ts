@@ -42,7 +42,9 @@ export abstract class BaseLayerModel extends BaseModel {
   }
 
   extensionInstances(): LayerExtension[] {
-    return this.extensions.map((extension) => extension.extensionInstance);
+    return this.extensions
+      .map((extension) => extension.extensionInstance())
+      .filter((extensionInstance) => extensionInstance !== null);
   }
 
   extensionProps() {
@@ -52,6 +54,7 @@ export abstract class BaseLayerModel extends BaseModel {
         props[layerPropertyName] = this[layerPropertyName as keyof this];
       }
     }
+    // console.log("extension props", props);
     return props;
   }
 

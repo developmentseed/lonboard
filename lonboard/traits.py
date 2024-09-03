@@ -6,8 +6,19 @@ documentation on how to define new traitlet types.
 
 from __future__ import annotations
 
+import sys
 import warnings
-from typing import TYPE_CHECKING, Any, List, NoReturn, Optional, Set, Tuple, Union
+from typing import (
+    TYPE_CHECKING,
+    Any,
+    List,
+    NoReturn,
+    Optional,
+    Set,
+    Tuple,
+    TypeVar,
+    Union,
+)
 from typing import cast as type_cast
 from urllib.parse import urlparse
 
@@ -21,9 +32,10 @@ from arro3.core import (
     Table,
     fixed_size_list_array,
 )
-from traitlets import TraitError
+from traitlets import TraitError, Undefined
 from traitlets.traitlets import TraitType
 from traitlets.utils.descriptions import class_of, describe
+from traitlets.utils.sentinel import Sentinel
 
 from lonboard._serialization import (
     ACCESSOR_SERIALIZATION,
@@ -1076,3 +1088,81 @@ class BasemapUrl(traitlets.Unicode):
             self.error(obj, value, info="to be a HTTP(s) URL")
         else:
             return value
+
+
+T = TypeVar("T")
+
+
+class VariableLengthTuple(traitlets.Container[Tuple[T, ...]]):
+    """
+    An instance of a Python tuple with variable numbers of elements of the same type.
+    """
+
+    klass = list  # type:ignore[assignment]
+    _cast_types: Any = (tuple,)
+
+    def __init__(
+        self,
+        trait: T | Sentinel = None,
+        default_value: Tuple[T] | Sentinel | None = Undefined,
+        minlen: int = 0,
+        maxlen: int = sys.maxsize,
+        **kwargs: Any,
+    ) -> None:
+        """Create a tuple trait type.
+
+        The default value is created by doing ``list(default_value)``,
+        which creates a copy of the ``default_value``.
+
+        ``trait`` can be specified, which restricts the type of elements
+        in the container to that TraitType.
+
+        If only one arg is given and it is not a Trait, it is taken as
+        ``default_value``:
+
+        ``c = List([1, 2, 3])``
+
+        Parameters
+        ----------
+        trait : TraitType [ optional ]
+            the type for restricting the contents of the Container.
+            If unspecified, types are not checked.
+        default_value : SequenceType [ optional ]
+            The default value for the Trait.  Must be list/tuple/set, and
+            will be cast to the container type.
+        minlen : Int [ default 0 ]
+            The minimum length of the input list
+        maxlen : Int [ default sys.maxsize ]
+            The maximum length of the input list
+        """
+        self._maxlen = maxlen
+        self._minlen = minlen
+        super().__init__(trait=trait, default_value=default_value, **kwargs)
+
+    def length_error(self, obj: Any, value: Any) -> None:
+        e = "The '%s' trait of %s instance must be of length %i <= L <= %i" % (
+            self.name,
+            class_of(obj),
+            self._minlen,
+            self._maxlen,
+        )
+        e += ", but a value of %s was specified." % (value,)
+        raise TraitError(e)
+
+    def validate_elements(self, obj: Any, value: Any) -> Any:
+        length = len(value)
+        if length < self._minlen or length > self._maxlen:
+            self.length_error(obj, value)
+
+        trait = self._trait
+
+        validated = []
+        for v in value:
+            try:
+                v = trait._validate(obj, v)
+            except TraitError as error:
+                self.error(obj, v, error)
+            else:
+                validated.append(v)
+
+        return tuple(validated)
