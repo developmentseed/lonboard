@@ -208,7 +208,6 @@ def test_create_table_as_custom_con():
 
 
 def test_geometry_only_column():
-    # https://github.com/developmentseed/lonboard/issues/622
     con = duckdb.connect()
     sql = f"""
         INSTALL spatial;
@@ -222,3 +221,20 @@ def test_geometry_only_column():
 
     m = viz(con.table("data"), con=con)
     assert isinstance(m.layers[0], ScatterplotLayer)
+
+
+def test_geometry_only_column_type_geometry():
+    # For WKB parsing
+    pytest.importorskip("shapely")
+
+    # https://github.com/developmentseed/lonboard/issues/622
+    con = duckdb.connect()
+    sql = f"""
+        INSTALL spatial;
+        LOAD spatial;
+        SELECT geom FROM ST_Read("{cities_gdal_path}");
+        """
+    query = con.sql(sql)
+
+    # Should create layer without erroring
+    _layer = ScatterplotLayer.from_duckdb(query, con)

@@ -98,7 +98,10 @@ def _from_geometry(
     crs: Optional[Union[str, pyproj.CRS]] = None,
 ) -> Table:
     other_col_names = [name for i, name in enumerate(rel.columns) if i != geom_col_idx]
-    non_geo_table = Table.from_arrow(rel.select(*other_col_names).arrow())
+    if other_col_names:
+        non_geo_table = Table.from_arrow(rel.select(*other_col_names).arrow())
+    else:
+        non_geo_table = None
     geom_col_name = rel.columns[geom_col_idx]
 
     # A poor-man's string interpolation check
@@ -142,7 +145,13 @@ def _from_geometry(
 
     metadata = _make_geoarrow_field_metadata(EXTENSION_NAME.WKB, crs)
     geom_field = geom_table.schema.field(0).with_metadata(metadata)
-    return non_geo_table.append_column(geom_field, geom_table.column(0))
+    if non_geo_table is not None:
+        return non_geo_table.append_column(geom_field, geom_table.column(0))
+    else:
+        # Need to set geospatial metadata onto the Arrow table, because the table
+        # returned from duckdb has none.
+        new_schema = geom_table.schema.set(0, geom_field)
+        return geom_table.with_schema(new_schema)
 
 
 def _from_geoarrow(
