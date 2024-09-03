@@ -32,9 +32,11 @@ classifiers = [
 [tool.poetry.dependencies]
 python = "^3.8"
 anywidget = "^0.9.0"
-arro3-core = "^0.3.0-beta.2"
-arro3-io = "^0.3.0-beta.2"
-arro3-compute = "^0.3.0-beta.2"
+# Minimum version for generic type hints
+traitlets = ">=5.10"
+arro3-core = ">=0.3.0"
+arro3-io = ">=0.3.0"
+arro3-compute = ">=0.3.0"
 ipywidgets = ">=7.6.0"
 numpy = ">=1.14"
 # The same version pin as geopandas
@@ -52,19 +54,19 @@ cli = ["click", "pyogrio", "shapely"]
 geopandas = ["geopandas", "pandas", "shapely"]
 
 [tool.poetry.group.dev.dependencies]
-duckdb = "^1"
-geoarrow-pyarrow = "^0.1.1"
-geoarrow-rust-core = "^0.2.0"
-geodatasets = "^2023.12.0"
-jupyterlab = "^4.0.5"
-matplotlib = "^3.7"
-palettable = "^3.3.3"
-pre-commit = "^3.4.0"
+duckdb = ">=0.10.2"
+geoarrow-pyarrow = ">=0.1.1"
+geoarrow-rust-core = ">=0.2.0"
+geodatasets = ">=2023.12.0"
+jupyterlab = ">=4.0.5"
+matplotlib = ">=3.7"
+palettable = ">=3.3.3"
+pre-commit = ">=3.4.0"
 pyarrow = ">=14.0.1"
-pyogrio = "^0.8"
-pytest = "^7.4.2"
-quak = "^0.1.8"
-sqlglot = "^25.16.0"
+pyogrio = ">=0.8"
+pytest = ">=7.4.2"
+quak = ">=0.1.8"
+sqlglot = ">=25.16.0"
 
 [tool.poetry.group.docs.dependencies]
 # We use ruff format ourselves, but mkdocstrings requires black to be installed
