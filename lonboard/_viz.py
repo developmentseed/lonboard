@@ -192,14 +192,13 @@ def viz(
         widget visualizing the provided data.
     """
     global COLOR_COUNTER
-    color_ordering = COLORS.copy()
 
     if isinstance(data, (list, tuple)):
         layers: List[Union[ScatterplotLayer, PathLayer, PolygonLayer]] = []
         for i, item in enumerate(data):
             ls = create_layers_from_data_input(
                 item,
-                _viz_color=color_ordering[(COLOR_COUNTER + i) % len(color_ordering)],
+                _viz_color=COLORS[(COLOR_COUNTER + i) % len(COLORS)],
                 scatterplot_kwargs=scatterplot_kwargs,
                 path_kwargs=path_kwargs,
                 polygon_kwargs=polygon_kwargs,
@@ -211,7 +210,7 @@ def viz(
     else:
         layers = create_layers_from_data_input(
             data,
-            _viz_color=color_ordering[COLOR_COUNTER % len(color_ordering)],
+            _viz_color=COLORS[COLOR_COUNTER % len(COLORS)],
             scatterplot_kwargs=scatterplot_kwargs,
             path_kwargs=path_kwargs,
             polygon_kwargs=polygon_kwargs,

@@ -205,3 +205,20 @@ def test_create_table_as_custom_con():
     # Succeeds when passing in con object
     m = viz(con.table("test"), con=con)
     assert isinstance(m.layers[0], ScatterplotLayer)
+
+
+def test_geometry_only_column():
+    # https://github.com/developmentseed/lonboard/issues/622
+    con = duckdb.connect()
+    sql = f"""
+        INSTALL spatial;
+        LOAD spatial;
+        CREATE TABLE data AS
+            SELECT CAST(geom as POINT_2D) as geom FROM ST_Read("{cities_gdal_path}");
+        """
+    con.execute(sql)
+
+    _layer = ScatterplotLayer.from_duckdb(con.table("data"), con)
+
+    m = viz(con.table("data"), con=con)
+    assert isinstance(m.layers[0], ScatterplotLayer)
