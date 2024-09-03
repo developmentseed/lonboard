@@ -1971,7 +1971,7 @@ class HeatmapLayer(BaseArrowLayer):
     def __init__(
         self, *, table: ArrowStreamExportable, **kwargs: Unpack[HeatmapLayerKwargs]
     ):
-        err_msg = """\
+        err_msg = """
         The `HeatmapLayer` is not currently working.
 
         As of Lonboard v0.10, Lonboard upgraded to version 9.0 of the underlying
