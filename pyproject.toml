@@ -54,7 +54,7 @@ cli = ["click", "pyogrio", "shapely"]
 geopandas = ["geopandas", "pandas", "shapely"]
 
 [tool.poetry.group.dev.dependencies]
-duckdb = "^0.10.2"
+duckdb = ">=0.10.2"
 geoarrow-pyarrow = "^0.1.1"
 geoarrow-rust-core = "^0.2.0"
 geodatasets = "^2023.12.0"
