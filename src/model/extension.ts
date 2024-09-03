@@ -13,17 +13,15 @@ import { isDefined } from "../util.js";
 export abstract class BaseExtensionModel extends BaseModel {
   static extensionType: string;
 
-  abstract extensionInstance: LayerExtension;
-
   constructor(model: WidgetModel, updateStateCallback: () => void) {
     super(model, updateStateCallback);
   }
+
+  abstract extensionInstance(): LayerExtension | null;
 }
 
 export class BrushingExtension extends BaseExtensionModel {
   static extensionType = "brushing";
-
-  extensionInstance: _BrushingExtension;
 
   constructor(
     model: WidgetModel,
@@ -31,7 +29,6 @@ export class BrushingExtension extends BaseExtensionModel {
     updateStateCallback: () => void,
   ) {
     super(model, updateStateCallback);
-    this.extensionInstance = new _BrushingExtension();
 
     layerModel.initRegularAttribute("brushing_enabled", "brushingEnabled");
     layerModel.initRegularAttribute("brushing_target", "brushingTarget");
@@ -52,12 +49,14 @@ export class BrushingExtension extends BaseExtensionModel {
       "getBrushingTarget",
     ];
   }
+
+  extensionInstance(): _BrushingExtension {
+    return new _BrushingExtension();
+  }
 }
 
 export class CollisionFilterExtension extends BaseExtensionModel {
   static extensionType = "collision-filter";
-
-  extensionInstance: _CollisionFilterExtension;
 
   constructor(
     model: WidgetModel,
@@ -65,7 +64,6 @@ export class CollisionFilterExtension extends BaseExtensionModel {
     updateStateCallback: () => void,
   ) {
     super(model, updateStateCallback);
-    this.extensionInstance = new _CollisionFilterExtension();
 
     layerModel.initRegularAttribute("collision_enabled", "collisionEnabled");
     layerModel.initRegularAttribute("collision_group", "collisionGroup");
@@ -89,12 +87,18 @@ export class CollisionFilterExtension extends BaseExtensionModel {
       "getCollisionPriority",
     ];
   }
+
+  extensionInstance(): _CollisionFilterExtension {
+    return new _CollisionFilterExtension();
+  }
 }
 
 export class DataFilterExtension extends BaseExtensionModel {
   static extensionType = "data-filter";
 
-  extensionInstance: _DataFilterExtension;
+  // DataFilterExtensionOptions is not exported
+  protected categorySize?: 0 | 1 | 2 | 3 | 4;
+  protected filterSize?: 0 | 1 | 2 | 3 | 4;
 
   constructor(
     model: WidgetModel,
@@ -103,14 +107,8 @@ export class DataFilterExtension extends BaseExtensionModel {
   ) {
     super(model, updateStateCallback);
 
-    // TODO: set filterSize, fp64, countItems in constructor
-    // TODO: should filter_size automatically update from python?
-    const filterSize = this.model.get("filter_size");
-    const categorySize = this.model.get("category_size");
-    this.extensionInstance = new _DataFilterExtension({
-      ...(isDefined(filterSize) ? { filterSize } : {}),
-      ...(isDefined(categorySize) ? { categorySize } : {}),
-    });
+    this.initRegularAttribute("filter_size", "filterSize");
+    this.initRegularAttribute("category_size", "categorySize");
 
     // Properties added by the extension onto the layer
     layerModel.initRegularAttribute("filter_categories", "filterCategories");
@@ -146,12 +144,34 @@ export class DataFilterExtension extends BaseExtensionModel {
       "getFilterValue",
     ];
   }
+
+  extensionInstance(): _DataFilterExtension | null {
+    if (isDefined(this.filterSize)) {
+      const props = {
+        ...(isDefined(this.filterSize) ? { filterSize: this.filterSize } : {}),
+      };
+      // console.log("ext props", props);
+      return new _DataFilterExtension(props);
+    } else if (isDefined(this.categorySize)) {
+      const props = {
+        ...(isDefined(this.categorySize)
+          ? { categorySize: this.categorySize }
+          : {}),
+      };
+      // console.log("ext props", props);
+      return new _DataFilterExtension(props);
+    } else {
+      return null;
+    }
+  }
 }
 
 export class PathStyleExtension extends BaseExtensionModel {
   static extensionType = "path-style";
 
-  extensionInstance: _PathStyleExtension;
+  protected dash?: boolean;
+  protected offset?: boolean;
+  protected highPrecisionDash?: boolean;
 
   constructor(
     model: WidgetModel,
@@ -160,14 +180,10 @@ export class PathStyleExtension extends BaseExtensionModel {
   ) {
     super(model, updateStateCallback);
 
-    const dash = this.model.get("dash");
-    const highPrecisionDash = this.model.get("high_precision_dash");
-    const offset = this.model.get("offset");
-    this.extensionInstance = new _PathStyleExtension({
-      ...(isDefined(dash) ? { dash } : {}),
-      ...(isDefined(highPrecisionDash) ? { highPrecisionDash } : {}),
-      ...(isDefined(offset) ? { offset } : {}),
-    });
+    // PathStyleExtensionOptions is not exported
+    this.initRegularAttribute("dash", "dash");
+    this.initRegularAttribute("high_precision_dash", "highPrecisionDash");
+    this.initRegularAttribute("offset", "offset");
 
     // Properties added by the extension onto the layer
     layerModel.initRegularAttribute("dash_gap_pickable", "dashGapPickable");
@@ -184,6 +200,16 @@ export class PathStyleExtension extends BaseExtensionModel {
       "getDashArray",
       "getOffset",
     ];
+  }
+
+  extensionInstance(): _PathStyleExtension {
+    return new _PathStyleExtension({
+      ...(isDefined(this.dash) ? { dash: this.dash } : {}),
+      ...(isDefined(this.highPrecisionDash)
+        ? { highPrecisionDash: this.highPrecisionDash }
+        : {}),
+      ...(isDefined(this.offset) ? { offset: this.offset } : {}),
+    });
   }
 }
 

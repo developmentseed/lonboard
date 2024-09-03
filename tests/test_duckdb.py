@@ -1,20 +1,31 @@
+from pathlib import Path
 from tempfile import TemporaryDirectory
+from urllib.request import urlretrieve
 
 import duckdb
+import geodatasets
 import pytest
 
 from lonboard import PolygonLayer, ScatterplotLayer, SolidPolygonLayer, viz
 
+cities_url = "https://naciscdn.org/naturalearth/110m/cultural/ne_110m_populated_places_simple.zip"
+cities_path = Path("ne_110m_populated_places_simple.zip")
+
+if not cities_path.exists():
+    urlretrieve(cities_url, "ne_110m_populated_places_simple.zip")
+
+cities_gdal_path = f"/vsizip/{cities_path}"
+
 
 def test_viz_geometry():
-    gpd = pytest.importorskip("geopandas")
-    points_path = gpd.datasets.get_path("naturalearth_cities")
+    # For WKB parsing
+    pytest.importorskip("shapely")
 
     con = duckdb.connect()
     sql = f"""
         INSTALL spatial;
         LOAD spatial;
-        SELECT * FROM ST_Read("{points_path}");
+        SELECT * FROM ST_Read("{cities_gdal_path}");
         """
     rel = con.sql(sql)
     assert rel.types[-1] == "GEOMETRY"
@@ -23,14 +34,14 @@ def test_viz_geometry():
 
 
 def test_viz_wkb_blob():
-    gpd = pytest.importorskip("geopandas")
-    points_path = gpd.datasets.get_path("naturalearth_cities")
+    # For WKB parsing
+    pytest.importorskip("shapely")
 
     con = duckdb.connect()
     sql = f"""
         INSTALL spatial;
         LOAD spatial;
-        SELECT name, ST_AsWKB(geom) as geom FROM ST_Read("{points_path}");
+        SELECT name, ST_AsWKB(geom) as geom FROM ST_Read("{cities_gdal_path}");
         """
     rel = con.sql(sql)
     assert rel.types[-1] == "WKB_BLOB"
@@ -39,14 +50,11 @@ def test_viz_wkb_blob():
 
 
 def test_viz_point_2d():
-    gpd = pytest.importorskip("geopandas")
-    points_path = gpd.datasets.get_path("naturalearth_cities")
-
     con = duckdb.connect()
     sql = f"""
         INSTALL spatial;
         LOAD spatial;
-        SELECT name, CAST(geom as POINT_2D) as geom FROM ST_Read("{points_path}");
+        SELECT name, CAST(geom as POINT_2D) as geom FROM ST_Read("{cities_gdal_path}");
         """
     rel = con.sql(sql)
     assert rel.types[-1] == "POINT_2D"
@@ -58,7 +66,7 @@ def test_viz_bbox_2d():
     gpd = pytest.importorskip("geopandas")
 
     with TemporaryDirectory() as tmpdir:
-        nybb = gpd.read_file(gpd.datasets.get_path("nybb"))
+        nybb = gpd.read_file(geodatasets.get_path("nybb"))
         nybb = nybb.to_crs("EPSG:4326")
         tmp_path = f"{tmpdir}/nybb.shp"
         nybb.to_file(tmp_path)
@@ -77,14 +85,14 @@ def test_viz_bbox_2d():
 
 
 def test_layer_geometry():
-    gpd = pytest.importorskip("geopandas")
-    points_path = gpd.datasets.get_path("naturalearth_cities")
+    # For WKB parsing
+    pytest.importorskip("shapely")
 
     con = duckdb.connect()
     sql = f"""
         INSTALL spatial;
         LOAD spatial;
-        SELECT * FROM ST_Read("{points_path}");
+        SELECT * FROM ST_Read("{cities_gdal_path}");
         """
     rel = con.sql(sql)
     assert rel.types[-1] == "GEOMETRY"
@@ -93,14 +101,14 @@ def test_layer_geometry():
 
 
 def test_layer_wkb_blob():
-    gpd = pytest.importorskip("geopandas")
-    points_path = gpd.datasets.get_path("naturalearth_cities")
+    # For WKB parsing
+    pytest.importorskip("shapely")
 
     con = duckdb.connect()
     sql = f"""
         INSTALL spatial;
         LOAD spatial;
-        SELECT name, ST_AsWKB(geom) as geom FROM ST_Read("{points_path}");
+        SELECT name, ST_AsWKB(geom) as geom FROM ST_Read("{cities_gdal_path}");
         """
     rel = con.sql(sql)
     assert rel.types[-1] == "WKB_BLOB"
@@ -109,14 +117,11 @@ def test_layer_wkb_blob():
 
 
 def test_layer_point_2d():
-    gpd = pytest.importorskip("geopandas")
-    points_path = gpd.datasets.get_path("naturalearth_cities")
-
     con = duckdb.connect()
     sql = f"""
         INSTALL spatial;
         LOAD spatial;
-        SELECT name, CAST(geom as POINT_2D) as geom FROM ST_Read("{points_path}");
+        SELECT name, CAST(geom as POINT_2D) as geom FROM ST_Read("{cities_gdal_path}");
         """
     rel = con.sql(sql)
     assert rel.types[-1] == "POINT_2D"
@@ -128,7 +133,8 @@ def test_layer_bbox_2d():
     gpd = pytest.importorskip("geopandas")
 
     with TemporaryDirectory() as tmpdir:
-        nybb = gpd.read_file(gpd.datasets.get_path("nybb"))
+        nybb = gpd.read_file(geodatasets.get_path("nybb"))
+        nybb = nybb.to_crs("EPSG:4326")
         tmp_path = f"{tmpdir}/nybb.shp"
         nybb.to_file(tmp_path)
 
@@ -149,7 +155,8 @@ def test_solid_polygon_layer_bbox_2d():
     gpd = pytest.importorskip("geopandas")
 
     with TemporaryDirectory() as tmpdir:
-        nybb = gpd.read_file(gpd.datasets.get_path("nybb"))
+        nybb = gpd.read_file(geodatasets.get_path("nybb"))
+        nybb = nybb.to_crs("EPSG:4326")
         tmp_path = f"{tmpdir}/nybb.shp"
         nybb.to_file(tmp_path)
 
@@ -168,13 +175,10 @@ def test_solid_polygon_layer_bbox_2d():
 
 @pytest.mark.skip("Skip because it mutates global state")
 def test_create_table_as():
-    gpd = pytest.importorskip("geopandas")
-    points_path = gpd.datasets.get_path("naturalearth_cities")
-
     sql = f"""
         INSTALL spatial;
         LOAD spatial;
-        CREATE TABLE test AS SELECT * FROM ST_Read("{points_path}");
+        CREATE TABLE test AS SELECT * FROM ST_Read("{cities_gdal_path}");
         """
     duckdb.execute(sql)
     m = viz(duckdb.table("test"))
@@ -182,13 +186,13 @@ def test_create_table_as():
 
 
 def test_create_table_as_custom_con():
-    gpd = pytest.importorskip("geopandas")
-    points_path = gpd.datasets.get_path("naturalearth_cities")
+    # For WKB parsing
+    pytest.importorskip("shapely")
 
     sql = f"""
         INSTALL spatial;
         LOAD spatial;
-        CREATE TABLE test AS SELECT * FROM ST_Read("{points_path}");
+        CREATE TABLE test AS SELECT * FROM ST_Read("{cities_gdal_path}");
         """
     con = duckdb.connect()
     con.execute(sql)

@@ -45,7 +45,7 @@ def test_accessor_length_validation_extension():
 
     points = shapely.points([1, 2], [3, 4])
     gdf = gpd.GeoDataFrame(geometry=points)
-    extension = DataFilterExtension()
+    extension = DataFilterExtension(filter_size=1)
 
     with pytest.raises(TraitError, match="same length as table"):
         _layer = ScatterplotLayer.from_geopandas(

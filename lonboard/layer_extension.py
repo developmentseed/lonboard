@@ -6,6 +6,7 @@ from lonboard.traits import (
     FilterValueAccessor,
     FloatAccessor,
     PointAccessor,
+    VariableLengthTuple,
 )
 
 
@@ -318,9 +319,9 @@ class DataFilterExtension(BaseExtension):
     _layer_traits = {
         "filter_categories": traitlets.Union(
             [
-                traitlets.List(traitlets.Any()),
-                traitlets.List(
-                    traitlets.List(traitlets.Any()),
+                VariableLengthTuple(traitlets.Any()),
+                VariableLengthTuple(
+                    VariableLengthTuple(traitlets.Any()),
                     minlen=2,
                     maxlen=4,
                 ),
@@ -331,9 +332,9 @@ class DataFilterExtension(BaseExtension):
         "filter_enabled": traitlets.Bool(True).tag(sync=True),
         "filter_range": traitlets.Union(
             [
-                traitlets.List(traitlets.Float(), minlen=2, maxlen=2),
-                traitlets.List(
-                    traitlets.List(traitlets.Float(), minlen=2, maxlen=2),
+                VariableLengthTuple(traitlets.Float(), minlen=2, maxlen=2),
+                VariableLengthTuple(
+                    VariableLengthTuple(traitlets.Float(), minlen=2, maxlen=2),
                     minlen=2,
                     maxlen=4,
                 ),
@@ -350,21 +351,21 @@ class DataFilterExtension(BaseExtension):
         "get_filter_category": FilterValueAccessor(default_value=None, allow_none=True),
     }
 
-    filter_size = traitlets.Int(1, min=1, max=4).tag(sync=True)
+    filter_size = traitlets.Int(None, min=1, max=4, allow_none=True).tag(sync=True)
     """The size of the filter (number of columns to filter by).
 
     The data filter can show/hide data based on 1-4 numeric properties of each object.
 
-    - Type: `int`, optional
+    - Type: `int`. This is required if using range-based filtering.
     - Default 1.
     """
 
-    category_size = traitlets.Int(1, min=1, max=4).tag(sync=True)
+    category_size = traitlets.Int(None, min=1, max=4, allow_none=True).tag(sync=True)
     """The size of the category filter (number of columns to filter by).
 
     The category filter can show/hide data based on 1-4 properties of each object.
 
-    - Type: `int`, optional
+    - Type: `int`. This is required if using category-based filtering.
     - Default 0.
     """
 
