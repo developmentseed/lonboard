@@ -22,8 +22,9 @@ from typing import (
 )
 
 import ipywidgets
+import numpy as np
 import traitlets
-from arro3.core import Table
+from arro3.core import Array, ChunkedArray, Table
 from arro3.core.types import ArrowStreamExportable
 
 from lonboard._base import BaseExtension, BaseWidget
@@ -38,6 +39,7 @@ from lonboard._geoarrow.parse_wkb import parse_serialized_table
 from lonboard._serialization import infer_rows_per_chunk
 from lonboard._utils import auto_downcast as _auto_downcast
 from lonboard._utils import get_geometry_column_index, remove_extension_kwargs
+from lonboard.layer_extension import DataFilterExtension
 from lonboard.traits import (
     ArrowTableTrait,
     ColorAccessor,
@@ -409,7 +411,53 @@ class BaseArrowLayer(BaseLayer):
         import quak
         import sqlglot
 
+        if not any(isinstance(ext, DataFilterExtension) for ext in self.extensions):
+            self.add_extension(DataFilterExtension(category_size=1))
+
+        table: Table = self.table
+        num_rows = table.num_rows
+        if num_rows <= np.iinfo(np.uint8).max:
+            row_index = Array.from_numpy(np.arange(num_rows, dtype=np.uint8))
+            filter_arr = np.ones(num_rows, dtype=np.float32)
+        elif num_rows <= np.iinfo(np.uint16).max:
+            row_index = Array.from_numpy(np.arange(num_rows, dtype=np.uint16))
+            filter_arr = np.ones(num_rows, dtype=np.float32)
+        elif num_rows <= np.iinfo(np.uint32).max:
+            row_index = Array.from_numpy(np.arange(num_rows, dtype=np.uint32))
+            filter_arr = np.ones(num_rows, dtype=np.float32)
+        else:
+            row_index = Array.from_numpy(np.arange(num_rows, dtype=np.uint64))
+            filter_arr = np.ones(num_rows, dtype=np.float32)
+
+        table_with_row_index = table.append_column(
+            "_row_index", ChunkedArray(row_index)
+        )
+        quak_widget = quak.Widget(table_with_row_index)
+
+        def row_index_callback(change):
+            global test
+            test = change
+
+            sql = sqlglot.parse_one(quak_widget.sql, dialect="duckdb")
+            sql.set("expressions", [sqlglot.column("_row_index")])
+            row_index_table = quak_widget._conn.query(sql.sql(dialect="duckdb")).arrow()
+
+            # Reset all to 2. We don't use zero because there might be a bug with 0
+            filter_arr[:] = 2
+
+            # Set the desired _row_index to 1
+            filter_arr[row_index_table["_row_index"]] = 1
+
+            self.get_filter_category = filter_arr  # type: ignore
+            self.filter_categories = [1]  # type: ignore
+
+        quak_widget.observe(row_index_callback, names="sql")
+
+        return quak_widget
         pass
+
+
+test = None
 
 
 class BitmapLayer(BaseLayer):
