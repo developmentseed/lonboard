@@ -166,6 +166,9 @@ def viz(
 
     Alternatively, you can pass a `list` or `tuple` of any of the above inputs.
 
+    If you want to easily add more data, to an existing map, you can pass the output of
+    `viz` into [`Map.add_layer`][lonboard.Map.add_layer].
+
     Args:
         data: a data object of any supported type.
 

@@ -15,6 +15,7 @@ from lonboard.traits import (
     ColorAccessor,
     FloatAccessor,
     NormalAccessor,
+    VariableLengthTuple,
 )
 
 
@@ -172,7 +173,7 @@ def test_float_accessor_validation_type():
 
 class FilterValueAccessorWidget(BaseArrowLayer):
     # This needs a data filter extension in the extensions array to validate filter_size
-    extensions = traitlets.List(trait=traitlets.Instance(BaseExtension)).tag(
+    extensions = VariableLengthTuple(trait=traitlets.Instance(BaseExtension)).tag(
         sync=True, **ipywidgets.widget_serialization
     )
 
