@@ -18,6 +18,9 @@ cities_gdal_path = f"/vsizip/{cities_path}"
 
 
 def test_viz_geometry():
+    # For WKB parsing
+    pytest.importorskip("shapely")
+
     con = duckdb.connect()
     sql = f"""
         INSTALL spatial;
@@ -31,6 +34,9 @@ def test_viz_geometry():
 
 
 def test_viz_wkb_blob():
+    # For WKB parsing
+    pytest.importorskip("shapely")
+
     con = duckdb.connect()
     sql = f"""
         INSTALL spatial;
@@ -79,6 +85,9 @@ def test_viz_bbox_2d():
 
 
 def test_layer_geometry():
+    # For WKB parsing
+    pytest.importorskip("shapely")
+
     con = duckdb.connect()
     sql = f"""
         INSTALL spatial;
@@ -92,6 +101,9 @@ def test_layer_geometry():
 
 
 def test_layer_wkb_blob():
+    # For WKB parsing
+    pytest.importorskip("shapely")
+
     con = duckdb.connect()
     sql = f"""
         INSTALL spatial;
@@ -174,6 +186,9 @@ def test_create_table_as():
 
 
 def test_create_table_as_custom_con():
+    # For WKB parsing
+    pytest.importorskip("shapely")
+
     sql = f"""
         INSTALL spatial;
         LOAD spatial;
