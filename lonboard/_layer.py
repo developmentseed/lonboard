@@ -137,47 +137,55 @@ class BaseLayer(BaseWidget):
                 if trait.get_metadata("sync"):
                     self.keys.append(name)
 
-    def add_extension(self, extension: BaseExtension, **props):
-        """Add a new layer extension to an existing layer instance.
+    # This doesn't currently work due to I think some race conditions around syncing
+    # traits vs the other parameters.
 
-        Any properties for the added extension should also be passed as keyword
-        arguments to this function.
+    # def add_extension(self, extension: BaseExtension, **props):
+    #     """Add a new layer extension to an existing layer instance.
 
-        Examples:
+    #     Any properties for the added extension should also be passed as keyword
+    #     arguments to this function.
 
-        ```py
-        from lonboard import ScatterplotLayer
-        from lonboard.layer_extension import DataFilterExtension
+    #     Examples:
 
-        gdf = geopandas.GeoDataFrame(...)
-        layer = ScatterplotLayer.from_geopandas(gdf)
+    #     ```py
+    #     from lonboard import ScatterplotLayer
+    #     from lonboard.layer_extension import DataFilterExtension
 
-        extension = DataFilterExtension(filter_size=1)
-        filter_values = gdf["filter_column"]
+    #     gdf = geopandas.GeoDataFrame(...)
+    #     layer = ScatterplotLayer.from_geopandas(gdf)
 
-        layer.add_extension(extension, get_filter_value=filter_values)
-        ```
+    #     extension = DataFilterExtension(filter_size=1)
+    #     filter_values = gdf["filter_column"]
 
-        Args:
-            extension: The new extension to add.
+    #     layer.add_extension(
+    #         extension,
+    #         get_filter_value=filter_values,
+    #         filter_range=[0, 1]
+    #     )
+    #     ```
 
-        Raises:
-            ValueError: if another extension of the same type already exists on the
-                layer.
-        """
-        if any(isinstance(extension, type(ext)) for ext in self.extensions):
-            raise ValueError("Only one extension of each type permitted")
+    #     Args:
+    #         extension: The new extension to add.
 
-        self._add_extension_traits([extension])
-        self.extensions += (extension,)
+    #     Raises:
+    #         ValueError: if another extension of the same type already exists on the
+    #             layer.
+    #     """
+    #     if any(isinstance(extension, type(ext)) for ext in self.extensions):
+    #         raise ValueError("Only one extension of each type permitted")
 
-        # Assign any extension properties
-        added_names: List[str] = []
-        for prop_name, prop_value in props.items():
-            self.set_trait(prop_name, prop_value)
-            added_names.append(prop_name)
+    #     with self.hold_trait_notifications():
+    #         self._add_extension_traits([extension])
+    #         self.extensions += (extension,)
 
-        self.send_state(added_names)
+    #         # Assign any extension properties
+    #         added_names: List[str] = []
+    #         for prop_name, prop_value in props.items():
+    #             self.set_trait(prop_name, prop_value)
+    #             added_names.append(prop_name)
+
+    #     self.send_state(added_names + ["extensions"])
 
     pickable = traitlets.Bool(True).tag(sync=True)
     """
