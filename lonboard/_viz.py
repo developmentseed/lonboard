@@ -3,7 +3,6 @@
 from __future__ import annotations
 
 import json
-from random import shuffle
 from textwrap import dedent
 from typing import (
     TYPE_CHECKING,
@@ -84,6 +83,7 @@ COLORS = [
     "#FFFF66",  # yellow
     "#00FFFF",  # turquoise
 ]
+COLOR_COUNTER = 0
 DEFAULT_POLYGON_LINE_COLOR = [0, 0, 0, 200]
 
 
@@ -191,30 +191,33 @@ def viz(
     Returns:
         widget visualizing the provided data.
     """
+    global COLOR_COUNTER
     color_ordering = COLORS.copy()
-    shuffle(color_ordering)
 
     if isinstance(data, (list, tuple)):
         layers: List[Union[ScatterplotLayer, PathLayer, PolygonLayer]] = []
         for i, item in enumerate(data):
             ls = create_layers_from_data_input(
                 item,
-                _viz_color=color_ordering[i % len(color_ordering)],
+                _viz_color=color_ordering[(COLOR_COUNTER + i) % len(color_ordering)],
                 scatterplot_kwargs=scatterplot_kwargs,
                 path_kwargs=path_kwargs,
                 polygon_kwargs=polygon_kwargs,
                 con=con,
             )
             layers.extend(ls)
+
+        COLOR_COUNTER += len(layers)
     else:
         layers = create_layers_from_data_input(
             data,
-            _viz_color=color_ordering[0],
+            _viz_color=color_ordering[COLOR_COUNTER % len(color_ordering)],
             scatterplot_kwargs=scatterplot_kwargs,
             path_kwargs=path_kwargs,
             polygon_kwargs=polygon_kwargs,
             con=con,
         )
+        COLOR_COUNTER += 1
 
     map_kwargs = {} if not map_kwargs else map_kwargs
 
