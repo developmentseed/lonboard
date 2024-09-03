@@ -2972,8 +2972,8 @@ files = [
 [package.dependencies]
 numpy = [
     {version = ">=1.20.3", markers = "python_version < \"3.10\""},
-    {version = ">=1.23.2", markers = "python_version >= \"3.11\""},
     {version = ">=1.21.0", markers = "python_version >= \"3.10\" and python_version < \"3.11\""},
+    {version = ">=1.23.2", markers = "python_version >= \"3.11\""},
 ]
 python-dateutil = ">=2.8.2"
 pytz = ">=2020.1"
@@ -4274,13 +4274,13 @@ files = [
 
 [[package]]
 name = "sqlglot"
-version = "25.16.0"
+version = "25.18.0"
 description = "An easily customizable SQL parser and transpiler"
 optional = false
 python-versions = ">=3.7"
 files = [
-    {file = "sqlglot-25.16.0-py3-none-any.whl", hash = "sha256:508575d2b6db7edd1cdc83a147a2bdc4cea38a4b68ec1c6314065798dd830b13"},
-    {file = "sqlglot-25.16.0.tar.gz", hash = "sha256:41c32c900629e7a28dd1b0411f82d84da77732bc69b21e2308bd2b00fa04cc3a"},
+    {file = "sqlglot-25.18.0-py3-none-any.whl", hash = "sha256:d315874d88a81c48604cf4a9cd8a56e8bd3009aa294c233755ac176a9aceb153"},
+    {file = "sqlglot-25.18.0.tar.gz", hash = "sha256:f79b02b378038e991633911de43eb6e44eba99510fa7144bba7e7532e3d4e00d"},
 ]
 
 [package.extras]
@@ -4727,4 +4727,4 @@ geopandas = ["geopandas", "pandas", "shapely"]
 [metadata]
 lock-version = "2.0"
 python-versions = "^3.8"
-content-hash = "5250dda2671f246ec3173063a23c1440bec60cf8db1ec0dc1013b05d18077d7b"
+content-hash = "1173c60daf7a8e9e2e6f38ee42ce74ff0c0d09cf99323ccdf2fa1e713360d8a2"
