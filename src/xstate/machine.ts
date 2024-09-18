@@ -1,15 +1,17 @@
 import { assign, createMachine } from "xstate";
 import { PickingInfo } from "@deck.gl/core";
+import { GeoArrowPickingInfo } from "@geoarrow/deck.gl-layers";
 
 export const machine = createMachine(
   {
-    /** @xstate-layout N4IgpgJg5mDOIC5QBsD2A7ARqghgJwgDoAFHdAAgFtUIwBiAIQdQA9zYxkwBjAF3MwBXXrwzluyAJbcA1pADaABgC6iUAAdUsSb0kY1IFogC0AJgAcATkKKAbABZzARnMBWe09e3Lt1wBoQAE9EJwB2UJsAZlDXS1DIxVdQuMVTAF80gLQsXAISMioaegBhLnxyJlYlVSQQTW1dfVqjBHNTQlMwxUdTZMtUtwDghGNbQic4z1CnSO97JMcMrIxsfCIAZU4eXXQoAWw2WF58fnqdPXQ6AFkcdXEpWXIwADcwdF5qgzPG9AMWsyShGmwKcFkUkX6-iCiAhkUI5kU4NMsUsnks5gcSxA2VWeU2XD4kl2+1Y7GOeFOWnOGDoxTI3E4FWYbAgeBwAHdPrVvhc-iZHPZCJFIp07PZIk5bPFzENEKZeoRXK5OuZ7BZbKZ0eKsTjchstoTiZgDk90BByDyaTc7gALVCvPBPV7vLkaKk-PkIMJAywQxShZxORL2RSg2UIDyuRWI+JOOPi2x2HUrPWEfHbIl7Y2kt7my2Xa33aQyJ1vD4qL7u3nNEKhMbRGJWHzRNy2cOmByEez2dEi2KKKzmZM5NZpg07LMm3MWqs0unoBnIJmk1kc111We-GsjVzmOE+OuhEOpeY98PuCLyxupYWJ-0ZTIgdBFeC1XVrSsNaugf62CWEA8pWPUxT0scNjF9IVVTVSIMVCAdEVcYdcSIUgKGoWhP2pLcfxMK9xl3foLFcSIQ0cUJw0sQVzFCXpLHRcwEQYodH3fPFx0zElDnJSkvyaN0+Jwww8MsKN3HcTwPHo1wJnDBJL08KUZhorxbGQ1N00NScczNGdBKwj1tzMVEAKlCF0V3P13HPDxxnBJVbDaaIEksB80iAA */
+    /** @xstate-layout N4IgpgJg5mDOIC5QBsD2A7ARqghgJwgDoAFHdAAgFtUIwBiAIQdQA9zYxkwBjAF3MwBXXrwzluyAJbcA1pADaABgC6iUAAdUsSb0kY1IFogC0AJgAcATkKKAbABZzARnMBWe09e3Lt1wBoQAE9EJwB2UJsAZlDXS1DIxVdQuMVTAF80gLQsXAISMioaegBhLnxyJlYlVSQQTW1dfVqjBHNTQlMwxUdTZMtUtwDghGNbQic4z1CnSO97JMcMrIxsfCIAZU4eXXQoAWw2WF58fnqdPXQ6AFkcdXEpWXIwADcwdF5qgzPG9AMWsyShGmwKcFkUkX6-iCiAhkUI5kU4NMsUsnks5gcSxA2VWeU2XD4kl2+1Y7GOeFOWnOGDoxTI3E4FWYbAgeBwAHdPrVvhc-iZHPZCJFIp07PZIk5bPFzENEKZeoRXK5OuZ7BZbKZ0eKsTjchstoTiZgDk90BByDyaTc7gALVCvPBPV7vLkaKk-PkIMJAywQxShZxORL2RSg2UIDyuRWI+JOOPi2x2HUrPWEfHbIl7Y2kt7my2Xa33aQyJ1vD4qL7u3nNEKhMbRGJWHzRNy2cOmByEez2dEi2KKKzmZM5NZpg07LMm3MWqs0unoBnIJmk1kc111We-GsjVzmOE+OuhEOpeY98PuCLyxupYWJ-3D3FEUgUai0a63IuPF5l9f5z0AsZLGRYNbGFHooWGMwJXhSxXDRf1PEibUsXQIp4FqXU1krBpq1Af5QKcQgDylY9TFPSxw2MCVrAHMiIQ7Jt70ybEU1HZ9ClobDqS3PCTCvcZd36EjuiSGJKPRcZPG6WwNXMUJOgmB9U3TQ1J1JI4ThnHCmjdbSeMMPjYMVU9PA8SxYImcMEkvTwpRmOSvFsJTRxUicSTYac-25Td-01QiDwhdFdz9dxzw8cZwSVWw2miBJLAyDIgA */
     id: "lonboard",
 
     types: {
       context: {} as {
         bboxSelectStart: number[] | undefined;
         bboxSelectEnd: number[] | undefined;
+        highlightedFeature: GeoArrowPickingInfo | undefined;
       },
       events: {} as
         | {
@@ -37,6 +39,9 @@ export const machine = createMachine(
             type: "setBboxSelectEnd";
           }
         | {
+            type: "setHighlightedFeature";
+          }
+        | {
             type: "clearBboxSelect";
           },
     },
@@ -44,6 +49,7 @@ export const machine = createMachine(
     context: {
       bboxSelectStart: undefined,
       bboxSelectEnd: undefined,
+      highlightedFeature: undefined,
     },
 
     states: {
@@ -57,6 +63,11 @@ export const machine = createMachine(
           "Clear BBox": {
             target: "Pan mode",
             actions: "clearBboxSelect",
+          },
+
+          "Map click event": {
+            target: "Pan mode",
+            actions: "setHighlightedFeature",
           },
         },
       },
@@ -125,6 +136,18 @@ export const machine = createMachine(
           };
         }
         return {};
+      }),
+      setHighlightedFeature: assign(({ event }) => {
+        if (event.type === "Map click event" && "data" in event) {
+          const clickedObject = event.data.object;
+
+          if (typeof clickedObject !== "undefined") {
+            return {
+              highlightedFeature: event.data,
+            };
+          }
+        }
+        return { highlightedFeature: undefined };
       }),
     },
 

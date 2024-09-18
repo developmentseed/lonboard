@@ -6,6 +6,11 @@
 
 /* Remove spaces between table cells */
 .lonboard-tooltip table {
+  /* 5 rows */
+  max-height: calc(5 * 1.5em);
+  /* Enable vertical scrolling if content exceeds the height */
+  overflow-y: auto;
+  display: block;
   border-collapse: collapse;
 }
 

@@ -8,7 +8,7 @@ import { MapViewState, PickingInfo, type Layer } from "@deck.gl/core";
 import { BaseLayerModel, initializeLayer } from "./model/index.js";
 import type { WidgetModel } from "@jupyter-widgets/base";
 import { initParquetWasm } from "./parquet.js";
-import { getTooltip } from "./tooltip/index.js";
+import Tooltip from "./tooltip/index.js";
 import { isDefined, loadChildModels } from "./util.js";
 import { v4 as uuidv4 } from "uuid";
 import { Message } from "./types.js";
@@ -79,8 +79,9 @@ function App() {
   const isOnMapHoverEventEnabled = MachineContext.useSelector(
     selectors.isOnMapHoverEventEnabled,
   );
-  const isTooltipEnabled = MachineContext.useSelector(
-    selectors.isTooltipEnabled,
+
+  const highlightedFeature = MachineContext.useSelector(
+    (s) => s.context.highlightedFeature,
   );
 
   const bboxSelectPolygonLayer = MachineContext.useSelector(
@@ -195,23 +196,18 @@ function App() {
     }
   }, []);
 
-  const onMapClickHandler = useCallback(
-    (info: PickingInfo) => {
-      if (isDrawingBBoxSelection) {
-        // We added this flag to prevent the hover event from firing after a
-        // click event.
-        setJustClicked(true);
-        actorRef.send({
-          type: "Map click event",
-          data: info,
-        });
-        setTimeout(() => {
-          setJustClicked(false);
-        }, 100);
-      }
-    },
-    [isDrawingBBoxSelection],
-  );
+  const onMapClickHandler = useCallback((info: PickingInfo) => {
+    // We added this flag to prevent the hover event from firing after a
+    // click event.
+    setJustClicked(true);
+    actorRef.send({
+      type: "Map click event",
+      data: info,
+    });
+    setTimeout(() => {
+      setJustClicked(false);
+    }, 100);
+  }, []);
 
   const onMapHoverHandler = useCallback(
     throttle(
@@ -230,6 +226,10 @@ function App() {
   return (
     <div id={`map-${mapId}`} style={{ height: mapHeight || "100%" }}>
       <Toolbar />
+      {showTooltip && highlightedFeature && (
+        <Tooltip info={highlightedFeature} />
+      )}
+
       <DeckGL
         initialViewState={
           ["longitude", "latitude", "zoom"].every((key) =>
@@ -243,9 +243,6 @@ function App() {
           bboxSelectPolygonLayer
             ? layers.concat(bboxSelectPolygonLayer)
             : layers
-        }
-        getTooltip={
-          (showTooltip && isTooltipEnabled && getTooltip) || undefined
         }
         getCursor={() => (isDrawingBBoxSelection ? "crosshair" : "grab")}
         pickingRadius={pickingRadius}
