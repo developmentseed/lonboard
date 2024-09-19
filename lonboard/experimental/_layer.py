@@ -545,7 +545,7 @@ class TripsLayer(BaseArrowLayer):
         # Cast to float32
         timestamps = timestamps.astype(np.float32)
 
-        coords_arr = Array.from_numpy(coords)
+        coords_arr = Array.from_numpy(coords.ravel("C"))
         coords_fixed_size_list = fixed_size_list_array(coords_arr, 2)
         linestrings_arr = list_array(Array.from_numpy(offsets), coords_fixed_size_list)
         timestamp_arr = list_array(
