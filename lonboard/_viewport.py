@@ -8,14 +8,14 @@ under the Apache 2 license.
 from __future__ import annotations
 
 import math
-from typing import List, Tuple
+from typing import Sequence, Tuple
 
 from lonboard._geoarrow.ops.bbox import Bbox
 from lonboard._geoarrow.ops.centroid import WeightedCentroid
 from lonboard._layer import BaseLayer
 
 
-def get_bbox_center(layers: List[BaseLayer]) -> Tuple[Bbox, WeightedCentroid]:
+def get_bbox_center(layers: Sequence[BaseLayer]) -> Tuple[Bbox, WeightedCentroid]:
     """Get the bounding box and geometric (weighted) center of the geometries in the
     table."""
 
@@ -55,13 +55,25 @@ def bbox_to_zoom_level(bbox: Bbox) -> int:
     return zoom_level
 
 
-def compute_view(layers: List[BaseLayer]):
+def compute_view(layers: Sequence[BaseLayer]):
     """Automatically computes a view state for the data passed in."""
     bbox, center = get_bbox_center(layers)
 
     # When no geo column is found, bbox will have inf values
     try:
         zoom = bbox_to_zoom_level(bbox)
-        return {"longitude": center.x, "latitude": center.y, "zoom": zoom}
+        return {
+            "longitude": center.x,
+            "latitude": center.y,
+            "zoom": zoom,
+            "pitch": 0,
+            "bearing": 0,
+        }
     except OverflowError:
-        return {"longitude": center.x or 0, "latitude": center.y or 0, "zoom": 0}
+        return {
+            "longitude": center.x or 0,
+            "latitude": center.y or 0,
+            "zoom": 0,
+            "pitch": 0,
+            "bearing": 0,
+        }

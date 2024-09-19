@@ -17,10 +17,10 @@ from lonboard._constants import EXTENSION_NAME
 from lonboard._layer import BaseArrowLayer
 from lonboard.experimental.traits import TimestampAccessor
 from lonboard.traits import (
+    ArrowTableTrait,
     ColorAccessor,
     FloatAccessor,
     PointAccessor,
-    PyarrowTableTrait,
     TextAccessor,
 )
 
@@ -38,7 +38,7 @@ class ArcLayer(BaseArrowLayer):
 
     _layer_type = traitlets.Unicode("arc").tag(sync=True)
 
-    table = PyarrowTableTrait()
+    table = ArrowTableTrait()
     """A GeoArrow table.
 
     This is the fastest way to plot data from an existing GeoArrow source, such as
@@ -143,7 +143,7 @@ class TextLayer(BaseArrowLayer):
 
     _layer_type = traitlets.Unicode("text").tag(sync=True)
 
-    table = PyarrowTableTrait(allowed_geometry_types={EXTENSION_NAME.POINT})
+    table = ArrowTableTrait(allowed_geometry_types={EXTENSION_NAME.POINT})
     """A GeoArrow table with a Point or MultiPoint column.
 
     This is the fastest way to plot data from an existing GeoArrow source, such as

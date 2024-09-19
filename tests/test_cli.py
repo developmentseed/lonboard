@@ -1,11 +1,16 @@
 from pathlib import Path
 
+import pytest
+
 from lonboard import PathLayer, viz
 from lonboard._cli import read_pyogrio
+
+from . import compat
 
 fixtures_dir = Path(__file__).parent / "fixtures"
 
 
+@pytest.mark.skipif(not compat.HAS_SHAPELY, reason="shapely not available")
 def test_viz_gpkg():
     table = read_pyogrio(fixtures_dir / "West_Devon_rail.gpkg")
     map_ = viz(table)

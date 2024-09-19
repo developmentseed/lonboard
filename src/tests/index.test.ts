@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest";
 
-describe("hello world", (t) => {
+describe("hello world", () => {
   it("foo", () => {
     expect(true).toBeTruthy();
   });

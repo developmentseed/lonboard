@@ -5,7 +5,7 @@ import type {
   LayerExtension,
   LayerProps,
   PickingInfo,
-} from "@deck.gl/core/typed";
+} from "@deck.gl/core";
 import type { WidgetModel } from "@jupyter-widgets/base";
 import { isDefined, loadChildModels } from "../util.js";
 import { initializeExtension } from "./extension.js";
@@ -32,6 +32,7 @@ export abstract class BaseLayerModel extends BaseModel {
     this.initRegularAttribute("visible", "visible");
     this.initRegularAttribute("opacity", "opacity");
     this.initRegularAttribute("auto_highlight", "autoHighlight");
+    this.initRegularAttribute("selected_bounds", "selectedBounds");
 
     this.extensions = [];
   }
@@ -41,16 +42,19 @@ export abstract class BaseLayerModel extends BaseModel {
   }
 
   extensionInstances(): LayerExtension[] {
-    return this.extensions.map((extension) => extension.extensionInstance);
+    return this.extensions
+      .map((extension) => extension.extensionInstance())
+      .filter((extensionInstance) => extensionInstance !== null);
   }
 
   extensionProps() {
-    let props: Record<string, any> = {};
+    const props: Record<string, unknown> = {};
     for (const layerPropertyName of this.extensionLayerPropertyNames) {
       if (isDefined(this[layerPropertyName as keyof this])) {
         props[layerPropertyName] = this[layerPropertyName as keyof this];
       }
     }
+    // console.log("extension props", props);
     return props;
   }
 
@@ -62,8 +66,6 @@ export abstract class BaseLayerModel extends BaseModel {
   }
 
   baseLayerProps(): LayerProps {
-    // console.log("extensions", this.extensionInstances());
-    // console.log("extensionprops", this.extensionProps());
     return {
       extensions: this.extensionInstances(),
       ...this.extensionProps(),

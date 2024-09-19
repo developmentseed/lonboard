@@ -1,14 +1,25 @@
 from __future__ import annotations
 
-from typing import Any, Dict, Optional, Sequence, Tuple, Union
+from typing import TYPE_CHECKING, Any, Dict, Optional, Sequence, Tuple, Union
 
-import matplotlib as mpl
 import numpy as np
-import pandas as pd
-import pyarrow as pa
-import pyarrow.compute as pc
-from numpy.typing import NDArray
-from palettable.palette import Palette
+from arro3.compute import dictionary_encode
+from arro3.core import (
+    Array,
+    ChunkedArray,
+    DataType,
+    dictionary_dictionary,
+    dictionary_indices,
+)
+from arro3.core.types import ArrowArrayExportable, ArrowStreamExportable
+
+if TYPE_CHECKING:
+    import matplotlib as mpl
+    import pandas as pd
+    import pyarrow as pa
+    from numpy.typing import NDArray
+    from palettable.palette import Palette
+
 
 __all__ = (
     "apply_continuous_cmap",
@@ -94,7 +105,7 @@ def apply_continuous_cmap(
         cmap: Any matplotlib `Colormap` or `Palette` object from the
             [`palettable`](https://github.com/jiffyclub/palettable) package.
 
-    Other Args:
+    Keyword Args:
         alpha: Alpha must be a scalar between 0 and 1, a sequence of such floats with
             shape matching `values`, or None.
 
@@ -103,9 +114,19 @@ def apply_continuous_cmap(
             dimension will have a length of either `3` if `alpha` is `None`, or `4` is
             each color has an alpha value.
     """
-    if isinstance(cmap, Palette):
+    try:
+        from palettable.palette import Palette
+    except ImportError:
+        Palette = None
+
+    try:
+        import matplotlib
+    except ImportError:
+        matplotlib = None
+
+    if Palette is not None and isinstance(cmap, Palette):
         colors: NDArray[np.uint8] = cmap.mpl_colormap(values, alpha=alpha, bytes=True)  # type: ignore
-    elif isinstance(cmap, mpl.colors.Colormap):
+    elif matplotlib is not None and isinstance(cmap, matplotlib.colors.Colormap):
         colors: NDArray[np.uint8] = cmap(values, alpha=alpha, bytes=True)  # type: ignore
     else:
         raise TypeError("Expected cmap to be a palettable or matplotlib colormap.")
@@ -118,7 +139,14 @@ def apply_continuous_cmap(
 
 
 def apply_categorical_cmap(
-    values: Union[NDArray, pd.Series, pa.Array, pa.ChunkedArray],
+    values: Union[
+        NDArray,
+        pd.Series,
+        pa.Array,
+        pa.ChunkedArray,
+        ArrowArrayExportable,
+        ArrowStreamExportable,
+    ],
     cmap: DiscreteColormap,
     *,
     alpha: Optional[int] = None,
@@ -142,7 +170,7 @@ def apply_categorical_cmap(
         cmap: A dictionary mapping keys to colors. See [DiscreteColormap] for more
             information.
 
-    Other Args:
+    Keyword Args:
         alpha: The _default_ alpha value for entries in the colormap that do not have an
             alpha value defined. Alpha must be an integer between 0 and 255 (inclusive).
 
@@ -151,15 +179,27 @@ def apply_categorical_cmap(
             dimension will have a length of either `3` if `alpha` is `None`, or `4` is
             each color has an alpha value.
     """
+    if isinstance(values, np.ndarray):
+        values = Array.from_numpy(values)
 
-    if not isinstance(values, (pa.Array, pa.ChunkedArray)):
-        values = pa.array(values)
+    try:
+        import pandas as pd
 
-    if not pa.types.is_dictionary(values.type):
-        values = pc.dictionary_encode(values)
+        if isinstance(values, pd.Series):
+            values = Array.from_numpy(values)
+    except ImportError:
+        pass
+
+    values = ChunkedArray(values)
+
+    if not DataType.is_dictionary(values.type):
+        values = ChunkedArray(dictionary_encode(values))
+
+    dictionary = ChunkedArray(dictionary_dictionary(values))
+    indices = ChunkedArray(dictionary_indices(values))
 
     # Build lookup table
-    lut = np.zeros((len(values.dictionary), 4), dtype=np.uint8)
+    lut = np.zeros((len(dictionary), 4), dtype=np.uint8)
     if alpha is not None:
         assert isinstance(alpha, int), "alpha must be an integer"
         assert 0 <= alpha <= 255, "alpha must be between 0-255 (inclusive)."
@@ -168,7 +208,7 @@ def apply_categorical_cmap(
     else:
         lut[:, 3] = 255
 
-    for i, key in enumerate(values.dictionary):
+    for i, key in enumerate(dictionary):
         color = cmap[key.as_py()]
         if len(color) == 3:
             lut[i, :3] = color
@@ -179,7 +219,7 @@ def apply_categorical_cmap(
                 "Expected color to be 3 or 4 values representing RGB or RGBA."
             )
 
-    colors = lut[values.indices]
+    colors = lut[indices]
 
     # If the alpha values are all 255, don't serialize
     if (colors[:, 3] == 255).all():

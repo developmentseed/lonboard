@@ -8,9 +8,11 @@ from ._layer import (
     BaseLayer,
     BitmapLayer,
     BitmapTileLayer,
+    ColumnLayer,
     HeatmapLayer,
     PathLayer,
     PointCloudLayer,
+    PolygonLayer,
     ScatterplotLayer,
     SolidPolygonLayer,
 )

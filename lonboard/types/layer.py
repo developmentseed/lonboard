@@ -4,7 +4,6 @@ import sys
 from typing import (
     List,
     Literal,
-    Protocol,
     Sequence,
     Tuple,
     Union,
@@ -12,7 +11,8 @@ from typing import (
 
 import numpy as np
 import pandas as pd
-import pyarrow as pa
+import pyarrow
+from arro3.core.types import ArrowArrayExportable, ArrowStreamExportable
 from numpy.typing import NDArray
 
 from lonboard._base import BaseExtension
@@ -21,12 +21,6 @@ if sys.version_info >= (3, 12):
     from typing import TypedDict
 else:
     from typing_extensions import TypedDict
-
-
-class ArrowArrayExportable(Protocol):
-    def __arrow_c_array__(
-        self, requested_schema: object | None = None
-    ) -> Tuple[object, object]: ...
 
 
 IntFloat = Union[int, float]
@@ -38,36 +32,40 @@ ColorAccessorInput = Union[
     Tuple[int, ...],
     str,
     NDArray[np.uint8],
-    pa.FixedSizeListArray,
-    pa.ChunkedArray,
+    pyarrow.FixedSizeListArray,
+    pyarrow.ChunkedArray,
     ArrowArrayExportable,
+    ArrowStreamExportable,
 ]
 FloatAccessorInput = Union[
     int,
     float,
     NDArray[np.number],
     pd.Series,
-    pa.FloatingPointArray,
-    pa.ChunkedArray,
+    pyarrow.FloatingPointArray,
+    pyarrow.ChunkedArray,
     ArrowArrayExportable,
+    ArrowStreamExportable,
 ]
 NormalAccessorInput = Union[
     List[int],
     Tuple[int, int, int],
     Tuple[int, ...],
     NDArray[np.floating],
-    pa.FixedSizeListArray,
-    pa.ChunkedArray,
+    pyarrow.FixedSizeListArray,
+    pyarrow.ChunkedArray,
     ArrowArrayExportable,
+    ArrowStreamExportable,
 ]
 TextAccessorInput = Union[
     str,
     NDArray[np.str_],
     pd.Series,
-    pa.StringArray,
-    pa.LargeStringArray,
-    pa.ChunkedArray,
+    pyarrow.StringArray,
+    pyarrow.LargeStringArray,
+    pyarrow.ChunkedArray,
     ArrowArrayExportable,
+    ArrowStreamExportable,
 ]
 
 
@@ -111,6 +109,29 @@ class BitmapTileLayerKwargs(BaseLayerKwargs, total=False):
     tint_color: Sequence[IntFloat]
 
 
+class ColumnLayerKwargs(BaseLayerKwargs, total=False):
+    disk_resolution: int
+    radius: IntFloat
+    angle: IntFloat
+    offset: Tuple[IntFloat, IntFloat]
+    coverage: IntFloat
+    elevation_scale: IntFloat
+    filled: bool
+    stroked: bool
+    extruded: bool
+    wireframe: bool
+    flat_shading: bool
+    radius_units: Units
+    line_width_units: Units
+    line_width_scale: IntFloat
+    line_width_min_pixels: IntFloat
+    line_width_max_pixels: IntFloat
+    get_fill_color: ColorAccessorInput
+    get_line_color: ColorAccessorInput
+    get_elevation: FloatAccessorInput
+    get_line_width: FloatAccessorInput
+
+
 class PathLayerKwargs(BaseLayerKwargs, total=False):
     width_units: Units
     width_scale: IntFloat
@@ -129,6 +150,24 @@ class PointCloudLayerKwargs(BaseLayerKwargs, total=False):
     point_size: IntFloat
     get_color: ColorAccessorInput
     get_normal: NormalAccessorInput
+
+
+class PolygonLayerKwargs(BaseLayerKwargs, total=False):
+    stroked: bool
+    filled: bool
+    extruded: bool
+    wireframe: bool
+    elevation_scale: IntFloat
+    line_width_units: Units
+    line_width_scale: IntFloat
+    line_width_min_pixels: IntFloat
+    line_width_max_pixels: IntFloat
+    line_joint_rounded: bool
+    line_miter_limit: IntFloat
+    get_fill_color: ColorAccessorInput
+    get_line_color: ColorAccessorInput
+    get_line_width: FloatAccessorInput
+    get_elevation: FloatAccessorInput
 
 
 class ScatterplotLayerKwargs(BaseLayerKwargs, total=False):

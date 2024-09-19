@@ -1,27 +1,27 @@
-import { LayerExtension } from "@deck.gl/core/typed";
+import { LayerExtension } from "@deck.gl/core";
 import {
   BrushingExtension as _BrushingExtension,
   CollisionFilterExtension as _CollisionFilterExtension,
   DataFilterExtension as _DataFilterExtension,
-} from "@deck.gl/extensions/typed";
+  PathStyleExtension as _PathStyleExtension,
+} from "@deck.gl/extensions";
 import type { WidgetModel } from "@jupyter-widgets/base";
 import { BaseModel } from "./base.js";
 import type { BaseLayerModel } from "./base-layer.js";
+import { isDefined } from "../util.js";
 
 export abstract class BaseExtensionModel extends BaseModel {
   static extensionType: string;
 
-  abstract extensionInstance: LayerExtension;
-
   constructor(model: WidgetModel, updateStateCallback: () => void) {
     super(model, updateStateCallback);
   }
+
+  abstract extensionInstance(): LayerExtension | null;
 }
 
 export class BrushingExtension extends BaseExtensionModel {
   static extensionType = "brushing";
-
-  extensionInstance: _BrushingExtension;
 
   constructor(
     model: WidgetModel,
@@ -29,7 +29,6 @@ export class BrushingExtension extends BaseExtensionModel {
     updateStateCallback: () => void,
   ) {
     super(model, updateStateCallback);
-    this.extensionInstance = new _BrushingExtension();
 
     layerModel.initRegularAttribute("brushing_enabled", "brushingEnabled");
     layerModel.initRegularAttribute("brushing_target", "brushingTarget");
@@ -50,12 +49,14 @@ export class BrushingExtension extends BaseExtensionModel {
       "getBrushingTarget",
     ];
   }
+
+  extensionInstance(): _BrushingExtension {
+    return new _BrushingExtension();
+  }
 }
 
 export class CollisionFilterExtension extends BaseExtensionModel {
   static extensionType = "collision-filter";
-
-  extensionInstance: _CollisionFilterExtension;
 
   constructor(
     model: WidgetModel,
@@ -63,7 +64,6 @@ export class CollisionFilterExtension extends BaseExtensionModel {
     updateStateCallback: () => void,
   ) {
     super(model, updateStateCallback);
-    this.extensionInstance = new _CollisionFilterExtension();
 
     layerModel.initRegularAttribute("collision_enabled", "collisionEnabled");
     layerModel.initRegularAttribute("collision_group", "collisionGroup");
@@ -87,12 +87,18 @@ export class CollisionFilterExtension extends BaseExtensionModel {
       "getCollisionPriority",
     ];
   }
+
+  extensionInstance(): _CollisionFilterExtension {
+    return new _CollisionFilterExtension();
+  }
 }
 
 export class DataFilterExtension extends BaseExtensionModel {
   static extensionType = "data-filter";
 
-  extensionInstance: _DataFilterExtension;
+  // DataFilterExtensionOptions is not exported
+  protected categorySize?: 0 | 1 | 2 | 3 | 4;
+  protected filterSize?: 0 | 1 | 2 | 3 | 4;
 
   constructor(
     model: WidgetModel,
@@ -101,12 +107,11 @@ export class DataFilterExtension extends BaseExtensionModel {
   ) {
     super(model, updateStateCallback);
 
-    // TODO: set filterSize, fp64, countItems in constructor
-    // TODO: should filter_size automatically update from python?
-    const filterSize = this.model.get("filter_size");
-    this.extensionInstance = new _DataFilterExtension({ filterSize });
+    this.initRegularAttribute("filter_size", "filterSize");
+    this.initRegularAttribute("category_size", "categorySize");
 
     // Properties added by the extension onto the layer
+    layerModel.initRegularAttribute("filter_categories", "filterCategories");
     layerModel.initRegularAttribute("filter_enabled", "filterEnabled");
     layerModel.initRegularAttribute("filter_range", "filterRange");
     layerModel.initRegularAttribute("filter_soft_range", "filterSoftRange");
@@ -119,19 +124,92 @@ export class DataFilterExtension extends BaseExtensionModel {
       "filterTransformColor",
     );
 
+    layerModel.initVectorizedAccessor(
+      "get_filter_category",
+      "getFilterCategory",
+    );
     layerModel.initVectorizedAccessor("get_filter_value", "getFilterValue");
 
     // Update the layer model with the list of the JS property names added by
     // this extension
     layerModel.extensionLayerPropertyNames = [
       ...layerModel.extensionLayerPropertyNames,
+      "filterCategories",
       "filterEnabled",
       "filterRange",
       "filterSoftRange",
       "filterTransformSize",
       "filterTransformColor",
+      "getFilterCategory",
       "getFilterValue",
     ];
+  }
+
+  extensionInstance(): _DataFilterExtension | null {
+    if (isDefined(this.filterSize)) {
+      const props = {
+        ...(isDefined(this.filterSize) ? { filterSize: this.filterSize } : {}),
+      };
+      // console.log("ext props", props);
+      return new _DataFilterExtension(props);
+    } else if (isDefined(this.categorySize)) {
+      const props = {
+        ...(isDefined(this.categorySize)
+          ? { categorySize: this.categorySize }
+          : {}),
+      };
+      // console.log("ext props", props);
+      return new _DataFilterExtension(props);
+    } else {
+      return null;
+    }
+  }
+}
+
+export class PathStyleExtension extends BaseExtensionModel {
+  static extensionType = "path-style";
+
+  protected dash?: boolean;
+  protected offset?: boolean;
+  protected highPrecisionDash?: boolean;
+
+  constructor(
+    model: WidgetModel,
+    layerModel: BaseLayerModel,
+    updateStateCallback: () => void,
+  ) {
+    super(model, updateStateCallback);
+
+    // PathStyleExtensionOptions is not exported
+    this.initRegularAttribute("dash", "dash");
+    this.initRegularAttribute("high_precision_dash", "highPrecisionDash");
+    this.initRegularAttribute("offset", "offset");
+
+    // Properties added by the extension onto the layer
+    layerModel.initRegularAttribute("dash_gap_pickable", "dashGapPickable");
+    layerModel.initRegularAttribute("dash_justified", "dashJustified");
+    layerModel.initVectorizedAccessor("get_dash_array", "getDashArray");
+    layerModel.initVectorizedAccessor("get_offset", "getOffset");
+
+    // Update the layer model with the list of the JS property names added by
+    // this extension
+    layerModel.extensionLayerPropertyNames = [
+      ...layerModel.extensionLayerPropertyNames,
+      "dashGapPickable",
+      "dashJustified",
+      "getDashArray",
+      "getOffset",
+    ];
+  }
+
+  extensionInstance(): _PathStyleExtension {
+    return new _PathStyleExtension({
+      ...(isDefined(this.dash) ? { dash: this.dash } : {}),
+      ...(isDefined(this.highPrecisionDash)
+        ? { highPrecisionDash: this.highPrecisionDash }
+        : {}),
+      ...(isDefined(this.offset) ? { offset: this.offset } : {}),
+    });
   }
 }
 
@@ -161,6 +239,14 @@ export async function initializeExtension(
 
     case DataFilterExtension.extensionType:
       extensionModel = new DataFilterExtension(
+        model,
+        layerModel,
+        updateStateCallback,
+      );
+      break;
+
+    case PathStyleExtension.extensionType:
+      extensionModel = new PathStyleExtension(
         model,
         layerModel,
         updateStateCallback,

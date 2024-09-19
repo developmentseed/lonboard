@@ -9,6 +9,21 @@ site_url: https://developmentseed.org/lonboard/
 docs_dir: docs
 
 extra:
+  analytics:
+    provider: plausible
+    domain: developmentseed.org/lonboard
+    feedback:
+      title: Was this page helpful?
+      ratings:
+        - icon: material/emoticon-happy-outline
+          name: This page was helpful
+          data: good
+          note: Thanks for your feedback!
+
+        - icon: material/emoticon-sad-outline
+          name: This page could be improved
+          data: bad
+          note: Thanks for your feedback!
   social:
     - icon: "fontawesome/brands/github"
       link: "https://github.com/developmentseed"
@@ -25,9 +40,12 @@ nav:
       - examples/index.md
       - examples/internet-speeds.ipynb
       - examples/north-america-roads.ipynb
+      - examples/overture-maps.ipynb
+      - examples/global-boundaries.ipynb
       - examples/migration.ipynb
       - examples/data-filter-extension.ipynb
       - Integrations:
+          - examples/duckdb.ipynb
           - ColorPicker: examples/integrations/color-picker.ipynb
           - Sidecar: examples/integrations/sidecar.ipynb
       - 30 Day Map Challenge:
@@ -39,9 +57,11 @@ nav:
       - Layers:
           - api/layers/bitmap-layer.md
           - api/layers/bitmap-tile-layer.md
+          - api/layers/column-layer.md
           - api/layers/heatmap-layer.md
           - api/layers/path-layer.md
           - api/layers/point-cloud-layer.md
+          - api/layers/polygon-layer.md
           - api/layers/scatterplot-layer.md
           - api/layers/solid-polygon-layer.md
           - api/layers/base-layer.md
@@ -50,6 +70,7 @@ nav:
           - api/layer-extensions/brushing-extension.md
           - api/layer-extensions/collision-filter-extension.md
           - api/layer-extensions/data-filter-extension.md
+          - api/layer-extensions/path-style-extension.md
       - api/basemap.md
       - api/colormap.md
       - api/controls.md
@@ -61,8 +82,9 @@ nav:
   - cli.md
   - Ecosystem:
       - ecosystem/index.md
-      - ecosystem/geoarrow.md
       - ecosystem/geopandas.md
+      - ecosystem/duckdb.md
+      - ecosystem/geoarrow.md
       - ecosystem/jupyter-widgets.md
       - ecosystem/panel.md
       - ecosystem/shiny.md
@@ -71,7 +93,9 @@ nav:
   - Performance: performance.md
   - Changelog: CHANGELOG.md
   - Alternatives: alternatives.md
-  - "How it works?": how-it-works.md
+  - "How it works?":
+      - how-it-works/index.md
+      - how-it-works/internals.md
 
 watch:
   - lonboard
@@ -134,13 +158,17 @@ plugins:
         python:
           paths: [lonboard]
           options:
-            show_root_heading: true
-            docstring_style: google
-            show_source: false
             docstring_section_style: list
-            separate_signature: true
-            show_signature_annotations: true
+            docstring_style: google
             line_length: 80
+            separate_signature: true
+            show_root_heading: true
+            show_signature_annotations: true
+            show_source: false
+            show_symbol_type_toc: true
+            signature_crossrefs: true
+            extensions:
+              - griffe_inherited_docstrings
 
           import:
             - https://arrow.apache.org/docs/objects.inv
@@ -150,7 +178,9 @@ plugins:
             - https://geoarrow.github.io/geoarrow-rs/python/latest/objects.inv
             - https://geopandas.org/en/stable/objects.inv
             - https://geopy.readthedocs.io/en/stable/objects.inv
+            - https://ipython.readthedocs.io/en/stable/objects.inv
             - https://ipywidgets.readthedocs.io/en/stable/objects.inv
+            - https://kylebarron.dev/arro3/latest/objects.inv
             - https://matplotlib.org/stable/objects.inv
             - https://numpy.org/doc/stable/objects.inv
             - https://pandas.pydata.org/pandas-docs/stable/objects.inv
