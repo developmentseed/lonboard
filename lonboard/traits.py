@@ -37,6 +37,7 @@ from traitlets.traitlets import TraitType
 from traitlets.utils.descriptions import class_of, describe
 from traitlets.utils.sentinel import Sentinel
 
+from lonboard._constants import EXTENSION_NAME
 from lonboard._serialization import (
     ACCESSOR_SERIALIZATION,
     TABLE_SERIALIZATION,
@@ -172,7 +173,7 @@ class ArrowTableTrait(FixedErrorTraitType):
     def __init__(
         self: TraitType,
         *args,
-        allowed_geometry_types: Set[bytes] | None = None,
+        allowed_geometry_types: Set[EXTENSION_NAME] | None = None,
         allowed_dimensions: Optional[Set[int]] = None,
         **kwargs: Any,
     ) -> None:

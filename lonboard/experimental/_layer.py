@@ -6,12 +6,19 @@
 from __future__ import annotations
 
 import sys
-from typing import TYPE_CHECKING
+from typing import TYPE_CHECKING, Optional, Unpack
 
 import numpy as np
-import pyarrow as pa
-import shapely
 import traitlets
+from arro3.core import (
+    Array,
+    ChunkedArray,
+    Field,
+    Table,
+    fixed_size_list_array,
+    list_array,
+)
+from arro3.core.types import ArrowStreamExportable
 
 from lonboard._constants import EXTENSION_NAME
 from lonboard._layer import BaseArrowLayer
@@ -23,6 +30,7 @@ from lonboard.traits import (
     PointAccessor,
     TextAccessor,
 )
+from lonboard.types.layer import TripsLayerKwargs
 
 if TYPE_CHECKING:
     from movingpandas import TrajectoryCollection
@@ -351,7 +359,7 @@ class TripsLayer(BaseArrowLayer):
 
     _layer_type = traitlets.Unicode("trip").tag(sync=True)
 
-    table = PyarrowTableTrait(
+    table = ArrowTableTrait(
         allowed_geometry_types={
             EXTENSION_NAME.LINESTRING,
         }
@@ -479,16 +487,29 @@ class TripsLayer(BaseArrowLayer):
     - Type: [TimestampAccessor][lonboard.traits.TimestampAccessor]
     """
 
-    @traitlets.validate("get_color", "get_width", "get_timestamps")
-    def _validate_accessor_length(self, proposal):
-        if isinstance(proposal["value"], (pa.ChunkedArray, pa.Array)):
-            if len(proposal["value"]) != len(self.table):
-                raise traitlets.TraitError("accessor must have same length as table")
-
-        return proposal["value"]
+    def __init__(
+        self,
+        *,
+        table: ArrowStreamExportable,
+        get_timestamps: ArrowStreamExportable,
+        _rows_per_chunk: Optional[int] = None,
+        **kwargs: Unpack[TripsLayerKwargs],
+    ):
+        super().__init__(
+            table=table,
+            _rows_per_chunk=_rows_per_chunk,
+            get_timestamps=get_timestamps,  # type: ignore
+            **kwargs,
+        )
 
     @classmethod
-    def from_movingpandas(cls, traj_collection: TrajectoryCollection, **kwargs) -> Self:
+    def from_movingpandas(
+        cls,
+        traj_collection: TrajectoryCollection,
+        **kwargs: Unpack[TripsLayerKwargs],
+    ) -> Self:
+        import shapely
+
         num_coords = 0
         num_rows = len(traj_collection)
         offsets = np.zeros(num_rows + 1, dtype=np.int32)
@@ -519,17 +540,15 @@ class TripsLayer(BaseArrowLayer):
         # Cast to float32
         timestamps = timestamps.astype(np.float32)
 
-        coords_fixed_size_list = pa.FixedSizeListArray.from_arrays(
-            pa.array(coords.flatten("C")), 2
+        coords_arr = Array.from_numpy(coords)
+        coords_fixed_size_list = fixed_size_list_array(coords_arr, 2)
+        linestrings_arr = list_array(Array.from_numpy(offsets), coords_fixed_size_list)
+        timestamp_arr = list_array(
+            Array.from_numpy(offsets), Array.from_numpy(timestamps)
         )
-        linestrings_arr = pa.ListArray.from_arrays(
-            pa.array(offsets), coords_fixed_size_list
-        )
-        timestamp_arr = pa.ListArray.from_arrays(
-            pa.array(offsets), pa.array(timestamps)
-        )
+        timestamp_col = ChunkedArray([timestamp_arr])
 
-        linestrings_field = pa.field(
+        linestrings_field = Field(
             "geometry",
             linestrings_arr.type,
             nullable=True,
@@ -537,6 +556,6 @@ class TripsLayer(BaseArrowLayer):
         )
 
         # TODO: don't add timestamps onto table
-        table = pa.table({"timestamps": timestamp_arr})
-        table = table.append_column(linestrings_field, linestrings_arr)
-        return cls(table=table, get_timestamps=timestamp_arr, **kwargs)
+        table = Table.from_pydict({"timestamps": timestamp_col})
+        table = table.append_column(linestrings_field, ChunkedArray([linestrings_arr]))
+        return cls(table=table, get_timestamps=timestamp_col, **kwargs)
