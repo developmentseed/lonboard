@@ -370,7 +370,7 @@ class TripsLayer(BaseArrowLayer):
         }
     )
 
-    width_units = traitlets.Unicode(allow_none=True).tag(sync=True)
+    width_units = traitlets.Unicode(default_value=None, allow_none=True).tag(sync=True)
     """
     The units of the line width, one of `'meters'`, `'common'`, and `'pixels'`. See
     [unit
@@ -380,7 +380,9 @@ class TripsLayer(BaseArrowLayer):
     - Default: `'meters'`
     """
 
-    width_scale = traitlets.Float(allow_none=True, min=0).tag(sync=True)
+    width_scale = traitlets.Float(default_value=None, allow_none=True, min=0).tag(
+        sync=True
+    )
     """
     The path width multiplier that multiplied to all paths.
 
@@ -388,7 +390,9 @@ class TripsLayer(BaseArrowLayer):
     - Default: `1`
     """
 
-    width_min_pixels = traitlets.Float(allow_none=True, min=0).tag(sync=True)
+    width_min_pixels = traitlets.Float(default_value=None, allow_none=True, min=0).tag(
+        sync=True
+    )
     """
     The minimum path width in pixels. This prop can be used to prevent the path from
     getting too thin when zoomed out.
@@ -397,7 +401,9 @@ class TripsLayer(BaseArrowLayer):
     - Default: `0`
     """
 
-    width_max_pixels = traitlets.Float(allow_none=True, min=0).tag(sync=True)
+    width_max_pixels = traitlets.Float(default_value=None, allow_none=True, min=0).tag(
+        sync=True
+    )
     """
     The maximum path width in pixels. This prop can be used to prevent the path from
     getting too thick when zoomed in.
@@ -406,7 +412,7 @@ class TripsLayer(BaseArrowLayer):
     - Default: `None`
     """
 
-    joint_rounded = traitlets.Bool(allow_none=True).tag(sync=True)
+    joint_rounded = traitlets.Bool(default_value=None, allow_none=True).tag(sync=True)
     """
     Type of joint. If `True`, draw round joints. Otherwise draw miter joints.
 
@@ -414,7 +420,7 @@ class TripsLayer(BaseArrowLayer):
     - Default: `False`
     """
 
-    cap_rounded = traitlets.Bool(allow_none=True).tag(sync=True)
+    cap_rounded = traitlets.Bool(default_value=None, allow_none=True).tag(sync=True)
     """
     Type of caps. If `True`, draw round caps. Otherwise draw square caps.
 
@@ -422,7 +428,7 @@ class TripsLayer(BaseArrowLayer):
     - Default: `False`
     """
 
-    miter_limit = traitlets.Int(allow_none=True).tag(sync=True)
+    miter_limit = traitlets.Int(default_value=None, allow_none=True).tag(sync=True)
     """
     The maximum extent of a joint in ratio to the stroke width.
     Only works if `jointRounded` is `False`.
@@ -431,7 +437,7 @@ class TripsLayer(BaseArrowLayer):
     - Default: `4`
     """
 
-    billboard = traitlets.Bool(allow_none=True).tag(sync=True)
+    billboard = traitlets.Bool(default_value=None, allow_none=True).tag(sync=True)
     """
     If `True`, extrude the path in screen space (width always faces the camera).
     If `False`, the width always faces up.
@@ -440,14 +446,14 @@ class TripsLayer(BaseArrowLayer):
     - Default: `False`
     """
 
-    fade_trail = traitlets.Bool(allow_none=True).tag(sync=True)
+    fade_trail = traitlets.Bool(default_value=None, allow_none=True).tag(sync=True)
     """Whether or not the path fades out.
 
     - Type: `bool`, optional
     - Default: `True`
     """
 
-    trail_length = traitlets.Float(allow_none=True).tag(sync=True)
+    trail_length = traitlets.Float(default_value=None, allow_none=True).tag(sync=True)
     """Trail length.
 
     - Type: `float`, optional
@@ -461,7 +467,7 @@ class TripsLayer(BaseArrowLayer):
     - Default: `0`
     """
 
-    get_color = ColorAccessor()
+    get_color = ColorAccessor(None, allow_none=True)
     """
     The color of each path in the format of `[r, g, b, [a]]`. Each channel is a number
     between 0-255 and `a` is 255 if not supplied.
@@ -474,7 +480,7 @@ class TripsLayer(BaseArrowLayer):
     - Default: `[0, 0, 0, 255]`.
     """
 
-    get_width = FloatAccessor()
+    get_width = FloatAccessor(None, allow_none=True)
     """
     The width of each path, in units specified by `width_units` (default `'meters'`).
 
@@ -485,7 +491,7 @@ class TripsLayer(BaseArrowLayer):
     - Default: `1`.
     """
 
-    get_timestamps = TimestampAccessor()
+    get_timestamps = TimestampAccessor(None, allow_none=True)
     """
     The timestamp of each coordinate.
 
@@ -523,7 +529,7 @@ class TripsLayer(BaseArrowLayer):
             num_coords += traj.size()
             offsets[i + 1] = num_coords
 
-        coords = np.zeros((num_coords, 2), dtype=np.float32)
+        coords = np.zeros((num_coords, 2), dtype=np.float64)
         timestamps = np.zeros(num_coords, dtype=np.int64)
 
         for i, traj in enumerate(traj_collection.trajectories):
