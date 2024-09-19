@@ -6,7 +6,7 @@
 from __future__ import annotations
 
 import sys
-from typing import TYPE_CHECKING, Optional, Unpack
+from typing import TYPE_CHECKING, Optional
 
 import numpy as np
 import traitlets
@@ -39,6 +39,11 @@ if TYPE_CHECKING:
         from typing import Self
     else:
         from typing_extensions import Self
+
+    if sys.version_info >= (3, 12):
+        from typing import Unpack
+    else:
+        from typing_extensions import Unpack
 
 
 class ArcLayer(BaseArrowLayer):
