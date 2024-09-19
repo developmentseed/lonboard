@@ -9,6 +9,7 @@ import {
   GeoArrowScatterplotLayer,
   GeoArrowSolidPolygonLayer,
   _GeoArrowTextLayer as GeoArrowTextLayer,
+  GeoArrowTripsLayer,
 } from "@geoarrow/deck.gl-layers";
 import type {
   GeoArrowArcLayerProps,
@@ -19,7 +20,6 @@ import type {
   GeoArrowScatterplotLayerProps,
   GeoArrowSolidPolygonLayerProps,
   _GeoArrowTextLayerProps as GeoArrowTextLayerProps,
-  GeoArrowTripsLayer,
   GeoArrowTripsLayerProps,
 } from "@geoarrow/deck.gl-layers";
 import type { WidgetModel } from "@jupyter-widgets/base";
@@ -950,19 +950,23 @@ export class TripsModel extends BaseArrowLayerModel {
       data: this.table,
       // Required argument
       getTimestamps: this.getTimestamps,
-      ...(this.widthUnits && { widthUnits: this.widthUnits }),
-      ...(this.widthScale && { widthScale: this.widthScale }),
-      ...(this.widthMinPixels && { widthMinPixels: this.widthMinPixels }),
-      ...(this.widthMaxPixels && { widthMaxPixels: this.widthMaxPixels }),
-      ...(this.jointRounded && { jointRounded: this.jointRounded }),
-      ...(this.capRounded && { capRounded: this.capRounded }),
-      ...(this.miterLimit && { miterLimit: this.miterLimit }),
-      ...(this.billboard && { billboard: this.billboard }),
-      ...(this.fadeTrail && { fadeTrail: this.fadeTrail }),
-      ...(this.trailLength && { trailLength: this.trailLength }),
-      ...(this.currentTime && { currentTime: this.currentTime }),
-      ...(this.getColor && { getColor: this.getColor }),
-      ...(this.getWidth && { getWidth: this.getWidth }),
+      ...(isDefined(this.widthUnits) && { widthUnits: this.widthUnits }),
+      ...(isDefined(this.widthScale) && { widthScale: this.widthScale }),
+      ...(isDefined(this.widthMinPixels) && {
+        widthMinPixels: this.widthMinPixels,
+      }),
+      ...(isDefined(this.widthMaxPixels) && {
+        widthMaxPixels: this.widthMaxPixels,
+      }),
+      ...(isDefined(this.jointRounded) && { jointRounded: this.jointRounded }),
+      ...(isDefined(this.capRounded) && { capRounded: this.capRounded }),
+      ...(isDefined(this.miterLimit) && { miterLimit: this.miterLimit }),
+      ...(isDefined(this.billboard) && { billboard: this.billboard }),
+      ...(isDefined(this.fadeTrail) && { fadeTrail: this.fadeTrail }),
+      ...(isDefined(this.trailLength) && { trailLength: this.trailLength }),
+      ...(isDefined(this.currentTime) && { currentTime: this.currentTime }),
+      ...(isDefined(this.getColor) && { getColor: this.getColor }),
+      ...(isDefined(this.getWidth) && { getWidth: this.getWidth }),
     };
   }
 
