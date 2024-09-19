@@ -882,7 +882,7 @@ colorama = {version = "*", markers = "platform_system == \"Windows\""}
 name = "click-plugins"
 version = "1.1.1"
 description = "An extension module for click to enable registering CLI commands via setuptools entry-points."
-optional = true
+optional = false
 python-versions = "*"
 files = [
     {file = "click-plugins-1.1.1.tar.gz", hash = "sha256:46ab999744a9d831159c3411bb0c79346d94a444df9a3a3742e9ed63645f264b"},
@@ -899,7 +899,7 @@ dev = ["coveralls", "pytest (>=3.6)", "pytest-cov", "wheel"]
 name = "cligj"
 version = "0.7.2"
 description = "Click params for commmand line interfaces to GeoJSON"
-optional = true
+optional = false
 python-versions = ">=2.7, !=3.0.*, !=3.1.*, !=3.2.*, <4"
 files = [
     {file = "cligj-0.7.2-py3-none-any.whl", hash = "sha256:c1ca117dbce1fe20a5809dc96f01e1c2840f6dcc939b3ddbb1111bf330ba82df"},
@@ -1284,7 +1284,7 @@ typing = ["typing-extensions (>=4.8)"]
 name = "fiona"
 version = "1.9.6"
 description = "Fiona reads and writes spatial data files"
-optional = true
+optional = false
 python-versions = ">=3.7"
 files = [
     {file = "fiona-1.9.6-cp310-cp310-macosx_10_15_x86_64.whl", hash = "sha256:63e528b5ea3d8b1038d788e7c65117835c787ba7fdc94b1b42f09c2cbc0aaff2"},
@@ -1521,7 +1521,7 @@ pooch = "*"
 name = "geographiclib"
 version = "2.0"
 description = "The geodesic routines from GeographicLib"
-optional = true
+optional = false
 python-versions = ">=3.7"
 files = [
     {file = "geographiclib-2.0-py3-none-any.whl", hash = "sha256:6b7225248e45ff7edcee32becc4e0a1504c606ac5ee163a5656d482e0cd38734"},
@@ -1532,7 +1532,7 @@ files = [
 name = "geopandas"
 version = "0.13.2"
 description = "Geographic pandas extensions"
-optional = true
+optional = false
 python-versions = ">=3.8"
 files = [
     {file = "geopandas-0.13.2-py3-none-any.whl", hash = "sha256:101cfd0de54bcf9e287a55b5ea17ebe0db53a5e25a28bacf100143d0507cabd9"},
@@ -1550,7 +1550,7 @@ shapely = ">=1.7.1"
 name = "geopy"
 version = "2.4.1"
 description = "Python Geocoding Toolbox"
-optional = true
+optional = false
 python-versions = ">=3.7"
 files = [
     {file = "geopy-2.4.1-py3-none-any.whl", hash = "sha256:ae8b4bc5c1131820f4d75fce9d4aaaca0c85189b3aa5d64c3dcaf5e3b7b882a7"},
@@ -2755,13 +2755,13 @@ mkdocstrings = ">=0.25"
 
 [[package]]
 name = "movingpandas"
-version = "0.17.2"
-description = "MovingPandas implements Trajectory classes and corresponding methods for the analysis of movement data based on GeoPandas. Visit movingpandas.org for details."
-optional = true
+version = "0.19.0"
+description = "MovingPandas provides trajectory data structures and functions for handling movement data based on Pandas, GeoPandas, and more. Visit movingpandas.org for details."
+optional = false
 python-versions = ">=3.8"
 files = [
-    {file = "movingpandas-0.17.2-py3-none-any.whl", hash = "sha256:345fd7bd62f2d733d59b43e787c31014b3889495ac29947a800b6b72db5b9482"},
-    {file = "movingpandas-0.17.2.tar.gz", hash = "sha256:a84bab2473a0ee254ac10bd562b4c4c955ea69820a033be0220abd4cd2476c6e"},
+    {file = "movingpandas-0.19.0-py3-none-any.whl", hash = "sha256:a696dfbcc2d18d28c3aa6aac57a3f6cd2c0e4b12715ac6956d1e6390f14243dc"},
+    {file = "movingpandas-0.19.0.tar.gz", hash = "sha256:15b7d03cd463032ad6ada21dba11de5b57e34bae7c0dd8177f569becfc639b88"},
 ]
 
 [package.dependencies]
@@ -2769,7 +2769,6 @@ fiona = "*"
 geopandas = "*"
 geopy = "*"
 matplotlib = "*"
-rtree = "*"
 
 [package.extras]
 smoothing = ["stonesoup"]
@@ -2995,7 +2994,7 @@ files = [
 name = "pandas"
 version = "2.0.3"
 description = "Powerful data structures for data analysis, time series, and statistics"
-optional = true
+optional = false
 python-versions = ">=3.8"
 files = [
     {file = "pandas-2.0.3-cp310-cp310-macosx_10_9_x86_64.whl", hash = "sha256:e4c7c9f27a4185304c7caf96dc7d91bc60bc162221152de697c98eb0b2648dd8"},
@@ -3028,8 +3027,8 @@ files = [
 [package.dependencies]
 numpy = [
     {version = ">=1.20.3", markers = "python_version < \"3.10\""},
-    {version = ">=1.21.0", markers = "python_version >= \"3.10\" and python_version < \"3.11\""},
     {version = ">=1.23.2", markers = "python_version >= \"3.11\""},
+    {version = ">=1.21.0", markers = "python_version >= \"3.10\" and python_version < \"3.11\""},
 ]
 python-dateutil = ">=2.8.2"
 pytz = ">=2020.1"
@@ -4186,25 +4185,6 @@ files = [
 ]
 
 [[package]]
-name = "rtree"
-version = "1.2.0"
-description = "R-Tree spatial index for Python GIS"
-optional = true
-python-versions = ">=3.8"
-files = [
-    {file = "Rtree-1.2.0-py3-none-macosx_10_9_x86_64.whl", hash = "sha256:80813bb1a66e65033e6601e54fded428a5b710b41948c83a298943587b3c3e4f"},
-    {file = "Rtree-1.2.0-py3-none-macosx_11_0_arm64.whl", hash = "sha256:6d6d1c63d97920e4cd1fa25ee0c911be3f79a34850d19166cc27bbb8ac119001"},
-    {file = "Rtree-1.2.0-py3-none-manylinux2014_aarch64.manylinux_2_17_aarch64.whl", hash = "sha256:5faf8752763258014a10feab67fe68f79eff62f7cfaadb5c338129b3e6d6a657"},
-    {file = "Rtree-1.2.0-py3-none-manylinux2014_i686.manylinux_2_17_i686.whl", hash = "sha256:460c40d246adea80291a406a30e3e0815a1d3a6d514c0438a4235090ba8cd832"},
-    {file = "Rtree-1.2.0-py3-none-manylinux2014_x86_64.manylinux_2_17_x86_64.whl", hash = "sha256:613f2158aeba6fcb5e4aa4c076bb6de85e20c4f9fb0a8b426a71d6ff5846795b"},
-    {file = "Rtree-1.2.0-py3-none-musllinux_1_1_aarch64.whl", hash = "sha256:0b4ba127dfdbdc9e415d2bb578f6e6dff92082117722d8703b740231f7a0b1c3"},
-    {file = "Rtree-1.2.0-py3-none-musllinux_1_1_i686.whl", hash = "sha256:cd8653f0e961dcd3f3ab09e10a831885ea9feceb45be6bc761a773c314518b49"},
-    {file = "Rtree-1.2.0-py3-none-musllinux_1_1_x86_64.whl", hash = "sha256:3038f6d96bb66adb40d1cbb366a8a0676342102bc67ca5492f5734e70f38d9cd"},
-    {file = "Rtree-1.2.0-py3-none-win_amd64.whl", hash = "sha256:008d86fd8990f3ca15c06834ae597e16209b3e0a3d6512f0a3489c201011390f"},
-    {file = "Rtree-1.2.0.tar.gz", hash = "sha256:f5145f7852bf7f95c126fb16bf1a4c2ca9300ae151b07f8a0f7083ea47912675"},
-]
-
-[[package]]
 name = "send2trash"
 version = "1.8.3"
 description = "Send file to trash natively under Mac OS X, Windows and Linux"
@@ -4244,7 +4224,7 @@ type = ["importlib-metadata (>=7.0.2)", "jaraco.develop (>=7.21)", "mypy (==1.11
 name = "shapely"
 version = "2.0.6"
 description = "Manipulation and analysis of geometric objects"
-optional = true
+optional = false
 python-versions = ">=3.7"
 files = [
     {file = "shapely-2.0.6-cp310-cp310-macosx_10_9_x86_64.whl", hash = "sha256:29a34e068da2d321e926b5073539fd2a1d4429a2c656bd63f0bd4c8f5b236d0b"},
@@ -4461,7 +4441,7 @@ files = [
 name = "tzdata"
 version = "2024.1"
 description = "Provider of IANA time zone data"
-optional = true
+optional = false
 python-versions = ">=2"
 files = [
     {file = "tzdata-2024.1-py2.py3-none-any.whl", hash = "sha256:9068bc196136463f5245e51efda838afa15aaeca9903f49050dfa2679db4d252"},
@@ -4767,8 +4747,9 @@ type = ["pytest-mypy"]
 [extras]
 cli = ["click", "pyogrio", "shapely"]
 geopandas = ["geopandas", "pandas", "shapely"]
+movingpandas = ["movingpandas"]
 
 [metadata]
 lock-version = "2.0"
 python-versions = "^3.8"
-content-hash = "b5899cf19b1b2d93344d31411701f1b0992d0b7a4c4c204c8869049a5610668c"
+content-hash = "b3f974545a238954043d38ba6149a932d1e35c2e7d48401cb7fac80070bd6ac0"
