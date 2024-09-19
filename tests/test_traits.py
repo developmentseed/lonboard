@@ -445,7 +445,7 @@ def test_normal_accessor_validation_np_dtype():
 def test_normal_accessor_validation_pyarrow_array_type():
     # array type must be FixedSizeList, of length 3, of float32 type
     with pytest.raises(
-        TraitError, match="expected normal pyarrow array to be a FixedSizeList"
+        TraitError, match="expected normal Arrow array to be a FixedSizeList"
     ):
         NormalAccessorWidget(value=pa.array(np.array([1, 2, 3], dtype=np.float64)))
 
@@ -457,6 +457,6 @@ def test_normal_accessor_validation_pyarrow_array_type():
 
     np_arr = np.array([1, 2, 3], dtype=np.uint8).repeat(3, axis=0)
     with pytest.raises(
-        TraitError, match="expected pyarrow array to be floating point type"
+        TraitError, match="expected Arrow array to be floating point type"
     ):
         NormalAccessorWidget(value=pa.FixedSizeListArray.from_arrays(np_arr, 3))
