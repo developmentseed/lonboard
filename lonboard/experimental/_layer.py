@@ -8,16 +8,7 @@ from __future__ import annotations
 import sys
 from typing import TYPE_CHECKING, Optional
 
-import numpy as np
 import traitlets
-from arro3.core import (
-    Array,
-    ChunkedArray,
-    Field,
-    Table,
-    fixed_size_list_array,
-    list_array,
-)
 from arro3.core.types import ArrowStreamExportable
 
 from lonboard._constants import EXTENSION_NAME
@@ -519,54 +510,10 @@ class TripsLayer(BaseArrowLayer):
         traj_collection: TrajectoryCollection,
         **kwargs: Unpack[TripsLayerKwargs],
     ) -> Self:
-        import shapely
+        """Construct from a MovingPandas TrajectoryCollection"""
+        from lonboard._geoarrow.movingpandas_interop import movingpandas_to_geoarrow
 
-        num_coords = 0
-        num_rows = len(traj_collection)
-        offsets = np.zeros(num_rows + 1, dtype=np.int32)
-
-        for i, traj in enumerate(traj_collection.trajectories):
-            num_coords += traj.size()
-            offsets[i + 1] = num_coords
-
-        coords = np.zeros((num_coords, 2), dtype=np.float64)
-        timestamps = np.zeros(num_coords, dtype=np.int64)
-
-        for i, traj in enumerate(traj_collection.trajectories):
-            start_offset = offsets[i]
-            end_offset = offsets[i + 1]
-
-            # millisecond-based timestamps
-            int64_ms_timestamps = traj.df.index.to_series().astype(np.int64) // (
-                1000**2
-            )
-            timestamps[start_offset:end_offset] = int64_ms_timestamps
-
-            coords[start_offset:end_offset, 0] = shapely.get_x(traj.df.geometry).values
-            coords[start_offset:end_offset, 1] = shapely.get_y(traj.df.geometry).values
-
-        # offset by earliest timestamp
-        timestamps -= timestamps.min()
-
-        # Cast to float32
-        timestamps = timestamps.astype(np.float32)
-
-        coords_arr = Array.from_numpy(coords.ravel("C"))
-        coords_fixed_size_list = fixed_size_list_array(coords_arr, 2)
-        linestrings_arr = list_array(Array.from_numpy(offsets), coords_fixed_size_list)
-        timestamp_arr = list_array(
-            Array.from_numpy(offsets), Array.from_numpy(timestamps)
+        (table, timestamp_col) = movingpandas_to_geoarrow(
+            traj_collection=traj_collection
         )
-        timestamp_col = ChunkedArray([timestamp_arr])
-
-        linestrings_field = Field(
-            "geometry",
-            linestrings_arr.type,
-            nullable=True,
-            metadata={"ARROW:extension:name": "geoarrow.linestring"},
-        )
-
-        # TODO: don't add timestamps onto table
-        table = Table.from_pydict({"timestamps": timestamp_col})
-        table = table.append_column(linestrings_field, ChunkedArray([linestrings_arr]))
         return cls(table=table, get_timestamps=timestamp_col, **kwargs)
