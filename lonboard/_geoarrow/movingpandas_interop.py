@@ -100,9 +100,7 @@ def movingpandas_to_geoarrow(
         end_offset = offsets[i + 1]
 
         timestamps[start_offset:end_offset] = traj.df.index
-        coords[start_offset:end_offset, 0] = shapely.get_x(traj.df.geometry)
-        coords[start_offset:end_offset, 1] = shapely.get_y(traj.df.geometry)
-        coords[start_offset:end_offset, 2] = shapely.get_z(traj.df.geometry)
+        coords[start_offset:end_offset] = shapely.get_coordinates(traj.df.geometry.array, include_z=True)
 
         geom_col_name = traj.get_geom_col()
         df_attr = traj.df.drop(columns=[geom_col_name])
