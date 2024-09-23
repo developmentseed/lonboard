@@ -1,7 +1,7 @@
 from __future__ import annotations
 
 import json
-from typing import TYPE_CHECKING, Dict, List, Literal, Tuple
+from typing import TYPE_CHECKING, Dict, List, Tuple
 
 import numpy as np
 from arro3.core import (
@@ -79,17 +79,8 @@ def movingpandas_to_geoarrow(
     # the Z dimension is always NaN
     coords = np.zeros((num_coords, 3), dtype=np.float64)
 
-    # Infer an arrow time unit from the numpy
-    time_unit, time_arrow_dtype = infer_time_unit(datetime_dtype)
-
-    # TODO: switch this to just using `time_arrow_dtype.bit_width` once
-    # https://github.com/kylebarron/arro3/pull/190 is released
-    if time_unit in {"s", "ms"}:
-        timestamps = np.zeros(num_coords, dtype=np.int32)
-    elif time_unit in {"us", "ns"}:
-        timestamps = np.zeros(num_coords, dtype=np.int64)
-    else:
-        raise ValueError(f"Unexpected time unit: {time_unit}.")
+    arrow_timestamp_dtype = infer_timestamp_dtype(datetime_dtype)
+    timestamps = np.zeros(num_coords, dtype=np.int64)
 
     attr_schema = pa.unify_schemas(attr_schemas, promote_options="permissive")
     attr_tables: List[pa.Table] = []
@@ -145,7 +136,7 @@ def movingpandas_to_geoarrow(
         metadata=extension_metadata,
     )
 
-    timestamp_values = Array.from_numpy(timestamps).cast(time_arrow_dtype)
+    timestamp_values = Array.from_numpy(timestamps).cast(arrow_timestamp_dtype)
     timestamp_arr = list_array(offsets, timestamp_values)
     timestamp_col = ChunkedArray([timestamp_arr])
 
@@ -155,7 +146,7 @@ def movingpandas_to_geoarrow(
     return table, timestamp_col
 
 
-def infer_time_unit(dtype: np.dtype) -> Tuple[Literal["s", "ms", "us", "ns"], DataType]:
+def infer_timestamp_dtype(dtype: np.dtype) -> DataType:
     """Infer an arrow time unit from the numpy data type
 
     Raises:
@@ -163,20 +154,16 @@ def infer_time_unit(dtype: np.dtype) -> Tuple[Literal["s", "ms", "us", "ns"], Da
     """
 
     if dtype.name == "datetime64[s]":
-        code = "s"
-        return code, DataType.timestamp(code)
+        return DataType.timestamp("s")
 
     if dtype.name == "datetime64[ms]":
-        code = "ms"
-        return code, DataType.timestamp(code)
+        return DataType.timestamp("ms")
 
     if dtype.name == "datetime64[us]":
-        code = "us"
-        return code, DataType.timestamp(code)
+        return DataType.timestamp("us")
 
     if dtype.name == "datetime64[ns]":
-        code = "ns"
-        return code, DataType.timestamp(code)
+        return DataType.timestamp("ns")
 
     raise ValueError(f"Unexpected datetime type: {dtype}")
 
