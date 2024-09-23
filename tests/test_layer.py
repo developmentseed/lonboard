@@ -164,3 +164,43 @@ def test_point_cloud_layer():
     points = shapely.points([0, 1], [2, 3], [4, 5])
     gdf = gpd.GeoDataFrame(geometry=points)
     _layer = PointCloudLayer.from_geopandas(gdf)
+
+
+@pytest.mark.skipif(not compat.HAS_SHAPELY, reason="shapely not available")
+def test_layer_arrow_rechunking_geodataframe():
+    gpd = pytest.importorskip("geopandas")
+
+    path = geodatasets.get_path("naturalearth.land")
+    gdf = gpd.read_file(path)
+    elevation = np.ones(len(gdf))
+
+    layer = SolidPolygonLayer.from_geopandas(
+        gdf,
+        _rows_per_chunk=10,  # type: ignore
+        get_elevation=elevation,
+    )
+    batch_lengths = np.array([batch.num_rows for batch in layer.table.to_batches()])
+    assert np.all(batch_lengths[:-1] == 10)
+    assert batch_lengths[-1] <= 10
+
+    chunk_lengths = np.array([len(chunk) for chunk in layer.get_elevation.chunks])
+    assert np.array_equal(chunk_lengths, batch_lengths)
+
+
+def test_layer_arrow_rechunking_arrow_input():
+    path = geodatasets.get_path("naturalearth.land")
+    meta, table = read_arrow(path)
+
+    elevation = np.ones(len(table))
+
+    layer = SolidPolygonLayer(
+        table=table,
+        _rows_per_chunk=10,
+        get_elevation=elevation,
+    )
+    batch_lengths = np.array([batch.num_rows for batch in layer.table.to_batches()])
+    assert np.all(batch_lengths[:-1] == 10)
+    assert batch_lengths[-1] <= 10
+
+    chunk_lengths = np.array([len(chunk) for chunk in layer.get_elevation.chunks])
+    assert np.array_equal(chunk_lengths, batch_lengths)
