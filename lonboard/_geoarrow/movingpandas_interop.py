@@ -18,6 +18,7 @@ from arro3.core import (
 
 if TYPE_CHECKING:
     import movingpandas as mpd
+    import pandas as pd
     import pyarrow as pa
     from movingpandas import TrajectoryCollection
 
@@ -146,12 +147,16 @@ def movingpandas_to_geoarrow(
     return table, timestamp_col
 
 
-def infer_timestamp_dtype(dtype: np.dtype) -> DataType:
+def infer_timestamp_dtype(dtype: np.dtype | pd.DatetimeTZDtype) -> DataType:
     """Infer an arrow time unit from the numpy data type
 
     Raises:
         ValueError: If not a known numpy datetime dtype
     """
+    import pandas as pd
+
+    if isinstance(dtype, pd.DatetimeTZDtype):
+        return DataType.timestamp(dtype.unit, tz=str(dtype.tz))
 
     if dtype.name == "datetime64[s]":
         return DataType.timestamp("s")
