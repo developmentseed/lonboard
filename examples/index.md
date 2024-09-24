@@ -10,8 +10,13 @@
 - [Scatterplot with GPU data filtering ![](../assets/data-filter-extension.gif)](../examples/data-filter-extension) using [`ScatterplotLayer`](../api/layers/scatterplot-layer) and [`DataFilterExtension`](../api/layer-extensions/data-filter-extension)
 -  [Motor Vehicle Crashes in NYC ![](../assets/motor-vehicle-crashes-nyc.jpg)](../examples/map_challenge/1-points) using [`ScatterplotLayer`](../api/layers/scatterplot-layer)
 -  [Rivers in Asia ![](../assets/rivers-asia.jpg)](../examples/map_challenge/6-asia/) using [`PathLayer`](../api/layers/path-layer)
+-  [Inflation Reduction Act Projects ![](../assets/column-layer.jpg)](../examples/column-layer/) using [`ColumnLayer`](../api/layers/column-layer)
+
+</div>
 
 ## Integrations
+
+<div class="grid cards" markdown>
 
 -  [DuckDB Spatial ![](../assets/duckdb-heatmap.jpg)](../examples/duckdb) using [`HeatmapLayer`](../api/layers/heatmap-layer)
 -  [Color picker integration ![](../assets/color-picker.jpg)](../examples/integrations/color-picker) using [`SolidPolygonLayer`](../api/layers/solid-polygon-layer)
