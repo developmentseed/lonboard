@@ -45,7 +45,7 @@ def parse_serialized_table(table: Table) -> List[Table]:
     from shapely import GeometryType
 
     # Handle WKB/WKT input
-    crs_str = get_field_crs(field)
+    crs = get_field_crs(field)
     if extension_type_name in {EXTENSION_NAME.WKB, EXTENSION_NAME.OGC_WKB}:
         shapely_arr = shapely.from_wkb(column)
     elif extension_type_name == EXTENSION_NAME.WKT:
@@ -90,7 +90,7 @@ def parse_serialized_table(table: Table) -> List[Table]:
 
         single_type_geometry_field, single_type_geometry_arr = construct_geometry_array(
             shapely_arr[single_type_geometry_indices],
-            crs_str=crs_str,
+            crs=crs,
         )
 
         concatted_table = table.combine_chunks()
