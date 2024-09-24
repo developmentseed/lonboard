@@ -169,7 +169,7 @@ def construct_geometry_array(
     include_z: Optional[bool] = None,
     *,
     field_name: str = "geometry",
-    crs_str: Optional[str] = None,
+    crs: Optional[dict] = None,
 ) -> Tuple[Field, Array]:
     import shapely
     from shapely import GeometryType
@@ -187,8 +187,8 @@ def construct_geometry_array(
         raise ValueError(f"Unexpected coords dimensions: {coords.shape}")
 
     extension_metadata: Dict[str, str] = {}
-    if crs_str is not None:
-        extension_metadata["ARROW:extension:metadata"] = json.dumps({"crs": crs_str})
+    if crs is not None:
+        extension_metadata["ARROW:extension:metadata"] = json.dumps({"crs": crs})
 
     if geom_type == GeometryType.POINT:
         arrow_coords = fixed_size_list_array(
