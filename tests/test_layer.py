@@ -187,6 +187,7 @@ def test_layer_arrow_rechunking_geodataframe():
     assert np.array_equal(chunk_lengths, batch_lengths)
 
 
+@pytest.mark.skipif(not compat.HAS_SHAPELY, reason="shapely not available")
 def test_layer_arrow_rechunking_arrow_input():
     path = geodatasets.get_path("naturalearth.land")
     meta, table = read_arrow(path)
