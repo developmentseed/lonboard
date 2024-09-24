@@ -89,9 +89,8 @@ nav:
       - ecosystem/jupyter-widgets.md
       - ecosystem/panel.md
       - ecosystem/shiny.md
-
-  # - Caveats: caveats.md
   - Performance: performance.md
+  - troubleshooting.md
   - Changelog: CHANGELOG.md
   - Alternatives: alternatives.md
   - "How it works?":
