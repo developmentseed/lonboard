@@ -33,7 +33,7 @@ from lonboard._geoarrow.geopandas_interop import geopandas_to_geoarrow
 from lonboard._geoarrow.ops import reproject_table
 from lonboard._geoarrow.ops.bbox import Bbox, total_bounds
 from lonboard._geoarrow.ops.centroid import WeightedCentroid, weighted_centroid
-from lonboard._geoarrow.ops.coord_layout import transpose_table
+from lonboard._geoarrow.ops.coord_layout import make_geometry_interleaved
 from lonboard._geoarrow.parse_wkb import parse_serialized_table
 from lonboard._serialization import infer_rows_per_chunk
 from lonboard._utils import auto_downcast as _auto_downcast
@@ -337,10 +337,10 @@ class BaseArrowLayer(BaseLayer):
         parsed_tables = parse_serialized_table(table_o3)
         assert len(parsed_tables) == 1, (
             "Mixed geometry type input not supported here. Use the top "
-            "level viz() function or separate your geometry types in advanced."
+            "level viz() function or separate your geometry types in advance."
         )
         table_o3 = parsed_tables[0]
-        table_o3 = transpose_table(table_o3)
+        table_o3 = make_geometry_interleaved(table_o3)
 
         # Reproject table to WGS84 if needed
         # Note this must happen before calculating the default viewport
@@ -356,6 +356,8 @@ class BaseArrowLayer(BaseLayer):
             raise ValueError("Cannot serialize table with 0 rows per chunk.")
 
         self._rows_per_chunk = rows_per_chunk
+
+        table_o3 = table_o3.rechunk(max_chunksize=rows_per_chunk)
 
         super().__init__(table=table_o3, **kwargs)
 

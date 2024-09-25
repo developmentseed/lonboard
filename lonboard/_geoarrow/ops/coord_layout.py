@@ -23,7 +23,7 @@ from lonboard._geoarrow.ops.reproject import (
 from lonboard._utils import get_geometry_column_index
 
 
-def transpose_table(
+def make_geometry_interleaved(
     table: Table,
 ) -> Table:
     """Convert geometry columns in table to interleaved coordinate layout"""

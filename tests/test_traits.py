@@ -163,10 +163,11 @@ def test_float_accessor_validation_type():
     FloatAccessorWidget(value=pd.Series([2, 3, 4], dtype=np.float32))
     FloatAccessorWidget(value=pd.Series([2, 3, 4], dtype=np.float64))
 
-    # Must be floating-point array type
+    # Must be numeric array type
     with pytest.raises(TraitError):
-        FloatAccessorWidget(value=pa.array(np.array([2, 3, 4])))
+        FloatAccessorWidget(value=pa.array(np.array(["2", "3", "4"])))
 
+    FloatAccessorWidget(value=pa.array(np.array([2, 3, 4], dtype=np.int32)))
     FloatAccessorWidget(value=pa.array(np.array([2, 3, 4], dtype=np.float32)))
     FloatAccessorWidget(value=pa.array(np.array([2, 3, 4], dtype=np.float64)))
 
