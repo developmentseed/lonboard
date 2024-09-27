@@ -2,7 +2,7 @@ from __future__ import annotations
 
 import math
 import warnings
-from typing import TYPE_CHECKING, Any, Tuple
+from typing import TYPE_CHECKING, Any
 
 import arro3.compute as ac
 from arro3.core import (
@@ -18,7 +18,7 @@ from arro3.core import (
 from traitlets.traitlets import TraitType
 
 from lonboard._constants import MAX_INTEGER_FLOAT32, MIN_INTEGER_FLOAT32
-from lonboard._serialization import ACCESSOR_SERIALIZATION
+from lonboard._serialization import TIMESTAMP_ACCESSOR_SERIALIZATION
 from lonboard._utils import get_geometry_column_index
 from lonboard.traits import FixedErrorTraitType
 
@@ -53,7 +53,7 @@ class TimestampAccessor(FixedErrorTraitType):
         **kwargs: Any,
     ) -> None:
         super().__init__(*args, **kwargs)
-        self.tag(sync=True, **ACCESSOR_SERIALIZATION)
+        self.tag(sync=True, **TIMESTAMP_ACCESSOR_SERIALIZATION)
 
     def reduce_precision(
         self, obj: BaseArrowLayer, value: ChunkedArray
@@ -189,7 +189,7 @@ class TimestampAccessor(FixedErrorTraitType):
                     info="timestamp array's offsets to match geometry array's offsets.",
                 )
 
-    def validate(self, obj: BaseArrowLayer, value) -> Tuple[Scalar, ChunkedArray]:
+    def validate(self, obj: BaseArrowLayer, value) -> ChunkedArray:
         if hasattr(value, "__arrow_c_array__"):
             value = ChunkedArray([Array.from_arrow(value)])
         elif hasattr(value, "__arrow_c_stream__"):
@@ -210,6 +210,4 @@ class TimestampAccessor(FixedErrorTraitType):
         value = self.reduce_precision(obj, value)
         value = value.rechunk(max_chunksize=obj._rows_per_chunk)
         self.validate_timestamp_offsets(obj, value)
-
-        min_timestamp = ac.min(list_flatten(value))
-        return min_timestamp, value
+        return value

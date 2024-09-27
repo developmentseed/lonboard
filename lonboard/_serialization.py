@@ -2,16 +2,28 @@ from __future__ import annotations
 
 import math
 from io import BytesIO
-from typing import TYPE_CHECKING, List, Optional, Tuple, Union
+from typing import TYPE_CHECKING, List, Optional, Union, overload
 
-import numpy as np
-from arro3.core import Array, ChunkedArray, RecordBatch, Table
+import arro3.compute as ac
+from arro3.core import (
+    Array,
+    ChunkedArray,
+    DataType,
+    RecordBatch,
+    Scalar,
+    Table,
+    list_array,
+    list_flatten,
+    list_offsets,
+)
 from traitlets import TraitError
 
+from lonboard._constants import MIN_INTEGER_FLOAT32
 from lonboard.models import ViewState
 
 if TYPE_CHECKING:
-    from numpy.typing import NDArray
+    from lonboard._layer import BaseArrowLayer
+    from lonboard.experimental._layer import TripsLayer
 
 
 DEFAULT_PARQUET_COMPRESSION = "ZSTD"
@@ -91,7 +103,20 @@ def serialize_pyarrow_column(
     return serialize_table_to_parquet(pyarrow_table, max_chunksize=max_chunksize)
 
 
-def serialize_accessor(data: Union[List[int], Tuple[int], NDArray[np.uint8]], obj):
+@overload
+def serialize_accessor(
+    data: ChunkedArray,
+    obj: BaseArrowLayer,
+) -> List[bytes]: ...
+@overload
+def serialize_accessor(
+    data: Union[str, int, float, list, tuple, bytes],
+    obj: BaseArrowLayer,
+) -> Union[str, int, float, list, tuple, bytes]: ...
+def serialize_accessor(
+    data: Union[str, int, float, list, tuple, bytes, ChunkedArray],
+    obj: BaseArrowLayer,
+):
     if data is None:
         return None
 
@@ -100,12 +125,12 @@ def serialize_accessor(data: Union[List[int], Tuple[int], NDArray[np.uint8]], ob
     if isinstance(data, (str, int, float, list, tuple, bytes)):
         return data
 
-    assert isinstance(data, (ChunkedArray, Array))
+    assert isinstance(data, ChunkedArray)
     validate_accessor_length_matches_table(data, obj.table)
     return serialize_pyarrow_column(data, max_chunksize=obj._rows_per_chunk)
 
 
-def serialize_table(data, obj):
+def serialize_table(data: Table, obj: BaseArrowLayer):
     assert isinstance(data, Table), "expected Arrow table"
     return serialize_table_to_parquet(data, max_chunksize=obj._rows_per_chunk)
 
@@ -135,5 +160,36 @@ def serialize_view_state(data: Optional[ViewState], obj):
     return data._asdict()
 
 
+# timestamps = layer.get_timestamps
+def serialize_timestamp_accessor(
+    timestamps: ChunkedArray, obj: TripsLayer
+) -> List[bytes]:
+    """
+    Subtract off min timestamp to fit into f32 integer range.
+
+    Then cast to float32.
+    """
+    # Cast to int64 type
+    timestamps = timestamps.cast(DataType.list(DataType.int64()))
+
+    min_timestamp = ac.min(list_flatten(timestamps))
+    start_offset_adjustment = Scalar(
+        MIN_INTEGER_FLOAT32 - min_timestamp.as_py(), type=DataType.int64()
+    )
+
+    list_offsets_iter = list_offsets(timestamps)
+    inner_values_iter = list_flatten(timestamps)
+
+    offsetted_chunks = []
+    for offsets, inner_values in zip(list_offsets_iter, inner_values_iter):
+        offsetted_values = ac.add(inner_values, start_offset_adjustment)
+        f32_values = offsetted_values.cast(DataType.int64()).cast(DataType.float32())
+        offsetted_chunks.append(list_array(offsets, f32_values))
+
+    f32_timestamps_col = ChunkedArray(offsetted_chunks)
+    return serialize_accessor(f32_timestamps_col, obj)
+
+
 ACCESSOR_SERIALIZATION = {"to_json": serialize_accessor}
+TIMESTAMP_ACCESSOR_SERIALIZATION = {"to_json": serialize_timestamp_accessor}
 TABLE_SERIALIZATION = {"to_json": serialize_table}
