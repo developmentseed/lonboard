@@ -2,7 +2,7 @@ from __future__ import annotations
 
 import math
 import warnings
-from typing import TYPE_CHECKING, Any
+from typing import TYPE_CHECKING, Any, Tuple
 
 import arro3.compute as ac
 from arro3.core import (
@@ -189,7 +189,7 @@ class TimestampAccessor(FixedErrorTraitType):
                     info="timestamp array's offsets to match geometry array's offsets.",
                 )
 
-    def validate(self, obj: BaseArrowLayer, value) -> ChunkedArray:
+    def validate(self, obj: BaseArrowLayer, value) -> Tuple[Scalar, ChunkedArray]:
         if hasattr(value, "__arrow_c_array__"):
             value = ChunkedArray([Array.from_arrow(value)])
         elif hasattr(value, "__arrow_c_stream__"):
@@ -210,4 +210,6 @@ class TimestampAccessor(FixedErrorTraitType):
         value = self.reduce_precision(obj, value)
         value = value.rechunk(max_chunksize=obj._rows_per_chunk)
         self.validate_timestamp_offsets(obj, value)
-        return value
+
+        min_timestamp = ac.min(list_flatten(value))
+        return min_timestamp, value
