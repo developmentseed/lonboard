@@ -188,7 +188,7 @@ class ArrowTableTrait(FixedErrorTraitType):
             **TABLE_SERIALIZATION,
         )
 
-    def validate(self, obj: HasTraits | None, value: Any):
+    def validate(self, obj: BaseArrowLayer, value: Any):
         if not isinstance(value, Table):
             self.error(obj, value)
 
@@ -232,7 +232,7 @@ class ArrowTableTrait(FixedErrorTraitType):
                 msg = " or ".join(map(str, list(allowed_dimensions)))
                 self.error(obj, value, info=f"{msg}-dimensional points")
 
-        return value
+        return value.rechunk(max_chunksize=obj._rows_per_chunk)
 
 
 class ColorAccessor(FixedErrorTraitType):

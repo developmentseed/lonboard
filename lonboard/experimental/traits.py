@@ -10,6 +10,7 @@ from arro3.core import (
     ChunkedArray,
     DataType,
     Scalar,
+    Table,
     list_array,
     list_flatten,
     list_offsets,
@@ -18,6 +19,7 @@ from traitlets.traitlets import TraitType
 
 from lonboard._constants import MAX_INTEGER_FLOAT32, MIN_INTEGER_FLOAT32
 from lonboard._serialization import ACCESSOR_SERIALIZATION
+from lonboard._utils import get_geometry_column_index
 from lonboard.traits import FixedErrorTraitType
 
 if TYPE_CHECKING:
@@ -164,6 +166,29 @@ class TimestampAccessor(FixedErrorTraitType):
 
         return ChunkedArray(reduced_precision_chunks)
 
+    def validate_timestamp_offsets(self, obj: BaseArrowLayer, value: ChunkedArray):
+        """
+        Validate that the offsets of the list array used for the timestamp column match
+        the offsets of the list array used for the LineString array in the geometry
+        column.
+        """
+        table: Table = obj.table
+        geom_idx = get_geometry_column_index(table.schema)
+        assert geom_idx is not None
+        geom_col = table.column(geom_idx)
+
+        # TODO: this chunking may not match depending on whether the table has already
+        # been rechunked by this point.
+        for geom_chunk, timestamp_chunk in zip(geom_col.chunks, value.chunks):
+            geom_offsets = list_offsets(geom_chunk)
+            timestamp_offsets = list_offsets(timestamp_chunk)
+            if geom_offsets != timestamp_offsets:
+                self.error(
+                    obj,
+                    value,
+                    info="timestamp array's offsets to match geometry array's offsets.",
+                )
+
     def validate(self, obj: BaseArrowLayer, value) -> ChunkedArray:
         if hasattr(value, "__arrow_c_array__"):
             value = ChunkedArray([Array.from_arrow(value)])
@@ -183,4 +208,6 @@ class TimestampAccessor(FixedErrorTraitType):
             self.error(obj, value, info="timestamp array to have a temporal child.")
 
         value = self.reduce_precision(obj, value)
-        return value.rechunk(max_chunksize=obj._rows_per_chunk)
+        value = value.rechunk(max_chunksize=obj._rows_per_chunk)
+        self.validate_timestamp_offsets(obj, value)
+        return value
