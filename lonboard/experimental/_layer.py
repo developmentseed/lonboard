@@ -351,7 +351,34 @@ class TextLayer(BaseArrowLayer):
 
 
 class TripsLayer(BaseArrowLayer):
-    """ """
+    """The `TripsLayer` renders animated paths that represent vehicle trips.
+
+    The easiest way to create a `TripsLayer` is by using the
+    [`from_movingpandas`][lonboard.experimental.TripsLayer.from_movingpandas]
+    constructor, where you can pass in a [`movingpandas.TrajectoryCollection`][].
+
+    Otherwise, this layer requires a specific Arrow input data schema to associate the
+    timestamp of each coordinate with the spatial information in the `LineString`
+    geometries. Read the call out note below.
+
+    In order to animate this layer, you should pair it with an
+    [`ipywidgets.Play`][ipywidgets.widgets.widget_int.Play] widget.
+
+    !!! info
+
+        Read this if you'd like to understand how to pass custom Arrow data into this
+        layer.
+
+        As with all layers, you can pass an Arrow `Table` into the `table` parameter of
+        this layer. In the case of the `TripsLayer`, there must be one column in the
+        table that is a GeoArrow `LineString` geometry column, tagged with the
+        `geoarrow.linestring` extension name. Additionally, the
+        [`get_timestamps`][lonboard.experimental.TripsLayer.get_timestamps] accessor
+        needs to be an Arrow list-typed column with a timestamp-typed child array. The
+        `get_timestamps` column must have the **exact same nesting** as the `LineString`
+        column. That is, there must be one timestamp for every coordinate in the
+        `LineString` column. This is validated in data input.
+    """
 
     _layer_type = traitlets.Unicode("trip").tag(sync=True)
 
@@ -486,7 +513,7 @@ class TripsLayer(BaseArrowLayer):
     """
     The timestamp of each coordinate.
 
-    - Type: [TimestampAccessor][lonboard.traits.TimestampAccessor]
+    - Type: [TimestampAccessor][lonboard.experimental.traits.TimestampAccessor]
     """
 
     def __init__(
@@ -497,6 +524,15 @@ class TripsLayer(BaseArrowLayer):
         _rows_per_chunk: Optional[int] = None,
         **kwargs: Unpack[TripsLayerKwargs],
     ):
+        """Construct a TripsLayer from existing Arrow data.
+
+        Args:
+            table: An Arrow table from any Arrow-compatible library with a
+                `geoarrow.linestring` geometry column.
+            get_timestamps: An Arrow column or ChunkedArray with timestamps that
+                correspond to the `LineString` geometries in the main table. This column
+                must be a list-typed array containing a timestamp-typed child array.
+        """
         super().__init__(
             table=table,
             _rows_per_chunk=_rows_per_chunk,
@@ -510,7 +546,22 @@ class TripsLayer(BaseArrowLayer):
         traj_collection: TrajectoryCollection,
         **kwargs: Unpack[TripsLayerKwargs],
     ) -> Self:
-        """Construct from a MovingPandas TrajectoryCollection"""
+        """
+        Construct a TripsLayer from a MovingPandas
+        [`TrajectoryCollection`][movingpandas.TrajectoryCollection].
+
+        This is the simplest way to construct a `TripsLayer`. Under the hood, this
+        constructor will convert the `TrajectoryCollection` to a GeoArrow table with a
+        `LineString` geometry column for each row. It will also create a Timestamp Arrow
+        column from the TrajectoryCollection's [`DatetimeIndex`][pandas.DatetimeIndex].
+
+        Args:
+            traj_collection: the trajectory collection
+
+        Other args:
+            kwargs: keyword args to pass to the `TripsLayer` constructor.
+
+        """
         from lonboard._geoarrow.movingpandas_interop import movingpandas_to_geoarrow
 
         (table, timestamp_col) = movingpandas_to_geoarrow(
