@@ -55,7 +55,7 @@ class TimestampAccessor(FixedErrorTraitType):
         super().__init__(*args, **kwargs)
         self.tag(sync=True, **TIMESTAMP_ACCESSOR_SERIALIZATION)
 
-    def reduce_precision(
+    def _reduce_precision(
         self, obj: BaseArrowLayer, value: ChunkedArray
     ) -> ChunkedArray:
         # First, find the "spread" of existing values: the range between min and max of
@@ -166,7 +166,7 @@ class TimestampAccessor(FixedErrorTraitType):
 
         return ChunkedArray(reduced_precision_chunks)
 
-    def validate_timestamp_offsets(self, obj: BaseArrowLayer, value: ChunkedArray):
+    def _validate_timestamp_offsets(self, obj: BaseArrowLayer, value: ChunkedArray):
         """
         Validate that the offsets of the list array used for the timestamp column match
         the offsets of the list array used for the LineString array in the geometry
@@ -207,7 +207,7 @@ class TimestampAccessor(FixedErrorTraitType):
         if not DataType.is_temporal(value_type):
             self.error(obj, value, info="timestamp array to have a temporal child.")
 
-        value = self.reduce_precision(obj, value)
+        value = self._reduce_precision(obj, value)
         value = value.rechunk(max_chunksize=obj._rows_per_chunk)
-        self.validate_timestamp_offsets(obj, value)
+        self._validate_timestamp_offsets(obj, value)
         return value

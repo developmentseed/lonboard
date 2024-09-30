@@ -80,6 +80,7 @@ nav:
           - Layers:
               - api/layers/arc-layer.md
               - api/layers/text-layer.md
+              - api/layers/trips-layer.md
   - cli.md
   - Ecosystem:
       - ecosystem/index.md
@@ -182,6 +183,7 @@ plugins:
             - https://ipywidgets.readthedocs.io/en/stable/objects.inv
             - https://kylebarron.dev/arro3/latest/objects.inv
             - https://matplotlib.org/stable/objects.inv
+            - https://movingpandas.readthedocs.io/en/main/objects.inv
             - https://numpy.org/doc/stable/objects.inv
             - https://pandas.pydata.org/pandas-docs/stable/objects.inv
             - https://pola-rs.github.io/polars/py-polars/html/objects.inv
