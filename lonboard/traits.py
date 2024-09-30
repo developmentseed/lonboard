@@ -323,8 +323,8 @@ class ColorAccessor(FixedErrorTraitType):
                     obj,
                     value,
                     info=(
-                        "Color string must be a hex string interpretable by "
-                        "matplotlib.colors.to_rgba."
+                        "Color string must be a named color or hex string interpretable"
+                        " by matplotlib.colors.to_rgba."
                     ),
                 )
 
