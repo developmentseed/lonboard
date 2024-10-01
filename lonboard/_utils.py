@@ -214,6 +214,13 @@ def indices_by_geometry_type(
     return point_indices, linestring_indices, polygon_indices
 
 
+def timestamp_start_offset(timestamps: ChunkedArray) -> int:
+    timestamps = timestamps.cast(DataType.list(DataType.int64()))
+
+    min_timestamp = ac.min(list_flatten(timestamps))
+    return MIN_INTEGER_FLOAT32 - min_timestamp.as_py()
+
+
 def timestamp_max_physical_value(timestamps: ChunkedArray) -> int:
     # Cast to int64 type
     timestamps = timestamps.cast(DataType.list(DataType.int64()))

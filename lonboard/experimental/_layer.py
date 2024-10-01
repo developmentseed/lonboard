@@ -6,16 +6,17 @@
 from __future__ import annotations
 
 import sys
-from datetime import timedelta
+from datetime import datetime, timedelta
 from typing import TYPE_CHECKING, Optional
 
 import ipywidgets
 import traitlets
+from arro3.core import DataType, Scalar
 from arro3.core.types import ArrowStreamExportable
 
 from lonboard._constants import EXTENSION_NAME, MIN_INTEGER_FLOAT32
 from lonboard._layer import BaseArrowLayer
-from lonboard._utils import timestamp_max_physical_value
+from lonboard._utils import timestamp_max_physical_value, timestamp_start_offset
 from lonboard.experimental.traits import TimestampAccessor
 from lonboard.traits import (
     ArrowTableTrait,
@@ -654,6 +655,19 @@ class TripsLayer(BaseArrowLayer):
         )
 
         return play_widget
+
+    def current_time_as_datetime(self) -> datetime:
+        """Get the current time of the map as a `datetime` object.
+
+        Returns:
+            datetime object with current time.
+        """
+        start_offset = timestamp_start_offset(self.get_timestamps)
+        timestamp_int = int(self.current_time - start_offset)
+        timestamp_scalar = Scalar(timestamp_int, type=DataType.int64()).cast(
+            self.get_timestamps.type.value_type
+        )
+        return timestamp_scalar.as_py()
 
     def stop_animation(self):
         """Stop any existing animation.

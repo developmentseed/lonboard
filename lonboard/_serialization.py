@@ -18,7 +18,7 @@ from arro3.core import (
 )
 from traitlets import TraitError
 
-from lonboard._constants import MIN_INTEGER_FLOAT32
+from lonboard._utils import timestamp_start_offset
 from lonboard.models import ViewState
 
 if TYPE_CHECKING:
@@ -172,9 +172,8 @@ def serialize_timestamp_accessor(
     # Cast to int64 type
     timestamps = timestamps.cast(DataType.list(DataType.int64()))
 
-    min_timestamp = ac.min(list_flatten(timestamps))
     start_offset_adjustment = Scalar(
-        MIN_INTEGER_FLOAT32 - min_timestamp.as_py(), type=DataType.int64()
+        timestamp_start_offset(timestamps), type=DataType.int64()
     )
 
     list_offsets_iter = list_offsets(timestamps)
