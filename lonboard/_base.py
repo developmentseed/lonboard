@@ -37,5 +37,7 @@ class BaseAnyWidget(AnyWidget):
 
 
 class BaseExtension(BaseWidget):
+    _extension_type: traitlets.Unicode
+
     _layer_traits: Dict[str, traitlets.TraitType] = {}
     """Traits from this extension to dynamically assign onto a layer."""

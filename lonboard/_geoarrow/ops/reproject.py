@@ -104,7 +104,10 @@ def reproject_column(
             return field, column
 
     # NOTE: Not sure the best place to put this warning
-    warnings.warn("Input being reprojected to EPSG:4326 CRS")
+    warnings.warn(
+        "Input being reprojected to EPSG:4326 CRS.\n"
+        "Lonboard is only able to render data in EPSG:4326 projection."
+    )
 
     transformer = TransformerFromCRS(existing_crs, to_crs, always_xy=True)
 

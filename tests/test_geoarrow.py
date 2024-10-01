@@ -46,8 +46,10 @@ def test_geoarrow_table_reprojection():
         b"ARROW:extension:metadata" in geom_field.metadata
     ), "Metadata key should exist"
 
-    crs_str = json.loads(geom_field.metadata[b"ARROW:extension:metadata"])["crs"]
-    assert gdf.crs == CRS.from_json(crs_str), "round trip crs should match gdf crs"
+    crs_dict = json.loads(geom_field.metadata[b"ARROW:extension:metadata"])["crs"]
+    assert gdf.crs == CRS.from_json_dict(
+        crs_dict
+    ), "round trip crs should match gdf crs"
 
     layer = SolidPolygonLayer(table=table)
 
