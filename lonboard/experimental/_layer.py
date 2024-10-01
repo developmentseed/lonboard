@@ -6,13 +6,16 @@
 from __future__ import annotations
 
 import sys
+from datetime import timedelta
 from typing import TYPE_CHECKING, Optional
 
+import ipywidgets
 import traitlets
 from arro3.core.types import ArrowStreamExportable
 
-from lonboard._constants import EXTENSION_NAME
+from lonboard._constants import EXTENSION_NAME, MIN_INTEGER_FLOAT32
 from lonboard._layer import BaseArrowLayer
+from lonboard._utils import timestamp_max_physical_value
 from lonboard.experimental.traits import TimestampAccessor
 from lonboard.traits import (
     ArrowTableTrait,
@@ -361,13 +364,18 @@ class TripsLayer(BaseArrowLayer):
     timestamp of each coordinate with the spatial information in the `LineString`
     geometries. Read the call out note below.
 
-    In order to animate this layer, you should pair it with an
-    [`ipywidgets.Play`][ipywidgets.widgets.widget_int.Play] widget.
+    In order to animate this layer, call the
+    [`animate`][lonboard.experimental.TripsLayer.animate] method.
 
-    !!! info
+    !!! warning
 
-        Read this if you'd like to understand how to pass custom Arrow data into this
-        layer.
+        The TripsLayer renders data representing a specific instance in time based on
+        the [`current_time`][lonboard.experimental.TripsLayer.current_time] attribute.
+        If you don't see any data, the `current_time` may not be set correctly. Use the
+        [`animate`][lonboard.experimental.TripsLayer.animate] method to automatically
+        set `current_time`.
+
+    !!! info "Passing in custom Arrow data"
 
         As with all layers, you can pass an Arrow `Table` into the `table` parameter of
         this layer. In the case of the `TripsLayer`, there must be one column in the
@@ -378,6 +386,13 @@ class TripsLayer(BaseArrowLayer):
         `get_timestamps` column must have the **exact same nesting** as the `LineString`
         column. That is, there must be one timestamp for every coordinate in the
         `LineString` column. This is validated in data input.
+    """
+
+    _animation_link: ipywidgets.widgets.widget_link.DirectionalLink | None = None
+    """
+    An ipywidgets link created and managed by `animate`. A reference is stored here so
+    that we can call `unlink` on the previous link object if `animate` is called
+    multiple times.
     """
 
     _layer_type = traitlets.Unicode("trip").tag(sync=True)
@@ -482,7 +497,14 @@ class TripsLayer(BaseArrowLayer):
     """The current time of the frame.
 
     - Type: `float`, optional
-    - Default: `0`
+    - Default: set by the [`animate`][lonboard.experimental.TripsLayer.animate] method.
+
+    !!! info
+        This `current_time` is not directly interpretable.
+
+        Because of some technical details in deck.gl (the fact that deck.gl represents
+        timestamps as `float32`), the `TripsLayer` automatically rescales the input
+        timestamp data to a range representable by `float32`.
     """
 
     get_color = ColorAccessor(None, allow_none=True)
@@ -558,7 +580,7 @@ class TripsLayer(BaseArrowLayer):
         Args:
             traj_collection: the trajectory collection
 
-        Other args:
+        Keyword Args:
             kwargs: keyword args to pass to the `TripsLayer` constructor.
 
         """
@@ -568,3 +590,81 @@ class TripsLayer(BaseArrowLayer):
             traj_collection=traj_collection
         )
         return cls(table=table, get_timestamps=timestamp_col, **kwargs)
+
+    def animate(self, *, step: timedelta, interval: int = 20) -> ipywidgets.Play:
+        """
+        Animate this layer with an
+        [`ipywidgets.Play`][ipywidgets.widgets.widget_int.Play] controller.
+
+        As an example, passing `step=timedelta(seconds=60)` will set each time step of
+        the animation to be 60 "data seconds". Setting `interval=100` would cause there
+        to be one animation step every 100 milliseconds, or 10 animation steps per
+        second. So if you wish to run your animation at 50 frames per second, set
+        `interval` to `1000 / 50 = 20`.
+
+        Note that depending on the size of your data, it may not actually update at the
+        number of frames per second implied by `interval`.
+
+        If you call `animate` multiple times, only the most recently produced `Play`
+        widget will be active and linked to the map.
+
+        Keyword Args:
+            step: the length of time in the data to progress between each animation
+                frame.
+            interval: the number of milliseconds between each animation frame. Defaults
+                to `20`, or 50 frames per second.
+
+        Returns:
+            an [`ipywidgets.Play`][ipywidgets.widgets.widget_int.Play] controller
+        """
+        assert isinstance(step, timedelta), "expected step to be a timedelta."
+
+        time_unit = self.get_timestamps.type.value_type.time_unit
+        assert time_unit is not None
+
+        # Convert the `step` into the units used by the timestamps on the layer.
+        if time_unit == "s":
+            resolved_step = step.total_seconds()
+        elif time_unit == "ms":
+            resolved_step = step.total_seconds() * 1000
+        elif time_unit == "us":
+            resolved_step = step.total_seconds() * 1000**2
+        elif time_unit == "ns":
+            resolved_step = step.total_seconds() * 1000**3
+        else:
+            assert False, f"Unexpected time unit {time_unit}"
+
+        # Unlink any previous animation widget
+        self.stop_animation()
+
+        max_value = timestamp_max_physical_value(self.get_timestamps)
+        play_widget = ipywidgets.Play(
+            value=MIN_INTEGER_FLOAT32,
+            min=MIN_INTEGER_FLOAT32,
+            max=max_value,
+            step=resolved_step,
+            interval=interval,
+            repeat=True,
+        )
+
+        # Store a reference to the widget link
+        self._animation_link = ipywidgets.jsdlink(
+            (play_widget, "value"),
+            (self, "current_time"),
+        )
+
+        return play_widget
+
+    def stop_animation(self):
+        """Stop any existing animation.
+
+        This will
+        [unlink](https://ipywidgets.readthedocs.io/en/latest/examples/Widget%20Basics.html#unlinking-widgets)
+        the linking between the `Play` widget generated by `animate` and the layer.
+
+        To reanimate the map, call [`animate`][lonboard.experimental.TripsLayer.animate]
+        again.
+        """
+        if self._animation_link is not None:
+            self._animation_link.unlink()
+            self._animation_link = None

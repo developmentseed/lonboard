@@ -160,7 +160,6 @@ def serialize_view_state(data: Optional[ViewState], obj):
     return data._asdict()
 
 
-# timestamps = layer.get_timestamps
 def serialize_timestamp_accessor(
     timestamps: ChunkedArray, obj: TripsLayer
 ) -> List[bytes]:
@@ -169,6 +168,7 @@ def serialize_timestamp_accessor(
 
     Then cast to float32.
     """
+    # Note: this has some overlap with `timestamp_max_physical_value` in utils.
     # Cast to int64 type
     timestamps = timestamps.cast(DataType.list(DataType.int64()))
 
