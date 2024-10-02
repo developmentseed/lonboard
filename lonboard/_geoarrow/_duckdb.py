@@ -231,10 +231,9 @@ def _convert_box2d_to_geoarrow_polygon_array(
     geom_offsets = np.arange(0, len(ring_offsets), dtype=np.int32)
 
     # Construct the final PolygonArray
-    flat_coords: Array = Array.from_numpy(coords.ravel("C"))
-    coords = fixed_size_list_array(flat_coords, 2)
-    ring_array = list_array(Array.from_numpy(ring_offsets), coords)
-    polygon_array = list_array(Array.from_numpy(geom_offsets), ring_array)
+    coords = fixed_size_list_array(coords.ravel("C"), 2)
+    ring_array = list_array(ring_offsets, coords)
+    polygon_array = list_array(geom_offsets, ring_array)
     return polygon_array
 
 
