@@ -22,8 +22,9 @@ from typing import (
 )
 
 import ipywidgets
+import numpy as np
 import traitlets
-from arro3.core import Table
+from arro3.core import Array, ChunkedArray, Table
 from arro3.core.types import ArrowStreamExportable
 
 from lonboard._base import BaseExtension, BaseWidget
@@ -38,6 +39,7 @@ from lonboard._geoarrow.parse_wkb import parse_serialized_table
 from lonboard._serialization import infer_rows_per_chunk
 from lonboard._utils import auto_downcast as _auto_downcast
 from lonboard._utils import get_geometry_column_index, remove_extension_kwargs
+from lonboard.layer_extension import DataFilterExtension
 from lonboard.traits import (
     ArrowTableTrait,
     ColorAccessor,
@@ -48,6 +50,7 @@ from lonboard.traits import (
 
 if TYPE_CHECKING:
     import geopandas as gpd
+    import quak
 
     from lonboard.types.layer import (
         BaseLayerKwargs,
@@ -102,6 +105,9 @@ class BaseLayer(BaseWidget):
             self.set_trait(prop_name, prop_value)
             added_names.append(prop_name)
 
+        print("added_names")
+        print(added_names)
+
         self.send_state(added_names)
 
     # TODO: validate that only one extension per type is included. E.g. you can't have
@@ -129,6 +135,8 @@ class BaseLayer(BaseWidget):
             # the `Widget` implementation, `send_state` will fail, even if the user
             # passes in a value, because `send_state` is called before we call
             # `super().__init__()`
+            print("calling add traits")
+            print(extension._layer_traits)
             traitlets.HasTraits.add_traits(self, **extension._layer_traits)
 
             # Note: This is part of `Widget.add_traits` (in the direct superclass) that
@@ -137,55 +145,52 @@ class BaseLayer(BaseWidget):
                 if trait.get_metadata("sync"):
                     self.keys.append(name)
 
-    # This doesn't currently work due to I think some race conditions around syncing
-    # traits vs the other parameters.
+    def add_extension(self, extension: BaseExtension, **props):
+        """Add a new layer extension to an existing layer instance.
 
-    # def add_extension(self, extension: BaseExtension, **props):
-    #     """Add a new layer extension to an existing layer instance.
+        Any properties for the added extension should also be passed as keyword
+        arguments to this function.
 
-    #     Any properties for the added extension should also be passed as keyword
-    #     arguments to this function.
+        Examples:
 
-    #     Examples:
+        ```py
+        from lonboard import ScatterplotLayer
+        from lonboard.layer_extension import DataFilterExtension
 
-    #     ```py
-    #     from lonboard import ScatterplotLayer
-    #     from lonboard.layer_extension import DataFilterExtension
+        gdf = geopandas.GeoDataFrame(...)
+        layer = ScatterplotLayer.from_geopandas(gdf)
 
-    #     gdf = geopandas.GeoDataFrame(...)
-    #     layer = ScatterplotLayer.from_geopandas(gdf)
+        extension = DataFilterExtension(filter_size=1)
+        filter_values = gdf["filter_column"]
 
-    #     extension = DataFilterExtension(filter_size=1)
-    #     filter_values = gdf["filter_column"]
+        layer.add_extension(
+            extension,
+            get_filter_value=filter_values,
+            filter_range=[0, 1]
+        )
+        ```
 
-    #     layer.add_extension(
-    #         extension,
-    #         get_filter_value=filter_values,
-    #         filter_range=[0, 1]
-    #     )
-    #     ```
+        Args:
+            extension: The new extension to add.
 
-    #     Args:
-    #         extension: The new extension to add.
+        Raises:
+            ValueError: if another extension of the same type already exists on the
+                layer.
+        """
+        if any(isinstance(extension, type(ext)) for ext in self.extensions):
+            raise ValueError("Only one extension of each type permitted")
 
-    #     Raises:
-    #         ValueError: if another extension of the same type already exists on the
-    #             layer.
-    #     """
-    #     if any(isinstance(extension, type(ext)) for ext in self.extensions):
-    #         raise ValueError("Only one extension of each type permitted")
+        with self.hold_trait_notifications():
+            self._add_extension_traits([extension])
+            self.extensions += (extension,)
 
-    #     with self.hold_trait_notifications():
-    #         self._add_extension_traits([extension])
-    #         self.extensions += (extension,)
+            # Assign any extension properties
+            added_names: List[str] = []
+            for prop_name, prop_value in props.items():
+                self.set_trait(prop_name, prop_value)
+                added_names.append(prop_name)
 
-    #         # Assign any extension properties
-    #         added_names: List[str] = []
-    #         for prop_name, prop_value in props.items():
-    #             self.set_trait(prop_name, prop_value)
-    #             added_names.append(prop_name)
-
-    #     self.send_state(added_names + ["extensions"])
+        self.send_state(added_names + ["extensions"])
 
     pickable = traitlets.Bool(True).tag(sync=True)
     """
@@ -432,6 +437,58 @@ class BaseArrowLayer(BaseLayer):
             table = _from_duckdb(sql, con=con, crs=crs)
 
         return cls(table=table, **kwargs)
+
+    def quak(self) -> quak.Widget:
+        import quak
+        import sqlglot
+
+        if not any(isinstance(ext, DataFilterExtension) for ext in self.extensions):
+            self.add_extension(DataFilterExtension(category_size=1))
+
+        table: Table = self.table
+        num_rows = table.num_rows
+        if num_rows <= np.iinfo(np.uint8).max:
+            row_index = Array.from_numpy(np.arange(num_rows, dtype=np.uint8))
+            filter_arr = np.ones(num_rows, dtype=np.float32)
+        elif num_rows <= np.iinfo(np.uint16).max:
+            row_index = Array.from_numpy(np.arange(num_rows, dtype=np.uint16))
+            filter_arr = np.ones(num_rows, dtype=np.float32)
+        elif num_rows <= np.iinfo(np.uint32).max:
+            row_index = Array.from_numpy(np.arange(num_rows, dtype=np.uint32))
+            filter_arr = np.ones(num_rows, dtype=np.float32)
+        else:
+            row_index = Array.from_numpy(np.arange(num_rows, dtype=np.uint64))
+            filter_arr = np.ones(num_rows, dtype=np.float32)
+
+        table_with_row_index = table.append_column(
+            "_row_index", ChunkedArray(row_index)
+        )
+        quak_widget = quak.Widget(table_with_row_index)
+
+        def row_index_callback(change):
+            global test
+            test = change
+
+            sql = sqlglot.parse_one(quak_widget.sql, dialect="duckdb")
+            sql.set("expressions", [sqlglot.column("_row_index")])
+            row_index_table = quak_widget._conn.query(sql.sql(dialect="duckdb")).arrow()
+
+            # Reset all to 2. We don't use zero because there might be a bug with 0
+            filter_arr[:] = 2
+
+            # Set the desired _row_index to 1
+            filter_arr[row_index_table["_row_index"]] = 1
+
+            self.get_filter_category = filter_arr  # type: ignore
+            self.filter_categories = [1]  # type: ignore
+
+        quak_widget.observe(row_index_callback, names="sql")
+
+        return quak_widget
+        pass
+
+
+test = None
 
 
 class BitmapLayer(BaseLayer):

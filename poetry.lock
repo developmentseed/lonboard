@@ -3869,6 +3869,22 @@ files = [
 cffi = {version = "*", markers = "implementation_name == \"pypy\""}
 
 [[package]]
+name = "quak"
+version = "0.1.8"
+description = ""
+optional = false
+python-versions = "*"
+files = [
+    {file = "quak-0.1.8-py2.py3-none-any.whl", hash = "sha256:2063c551797a7ff2d07a41f20b5ca60ec7447f6acd4ed28a8751782669bac7f7"},
+    {file = "quak-0.1.8.tar.gz", hash = "sha256:0b285c1405f123f0f68f804b408c3fc8d2335878442f5ec93c43f2f92a2c3ee5"},
+]
+
+[package.dependencies]
+anywidget = "*"
+duckdb = ">=1.0.0"
+pyarrow = ">=16.0.0"
+
+[[package]]
 name = "referencing"
 version = "0.35.1"
 description = "JSON Referencing + Python"
@@ -4255,6 +4271,21 @@ files = [
     {file = "soupsieve-2.6-py3-none-any.whl", hash = "sha256:e72c4ff06e4fb6e4b5a9f0f55fe6e81514581fca1515028625d0f299c602ccc9"},
     {file = "soupsieve-2.6.tar.gz", hash = "sha256:e2e68417777af359ec65daac1057404a3c8a5455bb8abc36f1a9866ab1a51abb"},
 ]
+
+[[package]]
+name = "sqlglot"
+version = "25.18.0"
+description = "An easily customizable SQL parser and transpiler"
+optional = false
+python-versions = ">=3.7"
+files = [
+    {file = "sqlglot-25.18.0-py3-none-any.whl", hash = "sha256:d315874d88a81c48604cf4a9cd8a56e8bd3009aa294c233755ac176a9aceb153"},
+    {file = "sqlglot-25.18.0.tar.gz", hash = "sha256:f79b02b378038e991633911de43eb6e44eba99510fa7144bba7e7532e3d4e00d"},
+]
+
+[package.extras]
+dev = ["duckdb (>=0.6)", "maturin (>=1.4,<2.0)", "mypy", "pandas", "pandas-stubs", "pdoc", "pre-commit", "python-dateutil", "pytz", "ruff (==0.4.3)", "types-python-dateutil", "types-pytz", "typing-extensions"]
+rs = ["sqlglotrs (==0.2.9)"]
 
 [[package]]
 name = "stack-data"
@@ -4696,4 +4727,4 @@ geopandas = ["geopandas", "pandas", "shapely"]
 [metadata]
 lock-version = "2.0"
 python-versions = "^3.8"
-content-hash = "b5899cf19b1b2d93344d31411701f1b0992d0b7a4c4c204c8869049a5610668c"
+content-hash = "1173c60daf7a8e9e2e6f38ee42ce74ff0c0d09cf99323ccdf2fa1e713360d8a2"
