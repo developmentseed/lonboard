@@ -1,15 +1,17 @@
 import { assign, createMachine } from "xstate";
 import { PickingInfo } from "@deck.gl/core";
+import { GeoArrowPickingInfo } from "@geoarrow/deck.gl-layers";
 
 export const machine = createMachine(
   {
-    /** @xstate-layout N4IgpgJg5mDOIC5QBsD2A7ARqghgJwgDoAFHdAAgFtUIwBiAIQdQA9zYxkwBjAF3MwBXXrwzluyAJbcA1pADaABgC6iUAAdUsSb0kY1IFogC0AJgAcATkKKAbABZzARnMBWe09e3Lt1wBoQAE9EJwB2UJsAZlDXS1DIxVdQuMVTAF80gLQsXAISMioaegBhLnxyJlYlVSQQTW1dfVqjBHNTQlMwxUdTZMtUtwDghGNbQic4z1CnSO97JMcMrIxsfCIAZU4eXXQoAWw2WF58fnqdPXQ6AFkcdXEpWXIwADcwdF5qgzPG9AMWsyShGmwKcFkUkX6-iCiAhkUI5kU4NMsUsnks5gcSxA2VWeU2XD4kl2+1Y7GOeFOWnOGDoxTI3E4FWYbAgeBwAHdPrVvhc-iZHPZCJFIp07PZIk5bPFzENEKZeoRXK5OuZ7BZbKZ0eKsTjchstoTiZgDk90BByDyaTc7gALVCvPBPV7vLkaKk-PkIMJAywQxShZxORL2RSg2UIDyuRWI+JOOPi2x2HUrPWEfHbIl7Y2kt7my2Xa33aQyJ1vD4qL7u3nNEKhMbRGJWHzRNy2cOmByEez2dEi2KKKzmZM5NZpg07LMm3MWqs0unoBnIJmk1kc111We-GsjVzmOE+OuhEOpeY98PuCLyxupYWJ-0ZTIgdBFeC1XVrSsNaugf62CWEA8pWPUxT0scNjF9IVVTVSIMVCAdEVcYdcSIUgKGoWhP2pLcfxMK9xl3foLFcSIQ0cUJw0sQVzFCXpLHRcwEQYodH3fPFx0zElDnJSkvyaN0+Jwww8MsKN3HcTwPHo1wJnDBJL08KUZhorxbGQ1N00NScczNGdBKwj1tzMVEAKlCF0V3P13HPDxxnBJVbDaaIEksB80iAA */
+    /** @xstate-layout N4IgpgJg5mDOIC5QBsD2A7ARqghgJwgDoAFHdAAgFtUIwBiAIQdQA9zYxkwBjAF3MwBXXrwzluyAJbcA1pADaABgC6iUAAdUsSb0kY1IFogC0AJgAcATkKKAbABZzARnMBWe09e3Lt1wBoQAE9EJwB2UJsAZlDXS1DIxVdQuMVTAF80gLQsXAISMioaegBhLnxyJlYlVSQQTW1dfVqjBHNTQlMwxUdTZMtUtwDghGNbQic4z1CnSO97JMcMrIxsfCJSCmpaOgBZHHVxKVlyMAA3MHReaoN6nT10AxbjJ1Mx0PtIyPtLT98Z0yGJl69hsL1moUU5g+tjsSxA2VWeQ2hW2pS0YHYklo5HUZE411qt0aD2aJlckSc43spm+lnMthp0UigJGpgphCsrk8-Wm5I+cIRuSIAGVODxdOgoAJsGxYLx8PwifddvtDtIZCdzpcCRotHcmqAnqYkoRpmaXuZFJF+v4gohrZEOYorcbLJZufT7AKVkLCKKuHxJJLpax2PK8Iq9cS6MUyNxOBVmGwIHgcAB3HV1KP3R4mRwgz6dOwfJy2eLmFmmXqEVyuTpQiwMun8zLwn1rP1iwPBzAyk7oCA47MYFUHAAWqHOeE1FyuKhuw5JhpC7WdsRpTns8VLENtwx6hEibNCbOp9lS9l83pyHf94qDUt7oYug6VI72Bwk6pn2vnhMXuYIGEYzRDEVg+NEbi2JWDiEPY3zmEesSQnS16IiKXYSo+fYvkODTKrG6Dxsgiahim6aZm+S6GGSiGED4oRlueF7uJYLLuBEVZgakvzOqEaG+ne3bYaGcoKnh+roDGaAcJi2K4ug+J-rq+EGjRrLmByrjmOE9KmIoLihIMdoIJEtY1nxFJOJusywq2gq3phD4hmwuFUdJ6JyRiClKTUKmSYBzzaRy5YxJe5LRPMLKMdYsxQjpfFbuYGStugRTwLUDkEAuqnUU8tjsgxTHOjSrEssYsyUhMEHJC8SWuAJHbIlsYA5QFpKstWnhWHY7zdEkMTlXS4yeN0tgMjpnQTI1eRCVhLlhuJVFtcSgWmJYrg1vMHjuNVXJsSZCScZ4ZYzDpXi2DNGEBvNT6uQOEmrf+uVre69HFVYHyKG6lj2CytguIeP1cvE2kxJdKVAA */
     id: "lonboard",
 
     types: {
       context: {} as {
         bboxSelectStart: number[] | undefined;
         bboxSelectEnd: number[] | undefined;
+        highlightedFeature: GeoArrowPickingInfo | undefined;
       },
       events: {} as
         | {
@@ -28,6 +30,9 @@ export const machine = createMachine(
           }
         | {
             type: "Cancel BBox draw";
+          }
+        | {
+            type: "Close side panel";
           },
       actions: {} as
         | {
@@ -37,13 +42,20 @@ export const machine = createMachine(
             type: "setBboxSelectEnd";
           }
         | {
+            type: "setHighlightedFeature";
+          }
+        | {
             type: "clearBboxSelect";
+          }
+        | {
+            type: "clearHighlightedFeature";
           },
     },
 
     context: {
       bboxSelectStart: undefined,
       bboxSelectEnd: undefined,
+      highlightedFeature: undefined,
     },
 
     states: {
@@ -57,6 +69,16 @@ export const machine = createMachine(
           "Clear BBox": {
             target: "Pan mode",
             actions: "clearBboxSelect",
+          },
+
+          "Map click event": {
+            target: "Pan mode",
+            actions: "setHighlightedFeature",
+          },
+
+          "Close side panel": {
+            target: "Pan mode",
+            actions: "clearHighlightedFeature",
           },
         },
       },
@@ -72,6 +94,11 @@ export const machine = createMachine(
             target: "Pan mode",
             reenter: true,
             actions: "clearBboxSelect",
+          },
+
+          "Close side panel": {
+            target: "Selecting bbox start position",
+            actions: "clearHighlightedFeature",
           },
         },
       },
@@ -92,6 +119,11 @@ export const machine = createMachine(
             target: "Pan mode",
             reenter: true,
             actions: "clearBboxSelect",
+          },
+
+          "Close side panel": {
+            target: "Selecting bbox end position",
+            actions: "clearHighlightedFeature",
           },
         },
       },
@@ -125,6 +157,21 @@ export const machine = createMachine(
           };
         }
         return {};
+      }),
+      setHighlightedFeature: assign(({ event }) => {
+        if (event.type === "Map click event" && "data" in event) {
+          const clickedObject = event.data.object;
+
+          if (typeof clickedObject !== "undefined") {
+            return {
+              highlightedFeature: event.data,
+            };
+          }
+        }
+        return { highlightedFeature: undefined };
+      }),
+      clearHighlightedFeature: assign(() => {
+        return { highlightedFeature: undefined };
       }),
     },
 
