@@ -8,7 +8,6 @@ import { MapViewState, PickingInfo, type Layer } from "@deck.gl/core";
 import { BaseLayerModel, initializeLayer } from "./model/index.js";
 import type { WidgetModel } from "@jupyter-widgets/base";
 import { initParquetWasm } from "./parquet.js";
-import Tooltip from "./tooltip/index.js";
 import { isDefined, loadChildModels } from "./util.js";
 import { v4 as uuidv4 } from "uuid";
 import { Message } from "./types.js";
@@ -23,6 +22,7 @@ import "maplibre-gl/dist/maplibre-gl.css";
 import { NextUIProvider } from "@nextui-org/react";
 import Toolbar from "./toolbar.js";
 import throttle from "lodash.throttle";
+import SidePanel from "./sidepanel/index";
 
 await initParquetWasm();
 
@@ -175,27 +175,6 @@ function App() {
     layers.push(subModel.render());
   }
 
-  // This hook checks if the map container parent has a height set, which is
-  // needed to make the map fill the parent container.
-  useEffect(() => {
-    if (mapHeight) return;
-
-    const mapContainer = document.getElementById(`map-${mapId}`);
-    const mapContainerParent = mapContainer?.parentElement;
-
-    if (mapContainerParent) {
-      // Compute the actual style considering stylesheets, inline styles, and browser default styles
-      const parentStyle = window.getComputedStyle(mapContainerParent);
-
-      // Check if the height is not already set
-      if (!parentStyle.height || parentStyle.height === "0px") {
-        // Set the height to 100% and min-height
-        mapContainerParent.style.height = "100%";
-        mapContainerParent.style.minHeight = "500px";
-      }
-    }
-  }, []);
-
   const onMapClickHandler = useCallback((info: PickingInfo) => {
     // We added this flag to prevent the hover event from firing after a
     // click event.
@@ -224,59 +203,69 @@ function App() {
   );
 
   return (
-    <div id={`map-${mapId}`} style={{ height: mapHeight || "100%" }}>
+    <div
+      id={`map-${mapId}`}
+      className="flex"
+      style={{ height: mapHeight ? `${mapHeight}px` : "24rem" }}
+    >
       <Toolbar />
+
       {showTooltip && highlightedFeature && (
-        <Tooltip info={highlightedFeature} />
+        <SidePanel
+          info={highlightedFeature}
+          onClose={() => actorRef.send({ type: "Close side panel" })}
+        />
       )}
-
-      <DeckGL
-        initialViewState={
-          ["longitude", "latitude", "zoom"].every((key) =>
-            Object.keys(initialViewState).includes(key),
-          )
-            ? initialViewState
-            : DEFAULT_INITIAL_VIEW_STATE
-        }
-        controller={true}
-        layers={
-          bboxSelectPolygonLayer
-            ? layers.concat(bboxSelectPolygonLayer)
-            : layers
-        }
-        getCursor={() => (isDrawingBBoxSelection ? "crosshair" : "grab")}
-        pickingRadius={pickingRadius}
-        onClick={onMapClickHandler}
-        onHover={onMapHoverHandler}
-        useDevicePixels={isDefined(useDevicePixels) ? useDevicePixels : true}
-        // https://deck.gl/docs/api-reference/core/deck#_typedarraymanagerprops
-        _typedArrayManagerProps={{
-          overAlloc: 1,
-          poolSize: 0,
-        }}
-        onViewStateChange={(event) => {
-          const { viewState } = event;
-
-          // This condition is necessary to confirm that the viewState is
-          // of type MapViewState.
-          if ("latitude" in viewState) {
-            const { longitude, latitude, zoom, pitch, bearing } = viewState;
-            setViewState({
-              longitude,
-              latitude,
-              zoom,
-              pitch,
-              bearing,
-            });
+      <div className="bg-red-800 h-full w-full relative">
+        <DeckGL
+          style={{ width: "100%", height: "100%" }}
+          initialViewState={
+            ["longitude", "latitude", "zoom"].every((key) =>
+              Object.keys(initialViewState).includes(key),
+            )
+              ? initialViewState
+              : DEFAULT_INITIAL_VIEW_STATE
           }
-        }}
-        parameters={parameters || {}}
-      >
-        <Map
-          mapStyle={mapStyle || DEFAULT_MAP_STYLE}
-          customAttribution={customAttribution}
-        ></Map>
-      </DeckGL>
+          controller={true}
+          layers={
+            bboxSelectPolygonLayer
+              ? layers.concat(bboxSelectPolygonLayer)
+              : layers
+          }
+          getCursor={() => (isDrawingBBoxSelection ? "crosshair" : "grab")}
+          pickingRadius={pickingRadius}
+          onClick={onMapClickHandler}
+          onHover={onMapHoverHandler}
+          useDevicePixels={isDefined(useDevicePixels) ? useDevicePixels : true}
+          // https://deck.gl/docs/api-reference/core/deck#_typedarraymanagerprops
+          _typedArrayManagerProps={{
+            overAlloc: 1,
+            poolSize: 0,
+          }}
+          onViewStateChange={(event) => {
+            const { viewState } = event;
+
+            // This condition is necessary to confirm that the viewState is
+            // of type MapViewState.
+            if ("latitude" in viewState) {
+              const { longitude, latitude, zoom, pitch, bearing } = viewState;
+              setViewState({
+                longitude,
+                latitude,
+                zoom,
+                pitch,
+                bearing,
+              });
+            }
+          }}
+          parameters={parameters || {}}
+        >
+          <Map
+            mapStyle={mapStyle || DEFAULT_MAP_STYLE}
+            customAttribution={customAttribution}
+          ></Map>
+        </DeckGL>
+      </div>
     </div>
   );
 }
