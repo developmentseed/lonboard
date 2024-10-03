@@ -13,7 +13,7 @@ from arro3.core import (
 )
 from arro3.core.types import ArrowArrayExportable, ArrowStreamExportable
 
-from lonboard.vendor.matplotlib.colors import _to_rgba_no_colorcycle
+from lonboard._vendor.matplotlib.colors import _to_rgba_no_colorcycle
 
 if TYPE_CHECKING:
     import matplotlib as mpl
