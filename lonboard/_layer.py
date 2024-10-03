@@ -238,6 +238,18 @@ class BaseLayer(BaseWidget):
     - Default: `False`
     """
 
+    highlight_color = VariableLengthTuple(
+        t.Int(), default_value=None, minlen=3, maxlen=4
+    )
+    """
+    RGBA color to blend with the highlighted object (the hovered over object if
+    `auto_highlight=true`). When the value is a 3 component (RGB) array, a default alpha
+    of 255 is applied.
+
+    - Type: List or Tuple of integers
+    - Default: `[0, 0, 128, 128]`
+    """
+
     selected_bounds = t.Tuple(
         t.Float(), t.Float(), t.Float(), t.Float(), allow_none=True, default_value=None
     ).tag(sync=True)
