@@ -43,8 +43,8 @@ from lonboard._serialization import (
     serialize_view_state,
 )
 from lonboard._utils import get_geometry_column_index
+from lonboard._vendor.matplotlib.colors import _to_rgba_no_colorcycle
 from lonboard.models import ViewState
-from lonboard.vendor.matplotlib.colors import _to_rgba_no_colorcycle
 
 if TYPE_CHECKING:
     import pandas as pd
