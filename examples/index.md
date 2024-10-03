@@ -11,6 +11,7 @@
 -  [Motor Vehicle Crashes in NYC ![](../assets/motor-vehicle-crashes-nyc.jpg)](../examples/map_challenge/1-points) using [`ScatterplotLayer`](../api/layers/scatterplot-layer)
 -  [Rivers in Asia ![](../assets/rivers-asia.jpg)](../examples/map_challenge/6-asia/) using [`PathLayer`](../api/layers/path-layer)
 -  [Inflation Reduction Act Projects ![](../assets/column-layer.jpg)](../examples/column-layer/) using [`ColumnLayer`](../api/layers/column-layer)
+-  [Linked Maps ![](../assets/linked-maps.gif)](../examples/linked-maps/)
 
 </div>
 

@@ -44,8 +44,8 @@ from lonboard._serialization import (
     serialize_view_state,
 )
 from lonboard._utils import get_geometry_column_index
+from lonboard._vendor.matplotlib.colors import _to_rgba_no_colorcycle
 from lonboard.models import ViewState
-from lonboard.vendor.matplotlib.colors import _to_rgba_no_colorcycle
 
 if TYPE_CHECKING:
     import pandas as pd
@@ -291,8 +291,7 @@ class ColorAccessor(FixedErrorTraitType):
                 info="Color array must have 3 or 4 as its second dimension.",
             )
 
-        flat_values = Array.from_numpy(value.ravel("C"))
-        return ChunkedArray([fixed_size_list_array(flat_values, list_size)])
+        return ChunkedArray([fixed_size_list_array(value.ravel("C"), list_size)])
 
     def validate(self, obj: BaseArrowLayer, value) -> Union[tuple, list, ChunkedArray]:
         if isinstance(value, (tuple, list)):
@@ -408,7 +407,7 @@ class FloatAccessor(FixedErrorTraitType):
 
         # TODO: should we always be casting to float32? Should it be
         # possible/allowed to pass in ~int8 or a data type smaller than float32?
-        return ChunkedArray([Array.from_numpy(value.astype(np.float32))])
+        return ChunkedArray([value.astype(np.float32)])
 
     def validate(self, obj: BaseArrowLayer, value) -> Union[float, ChunkedArray]:
         if isinstance(value, (int, float)):
@@ -564,10 +563,7 @@ class PointAccessor(FixedErrorTraitType):
             )
 
         assert np.issubdtype(value.dtype, np.float64)
-        array = fixed_size_list_array(
-            Array.from_numpy(value.ravel("C")),
-            list_size,
-        )
+        array = fixed_size_list_array(value.ravel("C"), list_size)
         return ChunkedArray([array])
 
     def validate(
@@ -696,7 +692,7 @@ class FilterValueAccessor(FixedErrorTraitType):
             if filter_size != 1:
                 self.error(obj, value, info="filter_size==1 with 1-D numpy array")
 
-            return ChunkedArray([Array.from_numpy(value)])
+            return ChunkedArray([value])
 
         if len(value.shape) != 2:
             self.error(obj, value, info="1-D or 2-D numpy array")
@@ -711,10 +707,7 @@ class FilterValueAccessor(FixedErrorTraitType):
                 ),
             )
 
-        array = fixed_size_list_array(
-            Array.from_numpy(value.ravel("C")),
-            filter_size,
-        )
+        array = fixed_size_list_array(value.ravel("C"), filter_size)
         return ChunkedArray([array])
 
     def validate(
@@ -864,10 +857,7 @@ class NormalAccessor(FixedErrorTraitType):
             )
             value = value.astype(np.float32)
 
-        array = fixed_size_list_array(
-            Array.from_numpy(value.ravel("C")),
-            3,
-        )
+        array = fixed_size_list_array(value.ravel("C"), 3)
         return ChunkedArray([array])
 
     def validate(
@@ -1003,10 +993,7 @@ class DashArrayAccessor(FixedErrorTraitType):
         if np.issubdtype(value.dtype, np.float64):
             value = value.astype(np.float32)
 
-        array = fixed_size_list_array(
-            Array.from_numpy(value.ravel("C")),
-            list_size,
-        )
+        array = fixed_size_list_array(value.ravel("C"), list_size)
         return ChunkedArray([array])
 
     def validate(
