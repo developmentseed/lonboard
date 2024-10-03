@@ -56,7 +56,7 @@ geopandas = ["geopandas", "pandas", "shapely"]
 [tool.poetry.group.dev.dependencies]
 duckdb = ">=0.10.2"
 geoarrow-pyarrow = ">=0.1.1"
-geoarrow-rust-core = ">=0.2.0"
+geoarrow-rust-core = ">=0.3.0"
 geodatasets = ">=2023.12.0"
 jupyterlab = ">=4.0.5"
 matplotlib = ">=3.7"
