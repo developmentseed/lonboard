@@ -341,14 +341,14 @@ class ColorAccessor(FixedErrorTraitType):
         assert isinstance(value, ChunkedArray)
 
         if not DataType.is_fixed_size_list(value.type):
-            self.error(obj, value, info="Color pyarrow array must be a FixedSizeList.")
+            self.error(obj, value, info="Color Arrow array must be a FixedSizeList.")
 
         if value.type.list_size not in (3, 4):
             self.error(
                 obj,
                 value,
                 info=(
-                    "Color pyarrow array must have a FixedSizeList inner size of "
+                    "Color Arrow array must have a FixedSizeList inner size of "
                     "3 or 4."
                 ),
             )
@@ -356,7 +356,7 @@ class ColorAccessor(FixedErrorTraitType):
         value_type = value.type.value_type
         assert value_type is not None
         if not DataType.is_uint8(value_type):
-            self.error(obj, value, info="Color pyarrow array must have a uint8 child.")
+            self.error(obj, value, info="Color Arrow array must have a uint8 child.")
 
         return value.rechunk(max_chunksize=obj._rows_per_chunk)
 
@@ -385,7 +385,7 @@ class FloatAccessor(FixedErrorTraitType):
 
     default_value = float(0)
     info_text = (
-        "a float value or numpy ndarray or pyarrow array representing an array"
+        "a float value or numpy ndarray or Arrow array representing an array"
         " of floats"
     )
 
@@ -435,7 +435,7 @@ class FloatAccessor(FixedErrorTraitType):
             self.error(
                 obj,
                 value,
-                info="Float pyarrow array must be a numeric type.",
+                info="Float Arrow array must be a numeric type.",
             )
 
         value = value.cast(DataType.float32())
@@ -459,7 +459,7 @@ class TextAccessor(FixedErrorTraitType):
 
     default_value = ""
     info_text = (
-        "a string value or numpy ndarray or pandas Series or pyarrow array representing"
+        "a string value or numpy ndarray or pandas Series or Arrow array representing"
         " an array of strings"
     )
 
@@ -519,7 +519,7 @@ class TextAccessor(FixedErrorTraitType):
             self.error(
                 obj,
                 value,
-                info="String pyarrow array must be a string type.",
+                info="String Arrow array must be a string type.",
             )
 
         return value.rechunk(max_chunksize=obj._rows_per_chunk)
@@ -655,7 +655,7 @@ class FilterValueAccessor(FixedErrorTraitType):
 
     default_value = float(0)
     info_text = (
-        "a float value or numpy ndarray or pyarrow array representing an array"
+        "a float value or numpy ndarray or Arrow array representing an array"
         " of floats"
     )
 
@@ -853,7 +853,7 @@ class NormalAccessor(FixedErrorTraitType):
         if not np.issubdtype(value.dtype, np.float32):
             warnings.warn(
                 """Warning: Numpy array should be float32 type.
-                Converting to float32 point pyarrow array"""
+                Converting to float32 point Arrow array"""
             )
             value = value.astype(np.float32)
 
@@ -890,13 +890,13 @@ class NormalAccessor(FixedErrorTraitType):
         assert isinstance(value, ChunkedArray)
 
         if not DataType.is_fixed_size_list(value.type):
-            self.error(obj, value, info="normal pyarrow array to be a FixedSizeList.")
+            self.error(obj, value, info="normal Arrow array to be a FixedSizeList.")
 
         if value.type.list_size != 3:
             self.error(
                 obj,
                 value,
-                info=("normal pyarrow array to have an inner size of 3."),
+                info=("normal Arrow array to have an inner size of 3."),
             )
 
         value_type = value.type.value_type
@@ -905,7 +905,7 @@ class NormalAccessor(FixedErrorTraitType):
             self.error(
                 obj,
                 value,
-                info="pyarrow array to be floating point type",
+                info="Arrow array to be floating point type",
             )
 
         value = value.cast(DataType.list(Field("", DataType.float32()), 3))
@@ -1024,13 +1024,13 @@ class DashArrayAccessor(FixedErrorTraitType):
         assert isinstance(value, ChunkedArray)
 
         if not DataType.is_fixed_size_list(value.type):
-            self.error(obj, value, info="Pyarrow array must be a FixedSizeList.")
+            self.error(obj, value, info="Arrow array must be a FixedSizeList.")
 
         if value.type.list_size != 2:
             self.error(
                 obj,
                 value,
-                info="Pyarrow array must have a FixedSizeList inner size of 2.",
+                info="Arrow array must have a FixedSizeList inner size of 2.",
             )
 
         value_type = value.type.value_type
@@ -1040,7 +1040,7 @@ class DashArrayAccessor(FixedErrorTraitType):
             or DataType.is_signed_integer(value_type)
             or DataType.is_floating(value_type)
         ):
-            self.error(obj, value, info="Pyarrow array to have a numeric type child.")
+            self.error(obj, value, info="Arrow array to have a numeric type child.")
 
         # Cast float64 to float32; leave other data types the same
         if DataType.is_float64(value_type):
