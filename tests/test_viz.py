@@ -1,4 +1,5 @@
 from pathlib import Path
+from typing import cast
 
 import geoarrow.pyarrow as gap
 import geodatasets
@@ -6,7 +7,8 @@ import numpy as np
 import pyarrow as pa
 import pyarrow.parquet as pq
 import pytest
-from geoarrow.rust.core import read_pyogrio
+from arro3.core import Table
+from geoarrow.rust.core import geometry_col, read_pyogrio, to_wkb
 from pyogrio.raw import read_arrow
 
 from lonboard import PathLayer, PolygonLayer, ScatterplotLayer, viz
@@ -157,16 +159,19 @@ def test_viz_geoarrow_rust_table():
 
 
 def test_viz_geoarrow_rust_array():
-    table = read_pyogrio(geodatasets.get_path("naturalearth.land"))
-    map_ = viz(table.geometry.chunk(0))
+    # `read_pyogrio` has incorrect typing currently
+    # https://github.com/geoarrow/geoarrow-rs/pull/807
+    table = cast(Table, read_pyogrio(geodatasets.get_path("naturalearth.land")))
+    map_ = viz(geometry_col(table).chunk(0))
     assert isinstance(map_.layers[0], PolygonLayer)
 
 
+@pytest.mark.skip("to_wkb gives panic on todo!(), not yet implemented")
 @pytest.mark.skipif(not compat.HAS_SHAPELY, reason="shapely not available")
 def test_viz_geoarrow_rust_wkb_array():
     table = read_pyogrio(geodatasets.get_path("naturalearth.land"))
-    arr = table.geometry.chunk(0)
-    wkb_arr = arr.to_wkb()
+    arr = geometry_col(table).chunk(0)
+    wkb_arr = to_wkb(arr)
     map_ = viz(wkb_arr)
     assert isinstance(map_.layers[0], PolygonLayer)
 

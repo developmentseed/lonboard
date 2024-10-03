@@ -79,9 +79,9 @@ def test_viz_bbox_2d():
             """
         rel = con.sql(sql)
 
-    assert rel.types[-1] == "BOX_2D"
-    m = viz(rel)
-    assert isinstance(m.layers[0], PolygonLayer)
+        assert rel.types[-1] == "BOX_2D"
+        m = viz(rel)
+        assert isinstance(m.layers[0], PolygonLayer)
 
 
 def test_layer_geometry():
@@ -146,9 +146,9 @@ def test_layer_bbox_2d():
             """
         rel = con.sql(sql)
 
-    assert rel.types[-1] == "BOX_2D"
-    layer = PolygonLayer.from_duckdb(rel, crs=nybb.crs)
-    assert isinstance(layer, PolygonLayer)
+        assert rel.types[-1] == "BOX_2D"
+        layer = PolygonLayer.from_duckdb(rel, crs=nybb.crs)
+        assert isinstance(layer, PolygonLayer)
 
 
 def test_solid_polygon_layer_bbox_2d():
@@ -168,9 +168,9 @@ def test_solid_polygon_layer_bbox_2d():
             """
         rel = con.sql(sql)
 
-    assert rel.types[-1] == "BOX_2D"
-    layer = SolidPolygonLayer.from_duckdb(rel, crs=nybb.crs)
-    assert isinstance(layer, SolidPolygonLayer)
+        assert rel.types[-1] == "BOX_2D"
+        layer = SolidPolygonLayer.from_duckdb(rel, crs=nybb.crs)
+        assert isinstance(layer, SolidPolygonLayer)
 
 
 @pytest.mark.skip("Skip because it mutates global state")
