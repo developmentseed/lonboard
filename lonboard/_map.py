@@ -7,6 +7,7 @@ from typing import IO, TYPE_CHECKING, Optional, Sequence, TextIO, Union, overloa
 
 import ipywidgets
 import traitlets
+import traitlets as t
 from ipywidgets.embed import embed_minimal_html
 
 from lonboard._base import BaseAnyWidget
@@ -128,21 +129,19 @@ class Map(BaseAnyWidget):
 
     """
 
-    _height = traitlets.Int(default_value=DEFAULT_HEIGHT, allow_none=True).tag(
-        sync=True
-    )
+    _height = t.Int(default_value=DEFAULT_HEIGHT, allow_none=True).tag(sync=True)
     """Height of the map in pixels.
 
     This API is not yet stabilized and may change in the future.
     """
 
-    layers = VariableLengthTuple(traitlets.Instance(BaseLayer)).tag(
+    layers = VariableLengthTuple(t.Instance(BaseLayer)).tag(
         sync=True, **ipywidgets.widget_serialization
     )
     """One or more `Layer` objects to display on this map.
     """
 
-    show_tooltip = traitlets.Bool(True).tag(sync=True)
+    show_tooltip = t.Bool(True).tag(sync=True)
     """
     Whether to render a tooltip on hover on the map.
 
@@ -150,7 +149,7 @@ class Map(BaseAnyWidget):
     - Default: `True`
     """
 
-    picking_radius = traitlets.Int(5).tag(sync=True)
+    picking_radius = t.Int(5).tag(sync=True)
     """
     Extra pixels around the pointer to include while picking (such as for a tooltip).
 
@@ -172,10 +171,10 @@ class Map(BaseAnyWidget):
       [`lonboard.basemap.CartoBasemap.PositronNoLabels`][lonboard.basemap.CartoBasemap.PositronNoLabels]
     """
 
-    custom_attribution = traitlets.Union(
+    custom_attribution = t.Union(
         [
-            traitlets.Unicode(allow_none=True),
-            VariableLengthTuple(traitlets.Unicode(allow_none=False)),
+            t.Unicode(allow_none=True),
+            VariableLengthTuple(t.Unicode(allow_none=False)),
         ]
     ).tag(sync=True)
     """
@@ -215,9 +214,7 @@ class Map(BaseAnyWidget):
     # want, and `Union[float, bool]` would coerce `True` to `1`, which we also don't
     # want.
     # In the future we could create a custom trait for this if asked for.
-    use_device_pixels = traitlets.Any(allow_none=True, default_value=None).tag(
-        sync=True
-    )
+    use_device_pixels = t.Any(allow_none=True, default_value=None).tag(sync=True)
     """Controls the resolution of the drawing buffer used for rendering.
 
     Setting this to `false` or a number <= 1 will improve performance on high resolution
@@ -243,7 +240,7 @@ class Map(BaseAnyWidget):
     - Default: `true`
     """
 
-    parameters = traitlets.Any(allow_none=True, default_value=None).tag(sync=True)
+    parameters = t.Any(allow_none=True, default_value=None).tag(sync=True)
     """GPU parameters to pass to deck.gl.
 
     **This is an advanced API. The vast majority of users should not need to touch this
