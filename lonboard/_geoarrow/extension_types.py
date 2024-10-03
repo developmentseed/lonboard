@@ -159,9 +159,9 @@ def offsets_to_arrow(
 ) -> Sequence[Array]:
     # Shapely produces int64 offset arrays. We downcast those to int32 if possible
     if any(offset_arr[-1] >= np.iinfo(np.int32).max for offset_arr in offsets):
-        return [Array.from_numpy(offset_arr) for offset_arr in offsets]
+        return [Array(offset_arr) for offset_arr in offsets]
 
-    return [Array.from_numpy(offset_arr.astype(np.int32)) for offset_arr in offsets]
+    return [Array(offset_arr.astype(np.int32)) for offset_arr in offsets]
 
 
 def construct_geometry_array(
@@ -191,9 +191,7 @@ def construct_geometry_array(
         extension_metadata["ARROW:extension:metadata"] = json.dumps({"crs": crs})
 
     if geom_type == GeometryType.POINT:
-        arrow_coords = fixed_size_list_array(
-            Array.from_numpy(coords.ravel("C")), len(dims)
-        )
+        arrow_coords = fixed_size_list_array(coords.ravel("C"), len(dims))
         extension_metadata["ARROW:extension:name"] = "geoarrow.point"
         field = Field(
             field_name,
@@ -206,9 +204,7 @@ def construct_geometry_array(
     elif geom_type == GeometryType.LINESTRING:
         assert len(offsets) == 1, "Expected one offsets array"
         (geom_offsets,) = offsets
-        arrow_coords = fixed_size_list_array(
-            Array.from_numpy(coords.ravel("C")), len(dims)
-        )
+        arrow_coords = fixed_size_list_array(coords.ravel("C"), len(dims))
         arrow_geoms = list_array(geom_offsets, arrow_coords)
         extension_metadata["ARROW:extension:name"] = "geoarrow.linestring"
         field = Field(
@@ -222,9 +218,7 @@ def construct_geometry_array(
     elif geom_type == GeometryType.POLYGON:
         assert len(offsets) == 2, "Expected two offsets arrays"
         ring_offsets, geom_offsets = offsets
-        arrow_coords = fixed_size_list_array(
-            Array.from_numpy(coords.ravel("C")), len(dims)
-        )
+        arrow_coords = fixed_size_list_array(coords.ravel("C"), len(dims))
         arrow_rings = list_array(ring_offsets, arrow_coords)
         arrow_geoms = list_array(geom_offsets, arrow_rings)
         extension_metadata["ARROW:extension:name"] = "geoarrow.polygon"
@@ -239,9 +233,7 @@ def construct_geometry_array(
     elif geom_type == GeometryType.MULTIPOINT:
         assert len(offsets) == 1, "Expected one offsets array"
         (geom_offsets,) = offsets
-        arrow_coords = fixed_size_list_array(
-            Array.from_numpy(coords.ravel("C")), len(dims)
-        )
+        arrow_coords = fixed_size_list_array(coords.ravel("C"), len(dims))
         arrow_geoms = list_array(geom_offsets, arrow_coords)
         extension_metadata["ARROW:extension:name"] = "geoarrow.multipoint"
         field = Field(
@@ -255,9 +247,7 @@ def construct_geometry_array(
     elif geom_type == GeometryType.MULTILINESTRING:
         assert len(offsets) == 2, "Expected two offsets arrays"
         ring_offsets, geom_offsets = offsets
-        arrow_coords = fixed_size_list_array(
-            Array.from_numpy(coords.ravel("C")), len(dims)
-        )
+        arrow_coords = fixed_size_list_array(coords.ravel("C"), len(dims))
         arrow_rings = list_array(ring_offsets, arrow_coords)
         arrow_geoms = list_array(geom_offsets, arrow_rings)
         extension_metadata["ARROW:extension:name"] = "geoarrow.multilinestring"
@@ -272,9 +262,7 @@ def construct_geometry_array(
     elif geom_type == GeometryType.MULTIPOLYGON:
         assert len(offsets) == 3, "Expected three offsets arrays"
         ring_offsets, polygon_offsets, geom_offsets = offsets
-        arrow_coords = fixed_size_list_array(
-            Array.from_numpy(coords.ravel("C")), len(dims)
-        )
+        arrow_coords = fixed_size_list_array(coords.ravel("C"), len(dims))
         arrow_rings = list_array(ring_offsets, arrow_coords)
         arrow_polygons = list_array(polygon_offsets, arrow_rings)
         arrow_geoms = list_array(geom_offsets, arrow_polygons)
