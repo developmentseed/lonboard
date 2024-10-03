@@ -4819,4 +4819,4 @@ movingpandas = ["movingpandas"]
 [metadata]
 lock-version = "2.0"
 python-versions = "^3.8"
-content-hash = "244dea7efefb0a3b5a9045d8f7e3eb5dc09f90289426489c8f0597ee5e11dfa0"
+content-hash = "21b8f78d354dd5e02c3d8d3961bfa8c68aa7417387c74e23f4b6a966d53bc371"
