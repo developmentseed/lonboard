@@ -152,12 +152,16 @@ def test_viz_shapely_mixed_array():
     assert isinstance(map_.layers[2], PolygonLayer)
 
 
+# read_pyogrio currently keeps geometries as WKB
+@pytest.mark.skipif(not compat.HAS_SHAPELY, reason="shapely not available")
 def test_viz_geoarrow_rust_table():
     table = read_pyogrio(geodatasets.get_path("naturalearth.land"))
     map_ = viz(table)
     assert isinstance(map_.layers[0], PolygonLayer)
 
 
+# read_pyogrio currently keeps geometries as WKB
+@pytest.mark.skipif(not compat.HAS_SHAPELY, reason="shapely not available")
 def test_viz_geoarrow_rust_array():
     # `read_pyogrio` has incorrect typing currently
     # https://github.com/geoarrow/geoarrow-rs/pull/807
@@ -166,6 +170,7 @@ def test_viz_geoarrow_rust_array():
     assert isinstance(map_.layers[0], PolygonLayer)
 
 
+# read_pyogrio currently keeps geometries as WKB
 @pytest.mark.skip("to_wkb gives panic on todo!(), not yet implemented")
 @pytest.mark.skipif(not compat.HAS_SHAPELY, reason="shapely not available")
 def test_viz_geoarrow_rust_wkb_array():
