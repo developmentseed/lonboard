@@ -2,7 +2,7 @@
 
 As of Lonboard version 0.10, it's possible to use Lonboard in [Pyodide](https://pyodide.org/en/stable/), where Python is running _inside your web browser_ in WebAssembly.
 
-[![](../../assets/lonboard-jupyterlite.png)][Jupyterlite demo]
+[![](../assets/lonboard-jupyterlite.png)][Jupyterlite demo]
 
 [**Demo notebook**][Jupyterlite demo].
 
