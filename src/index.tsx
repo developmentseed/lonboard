@@ -104,7 +104,6 @@ function App() {
   );
   const [parameters] = useModelState<object>("parameters");
   const [customAttribution] = useModelState<string>("custom_attribution");
-  const [clickedPoint] = useModelState<[number, number]>("clicked_point");
 
   // initialViewState is the value of view_state on the Python side. This is
   // called `initial` here because it gets passed in to deck's
@@ -180,8 +179,8 @@ function App() {
     // We added this flag to prevent the hover event from firing after a
     // click event.
     if (typeof info.coordinate !== "undefined") {
-      var x = info.coordinate[0];
-      var y = info.coordinate[1];
+      let x = info.coordinate[0];
+      const y = info.coordinate[1];
       while (x < 180) {
         x += 360;
       }
