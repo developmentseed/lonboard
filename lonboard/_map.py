@@ -209,6 +209,20 @@ class Map(BaseAnyWidget):
         ```
     """
 
+    clicked_point = t.Tuple(
+        t.Float(allow_none=True),
+        t.Float(allow_none=True),
+        allow_none=True,
+    ).tag(sync=True)
+    """
+    The last point where a user clicked on the map.
+
+    - Type: `Tuple[Float]`
+    - Default: `None`
+
+    The first item in the tuple is the x coordinate and the second is the y coordinate.
+    """
+
     # TODO: We'd prefer a "Strict union of bool and float" but that doesn't
     # work here because `Union[bool, float]` would coerce `1` to `True`, which we don't
     # want, and `Union[float, bool]` would coerce `True` to `1`, which we also don't
