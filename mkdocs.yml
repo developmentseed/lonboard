@@ -45,6 +45,7 @@ nav:
       - examples/migration.ipynb
       - examples/data-filter-extension.ipynb
       - examples/column-layer.ipynb
+      - examples/linked-maps.ipynb
       - Integrations:
           - examples/duckdb.ipynb
           - ColorPicker: examples/integrations/color-picker.ipynb
@@ -86,6 +87,7 @@ nav:
       - ecosystem/geopandas.md
       - ecosystem/duckdb.md
       - ecosystem/geoarrow.md
+      - ecosystem/pyodide.md
       - ecosystem/jupyter-widgets.md
       - ecosystem/panel.md
       - ecosystem/shiny.md

@@ -175,11 +175,7 @@ def _reproject_coords(arr: Array, transformer: Transformer):
         raise ValueError(f"Unexpected list size {list_size}")
 
     coord_field = DataType.list(Field(dims, DataType.float64()), len(dims))
-    return fixed_size_list_array(
-        Array.from_numpy(output_np_arr.ravel("C")),
-        len(dims),
-        type=coord_field,
-    )
+    return fixed_size_list_array(output_np_arr.ravel("C"), len(dims), type=coord_field)
 
 
 def _reproject_chunk_nest_0(arr: Array, transformer: Transformer):

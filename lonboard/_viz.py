@@ -458,13 +458,13 @@ def _viz_geoarrow_array(
 
     num_rows = len(array)
     if num_rows <= np.iinfo(np.uint8).max:
-        arange_col = Array.from_numpy(np.arange(num_rows, dtype=np.uint8))
+        arange_col = Array(np.arange(num_rows, dtype=np.uint8))
     elif num_rows <= np.iinfo(np.uint16).max:
-        arange_col = Array.from_numpy(np.arange(num_rows, dtype=np.uint16))
+        arange_col = Array(np.arange(num_rows, dtype=np.uint16))
     elif num_rows <= np.iinfo(np.uint32).max:
-        arange_col = Array.from_numpy(np.arange(num_rows, dtype=np.uint32))
+        arange_col = Array(np.arange(num_rows, dtype=np.uint32))
     else:
-        arange_col = Array.from_numpy(np.arange(num_rows, dtype=np.uint64))
+        arange_col = Array(np.arange(num_rows, dtype=np.uint64))
 
     table = table.append_column("row_index", ChunkedArray([arange_col]))
     return _viz_geoarrow_table(table, **kwargs)
