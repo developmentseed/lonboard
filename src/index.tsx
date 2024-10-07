@@ -161,6 +161,7 @@ function App() {
           // when we use deck.gl to perform picking, we'll have
           // `selected_indices` as a property of each individual layer.
           model.set("selected_bounds", bboxSelectBounds);
+          model.save_changes();
           // childModels.forEach((layer) => {
           //   layer.set("selected_bounds", bboxSelectBounds);
           //   layer.save_changes();
