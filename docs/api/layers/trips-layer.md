@@ -1,5 +1,9 @@
 # TripsLayer
 
+<img src="../../../assets/air-traffic-control.gif" height="300px">
+
+> Screenshot from Air Traffic Control example.
+
 ::: lonboard.experimental.TripsLayer
     options:
       filters:
