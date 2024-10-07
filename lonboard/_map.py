@@ -347,20 +347,12 @@ class Map(BaseAnyWidget):
 
         if isinstance(layers, Map):
             new_layers = layers.layers
-            self.layers += layers.layers
-            # self.layers =x
-            # layers = layers.layers
         elif isinstance(layers, BaseLayer):
             new_layers = (layers,)
-            layers = [layers]
-            self.layers += (layers,)
         else:
             new_layers = tuple(layers)
-            self.layers += tuple(layers)
 
         self.layers += new_layers
-
-        # self.layers += tuple(layers)
 
         if focus:
             self.view_state = compute_view(new_layers)  # type: ignore
