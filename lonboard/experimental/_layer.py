@@ -657,9 +657,8 @@ class TripsLayer(BaseArrowLayer):
                 frame.
             fps: the number of animation frames per second. Defaults to `50`.
             strftime_fmt: the format string passed to
-                [`datetime.strftime`][datetime.datetime.strftime]. If `None`,
-                [`datetime.isoformat`][datetime.datetime.isoformat] is used instead of
-                `strftime`. Defaults to `None`.
+                [`datetime.strftime`][datetime.datetime.strftime]. Defaults to an
+                inferred format string.
 
         Returns:
             an [`ipywidgets.HBox`][ipywidgets.widgets.widget_box.HBox] containing an
@@ -708,8 +707,14 @@ class TripsLayer(BaseArrowLayer):
             (self, "_current_time"),
         )
 
-        # Get the tz string outside of the callback
+        # Some callback prep done outside of the callback for perf
         tz_str: Union[str, None] = self.get_timestamps.type.value_type.tz
+
+        # Custom datetime format without Z/local time because we append the tz string
+        # below
+        default_strftime = "%Y-%m-%d %H:%M:%S"
+        if time_unit != "s":
+            default_strftime += ".%f"
 
         def update_timestamp_output(change):
             current_datetime = self._current_time_to_datetime(change["new"])
@@ -719,9 +724,7 @@ class TripsLayer(BaseArrowLayer):
             if strftime_fmt is not None:
                 s = current_datetime.strftime(strftime_fmt)
             else:
-                # https://stackoverflow.com/a/52187229 custom ISO format without Z/local
-                # time because we append the tz string below
-                s = current_datetime.strftime("%Y-%m-%d %H:%M:%S.%f")
+                s = current_datetime.strftime(default_strftime)
 
             if tz_str is not None:
                 s += f" {tz_str}"
