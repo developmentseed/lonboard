@@ -7,7 +7,7 @@ from __future__ import annotations
 
 import sys
 from datetime import datetime, timedelta
-from typing import TYPE_CHECKING, Optional
+from typing import TYPE_CHECKING, Optional, Union
 
 import ipywidgets
 import traitlets
@@ -29,6 +29,9 @@ from lonboard.traits import (
 from lonboard.types.layer import TripsLayerKwargs
 
 if TYPE_CHECKING:
+    import duckdb
+    import geopandas as gpd
+    import pyproj
     from movingpandas import TrajectoryCollection
 
     if sys.version_info >= (3, 11):
@@ -560,6 +563,40 @@ class TripsLayer(BaseArrowLayer):
         super().__init__(
             table=table,
             _rows_per_chunk=_rows_per_chunk,
+            get_timestamps=get_timestamps,  # type: ignore
+            **kwargs,
+        )
+
+    @classmethod
+    def from_geopandas(  # type: ignore
+        cls,
+        gdf: gpd.GeoDataFrame,
+        *,
+        get_timestamps: ArrowStreamExportable,
+        auto_downcast: bool = True,
+        **kwargs: Unpack[TripsLayerKwargs],
+    ) -> Self:
+        return super().from_geopandas(
+            gdf=gdf,
+            auto_downcast=auto_downcast,
+            get_timestamps=get_timestamps,  # type: ignore
+            **kwargs,
+        )
+
+    @classmethod
+    def from_duckdb(  # type: ignore
+        cls,
+        sql: Union[str, duckdb.DuckDBPyRelation],
+        con: Optional[duckdb.DuckDBPyConnection] = None,
+        *,
+        get_timestamps: ArrowStreamExportable,
+        crs: Optional[Union[str, pyproj.CRS]] = None,
+        **kwargs: Unpack[TripsLayerKwargs],
+    ) -> Self:
+        return super().from_duckdb(
+            sql=sql,
+            con=con,
+            crs=crs,
             get_timestamps=get_timestamps,  # type: ignore
             **kwargs,
         )
