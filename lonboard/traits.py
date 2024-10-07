@@ -37,6 +37,7 @@ from traitlets.traitlets import TraitType
 from traitlets.utils.descriptions import class_of, describe
 from traitlets.utils.sentinel import Sentinel
 
+from lonboard._constants import EXTENSION_NAME
 from lonboard._serialization import (
     ACCESSOR_SERIALIZATION,
     TABLE_SERIALIZATION,
@@ -175,7 +176,7 @@ class ArrowTableTrait(FixedErrorTraitType):
     def __init__(
         self: TraitType,
         *args,
-        allowed_geometry_types: Set[bytes] | None = None,
+        allowed_geometry_types: Set[EXTENSION_NAME] | None = None,
         allowed_dimensions: Optional[Set[int]] = None,
         **kwargs: Any,
     ) -> None:
@@ -187,7 +188,7 @@ class ArrowTableTrait(FixedErrorTraitType):
             **TABLE_SERIALIZATION,
         )
 
-    def validate(self, obj: HasTraits | None, value: Any):
+    def validate(self, obj: BaseArrowLayer, value: Any):
         if not isinstance(value, Table):
             self.error(obj, value)
 
@@ -231,7 +232,7 @@ class ArrowTableTrait(FixedErrorTraitType):
                 msg = " or ".join(map(str, list(allowed_dimensions)))
                 self.error(obj, value, info=f"{msg}-dimensional points")
 
-        return value
+        return value.rechunk(max_chunksize=obj._rows_per_chunk)
 
 
 class ColorAccessor(FixedErrorTraitType):
@@ -275,7 +276,7 @@ class ColorAccessor(FixedErrorTraitType):
         super().__init__(*args, **kwargs)
         self.tag(sync=True, **ACCESSOR_SERIALIZATION)
 
-    def numpy_to_arrow(self, obj: BaseArrowLayer, value: np.ndarray) -> ChunkedArray:
+    def _numpy_to_arrow(self, obj: BaseArrowLayer, value: np.ndarray) -> ChunkedArray:
         if not np.issubdtype(value.dtype, np.uint8):
             self.error(obj, value, info="Color array must be uint8 type.")
 
@@ -321,15 +322,15 @@ class ColorAccessor(FixedErrorTraitType):
                     obj,
                     value,
                     info=(
-                        "Color string must be a hex string interpretable by "
-                        "matplotlib.colors.to_rgba."
+                        "Color string must be a named color or hex string interpretable"
+                        " by matplotlib.colors.to_rgba."
                     ),
                 )
 
             return tuple(map(int, (np.array(c) * 255).astype(np.uint8)))
 
         if isinstance(value, np.ndarray):
-            value = self.numpy_to_arrow(obj, value)
+            value = self._numpy_to_arrow(obj, value)
         elif hasattr(value, "__arrow_c_array__"):
             value = ChunkedArray([Array.from_arrow(value)])
         elif hasattr(value, "__arrow_c_stream__"):
@@ -340,14 +341,14 @@ class ColorAccessor(FixedErrorTraitType):
         assert isinstance(value, ChunkedArray)
 
         if not DataType.is_fixed_size_list(value.type):
-            self.error(obj, value, info="Color pyarrow array must be a FixedSizeList.")
+            self.error(obj, value, info="Color Arrow array must be a FixedSizeList.")
 
         if value.type.list_size not in (3, 4):
             self.error(
                 obj,
                 value,
                 info=(
-                    "Color pyarrow array must have a FixedSizeList inner size of "
+                    "Color Arrow array must have a FixedSizeList inner size of "
                     "3 or 4."
                 ),
             )
@@ -355,7 +356,7 @@ class ColorAccessor(FixedErrorTraitType):
         value_type = value.type.value_type
         assert value_type is not None
         if not DataType.is_uint8(value_type):
-            self.error(obj, value, info="Color pyarrow array must have a uint8 child.")
+            self.error(obj, value, info="Color Arrow array must have a uint8 child.")
 
         return value.rechunk(max_chunksize=obj._rows_per_chunk)
 
@@ -384,7 +385,7 @@ class FloatAccessor(FixedErrorTraitType):
 
     default_value = float(0)
     info_text = (
-        "a float value or numpy ndarray or pyarrow array representing an array"
+        "a float value or numpy ndarray or Arrow array representing an array"
         " of floats"
     )
 
@@ -396,11 +397,11 @@ class FloatAccessor(FixedErrorTraitType):
         super().__init__(*args, **kwargs)
         self.tag(sync=True, **ACCESSOR_SERIALIZATION)
 
-    def pandas_to_numpy(self, obj: BaseArrowLayer, value: pd.Series) -> np.ndarray:
+    def _pandas_to_numpy(self, obj: BaseArrowLayer, value: pd.Series) -> np.ndarray:
         """Cast pandas Series to numpy ndarray"""
         return np.asarray(value)
 
-    def numpy_to_arrow(self, obj: BaseArrowLayer, value: np.ndarray) -> ChunkedArray:
+    def _numpy_to_arrow(self, obj: BaseArrowLayer, value: np.ndarray) -> ChunkedArray:
         if not np.issubdtype(value.dtype, np.number):
             self.error(obj, value, info="numeric dtype")
 
@@ -417,10 +418,10 @@ class FloatAccessor(FixedErrorTraitType):
             value.__class__.__module__.startswith("pandas")
             and value.__class__.__name__ == "Series"
         ):
-            value = self.pandas_to_numpy(obj, value)
+            value = self._pandas_to_numpy(obj, value)
 
         if isinstance(value, np.ndarray):
-            value = self.numpy_to_arrow(obj, value)
+            value = self._numpy_to_arrow(obj, value)
         elif hasattr(value, "__arrow_c_array__"):
             value = ChunkedArray([Array.from_arrow(value)])
         elif hasattr(value, "__arrow_c_stream__"):
@@ -434,7 +435,7 @@ class FloatAccessor(FixedErrorTraitType):
             self.error(
                 obj,
                 value,
-                info="Float pyarrow array must be a numeric type.",
+                info="Float Arrow array must be a numeric type.",
             )
 
         value = value.cast(DataType.float32())
@@ -458,7 +459,7 @@ class TextAccessor(FixedErrorTraitType):
 
     default_value = ""
     info_text = (
-        "a string value or numpy ndarray or pandas Series or pyarrow array representing"
+        "a string value or numpy ndarray or pandas Series or Arrow array representing"
         " an array of strings"
     )
 
@@ -481,7 +482,7 @@ class TextAccessor(FixedErrorTraitType):
 
         return ChunkedArray([pa.array(value)])
 
-    def numpy_to_arrow(self, obj: BaseArrowLayer, value: np.ndarray) -> ChunkedArray:
+    def _numpy_to_arrow(self, obj: BaseArrowLayer, value: np.ndarray) -> ChunkedArray:
         try:
             import pyarrow as pa
         except ImportError as e:
@@ -501,7 +502,7 @@ class TextAccessor(FixedErrorTraitType):
         ):
             value = self.pandas_to_arrow(obj, value)
         elif isinstance(value, np.ndarray):
-            value = self.numpy_to_arrow(obj, value)
+            value = self._numpy_to_arrow(obj, value)
         elif hasattr(value, "__arrow_c_array__"):
             value = ChunkedArray([Array.from_arrow(value)])
         elif hasattr(value, "__arrow_c_stream__"):
@@ -518,7 +519,7 @@ class TextAccessor(FixedErrorTraitType):
             self.error(
                 obj,
                 value,
-                info="String pyarrow array must be a string type.",
+                info="String Arrow array must be a string type.",
             )
 
         return value.rechunk(max_chunksize=obj._rows_per_chunk)
@@ -549,7 +550,7 @@ class PointAccessor(FixedErrorTraitType):
         super().__init__(*args, **kwargs)
         self.tag(sync=True, **ACCESSOR_SERIALIZATION)
 
-    def numpy_to_arrow(self, obj: BaseArrowLayer, value: np.ndarray) -> ChunkedArray:
+    def _numpy_to_arrow(self, obj: BaseArrowLayer, value: np.ndarray) -> ChunkedArray:
         if value.ndim != 2:
             self.error(obj, value, info="Point array to have 2 dimensions")
 
@@ -569,7 +570,7 @@ class PointAccessor(FixedErrorTraitType):
         self, obj: BaseArrowLayer, value
     ) -> Union[Tuple[int, ...], List[int], ChunkedArray]:
         if isinstance(value, np.ndarray):
-            value = self.numpy_to_arrow(obj, value)
+            value = self._numpy_to_arrow(obj, value)
         elif hasattr(value, "__arrow_c_array__"):
             value = ChunkedArray([Array.from_arrow(value)])
         elif hasattr(value, "__arrow_c_stream__"):
@@ -654,7 +655,7 @@ class FilterValueAccessor(FixedErrorTraitType):
 
     default_value = float(0)
     info_text = (
-        "a float value or numpy ndarray or pyarrow array representing an array"
+        "a float value or numpy ndarray or Arrow array representing an array"
         " of floats"
     )
 
@@ -666,7 +667,7 @@ class FilterValueAccessor(FixedErrorTraitType):
         super().__init__(*args, **kwargs)
         self.tag(sync=True, **ACCESSOR_SERIALIZATION)
 
-    def pandas_to_numpy(
+    def _pandas_to_numpy(
         self, obj: BaseArrowLayer, value, filter_size: int
     ) -> np.ndarray:
         # Assert that filter_size == 1 for a pandas series.
@@ -678,7 +679,7 @@ class FilterValueAccessor(FixedErrorTraitType):
         # Cast pandas Series to numpy ndarray
         return np.asarray(value)
 
-    def numpy_to_arrow(
+    def _numpy_to_arrow(
         self, obj: BaseArrowLayer, value, filter_size: int
     ) -> ChunkedArray:
         if not np.issubdtype(value.dtype, np.number):
@@ -750,10 +751,10 @@ class FilterValueAccessor(FixedErrorTraitType):
             value.__class__.__module__.startswith("pandas")
             and value.__class__.__name__ == "Series"
         ):
-            value = self.pandas_to_numpy(obj, value, filter_size)
+            value = self._pandas_to_numpy(obj, value, filter_size)
 
         if isinstance(value, np.ndarray):
-            value = self.numpy_to_arrow(obj, value, filter_size)
+            value = self._numpy_to_arrow(obj, value, filter_size)
         elif hasattr(value, "__arrow_c_array__"):
             value = ChunkedArray([Array.from_arrow(value)])
         elif hasattr(value, "__arrow_c_stream__"):
@@ -842,7 +843,7 @@ class NormalAccessor(FixedErrorTraitType):
         super().__init__(*args, **kwargs)
         self.tag(sync=True, **ACCESSOR_SERIALIZATION)
 
-    def numpy_to_arrow(self, obj: BaseArrowLayer, value: np.ndarray) -> ChunkedArray:
+    def _numpy_to_arrow(self, obj: BaseArrowLayer, value: np.ndarray) -> ChunkedArray:
         if not np.issubdtype(value.dtype, np.number):
             self.error(obj, value, info="normal array to have numeric type")
 
@@ -852,7 +853,7 @@ class NormalAccessor(FixedErrorTraitType):
         if not np.issubdtype(value.dtype, np.float32):
             warnings.warn(
                 """Warning: Numpy array should be float32 type.
-                Converting to float32 point pyarrow array"""
+                Converting to float32 point Arrow array"""
             )
             value = value.astype(np.float32)
 
@@ -878,7 +879,7 @@ class NormalAccessor(FixedErrorTraitType):
             return value
 
         if isinstance(value, np.ndarray):
-            value = self.numpy_to_arrow(obj, value)
+            value = self._numpy_to_arrow(obj, value)
         elif hasattr(value, "__arrow_c_array__"):
             value = ChunkedArray([Array.from_arrow(value)])
         elif hasattr(value, "__arrow_c_stream__"):
@@ -889,13 +890,13 @@ class NormalAccessor(FixedErrorTraitType):
         assert isinstance(value, ChunkedArray)
 
         if not DataType.is_fixed_size_list(value.type):
-            self.error(obj, value, info="normal pyarrow array to be a FixedSizeList.")
+            self.error(obj, value, info="normal Arrow array to be a FixedSizeList.")
 
         if value.type.list_size != 3:
             self.error(
                 obj,
                 value,
-                info=("normal pyarrow array to have an inner size of 3."),
+                info=("normal Arrow array to have an inner size of 3."),
             )
 
         value_type = value.type.value_type
@@ -904,7 +905,7 @@ class NormalAccessor(FixedErrorTraitType):
             self.error(
                 obj,
                 value,
-                info="pyarrow array to be floating point type",
+                info="Arrow array to be floating point type",
             )
 
         value = value.cast(DataType.list(Field("", DataType.float32()), 3))
@@ -973,7 +974,7 @@ class DashArrayAccessor(FixedErrorTraitType):
         super().__init__(*args, **kwargs)
         self.tag(sync=True, **ACCESSOR_SERIALIZATION)
 
-    def numpy_to_arrow(self, obj: BaseArrowLayer, value: np.ndarray) -> ChunkedArray:
+    def _numpy_to_arrow(self, obj: BaseArrowLayer, value: np.ndarray) -> ChunkedArray:
         if not np.issubdtype(value.dtype, np.number):
             self.error(obj, value, info="NumPy array must be uint8 type.")
 
@@ -1012,7 +1013,7 @@ class DashArrayAccessor(FixedErrorTraitType):
             return value
 
         if isinstance(value, np.ndarray):
-            value = self.numpy_to_arrow(obj, value)
+            value = self._numpy_to_arrow(obj, value)
         elif hasattr(value, "__arrow_c_array__"):
             value = ChunkedArray([Array.from_arrow(value)])
         elif hasattr(value, "__arrow_c_stream__"):
@@ -1023,13 +1024,13 @@ class DashArrayAccessor(FixedErrorTraitType):
         assert isinstance(value, ChunkedArray)
 
         if not DataType.is_fixed_size_list(value.type):
-            self.error(obj, value, info="Pyarrow array must be a FixedSizeList.")
+            self.error(obj, value, info="Arrow array must be a FixedSizeList.")
 
         if value.type.list_size != 2:
             self.error(
                 obj,
                 value,
-                info="Pyarrow array must have a FixedSizeList inner size of 2.",
+                info="Arrow array must have a FixedSizeList inner size of 2.",
             )
 
         value_type = value.type.value_type
@@ -1039,7 +1040,7 @@ class DashArrayAccessor(FixedErrorTraitType):
             or DataType.is_signed_integer(value_type)
             or DataType.is_floating(value_type)
         ):
-            self.error(obj, value, info="Pyarrow array to have a numeric type child.")
+            self.error(obj, value, info="Arrow array to have a numeric type child.")
 
         # Cast float64 to float32; leave other data types the same
         if DataType.is_float64(value_type):

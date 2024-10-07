@@ -41,6 +41,7 @@ nav:
       - examples/internet-speeds.ipynb
       - examples/north-america-roads.ipynb
       - examples/overture-maps.ipynb
+      - examples/air-traffic-control.ipynb
       - examples/global-boundaries.ipynb
       - examples/migration.ipynb
       - examples/data-filter-extension.ipynb
@@ -50,6 +51,7 @@ nav:
           - examples/duckdb.ipynb
           - ColorPicker: examples/integrations/color-picker.ipynb
           - Sidecar: examples/integrations/sidecar.ipynb
+          - examples/ais-movingpandas.ipynb
       - 30 Day Map Challenge:
           - "Day 1: Points": examples/map_challenge/1-points.ipynb
           - "Day 6: Asia": examples/map_challenge/6-asia.ipynb
@@ -81,6 +83,7 @@ nav:
           - Layers:
               - api/layers/arc-layer.md
               - api/layers/text-layer.md
+              - api/layers/trips-layer.md
   - cli.md
   - Ecosystem:
       - ecosystem/index.md
@@ -184,6 +187,7 @@ plugins:
             - https://ipywidgets.readthedocs.io/en/stable/objects.inv
             - https://kylebarron.dev/arro3/latest/objects.inv
             - https://matplotlib.org/stable/objects.inv
+            - https://movingpandas.readthedocs.io/en/main/objects.inv
             - https://numpy.org/doc/stable/objects.inv
             - https://pandas.pydata.org/pandas-docs/stable/objects.inv
             - https://pola-rs.github.io/polars/py-polars/html/objects.inv

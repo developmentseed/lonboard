@@ -199,6 +199,22 @@ class SolidPolygonLayerKwargs(BaseLayerKwargs, total=False):
     get_line_color: ColorAccessorInput
 
 
+class TripsLayerKwargs(BaseLayerKwargs, total=False):
+    width_units: Units
+    width_scale: IntFloat
+    width_min_pixels: IntFloat
+    width_max_pixels: IntFloat
+    joint_rounded: bool
+    cap_rounded: bool
+    miter_limit: IntFloat
+    billboard: bool
+    fade_trail: bool
+    trail_length: IntFloat
+    current_time: IntFloat
+    get_color: ColorAccessorInput
+    get_width: FloatAccessorInput
+
+
 class HeatmapLayerKwargs(BaseLayerKwargs, total=False):
     radius_pixels: IntFloat
     intensity: IntFloat

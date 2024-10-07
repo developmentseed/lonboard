@@ -7,3 +7,4 @@
 ::: lonboard.traits.NormalAccessor
 ::: lonboard.traits.PointAccessor
 ::: lonboard.traits.ArrowTableTrait
+::: lonboard.experimental.traits.TimestampAccessor
