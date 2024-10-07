@@ -630,19 +630,21 @@ class TripsLayer(BaseArrowLayer):
         )
         return cls(table=table, get_timestamps=timestamp_col, **kwargs)
 
-    def animate(self, *, step: timedelta, interval: int = 20) -> ipywidgets.Play:
+    def animate(self, *, step: timedelta, fps: int | float = 50) -> ipywidgets.Play:
         """
         Animate this layer with an
         [`ipywidgets.Play`][ipywidgets.widgets.widget_int.Play] controller.
 
-        As an example, passing `step=timedelta(seconds=60)` will set each time step of
-        the animation to be 60 "data seconds". Setting `interval=100` would cause there
-        to be one animation step every 100 milliseconds, or 10 animation steps per
-        second. So if you wish to run your animation at 50 frames per second, set
-        `interval` to `1000 / 50 = 20`.
+        You can change how "fast" the animation is perceived by either increasing the
+        amount of "data time" in each animation step, or by having more animation frames
+        per second.
 
-        Note that depending on the size of your data, it may not actually update at the
-        number of frames per second implied by `interval`.
+        As an example, passing `step=timedelta(seconds=60)` will set each time step of
+        the animation to be 60 "data seconds". Setting `fps=50` (the default) causes
+        there to be 50 animation frames per second.
+
+        Note that for large data, it's possible there will be some rendering lag and
+        data may not actually update at the desired frames per second.
 
         If you call `animate` multiple times, only the most recently produced `Play`
         widget will be active and linked to the map.
@@ -650,13 +652,14 @@ class TripsLayer(BaseArrowLayer):
         Keyword Args:
             step: the length of time in the data to progress between each animation
                 frame.
-            interval: the number of milliseconds between each animation frame. Defaults
-                to `20`, or 50 frames per second.
+            fps: the number of animation frames per second. Defaults to `50`.
 
         Returns:
             an [`ipywidgets.Play`][ipywidgets.widgets.widget_int.Play] controller
         """
         assert isinstance(step, timedelta), "expected step to be a timedelta."
+
+        interval = 1000 / fps
 
         time_unit = self.get_timestamps.type.value_type.time_unit
         assert time_unit is not None
