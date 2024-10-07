@@ -1,5 +1,41 @@
 # Changelog
 
+## [0.10.0] - 2024-10-07
+
+### New! :sparkles:
+
+- **New `TripsLayer`** for animating moving objects, which integrates with [MovingPandas](https://github.com/movingpandas/movingpandas). See the [Air Traffic Control example](https://developmentseed.org/lonboard/latest/examples/air-traffic-control/) and the [MovingPandas integration example](https://developmentseed.org/lonboard/latest/examples/ais-movingpandas/).
+- **New [`ColumnLayer`](https://developmentseed.org/lonboard/latest/api/layers/column-layer/)** for rendering extruded cylinders. See the [new `ColumnLayer` example](https://developmentseed.org/lonboard/latest/examples/column-layer/).
+- **Removed required dependencies!** `geopandas`, `pandas`, `shapely`, `pyarrow`, `matplotlib`, and `palettable` are now _optional_ dependencies. Lonboard will still work out of the box with them, but they aren't required to use Lonboard. This gives Lonboard a smaller footprint and makes it easier to use in environments such as [Pyodide](https://pyodide.org/).
+- You can now **draw bounding boxes on the map**. This is exposed as the `selected_bounds` attribute on the `Map` object, stored as a two-dimensional bounding box `(minx, miny, maxx, maxy)`.
+- **Improved documentation**
+  - [How to use Lonboard in pyodide](https://developmentseed.org/lonboard/latest/ecosystem/pyodide/), a Python environment that is fully running in your browser.
+  - Add linked maps example by @ATL2001 in https://github.com/developmentseed/lonboard/pull/655
+  - Add troubleshooting doc by @kylebarron in https://github.com/developmentseed/lonboard/pull/654
+  - Add longraph to showcase by @kylebarron in https://github.com/developmentseed/lonboard/pull/595
+- **New `Map.add_layer` method** for easily adding more layer(s) to an existing `Map` instance.
+- Add `highlight_color` to change the color of `auto_highlight` by @kylebarron in https://github.com/developmentseed/lonboard/pull/666
+- Use deterministic colors in `viz` by @kylebarron in https://github.com/developmentseed/lonboard/pull/621
+- Categorical data filtering. The `DataFilterExtension` now has a [`filter_categories` attribute](https://developmentseed.org/lonboard/latest/api/layer-extensions/data-filter-extension/#lonboard.layer_extension.DataFilterExtension--filter_categories) that lets you filter categorical data on the map. by @kylebarron in https://github.com/developmentseed/lonboard/pull/609
+
+### Breaking Changes :hammer:
+
+- The tooltip shown on hover was **replaced with a side panel**. You now must **click** on a geometry to view its attributes. By @vgeorge in https://github.com/developmentseed/lonboard/pull/636
+
+### Fixes :bug:
+
+- We've switched from storing `list` objects to storing `tuple` objects (e.g. the list of layers in a `Map`). The immutability of the `tuple` ensures that a any changes in the sequence of layers will be propagated to the frontend.Fixed in https://github.com/developmentseed/lonboard/pull/620
+- A class of bugs was fixed when using Arrow input, where the chunking structure of the main `table` did not match the chunking of accessors. Fixed in https://github.com/developmentseed/lonboard/pull/644
+- Fix reading from DuckDB with only geometry column by @kylebarron in https://github.com/developmentseed/lonboard/pull/625
+- Fix attribution by @vgeorge in https://github.com/developmentseed/lonboard/pull/561
+
+## New Contributors
+
+- @MarcSkovMadsen made their first contribution in https://github.com/developmentseed/lonboard/pull/539
+- @ATL2001 made their first contribution in https://github.com/developmentseed/lonboard/pull/655
+
+**Full Changelog**: https://github.com/developmentseed/lonboard/compare/v0.9.3...v0.10.0
+
 ## [0.9.3] - 2024-05-27
 
 ### Fixes :bug:
