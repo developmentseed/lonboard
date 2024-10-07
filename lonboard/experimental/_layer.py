@@ -376,7 +376,8 @@ class TripsLayer(BaseArrowLayer):
 
         The TripsLayer renders data representing a specific instance in time based on
         the [`current_time`][lonboard.experimental.TripsLayer.current_time] attribute.
-        If you don't see any data, the `current_time` may not be set correctly. Use the
+
+        If you don't see any data, use the
         [`animate`][lonboard.experimental.TripsLayer.animate] method to automatically
         set `current_time`.
 
@@ -498,14 +499,14 @@ class TripsLayer(BaseArrowLayer):
     - Default: `120`
     """
 
-    current_time = traitlets.Float(0).tag(sync=True)
+    _current_time = traitlets.Float(0).tag(sync=True)
     """The current time of the frame.
 
     - Type: `float`, optional
     - Default: set by the [`animate`][lonboard.experimental.TripsLayer.animate] method.
 
     !!! info
-        This `current_time` is not directly interpretable.
+        This `_current_time` is not directly interpretable.
 
         Because of some technical details in deck.gl (the fact that deck.gl represents
         timestamps as `float32`), the `TripsLayer` automatically rescales the input
@@ -630,7 +631,9 @@ class TripsLayer(BaseArrowLayer):
         )
         return cls(table=table, get_timestamps=timestamp_col, **kwargs)
 
-    def animate(self, *, step: timedelta, fps: int | float = 50) -> ipywidgets.Play:
+    def animate(
+        self, *, step: timedelta, fps: int | float = 50, strftime_fmt: str | None = None
+    ) -> ipywidgets.widgets.widget_box.HBox:
         """
         Animate this layer with an
         [`ipywidgets.Play`][ipywidgets.widgets.widget_int.Play] controller.
@@ -653,9 +656,17 @@ class TripsLayer(BaseArrowLayer):
             step: the length of time in the data to progress between each animation
                 frame.
             fps: the number of animation frames per second. Defaults to `50`.
+            strftime_fmt: the format string passed to
+                [`datetime.strftime`][datetime.datetime.strftime]. If `None`,
+                [`datetime.isoformat`][datetime.datetime.isoformat] is used instead of
+                `strftime`. Defaults to `None`.
 
         Returns:
-            an [`ipywidgets.Play`][ipywidgets.widgets.widget_int.Play] controller
+            an [`ipywidgets.HBox`][ipywidgets.widgets.widget_box.HBox] containing an
+                [`ipywidgets.Play`][ipywidgets.widgets.widget_int.Play] controller to
+                manage animation playback and an
+                [`ipywidgets.Output`][ipywidgets.widgets.widget_output.Output] to
+                display the current datetime of the map.
         """
         assert isinstance(step, timedelta), "expected step to be a timedelta."
 
@@ -689,22 +700,41 @@ class TripsLayer(BaseArrowLayer):
             repeat=True,
         )
 
+        timestamp_output = ipywidgets.Output()
+
         # Store a reference to the widget link
         self._animation_link = ipywidgets.jsdlink(
             (play_widget, "value"),
-            (self, "current_time"),
+            (self, "_current_time"),
         )
 
-        return play_widget
+        def update_timestamp_output(change):
+            timestamp_output.clear_output(wait=True)
+            if strftime_fmt is not None:
+                timestamp_output.append_stdout(
+                    self._current_time_to_datetime(change["new"]).strftime(strftime_fmt)
+                )
+            else:
+                timestamp_output.append_stdout(
+                    self._current_time_to_datetime(change["new"]).isoformat()
+                )
 
-    def current_time_as_datetime(self) -> datetime:
+        play_widget.observe(update_timestamp_output, names="value")
+
+        return ipywidgets.HBox([play_widget, timestamp_output])
+
+    @property
+    def current_time(self) -> datetime:
         """Get the current time of the map as a `datetime` object.
 
         Returns:
             datetime object with current time.
         """
+        return self._current_time_to_datetime(self._current_time)
+
+    def _current_time_to_datetime(self, current_time: float) -> datetime:
         start_offset = timestamp_start_offset(self.get_timestamps)
-        timestamp_int = int(self.current_time - start_offset)
+        timestamp_int = int(current_time - start_offset)
         timestamp_scalar = Scalar(timestamp_int, type=DataType.int64()).cast(
             self.get_timestamps.type.value_type
         )

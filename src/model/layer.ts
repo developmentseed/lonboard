@@ -938,7 +938,7 @@ export class TripsModel extends BaseArrowLayerModel {
     this.initRegularAttribute("billboard", "billboard");
     this.initRegularAttribute("fade_trail", "fadeTrail");
     this.initRegularAttribute("trail_length", "trailLength");
-    this.initRegularAttribute("current_time", "currentTime");
+    this.initRegularAttribute("_current_time", "currentTime");
 
     this.initVectorizedAccessor("get_color", "getColor");
     this.initVectorizedAccessor("get_width", "getWidth");
