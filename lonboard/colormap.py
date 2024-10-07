@@ -1,6 +1,6 @@
 from __future__ import annotations
 
-from typing import TYPE_CHECKING, Any, Dict, Optional, Sequence, Tuple, Union
+from typing import TYPE_CHECKING, Any, Mapping, Sequence, Tuple, Union
 
 import numpy as np
 from arro3.compute import dictionary_encode
@@ -12,6 +12,8 @@ from arro3.core import (
     dictionary_indices,
 )
 from arro3.core.types import ArrowArrayExportable, ArrowStreamExportable
+
+from lonboard._vendor.matplotlib.colors import _to_rgba_no_colorcycle
 
 if TYPE_CHECKING:
     import matplotlib as mpl
@@ -26,15 +28,17 @@ __all__ = (
     "apply_categorical_cmap",
 )
 
-RGBColor = Union[Tuple[int, int, int], Tuple[int, int, int, int], Sequence[int]]
+RGBColor = Union[Tuple[int, int, int], Tuple[int, int, int, int], Sequence[int], str]
 """A type definition for an RGB or RGBA color value
 
 All values must range between 0 and 255 (inclusive). If only three values are provided,
 the fourth (alpha) channel will be inferred as 255 (meaning full opacity, no
 transparency).
+
+This can also be a string that refers to a [matplotlib named color](https://matplotlib.org/stable/gallery/color/named_colors.html).
 """
 
-DiscreteColormap = Dict[Any, RGBColor]
+DiscreteColormap = Mapping[Any, RGBColor]
 """A type definition for a discrete colormap.
 
 For example, for a land cover colormap, you may want to use the following dict:
@@ -149,7 +153,7 @@ def apply_categorical_cmap(
     ],
     cmap: DiscreteColormap,
     *,
-    alpha: Optional[int] = None,
+    alpha: int | float | None = None,
 ) -> NDArray[np.uint8]:
     """Apply a colormap to a column of categorical values.
 
@@ -210,6 +214,11 @@ def apply_categorical_cmap(
 
     for i, key in enumerate(dictionary):
         color = cmap[key.as_py()]
+
+        if isinstance(color, str):
+            color = _to_rgba_no_colorcycle(color, alpha=alpha)
+            color = [c * 255 for c in color]
+
         if len(color) == 3:
             lut[i, :3] = color
         elif len(color) == 4:
