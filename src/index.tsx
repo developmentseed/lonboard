@@ -180,15 +180,14 @@ function App() {
     // click event.
     if (typeof info.coordinate !== "undefined") {
       let x = info.coordinate[0];
-      const y = info.coordinate[1];
       while (x < 180) {
         x += 360;
       }
       while (x > 180) {
         x -= 360;
       }
-      model.set("clicked_point", [x, y]);
-      model.save_changes();
+      info.coordinate[0] = x;
+      model.send({ kind: "on-click", coordinate: info.coordinate });
     }
     setJustClicked(true);
     actorRef.send({
