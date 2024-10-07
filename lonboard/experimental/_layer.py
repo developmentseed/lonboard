@@ -359,7 +359,7 @@ class TextLayer(BaseArrowLayer):
 
 
 class TripsLayer(BaseArrowLayer):
-    """The `TripsLayer` renders animated paths that represent vehicle trips.
+    """The `TripsLayer` renders animated paths that represent moving objects.
 
     The easiest way to create a `TripsLayer` is by using the
     [`from_movingpandas`][lonboard.experimental.TripsLayer.from_movingpandas]
@@ -367,7 +367,7 @@ class TripsLayer(BaseArrowLayer):
 
     Otherwise, this layer requires a specific Arrow input data schema to associate the
     timestamp of each coordinate with the spatial information in the `LineString`
-    geometries. Read the call out note below.
+    geometries.
 
     In order to animate this layer, call the
     [`animate`][lonboard.experimental.TripsLayer.animate] method.
