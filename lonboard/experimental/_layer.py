@@ -708,16 +708,27 @@ class TripsLayer(BaseArrowLayer):
             (self, "_current_time"),
         )
 
+        # Get the tz string outside of the callback
+        tz_str: Union[str, None] = self.get_timestamps.type.value_type.tz
+
         def update_timestamp_output(change):
-            timestamp_output.clear_output(wait=True)
+            current_datetime = self._current_time_to_datetime(change["new"])
+            # Ignore timezone info because we also print tz str
+            current_datetime.replace(tzinfo=None)
+
             if strftime_fmt is not None:
-                timestamp_output.append_stdout(
-                    self._current_time_to_datetime(change["new"]).strftime(strftime_fmt)
-                )
+                s = current_datetime.strftime(strftime_fmt)
             else:
-                timestamp_output.append_stdout(
-                    self._current_time_to_datetime(change["new"]).isoformat()
-                )
+                # https://stackoverflow.com/a/52187229 custom ISO format without Z/local
+                # time because we append the tz string below
+                s = current_datetime.strftime("%Y-%m-%d %H:%M:%S.%f")
+
+            if tz_str is not None:
+                s += f" {tz_str}"
+
+            timestamp_output.clear_output(wait=True)
+            with timestamp_output:
+                print(s)
 
         play_widget.observe(update_timestamp_output, names="value")
 
