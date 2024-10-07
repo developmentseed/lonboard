@@ -250,17 +250,6 @@ class BaseLayer(BaseWidget):
     - Default: `[0, 0, 128, 128]`
     """
 
-    selected_bounds = t.Tuple(
-        t.Float(), t.Float(), t.Float(), t.Float(), allow_none=True, default_value=None
-    ).tag(sync=True)
-    """
-    Bounds selected by the user, represented as a tuple of floats ordered as
-
-    ```
-    (minx, miny, maxx, maxy)
-    ```
-    """
-
     selected_index = t.Int(None, allow_none=True).tag(sync=True)
     """
     The positional index of the most-recently clicked on row of data.

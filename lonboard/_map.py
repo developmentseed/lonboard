@@ -308,6 +308,17 @@ class Map(BaseAnyWidget):
       global `parameters` when that layer is rendered.
     """
 
+    selected_bounds = t.Tuple(
+        t.Float(), t.Float(), t.Float(), t.Float(), allow_none=True, default_value=None
+    ).tag(sync=True)
+    """
+    Bounds selected by the user, represented as a tuple of floats ordered as
+
+    ```
+    (minx, miny, maxx, maxy)
+    ```
+    """
+
     def add_layer(
         self,
         layers: BaseLayer | Sequence[BaseLayer] | Map,
