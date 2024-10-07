@@ -102,9 +102,8 @@ class Map(BaseAnyWidget):
             layers = [layers]
 
         def _handle_anywidget_dispatch(
-                widget: ipywidgets.Widget, msg: Union[str, list, dict],
-                buffers: List[bytes]
-            ) -> None:
+            widget: ipywidgets.Widget, msg: Union[str, list, dict], buffers: List[bytes]
+        ) -> None:
             if msg.get("kind") != "on-click":
                 return
             self._click_handlers(tuple(msg.get("coordinate")))
