@@ -1,5 +1,11 @@
 # Changelog
 
+## [0.10.1] - 2024-10-08
+
+### Fixes :bug:
+
+- Fix import when pandas not installed.
+
 ## [0.10.0] - 2024-10-07
 
 ### New! :sparkles:
@@ -29,7 +35,7 @@
 - Fix reading from DuckDB with only geometry column by @kylebarron in https://github.com/developmentseed/lonboard/pull/625
 - Fix attribution by @vgeorge in https://github.com/developmentseed/lonboard/pull/561
 
-## New Contributors
+### New Contributors
 
 - @MarcSkovMadsen made their first contribution in https://github.com/developmentseed/lonboard/pull/539
 - @ATL2001 made their first contribution in https://github.com/developmentseed/lonboard/pull/655
