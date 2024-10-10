@@ -112,7 +112,7 @@ def movingpandas_to_geoarrow(
 
     nested_attr_table = apply_offsets_to_table(attr_table, offsets=offsets)
 
-    if np.alltrue(np.isnan(coords[:, 2])):
+    if np.all(np.isnan(coords[:, 2])):
         coord_list_size = 2
         # Cast to 2D coords
         coords = coords[:, :2]
