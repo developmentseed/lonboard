@@ -1,5 +1,11 @@
 # Changelog
 
+## [0.10.2] - 2024-10-10
+
+### Fixes :bug:
+
+- Fix using `TripsLayer.from_movingpandas` with numpy v2.
+
 ## [0.10.1] - 2024-10-08
 
 ### Fixes :bug:
