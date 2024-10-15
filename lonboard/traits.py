@@ -1075,7 +1075,10 @@ class BasemapUrl(traitlets.Unicode):
 T = TypeVar("T")
 
 
-class VariableLengthTuple(traitlets.Container[Tuple[T, ...]]):
+# TODO: switch to
+# class VariableLengthTuple(traitlets.Container[Tuple[T, ...]])
+# When we can upgrade to traitlets 5.10 (depends on Colab upgrading)
+class VariableLengthTuple(traitlets.Container):
     """
     An instance of a Python tuple with variable numbers of elements of the same type.
     """
