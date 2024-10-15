@@ -1,5 +1,11 @@
 # Changelog
 
+## [0.10.3] - 2024-10-15
+
+### Fixes :bug:
+
+- Downgrade minimum traitlets version to fix use with Colab. https://github.com/developmentseed/lonboard/pull/687
+
 ## [0.10.2] - 2024-10-10
 
 ### Fixes :bug:
