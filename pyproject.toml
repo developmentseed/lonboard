@@ -32,8 +32,9 @@ classifiers = [
 [tool.poetry.dependencies]
 python = "^3.8"
 anywidget = "^0.9.0"
-# Minimum version for generic type hints
-traitlets = ">=5.10"
+# Version in Colab as of October 2024
+# Upgrading to 5.10 would be ideal to enable generic types
+traitlets = ">=5.7.1"
 arro3-core = ">=0.4.1"
 arro3-io = ">=0.4.1"
 arro3-compute = ">=0.4.1"
