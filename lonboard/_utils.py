@@ -2,12 +2,13 @@ from __future__ import annotations
 
 from typing import TYPE_CHECKING, Any, Dict, List, Optional, Sequence, Tuple, TypeVar
 
+import arro3.compute as ac
 import numpy as np
-from arro3.core import Schema
+from arro3.core import ChunkedArray, DataType, Scalar, Schema, list_flatten
 
 from lonboard._base import BaseExtension
 from lonboard._compat import check_pandas_version
-from lonboard._constants import EXTENSION_NAME
+from lonboard._constants import EXTENSION_NAME, MIN_INTEGER_FLOAT32
 
 if TYPE_CHECKING:
     import geopandas as gpd
@@ -211,3 +212,22 @@ def indices_by_geometry_type(
     )[0]
 
     return point_indices, linestring_indices, polygon_indices
+
+
+def timestamp_start_offset(timestamps: ChunkedArray) -> int:
+    timestamps = timestamps.cast(DataType.list(DataType.int64()))
+
+    min_timestamp = ac.min(list_flatten(timestamps))
+    return MIN_INTEGER_FLOAT32 - min_timestamp.as_py()
+
+
+def timestamp_max_physical_value(timestamps: ChunkedArray) -> int:
+    # Cast to int64 type
+    timestamps = timestamps.cast(DataType.list(DataType.int64()))
+
+    min_timestamp = ac.min(list_flatten(timestamps))
+    max_timestamp = ac.max(list_flatten(timestamps))
+    start_offset_adjustment = Scalar(
+        MIN_INTEGER_FLOAT32 - min_timestamp.as_py(), type=DataType.int64()
+    )
+    return start_offset_adjustment.as_py() + max_timestamp.as_py()

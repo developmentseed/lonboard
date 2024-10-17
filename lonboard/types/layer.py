@@ -2,6 +2,7 @@ from __future__ import annotations
 
 import sys
 from typing import (
+    TYPE_CHECKING,
     List,
     Literal,
     Sequence,
@@ -10,8 +11,6 @@ from typing import (
 )
 
 import numpy as np
-import pandas as pd
-import pyarrow
 from arro3.core.types import ArrowArrayExportable, ArrowStreamExportable
 from numpy.typing import NDArray
 
@@ -21,6 +20,10 @@ if sys.version_info >= (3, 12):
     from typing import TypedDict
 else:
     from typing_extensions import TypedDict
+
+if TYPE_CHECKING:
+    import pandas as pd
+    import pyarrow
 
 
 IntFloat = Union[int, float]
@@ -32,8 +35,8 @@ ColorAccessorInput = Union[
     Tuple[int, ...],
     str,
     NDArray[np.uint8],
-    pyarrow.FixedSizeListArray,
-    pyarrow.ChunkedArray,
+    "pyarrow.FixedSizeListArray",
+    "pyarrow.ChunkedArray",
     ArrowArrayExportable,
     ArrowStreamExportable,
 ]
@@ -41,9 +44,9 @@ FloatAccessorInput = Union[
     int,
     float,
     NDArray[np.number],
-    pd.Series,
-    pyarrow.FloatingPointArray,
-    pyarrow.ChunkedArray,
+    "pd.Series",
+    "pyarrow.FloatingPointArray",
+    "pyarrow.ChunkedArray",
     ArrowArrayExportable,
     ArrowStreamExportable,
 ]
@@ -52,18 +55,18 @@ NormalAccessorInput = Union[
     Tuple[int, int, int],
     Tuple[int, ...],
     NDArray[np.floating],
-    pyarrow.FixedSizeListArray,
-    pyarrow.ChunkedArray,
+    "pyarrow.FixedSizeListArray",
+    "pyarrow.ChunkedArray",
     ArrowArrayExportable,
     ArrowStreamExportable,
 ]
 TextAccessorInput = Union[
     str,
     NDArray[np.str_],
-    pd.Series,
-    pyarrow.StringArray,
-    pyarrow.LargeStringArray,
-    pyarrow.ChunkedArray,
+    "pd.Series",
+    "pyarrow.StringArray",
+    "pyarrow.LargeStringArray",
+    "pyarrow.ChunkedArray",
     ArrowArrayExportable,
     ArrowStreamExportable,
 ]
@@ -197,6 +200,22 @@ class SolidPolygonLayerKwargs(BaseLayerKwargs, total=False):
     get_elevation: FloatAccessorInput
     get_fill_color: ColorAccessorInput
     get_line_color: ColorAccessorInput
+
+
+class TripsLayerKwargs(BaseLayerKwargs, total=False):
+    width_units: Units
+    width_scale: IntFloat
+    width_min_pixels: IntFloat
+    width_max_pixels: IntFloat
+    joint_rounded: bool
+    cap_rounded: bool
+    miter_limit: IntFloat
+    billboard: bool
+    fade_trail: bool
+    trail_length: IntFloat
+    current_time: IntFloat
+    get_color: ColorAccessorInput
+    get_width: FloatAccessorInput
 
 
 class HeatmapLayerKwargs(BaseLayerKwargs, total=False):

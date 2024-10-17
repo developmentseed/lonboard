@@ -1,6 +1,6 @@
 [tool.poetry]
 name = "lonboard"
-version = "0.10.0-beta.2"
+version = "0.10.3"
 description = "Fast, interactive geospatial data visualization in Jupyter."
 authors = ["Kyle Barron <kyle@developmentseed.org>"]
 license = "MIT"
@@ -32,17 +32,19 @@ classifiers = [
 [tool.poetry.dependencies]
 python = "^3.8"
 anywidget = "^0.9.0"
-# Minimum version for generic type hints
-traitlets = ">=5.10"
-arro3-core = ">=0.4.0"
-arro3-io = ">=0.4.0"
-arro3-compute = ">=0.4.0"
+# Version in Colab as of October 2024
+# Upgrading to 5.10 would be ideal to enable generic types
+traitlets = ">=5.7.1"
+arro3-core = ">=0.4.1"
+arro3-io = ">=0.4.1"
+arro3-compute = ">=0.4.1"
 ipywidgets = ">=7.6.0"
 numpy = ">=1.14"
 # The same version pin as geopandas
 pyproj = ">=3.3"
 typing-extensions = { version = "^4.6.0", python = "<3.12" }
 click = { version = "^8.1.7", optional = true }
+movingpandas = { version = ">=0.17", optional = true }
 geopandas = { version = ">=0.13", optional = true }
 pandas = { version = "^2", optional = true }
 pyogrio = { version = ">=0.8", optional = true }
@@ -52,10 +54,11 @@ shapely = { version = "^2", optional = true }
 [tool.poetry.extras]
 cli = ["click", "pyogrio", "shapely"]
 geopandas = ["geopandas", "pandas", "shapely"]
+movingpandas = ["movingpandas"]
 
 [tool.poetry.group.dev.dependencies]
 duckdb = ">=0.10.2"
-fiona = "<1.10.0"
+fiona = "<1.10"
 geoarrow-pyarrow = ">=0.1.1"
 geoarrow-rust-core = ">=0.3.0"
 geodatasets = ">=2023.12.0"
@@ -66,6 +69,7 @@ pre-commit = ">=3.4.0"
 pyarrow = ">=14.0.1"
 pyogrio = ">=0.8"
 pytest = ">=7.4.2"
+movingpandas = ">=0.19.0"
 
 [tool.poetry.group.docs.dependencies]
 # We use ruff format ourselves, but mkdocstrings requires black to be installed

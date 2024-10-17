@@ -157,10 +157,15 @@ function App() {
         setSubModelState(newSubModelState);
 
         if (!isDrawingBBoxSelection) {
-          childModels.forEach((layer) => {
-            layer.set("selected_bounds", bboxSelectBounds);
-            layer.save_changes();
-          });
+          // Note: selected_bounds is a property of the **Map**. In the future,
+          // when we use deck.gl to perform picking, we'll have
+          // `selected_indices` as a property of each individual layer.
+          model.set("selected_bounds", bboxSelectBounds);
+          model.save_changes();
+          // childModels.forEach((layer) => {
+          //   layer.set("selected_bounds", bboxSelectBounds);
+          //   layer.save_changes();
+          // });
         }
       } catch (error) {
         console.error("Error loading child models or setting bounds:", error);

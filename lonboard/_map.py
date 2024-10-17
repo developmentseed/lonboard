@@ -308,6 +308,17 @@ class Map(BaseAnyWidget):
       global `parameters` when that layer is rendered.
     """
 
+    selected_bounds = t.Tuple(
+        t.Float(), t.Float(), t.Float(), t.Float(), allow_none=True, default_value=None
+    ).tag(sync=True)
+    """
+    Bounds selected by the user, represented as a tuple of floats ordered as
+
+    ```
+    (minx, miny, maxx, maxy)
+    ```
+    """
+
     def add_layer(
         self,
         layers: BaseLayer | Sequence[BaseLayer] | Map,
@@ -347,20 +358,12 @@ class Map(BaseAnyWidget):
 
         if isinstance(layers, Map):
             new_layers = layers.layers
-            self.layers += layers.layers
-            # self.layers =x
-            # layers = layers.layers
         elif isinstance(layers, BaseLayer):
             new_layers = (layers,)
-            layers = [layers]
-            self.layers += (layers,)
         else:
             new_layers = tuple(layers)
-            self.layers += tuple(layers)
 
         self.layers += new_layers
-
-        # self.layers += tuple(layers)
 
         if focus:
             self.view_state = compute_view(new_layers)  # type: ignore

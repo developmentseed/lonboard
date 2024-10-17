@@ -2,6 +2,14 @@ from enum import Enum
 
 import pyproj
 
+# Minimum integer representable in a float32
+# https://stackoverflow.com/a/3793950
+MIN_INTEGER_FLOAT32 = -16777216
+
+# Maximum integer representable in a float32
+# https://stackoverflow.com/a/3793950
+MAX_INTEGER_FLOAT32 = 16777216
+
 EPSG_4326 = pyproj.CRS("epsg:4326")
 
 # In pyodide, the pyproj PROJ data directory is much smaller, and it currently
