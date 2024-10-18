@@ -277,6 +277,7 @@ class BaseLayer(BaseWidget):
     contents produced by the lonboard.controls.make_TOC() function.
     """
 
+
 def default_geoarrow_viewport(
     table: Table,
 ) -> Optional[Tuple[Bbox, WeightedCentroid]]:
