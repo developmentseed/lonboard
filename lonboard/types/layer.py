@@ -78,6 +78,7 @@ class BaseLayerKwargs(TypedDict, total=False):
     visible: bool
     opacity: IntFloat
     auto_highlight: bool
+    title: str
 
 
 class BitmapLayerKwargs(BaseLayerKwargs, total=False):

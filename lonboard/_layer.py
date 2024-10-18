@@ -271,6 +271,11 @@ class BaseLayer(BaseWidget):
     for an example.
     """
 
+    title = t.CUnicode("Layer", allow_none=False).tag(sync=True)
+    """
+    The title of the layer.  The title of the layer is visible in the table of
+    contents produced by the lonboard_map.make_TOC() method.
+    """
 
 def default_geoarrow_viewport(
     table: Table,
