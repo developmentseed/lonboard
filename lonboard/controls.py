@@ -318,7 +318,7 @@ def make_TOC(lonboard_map, with_layer_controls: bool = True) -> VBox:
     toc = VBox(toc_items)
 
     # Observe the map's layers trait, so additions/removals of layers will result in
-    #the TOC recreating itself to reflect the map's current state
+    # the TOC recreating itself to reflect the map's current state
     def handle_layer_change(change: traitlets.utils.bunch.Bunch) -> None:
         toc_items = [_make_TOC_item(layer) for layer in lonboard_map.layers]
         toc.children = toc_items
