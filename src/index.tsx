@@ -183,6 +183,11 @@ function App() {
   const onMapClickHandler = useCallback((info: PickingInfo) => {
     // We added this flag to prevent the hover event from firing after a
     // click event.
+    if (typeof info.coordinate !== "undefined") {
+      if (model.get("_has_click_handlers")) {
+        model.send({ kind: "on-click", coordinate: info.coordinate });
+      }
+    }
     setJustClicked(true);
     actorRef.send({
       type: "Map click event",
