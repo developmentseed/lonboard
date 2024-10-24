@@ -179,15 +179,17 @@ function App() {
     // We added this flag to prevent the hover event from firing after a
     // click event.
     if (typeof info.coordinate !== "undefined") {
-      let x = info.coordinate[0];
-      while (x < 180) {
-        x += 360;
+      // let x = info.coordinate[0];
+      // while (x < 180) {
+      //   x += 360;
+      // }
+      // while (x > 180) {
+      //   x -= 360;
+      // }
+      // info.coordinate[0] = x;
+      if (model.get("_has_click_handlers")) {
+        model.send({ kind: "on-click", coordinate: info.coordinate });
       }
-      while (x > 180) {
-        x -= 360;
-      }
-      info.coordinate[0] = x;
-      model.send({ kind: "on-click", coordinate: info.coordinate });
     }
     setJustClicked(true);
     actorRef.send({

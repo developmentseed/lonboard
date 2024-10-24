@@ -104,9 +104,8 @@ class Map(BaseAnyWidget):
         def _handle_anywidget_dispatch(
             widget: ipywidgets.Widget, msg: Union[str, list, dict], buffers: List[bytes]
         ) -> None:
-            if msg.get("kind") != "on-click":
-                return
-            self._click_handlers(tuple(msg.get("coordinate")))
+            if msg.get("kind") == "on-click":
+                self._click_handlers(tuple(msg.get("coordinate")))
 
         super().__init__(layers=layers, **kwargs)
         self._click_handlers = CallbackDispatcher()
@@ -124,6 +123,7 @@ class Map(BaseAnyWidget):
             Set to true to remove the callback from the list of callbacks.
         """
         self._click_handlers.register_callback(callback, remove=remove)
+        self._has_click_handlers = len(self._click_handlers.callbacks) > 0
 
     _esm = bundler_output_dir / "index.js"
     _css = bundler_output_dir / "index.css"
@@ -150,6 +150,10 @@ class Map(BaseAnyWidget):
         [`set_view_state`][lonboard.Map.set_view_state] to modify a map's view state
         once it's been initially rendered.
 
+    """
+    _has_click_handlers = t.Bool(default_value=False, allow_none=False).tag(sync=True)
+    """
+    Indicates if a click handler has been registered.
     """
 
     _height = t.Int(default_value=DEFAULT_HEIGHT, allow_none=True).tag(sync=True)
