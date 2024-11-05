@@ -115,12 +115,23 @@ class Map(BaseAnyWidget):
         """Register a callback to execute when the map is clicked.
 
         The callback will be called with one argument, a tuple of the coordinate
-        clicked.
+        clicked (x,y)/(Longitude/Latitude).
 
         Parameters
         ----------
         remove: bool (optional)
             Set to true to remove the callback from the list of callbacks.
+
+        !!! note
+
+            If the map is zoomed to a very large scale and can see the earth wrapped
+            around, it is possible the coordinate's x/Longitude value may be greater
+            than or less than expected.  Example: If you can see Paris, France three
+            times in the map, and you click on the Paris in the middle, it will show an
+            X coordinate of 2, but the Paris on the left of the map will report an X
+            coordinate of -358, and the Paris on the right of the map will report an
+            X coordinate of 362.
+
         """
         self._click_handlers.register_callback(callback, remove=remove)
         self._has_click_handlers = len(self._click_handlers.callbacks) > 0
