@@ -995,7 +995,7 @@ class PolygonLayer(BaseArrowLayer):
     From [geoarrow-rust](https://geoarrow.github.io/geoarrow-rs/python/latest):
 
     ```py
-    from geoarrow.rust.core import read_parquet
+    from geoarrow.rust.io import read_parquet
     from lonboard import Map, PolygonLayer
 
     # Example: A GeoParquet file with Polygon or MultiPolygon geometries
@@ -1241,7 +1241,7 @@ class ScatterplotLayer(BaseArrowLayer):
     From [geoarrow-rust](https://geoarrow.github.io/geoarrow-rs/python/latest):
 
     ```py
-    from geoarrow.rust.core import read_parquet
+    from geoarrow.rust.io import read_parquet
     from lonboard import Map, ScatterplotLayer
 
     # Example: A GeoParquet file with Point or MultiPoint geometries
@@ -1482,7 +1482,7 @@ class PathLayer(BaseArrowLayer):
     From [geoarrow-rust](https://geoarrow.github.io/geoarrow-rs/python/latest):
 
     ```py
-    from geoarrow.rust.core import read_parquet
+    from geoarrow.rust.io import read_parquet
     from lonboard import Map, PathLayer
 
     # Example: A GeoParquet file with LineString or MultiLineString geometries
@@ -1787,7 +1787,7 @@ class SolidPolygonLayer(BaseArrowLayer):
     From [geoarrow-rust](https://geoarrow.github.io/geoarrow-rs/python/latest):
 
     ```py
-    from geoarrow.rust.core import read_parquet
+    from geoarrow.rust.io import read_parquet
     from lonboard import Map, SolidPolygonLayer
 
     # Example: A GeoParquet file with Polygon or MultiPolygon geometries
@@ -1953,7 +1953,7 @@ class HeatmapLayer(BaseArrowLayer):
     From [geoarrow-rust](https://geoarrow.github.io/geoarrow-rs/python/latest):
 
     ```py
-    from geoarrow.rust.core import read_parquet
+    from geoarrow.rust.io import read_parquet
     from lonboard import Map, HeatmapLayer
 
     # Example: A GeoParquet file with Point geometries
