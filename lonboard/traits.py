@@ -161,10 +161,6 @@ class ArrowTableTrait(FixedErrorTraitType):
     - A pyarrow [`Table`][pyarrow.Table] or containing a geometry column with [GeoArrow metadata](https://geoarrow.org/extension-types).
     - Any GeoArrow table from a library that implements the [Arrow PyCapsule
       Interface](https://arrow.apache.org/docs/format/CDataInterface/PyCapsuleInterface.html).
-      This includes the
-      [`GeoTable`](https://geoarrow.github.io/geoarrow-rs/python/latest/api/core/table/#geoarrow.rust.core.GeoTable)
-      class from
-      [`geoarrow-rust`](https://geoarrow.github.io/geoarrow-rs/python/latest/).
     """
 
     default_value = None
