@@ -13,7 +13,7 @@
 -  [Rivers in Asia ![](../assets/rivers-asia.jpg)](../examples/map_challenge/6-asia/) using [`PathLayer`](../api/layers/path-layer)
 -  [Inflation Reduction Act Projects ![](../assets/column-layer.jpg)](../examples/column-layer/) using [`ColumnLayer`](../api/layers/column-layer)
 -  [Linked Maps ![](../assets/linked-maps.gif)](../examples/linked-maps/)
-
+-  [Table of contents ![](../assets/table-of-contents.jpeg)](../examples/lonboard-table-of-contents/)
 </div>
 
 ## Integrations
