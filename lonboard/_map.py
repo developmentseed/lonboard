@@ -3,11 +3,12 @@ from __future__ import annotations
 import sys
 from io import StringIO
 from pathlib import Path
-from typing import IO, TYPE_CHECKING, Optional, Sequence, TextIO, Union, overload
+from typing import IO, TYPE_CHECKING, List, Optional, Sequence, TextIO, Union, overload
 
 import ipywidgets
 import traitlets
 import traitlets as t
+from ipywidgets import CallbackDispatcher
 from ipywidgets.embed import embed_minimal_html
 
 from lonboard._base import BaseAnyWidget
@@ -100,7 +101,40 @@ class Map(BaseAnyWidget):
         if isinstance(layers, BaseLayer):
             layers = [layers]
 
+        def _handle_anywidget_dispatch(
+            widget: ipywidgets.Widget, msg: Union[str, list, dict], buffers: List[bytes]
+        ) -> None:
+            if msg.get("kind") == "on-click":
+                self._click_handlers(tuple(msg.get("coordinate")))
+
         super().__init__(layers=layers, **kwargs)
+        self._click_handlers = CallbackDispatcher()
+        self.on_msg(_handle_anywidget_dispatch)
+
+    def on_click(self, callback, remove=False):
+        """Register a callback to execute when the map is clicked.
+
+        The callback will be called with one argument, a tuple of the coordinate
+        clicked (x,y)/(Longitude/Latitude).
+
+        Parameters
+        ----------
+        remove: bool (optional)
+            Set to true to remove the callback from the list of callbacks.
+
+        !!! note
+
+            If the map is zoomed to a very large scale and can see the earth wrapped
+            around, it is possible the coordinate's x/Longitude value may be greater
+            than or less than expected.  Example: If you can see Paris, France three
+            times in the map, and you click on the Paris in the middle, it will show an
+            X coordinate of 2, but the Paris on the left of the map will report an X
+            coordinate of -358, and the Paris on the right of the map will report an
+            X coordinate of 362.
+
+        """
+        self._click_handlers.register_callback(callback, remove=remove)
+        self._has_click_handlers = len(self._click_handlers.callbacks) > 0
 
     _esm = bundler_output_dir / "index.js"
     _css = bundler_output_dir / "index.css"
@@ -127,6 +161,10 @@ class Map(BaseAnyWidget):
         [`set_view_state`][lonboard.Map.set_view_state] to modify a map's view state
         once it's been initially rendered.
 
+    """
+    _has_click_handlers = t.Bool(default_value=False, allow_none=False).tag(sync=True)
+    """
+    Indicates if a click handler has been registered.
     """
 
     _height = t.Int(default_value=DEFAULT_HEIGHT, allow_none=True).tag(sync=True)
