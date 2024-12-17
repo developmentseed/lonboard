@@ -4,7 +4,7 @@ name: Publish docs via GitHub Pages
 on:
   push:
     tags:
-      - 'v*'
+      - "v*"
   workflow_dispatch:
 
 jobs:
@@ -17,33 +17,11 @@ jobs:
         with:
           fetch-depth: 0
 
-      - name: Set up Python 3.11
-        id: setup-python
-        uses: actions/setup-python@v5
+      - name: Install a specific version of uv
+        uses: astral-sh/setup-uv@v3
         with:
-          python-version: "3.11"
-
-      - name: Install and configure Poetry
-        uses: snok/install-poetry@v1
-        with:
-          version: 1.6.1
-          virtualenvs-create: true
-          virtualenvs-in-project: true
-          installer-parallel: true
-
-      - name: Load cached venv
-        id: cached-poetry-dependencies
-        uses: actions/cache@v4
-        with:
-          path: .venv
-          key: venv-${{ runner.os }}-${{ steps.setup-python.outputs.python-version }}-${{ hashFiles('**/poetry.lock') }}
-
-      - name: Install dependencies
-        if: steps.cached-poetry-dependencies.outputs.cache-hit != 'true'
-        run: poetry install --no-interaction --no-root
-
-      - name: Install root project
-        run: poetry install --no-interaction
+          enable-cache: true
+          version: "0.4.x"
 
       - name: Deploy docs
         env:
@@ -59,5 +37,5 @@ jobs:
           # Only push docs if no letters in git tag after the first character
           # (usually the git tag will have v as the first character)
           if ! echo $VERSION | sed 's/^.//' | grep -q "[A-Za-z]"; then
-            poetry run mike deploy $VERSION latest --update-aliases --push
+            uv run --group docs mike deploy $VERSION latest --update-aliases --push
           fi
