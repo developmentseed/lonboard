@@ -42,64 +42,44 @@ jobs:
           # Note: we use ci for a "clean install", checking the lockfile
           npm ci
 
-      - name: Install and configure Poetry
-        uses: snok/install-poetry@v1
+      - name: Install a specific version of uv
+        uses: astral-sh/setup-uv@v3
         with:
-          version: 1.7.0
-          virtualenvs-create: true
-          virtualenvs-in-project: true
-          installer-parallel: true
-
-      - name: Check Poetry lockfile up to date
-        run: |
-          poetry check --lock
-
-      - name: Load cached venv
-        id: cached-poetry-dependencies
-        uses: actions/cache@v4
-        with:
-          path: .venv
-          key: venv-${{ runner.os }}-${{ steps.setup-python.outputs.python-version }}-${{ hashFiles('**/poetry.lock') }}
+          enable-cache: true
+          version: "0.4.x"
 
       # Note: we don't install the "watchfiles" group on CI because it gives
       # threading errors when running tests. See
       # https://github.com/developmentseed/lonboard/pull/234
       # https://github.com/manzt/anywidget/issues/374
-      - name: Install dependencies
-        if: steps.cached-poetry-dependencies.outputs.cache-hit != 'true'
-        run: poetry install --no-interaction --no-root --without watchfiles
-
       - name: Install root project
-        run: poetry install --no-interaction --without watchfiles
+        run: uv sync --no-group watchfiles
 
       - name: Build JS bundle
         run: |
           npm run build
 
       - name: Run tests
-        run: poetry run pytest
+        run: uv run pytest
 
       - name: Run tests (all deps)
         run: |
-          poetry install -E geopandas -E cli
-          poetry run pytest
+          uv sync --extra geopandas --extra cli
+          uv run pytest
 
       # Ensure docs build without warnings
       - name: Check docs
-        if: matrix.python-version == 3.9
-        run: poetry run mkdocs build --strict
+        if: "${{ matrix.python-version == 3.11 }}"
+        run: uv run --group docs mkdocs build --strict
 
       - name: Cache pre-commit virtualenvs
         uses: actions/cache@v4
-        if: matrix.python-version == 3.9
+        if: "${{ matrix.python-version == 3.11 }}"
         with:
           path: ~/.cache/pre-commit
           key: pre-commit-3|${{ hashFiles('.pre-commit-config.yaml') }}
 
-      # TODO: switch this to run on e.g. 3.11 (how to get the if statement to
-      # work?)
-      # Run pre-commit (only for python-3.9)
       - name: run pre-commit
-        if: matrix.python-version == 3.9
+        if: "${{ matrix.python-version == 3.11 }}"
         run: |
-          poetry run pre-commit run --show-diff-on-failure --color=always --all-files
+          uv run pre-commit run --show-diff-on-failure --color=always --all-files

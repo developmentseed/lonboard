@@ -1,14 +1,25 @@
-[tool.poetry]
+[project]
 name = "lonboard"
 version = "0.10.3"
 description = "Fast, interactive geospatial data visualization in Jupyter."
-authors = ["Kyle Barron <kyle@developmentseed.org>"]
+authors = [{ name = "Kyle Barron", email = "kyle@developmentseed.org" }]
 license = "MIT"
 readme = "README.md"
-packages = [{ include = "lonboard" }]
-include = ["lonboard/static/*.js", "lonboard/static/*.css", "MANIFEST.in"]
-repository = "https://github.com/developmentseed/lonboard"
-documentation = "https://developmentseed.org/lonboard/latest/"
+requires-python = ">=3.8"
+dependencies = [
+    "anywidget~=0.9.0",
+    # Version in Colab as of October 2024
+    # Upgrading to 5.10 would be ideal to enable generic types
+    "traitlets>=5.7.1",
+    "arro3-core>=0.4.1",
+    "arro3-io>=0.4.1",
+    "arro3-compute>=0.4.1",
+    "ipywidgets>=7.6.0",
+    "numpy>=1.14",
+    # The same version pin as geopandas
+    "pyproj>=3.3",
+    "typing-extensions~=4.6.0; python_version < '3.12'",
+]
 keywords = [
     "GIS",
     "cartography",
@@ -29,73 +40,76 @@ classifiers = [
     "Topic :: Scientific/Engineering :: GIS",
 ]
 
-[tool.poetry.dependencies]
-python = "^3.8"
-anywidget = "^0.9.0"
-# Version in Colab as of October 2024
-# Upgrading to 5.10 would be ideal to enable generic types
-traitlets = ">=5.7.1"
-arro3-core = ">=0.4.1"
-arro3-io = ">=0.4.1"
-arro3-compute = ">=0.4.1"
-ipywidgets = ">=7.6.0"
-numpy = ">=1.14"
-# The same version pin as geopandas
-pyproj = ">=3.3"
-typing-extensions = { version = "^4.6.0", python = "<3.12" }
-click = { version = "^8.1.7", optional = true }
-movingpandas = { version = ">=0.17", optional = true }
-geopandas = { version = ">=0.13", optional = true }
-pandas = { version = "^2", optional = true }
-pyogrio = { version = ">=0.8", optional = true }
-shapely = { version = "^2", optional = true }
+[project.optional-dependencies]
+cli = ["click>=8.1.7", "pyogrio>=0.8", "shapely>=2"]
+geopandas = ["geopandas>=0.13", "pandas>=2", "shapely>=2"]
+movingpandas = ["movingpandas>=0.17"]
 
 
-[tool.poetry.extras]
-cli = ["click", "pyogrio", "shapely"]
-geopandas = ["geopandas", "pandas", "shapely"]
-movingpandas = ["movingpandas"]
+[project.urls]
+homepage = "https://developmentseed.org/lonboard/latest/"
+documentation = "https://developmentseed.org/lonboard/latest/"
+repository = "https://github.com/developmentseed/lonboard"
+issues = "https://github.com/developmentseed/lonboard/issues"
+changelog = "https://github.com/developmentseed/lonboard/blob/main/CHANGELOG.md"
 
-[tool.poetry.group.dev.dependencies]
-duckdb = ">=0.10.2"
-fiona = "<1.10"
-geoarrow-pyarrow = ">=0.1.1"
-geoarrow-rust-core = ">=0.3.0"
-geodatasets = ">=2023.12.0"
-jupyterlab = ">=4.0.5"
-matplotlib = ">=3.7"
-palettable = ">=3.3.3"
-pre-commit = ">=3.4.0"
-pyarrow = ">=14.0.1"
-pyogrio = ">=0.8"
-pytest = ">=7.4.2"
-movingpandas = ">=0.19.0"
-
-[tool.poetry.group.docs.dependencies]
-# We use ruff format ourselves, but mkdocstrings requires black to be installed
-# to format signatures in the docs
-black = "^23.10.1"
-griffe-inherited-docstrings = "^1.0.0"
-mkdocs = "^1.4.3"
-mkdocs-material = { version = "^9.5", extras = ["imaging"] }
-mkdocstrings = { version = "^0.25.1", extras = ["python"] }
-# This version only on 3.9+. Ok because it's a dev dependency
-mkdocs-jupyter = { version = "^0.24.5", python = "^3.9" }
-mike = "^2"
-
-[tool.poetry.scripts]
+[project.scripts]
 lonboard = "lonboard._cli:main"
 
+
+[dependency-groups]
+docs = [
+    "mkdocs-material[imaging]>=9.5.49",
+    "mkdocs>=1.6.1",
+    "mkdocstrings[python]>=0.26.1",
+    # # This version only on 3.9+. Ok because it's a dev dependency
+    # mkdocs-jupyter = { version = "^0.24.5", python = "^3.9" }
+    "mkdocs-jupyter>=0.24.8",
+    "mike>=2.1.3",
+    "griffe-inherited-docstrings>=1.0.1",
+    # We use ruff format ourselves, but mkdocstrings requires black to be
+    # installed to format signatures in the docs
+    "black>=24.8.0",
+]
+dev = [
+    "duckdb>=1.1.3",
+    "fiona<1.10",
+    "geoarrow-pyarrow>=0.1.2",
+    "geoarrow-rust-core>=0.3.0",
+    "geodatasets>=2024.8.0",
+    "jupyterlab>=4.3.3",
+    "matplotlib>=3.7.5",
+    "movingpandas>=0.20.0",
+    "palettable>=3.3.3",
+    "pre-commit>=3.5.0",
+    "pyarrow>=17.0.0",
+    "pyogrio>=0.9.0",
+    "pytest>=8.3.4",
+]
 # Note: this is defined as a separate group so that it can be not installed in
 # CI. See:
 # https://github.com/developmentseed/lonboard/pull/234
 # https://github.com/manzt/anywidget/issues/374
-[tool.poetry.group.watchfiles.dependencies]
-watchfiles = "^0.21.0"
+watchfiles = ["watchfiles>=0.24.0"]
+
 
 [build-system]
-requires = ["poetry-core"]
-build-backend = "poetry.core.masonry.api"
+requires = ["hatchling"]
+build-backend = "hatchling.build"
+
+[tool.hatch.build.targets.sdist]
+only-include = ["lonboard"]
+artifacts = ["lonboard/static/*.js", "lonboard/static/*.css"]
+
+[tool.hatch.build.targets.sdist.force-include]
+"MANIFEST.in" = "MANIFEST.in"
+
+[tool.hatch.build.targets.wheel]
+only-include = ["lonboard"]
+artifacts = ["lonboard/static/*.js", "lonboard/static/*.css"]
+
+[tool.hatch.build.targets.wheel.force-include]
+"MANIFEST.in" = "MANIFEST.in"
 
 [tool.ruff]
 select = [

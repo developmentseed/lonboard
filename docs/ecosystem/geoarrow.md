@@ -9,7 +9,7 @@ There's a burgeoning ecosystem of Python libraries that use GeoArrow directly. C
 [geoarrow-rust](https://geoarrow.org/geoarrow-rs/python/latest/) is a Python library implementing the GeoArrow specification with efficient spatial operations. This library has "rust" in the name because it is implemented based on the [GeoArrow Rust implementation](https://geoarrow.org/geoarrow-rs/).
 
 ```py
-from geoarrow.rust.core import GeoTable, read_geojson
+from geoarrow.rust.io import read_geojson
 from lonboard import Map, PathLayer
 
 path = "/path/to/file.geojson"

@@ -2,39 +2,22 @@
 
 ## Python
 
-To install Python, I recommend [pyenv](https://github.com/pyenv/pyenv). After installing pyenv, install a Python version with e.g.:
+Install [uv](https://docs.astral.sh/uv/).
+
+To register the current uv-managed Python environment with JupyterLab, run
 
 ```
-pyenv install 3.11.4
-```
-
-then set that as your global Python version with
-
-```
-pyenv global 3.11.4
-```
-
-This project uses [Poetry](https://python-poetry.org/) to manage Python dependencies.
-
-After installing Poetry, run
-
-```
-poetry install
-```
-
-to install all dependencies.
-
-To register the current Poetry-managed Python environment with JupyterLab, run
-
-```
-poetry run python -m ipykernel install --user --name "lonboard"
+uv run python -m ipykernel install --user --name "lonboard"
 ```
 
 JupyterLab is an included dev dependency, so to start JupyterLab you can run
 
 ```
-ANYWIDGET_HMR=1 poetry run jupyter lab
+ANYWIDGET_HMR=1 uv run jupyter lab
 ```
+
+Note that `ANYWIDGET_HMR=1` is necessary to turn on "hot-reloading", so that any
+updates you make in JavaScript code are automatically updated in your notebook.
 
 Then you should see a tile on the home screen that lets you open a Jupyter Notebook in the `lonboard` environment. You should also be able to open up an example notebook from the `examples/` folder.
 
@@ -82,10 +65,10 @@ Push a new tag to the main branch of the format `v*`. A new version will be publ
 
 ## Documentation website
 
-The documentation website is generated with `mkdocs` and [`mkdocs-material`](https://squidfunk.github.io/mkdocs-material). After `poetry install`, you can serve the docs website locally with
+The documentation website is generated with `mkdocs` and [`mkdocs-material`](https://squidfunk.github.io/mkdocs-material). You can serve the docs website locally with
 
 ```
-poetry run mkdocs serve
+uv run mkdocs serve
 ```
 
 Publishing documentation happens automatically via CI when a new tag is published of the format `v*`. It can also be triggered manually through the Github Actions dashboard on [this page](https://github.com/developmentseed/lonboard/actions/workflows/deploy-mkdocs.yml). Note that publishing docs manually is **not advised if there have been new code additions since the last release** as the new functionality will be associated in the documentation with the tag of the _previous_ release. In this case, prefer publishing a new patch or minor release, which will publish both a new Python package and the new documentation for it.
