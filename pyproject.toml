@@ -44,6 +44,7 @@ classifiers = [
 cli = ["click>=8.1.7", "pyogrio>=0.8", "shapely>=2"]
 geopandas = ["geopandas>=0.13", "pandas>=2", "shapely>=2"]
 movingpandas = ["movingpandas>=0.17"]
+explore = ["mapclassify>=2.8.1"]
 
 
 [project.urls]
@@ -78,6 +79,7 @@ dev = [
     "geoarrow-rust-core>=0.3.0",
     "geodatasets>=2024.8.0",
     "jupyterlab>=4.3.3",
+    "mapclassify>=2.8.1",
     "matplotlib>=3.7.5",
     "movingpandas>=0.20.0",
     "palettable>=3.3.3",
