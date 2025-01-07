@@ -2,8 +2,7 @@ import geopandas as gpd
 import numpy as np
 import pandas as pd
 
-from . import basemap
-from . import viz
+from . import basemap, viz
 from .colormap import apply_categorical_cmap, apply_continuous_cmap
 
 __all__ = ["LonboardAccessor"]
@@ -33,7 +32,7 @@ class LonboardAccessor:
         alpha=1,
         layer_kwargs=None,
         map_kwargs=None,
-        classify_kwargs=None,
+        classification_kwds=None,
         nan_color=[255, 255, 255, 255],
         color=None,
         wireframe=False,
@@ -75,7 +74,7 @@ class LonboardAccessor:
         map_kwargs : dict, optional
             additional keyword arguments passed to lonboard.viz map_kwargs, by default
             None
-        classify_kwargs : dict, optional
+        classification_kwds : dict, optional
             additional keyword arguments passed to `mapclassify.classify`, by default
             None
         nan_color : list-like, optional
@@ -111,7 +110,7 @@ class LonboardAccessor:
             alpha,
             layer_kwargs,
             map_kwargs,
-            classify_kwargs,
+            classification_kwds,
             nan_color,
             color,
             wireframe,
@@ -133,7 +132,7 @@ def _dexplore(
     alpha=1,
     layer_kwargs=None,
     map_kwargs=None,
-    classify_kwargs=None,
+    classification_kwds=None,
     nan_color=[255, 255, 255, 255],
     color=None,
     wireframe=False,
@@ -174,7 +173,7 @@ def _dexplore(
         geometry type), by default None
     map_kwargs : dict, optional
         additional keyword arguments passed to lonboard.viz map_kwargs, by default None
-    classify_kwargs : dict, optional
+    classification_kwds : dict, optional
         additional keyword arguments passed to `mapclassify.classify`, by default None
     nan_color : list-like, optional
         color used to shade NaN observations formatted as an RGBA list, by
@@ -194,13 +193,6 @@ def _dexplore(
         a lonboard map with geodataframe included as a Layer object.
 
     """
-    try:
-        from mapclassify.util import get_color_array
-        from matplotlib import colormaps
-    except ImportError as e:
-        raise ImportError(
-            "you must have the `mapclassify` package installed to use this function"
-        ) from e
 
     providers = {
         "CartoDB Positron": basemap.CartoBasemap.Positron,
@@ -213,8 +205,8 @@ def _dexplore(
 
     if map_kwargs is None:
         map_kwargs = dict()
-    if classify_kwargs is None:
-        classify_kwargs = dict()
+    if classification_kwds is None:
+        classification_kwds = dict()
     if layer_kwargs is None:
         layer_kwargs = dict()
     if isinstance(elevation, str):
@@ -252,6 +244,13 @@ def _dexplore(
         else:
             layer_kwargs["get_fill_color"] = color
     if column is not None:
+        try:
+            from matplotlib import colormaps
+        except ImportError as e:
+            raise ImportError(
+                "you must have matplotlib installed to style by a column"
+            ) from e
+
         if column not in gdf.columns:
             raise ValueError(f"the designated column {column} is not in the dataframe")
         if gdf[column].dtype in ["O", "category"]:
@@ -273,6 +272,15 @@ def _dexplore(
                 values=transformed, cmap=colormaps[cmap], alpha=alpha
             )
         else:
+            try:
+                from mapclassify.util import get_color_array
+            except ImportError as e:
+                raise ImportError(
+                    "you must have the `mapclassify` package installed to use this function"
+                ) from e
+            if k is not None and 'k' in classification_kwds:
+                # k passed directly takes precedence
+                classification_kwds.pop('k')
             color_array = get_color_array(
                 gdf[column],
                 scheme=scheme,
@@ -280,7 +288,7 @@ def _dexplore(
                 cmap=cmap,
                 alpha=alpha,
                 nan_color=nan_color,
-                **classify_kwargs,
+                **classification_kwds,
             )
 
         if LINE:
