@@ -273,14 +273,22 @@ def _dexplore(
             )
         else:
             try:
+                from mapclassify._classify_API import _classifiers
                 from mapclassify.util import get_color_array
             except ImportError as e:
                 raise ImportError(
-                    "you must have the `mapclassify` package installed to use this function"
+                    "you must have the `mapclassify` package installed to use the "
+                    "`scheme` keyword"
                 ) from e
-            if k is not None and 'k' in classification_kwds:
+            if scheme not in _classifiers:
+                raise ValueError(
+                    "the classification scheme must be a valid mapclassify"
+                    f"classifier in {list(_classifiers.keys())},"
+                    f"but {scheme} was passed instead"
+                )
+            if k is not None and "k" in classification_kwds:
                 # k passed directly takes precedence
-                classification_kwds.pop('k')
+                classification_kwds.pop("k")
             color_array = get_color_array(
                 gdf[column],
                 scheme=scheme,
