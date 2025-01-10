@@ -42,7 +42,7 @@ classifiers = [
 
 [project.optional-dependencies]
 cli = ["click>=8.1.7", "pyogrio>=0.8", "shapely>=2"]
-geopandas = ["geopandas>=0.13", "mapclassify>=2.8.1", "pandas>=2", "shapely>=2"]
+geopandas = ["geopandas>=0.13", "pandas>=2", "shapely>=2"]
 movingpandas = ["movingpandas>=0.17"]
 
 
