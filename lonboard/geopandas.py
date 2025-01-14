@@ -37,6 +37,7 @@ class LonboardAccessor:
         color=None,
         wireframe=False,
         tiles="CartoDB Darkmatter",
+        highlight=False,
         m=None,
     ):
         """explore a dataframe using lonboard and deckgl
@@ -91,6 +92,11 @@ class LonboardAccessor:
             "CartoDB Darkmatter", "CartoDB Darkmatter No Label", "CartoDB Voyager",
             "CartoDB Voyager No Label"} or a lonboard.basemap object, or a string to a
             maplibre style basemap.
+        highlight: bool
+            whether to highlight each feature on mouseover (passed to
+            lonboard.Layer's auto_highlight)
+        m : lonboard.Map
+            an existing Map object to plot onto.
 
         Returns
         -------
@@ -115,6 +121,7 @@ class LonboardAccessor:
             color,
             wireframe,
             tiles,
+            highlight,
             m,
         )
 
@@ -137,6 +144,7 @@ def _dexplore(
     color=None,
     wireframe=False,
     tiles="CartoDB Darkmatter",
+    highlight=False,
     m=None,
 ):
     """explore a dataframe using lonboard and deckgl
@@ -183,6 +191,8 @@ def _dexplore(
         _description_, by default None
     wireframe : bool, optional
         whether to use wireframe styling in deckgl, by default False
+    highlight: bool
+        passed to auto_highlight
     m : lonboard.Map
         a lonboard.Map instance to render the new layer on. If None (default), a new Map
         will be generated.
@@ -234,6 +244,7 @@ def _dexplore(
         layer_kwargs["extruded"] = extruded
         layer_kwargs["elevation_scale"] = elevation_scale
         layer_kwargs["wireframe"] = wireframe
+        layer_kwargs["auto_highlight"] = highlight
 
     LINE = False  # set color of lines, not fill_color
     if ["LineString", "MultiLineString"] in gdf.geometry.geom_type.unique():
@@ -275,15 +286,17 @@ def _dexplore(
             try:
                 from mapclassify._classify_API import _classifiers
                 from mapclassify.util import get_color_array
+                _klasses = list(_classifiers.keys())
+                _klasses.append('userdefined')
             except ImportError as e:
                 raise ImportError(
                     "you must have the `mapclassify` package installed to use the "
                     "`scheme` keyword"
                 ) from e
-            if scheme not in _classifiers:
+            if scheme.replace("_","") not in _klasses:
                 raise ValueError(
                     "the classification scheme must be a valid mapclassify"
-                    f"classifier in {list(_classifiers.keys())},"
+                    f"classifier in {_klasses},"
                     f"but {scheme} was passed instead"
                 )
             if k is not None and "k" in classification_kwds:
