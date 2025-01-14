@@ -545,10 +545,9 @@ class Map(BaseAnyWidget):
                 title=title or "Lonboard export",
                 template=_HTML_TEMPLATE,
                 drop_defaults=False,
-                state=dependency_state([self], drop_defaults=False),
                 # Necessary to pass the state of _this_ specific map. Otherwise, the
                 # state of all known widgets will be included, ballooning the file size.
-                # state=self.get_state(),
+                state=dependency_state((self), drop_defaults=False),
             )
 
         if filename is None:
