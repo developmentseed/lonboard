@@ -8,7 +8,7 @@ from typing import IO, TYPE_CHECKING, Optional, Sequence, TextIO, Union, overloa
 import ipywidgets
 import traitlets
 import traitlets as t
-from ipywidgets.embed import embed_minimal_html
+from ipywidgets.embed import dependency_state, embed_minimal_html
 
 from lonboard._base import BaseAnyWidget
 from lonboard._environment import DEFAULT_HEIGHT
@@ -509,7 +509,7 @@ class Map(BaseAnyWidget):
                 drop_defaults=False,
                 # Necessary to pass the state of _this_ specific map. Otherwise, the
                 # state of all known widgets will be included, ballooning the file size.
-                state=self.get_state(),
+                state=dependency_state((self), drop_defaults=False),
             )
 
         if filename is None:
