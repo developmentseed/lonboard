@@ -18,7 +18,7 @@ jobs:
           fetch-depth: 0
 
       - name: Install a specific version of uv
-        uses: astral-sh/setup-uv@v3
+        uses: astral-sh/setup-uv@v5
         with:
           enable-cache: true
           version: "0.4.x"
