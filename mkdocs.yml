@@ -29,8 +29,8 @@ extra:
       link: "https://github.com/developmentseed"
     - icon: "fontawesome/brands/twitter"
       link: "https://twitter.com/developmentseed"
-    - icon: "fontawesome/brands/medium"
-      link: "https://medium.com/devseed"
+    - icon: "fontawesome/brands/linkedin"
+      link: "https://www.linkedin.com/company/development-seed"
   version:
     provider: mike
 
@@ -94,6 +94,7 @@ nav:
       - ecosystem/jupyter-widgets.md
       - ecosystem/panel.md
       - ecosystem/shiny.md
+  - external-resources.md
   - Performance: performance.md
   - troubleshooting.md
   - Changelog: CHANGELOG.md

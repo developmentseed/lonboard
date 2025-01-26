@@ -48,24 +48,29 @@ const SidePanel: React.FC<SidePanelProps> = ({ info, onClose }) => {
   }
 
   return (
-    <div className="bg-white shadow-md text-black h-full max-w-1/2 min-w-fit overflow-y-auto overflow-x-hidden box-border">
+    <div className="bg-white shadow-md text-black h-full w-96 overflow-y-auto overflow-x-hidden box-border mr-1">
       <Header onClose={onClose} />
-      <table className="table-auto w-full">
-        <tbody>
+      <table className="w-full border-collapse [&_td]:block">
+        <tbody className="grid grid-cols-[minmax(0,_2fr)_minmax(0,_3fr)]">
           {Object.entries(featureProperties)
             .filter(([key]) => key !== "geometry")
             .map(([key, value], index) => (
-              <tr
-                key={key}
-                className={index % 2 === 0 ? "bg-white" : "bg-gray-100"}
-              >
-                <td className="border border-gray-300 px-4 py-2 font-medium">
-                  {key}
+              <React.Fragment key={key}>
+                <td
+                  className={`border border-gray-300 px-4 py-2 font-medium ${index % 2 === 0 ? "bg-white" : "bg-gray-100"}`}
+                >
+                  <div className="truncate" title={key}>
+                    {key}
+                  </div>
                 </td>
-                <td className="border border-gray-300 px-4 py-2">
-                  {String(value)}
+                <td
+                  className={`border border-gray-300 px-4 py-2 ${index % 2 === 0 ? "bg-white" : "bg-gray-100"}`}
+                >
+                  <div className="break-words" title={String(value)}>
+                    {String(value)}
+                  </div>
                 </td>
-              </tr>
+              </React.Fragment>
             ))}
         </tbody>
       </table>
