@@ -213,9 +213,7 @@ function App() {
   );
 
   return (
-    <div
-      className="lonboard"
-    >
+    <div className="lonboard">
       <div
         id={`map-${mapId}`}
         className="flex"
@@ -249,7 +247,9 @@ function App() {
             pickingRadius={pickingRadius}
             onClick={onMapClickHandler}
             onHover={onMapHoverHandler}
-            useDevicePixels={isDefined(useDevicePixels) ? useDevicePixels : true}
+            useDevicePixels={
+              isDefined(useDevicePixels) ? useDevicePixels : true
+            }
             // https://deck.gl/docs/api-reference/core/deck#_typedarraymanagerprops
             _typedArrayManagerProps={{
               overAlloc: 1,
