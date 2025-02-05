@@ -75,11 +75,11 @@ class LonboardAccessor:
             wireframe : Whether to use wireframe styling in deckgl.
             tiles : Either a known string {"CartoDB Positron",
                 "CartoDB Positron No Label", "CartoDB Darkmatter",
-                "CartoDB Darkmatter No Label", "CartoDB Voyager", 
+                "CartoDB Darkmatter No Label", "CartoDB Voyager",
                 "CartoDB Voyager No Label"}
             highlight : Whether to highlight each feature on mouseover (passed to
                 lonboard.Layer's auto_highlight). Defaults to False.
-            m: An existing Map object to plot onto. 
+            m: An existing Map object to plot onto.
 
         Returns:
         lonboard.Map
@@ -220,8 +220,7 @@ def _dexplore(
             if vmax is None:
                 vmax = np.nanmax(gdf[column])
             # minmax scale the column first, matplotlib needs 0-1
-            transformed = (gdf[column] - vmin) / (
-                vmax - vmin)
+            transformed = (gdf[column] - vmin) / (vmax - vmin)
             color_array = apply_continuous_cmap(
                 values=transformed, cmap=colormaps[cmap], alpha=alpha
             )
