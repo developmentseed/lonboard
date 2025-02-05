@@ -47,7 +47,7 @@ class LonboardAccessor:
         """explore a dataframe using lonboard and deckgl
 
         Keyword Args:
-            column : Name of column on dataframe to visualize on map. 
+            column : Name of column on dataframe to visualize on map.
             cmap : Name of matplotlib colormap to use.
             scheme : Name of a classification scheme defined by mapclassify.Classifier.
             k : Number of classes to generate. Defaults to 6.
@@ -63,20 +63,20 @@ class LonboardAccessor:
                 arguments (either polygon_kwargs, scatterplot_kwargs, or path_kwargs,
                 depending on input geometry type).
             map_kwargs : Additional keyword arguments passed to lonboard.viz map_kwargs.
-            classification_kwds : Additional keyword arguments passed to 
+            classification_kwds : Additional keyword arguments passed to
                 `mapclassify.classify`.
-            nan_color : Color used to shade NaN observations formatted as an RGBA list. 
+            nan_color : Color used to shade NaN observations formatted as an RGBA list.
                 Defaults to [255, 255, 255, 255]. If no alpha channel is passed it is
                 assumed to be 255.
             color : Either a known string {"CartoDB Positron",
                 "CartoDB Positron No Label", "CartoDB Darkmatter",
-                "CartoDB Darkmatter No Label", "CartoDB Voyager", 
+                "CartoDB Darkmatter No Label", "CartoDB Voyager",
                 "CartoDB Voyager No Label"}
                 or a lonboard.basemap object, or a string to a maplibre style basemap.
             vmin : Minimum value for color mapping.
             vmax : Maximum value for color mapping.
             wireframe : Whether to use wireframe styling in deckgl.
-            tiles : An existing Map object to plot onto. 
+            tiles : An existing Map object to plot onto.
             highlight : Whether to highlight each feature on mouseover (passed to
                 lonboard.Layer's auto_highlight). Defaults to False.
 
