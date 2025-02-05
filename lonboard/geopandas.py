@@ -1,8 +1,10 @@
+from typing import Any, Dict, List, Optional, Union
+
 import geopandas as gpd
 import numpy as np
 import pandas as pd
 
-from . import basemap, viz
+from . import Map, basemap, viz
 from .colormap import apply_categorical_cmap, apply_continuous_cmap
 
 __all__ = ["LonboardAccessor"]
@@ -21,85 +23,64 @@ class LonboardAccessor:
 
     def explore(
         self,
-        column=None,
-        cmap=None,
-        scheme=None,
-        k=6,
-        categorical=False,
-        elevation=None,
-        extruded=False,
-        elevation_scale=1,
-        alpha=1,
-        layer_kwargs=None,
-        map_kwargs=None,
-        classification_kwds=None,
-        nan_color=[255, 255, 255, 255],
-        color=None,
-        wireframe=False,
-        tiles="CartoDB Darkmatter",
-        highlight=False,
-        m=None,
-    ):
+        column: Optional[str] = None,
+        cmap: Optional[str] = None,
+        scheme: Optional[str] = None,
+        k: Optional[int] = 6,
+        categorical: bool = False,
+        elevation: Union[str, np.ndarray] = None,
+        extruded: bool = False,
+        elevation_scale: Optional[float] = 1,
+        alpha: Optional[float] = 1,
+        layer_kwargs: Optional[Dict[str, Any]] = None,
+        map_kwargs: Optional[Dict[str, Any]] = None,
+        classification_kwds: Optional[Dict[str, Any]] = None,
+        nan_color: Optional[Union[List[int], np.ndarray[int]]] = [255, 255, 255, 255],
+        color: Optional[str] = None,
+        vmin: Optional[float] = None,
+        vmax: Optional[float] = None,
+        wireframe: bool = False,
+        tiles: Optional[str] = None,
+        highlight: bool = False,
+        m: Optional[Map] = None,
+    ) -> Map:
         """explore a dataframe using lonboard and deckgl
 
-        Parameters
-        ----------
-        gdf : geopandas.GeoDataFrame
-            dataframe to visualize
-        column : str, optional
-            name of column on dataframe to visualize on map, by default None
-        cmap : str, optional
-            name of matplotlib colormap to use, by default None
-        scheme : str, optional
-            name of a classification scheme defined by mapclassify.Classifier, by default
-            None
-        k : int, optional
-            number of classes to generate, by default 6
-        categorical : bool, optional
-            whether the data should be treated as categorical or continuous, by default
-            False
-        elevation : str or array, optional
-            name of column on the dataframe used to extrude each geometry or  an array-like
-            in the same order as observations, by default None
-        extruded : bool, optional
-            whether to extrude geometries using the z-dimension, by default False
-        elevation_scale : float, optional
-            constant scaler multiplied by elevation valuer, by default 1
-        alpha : float, optional
-            alpha (opacity) parameter in the range (0,1) passed to
-            mapclassify.util.get_color_array, by default 1
-        layer_kwargs : dict, optional
-            additional keyword arguments passed to lonboard.viz layer arguments (either
-            polygon_kwargs, scatterplot_kwargs, or path_kwargs, depending on input
-            geometry type), by default None
-        map_kwargs : dict, optional
-            additional keyword arguments passed to lonboard.viz map_kwargs, by default
-            None
-        classification_kwds : dict, optional
-            additional keyword arguments passed to `mapclassify.classify`, by default
-            None
-        nan_color : list-like, optional
-            color used to shade NaN observations formatted as an RGBA list, by
-            default [255, 255, 255, 255]. If no alpha channel is passed it is assumed to
-            be 255.
-        color : str or array-like, optional
-            single or array of colors passed to `lonboard.Layer` object (get_color if
-            input dataframe is linestring, or get_fill_color otherwise. By default None
-        wireframe : bool, optional
-            whether to use wireframe styling in deckgl, by default False
-        tiles : str or lonboard.basemap
-            either a known string {"CartoDB Positron", "CartoDB Positron No Label",
-            "CartoDB Darkmatter", "CartoDB Darkmatter No Label", "CartoDB Voyager",
-            "CartoDB Voyager No Label"} or a lonboard.basemap object, or a string to a
-            maplibre style basemap.
-        highlight: bool
-            whether to highlight each feature on mouseover (passed to
-            lonboard.Layer's auto_highlight)
-        m : lonboard.Map
-            an existing Map object to plot onto.
+        Keyword Args:
+            column : Name of column on dataframe to visualize on map. 
+            cmap : Name of matplotlib colormap to use.
+            scheme : Name of a classification scheme defined by mapclassify.Classifier.
+            k : Number of classes to generate. Defaults to 6.
+            categorical : Whether the data should be treated as categorical or
+                continuous.
+            elevation : Name of column on the dataframe used to extrude each geometry or
+                an array-like in the same order as observations. Defaults to None.
+            extruded : Whether to extrude geometries using the z-dimension.
+            elevation_scale : Constant scaler multiplied by elevation value.
+            alpha : Alpha (opacity) parameter in the range (0,1) passed to
+                mapclassify.util.get_color_array.
+            layer_kwargs : Additional keyword arguments passed to lonboard.viz layer
+                arguments (either polygon_kwargs, scatterplot_kwargs, or path_kwargs,
+                depending on input geometry type).
+            map_kwargs : Additional keyword arguments passed to lonboard.viz map_kwargs.
+            classification_kwds : Additional keyword arguments passed to 
+                `mapclassify.classify`.
+            nan_color : Color used to shade NaN observations formatted as an RGBA list. 
+                Defaults to [255, 255, 255, 255]. If no alpha channel is passed it is
+                assumed to be 255.
+            color : Either a known string {"CartoDB Positron",
+                "CartoDB Positron No Label", "CartoDB Darkmatter",
+                "CartoDB Darkmatter No Label", "CartoDB Voyager", 
+                "CartoDB Voyager No Label"}
+                or a lonboard.basemap object, or a string to a maplibre style basemap.
+            vmin : Minimum value for color mapping.
+            vmax : Maximum value for color mapping.
+            wireframe : Whether to use wireframe styling in deckgl.
+            tiles : An existing Map object to plot onto. 
+            highlight : Whether to highlight each feature on mouseover (passed to
+                lonboard.Layer's auto_highlight). Defaults to False.
 
-        Returns
-        -------
+        Returns:
         lonboard.Map
             a lonboard map with geodataframe included as a Layer object.
         """
@@ -119,6 +100,8 @@ class LonboardAccessor:
             classification_kwds,
             nan_color,
             color,
+            vmin,
+            vmax,
             wireframe,
             tiles,
             highlight,
@@ -142,60 +125,16 @@ def _dexplore(
     classification_kwds=None,
     nan_color=[255, 255, 255, 255],
     color=None,
+    vmin=None,
+    vmax=None,
     wireframe=False,
     tiles="CartoDB Darkmatter",
     highlight=False,
     m=None,
 ):
-    """explore a dataframe using lonboard and deckgl
+    """explore a dataframe using lonboard and deckgl.
 
-    Parameters
-    ----------
-    gdf : geopandas.GeoDataFrame
-        dataframe to visualize
-    column : str, optional
-        name of column on dataframe to visualize on map, by default None
-    cmap : str, optional
-        name of matplotlib colormap to , by default None
-    scheme : str, optional
-        name of a classification scheme defined by mapclassify.Classifier, by default
-        None
-    k : int, optional
-        number of classes to generate, by default 6
-    categorical : bool, optional
-        whether the data should be treated as categorical or continuous, by default
-        False
-    elevation : str or array, optional
-        name of column on the dataframe used to extrude each geometry or an array-like
-        in the same order as observations, by default None
-    extruded : bool, optional
-        whether to extrude geometries using the z-dimension, by default False
-    elevation_scale : int, optional
-        constant scaler multiplied by elevation valuer, by default 1
-    alpha : float, optional
-        alpha (opacity) parameter in the range (0,1) passed to
-        mapclassify.util.get_color_array, by default 1
-    layer_kwargs : dict, optional
-        additional keyword arguments passed to lonboard.viz layer arguments (either
-        polygon_kwargs, scatterplot_kwargs, or path_kwargs, depending on input
-        geometry type), by default None
-    map_kwargs : dict, optional
-        additional keyword arguments passed to lonboard.viz map_kwargs, by default None
-    classification_kwds : dict, optional
-        additional keyword arguments passed to `mapclassify.classify`, by default None
-    nan_color : list-like, optional
-        color used to shade NaN observations formatted as an RGBA list, by
-        default [255, 255, 255, 255]. If no alpha channel is passed it is assumed to be
-        255.
-    color : str or array-like, optional
-        _description_, by default None
-    wireframe : bool, optional
-        whether to use wireframe styling in deckgl, by default False
-    highlight: bool
-        passed to auto_highlight
-    m : lonboard.Map
-        a lonboard.Map instance to render the new layer on. If None (default), a new Map
-        will be generated.
+    See the public docstring for detailed parameter information
 
     Returns
     -------
@@ -257,6 +196,7 @@ def _dexplore(
     if column is not None:
         try:
             from matplotlib import colormaps
+            from matplotlib.colors import
         except ImportError as e:
             raise ImportError(
                 "you must have matplotlib installed to style by a column"
@@ -275,10 +215,13 @@ def _dexplore(
         if categorical:
             color_array = _get_categorical_cmap(gdf[column], cmap, nan_color, alpha)
         elif scheme is None:
+            if vmin is None:
+                vmin = np.nanmin(gdf[column])
+            if vmax is None:
+                vmax = np.nanmax(gdf[column])
             # minmax scale the column first, matplotlib needs 0-1
-            transformed = (gdf[column] - np.nanmin(gdf[column])) / (
-                np.nanmax(gdf[column]) - np.nanmin(gdf[column])
-            )
+            transformed = (gdf[column] - vmin) / (
+                vmax - vmin)
             color_array = apply_continuous_cmap(
                 values=transformed, cmap=colormaps[cmap], alpha=alpha
             )
@@ -286,14 +229,15 @@ def _dexplore(
             try:
                 from mapclassify._classify_API import _classifiers
                 from mapclassify.util import get_color_array
+
                 _klasses = list(_classifiers.keys())
-                _klasses.append('userdefined')
+                _klasses.append("userdefined")
             except ImportError as e:
                 raise ImportError(
                     "you must have the `mapclassify` package installed to use the "
                     "`scheme` keyword"
                 ) from e
-            if scheme.replace("_","") not in _klasses:
+            if scheme.replace("_", "") not in _klasses:
                 raise ValueError(
                     "the classification scheme must be a valid mapclassify"
                     f"classifier in {_klasses},"
