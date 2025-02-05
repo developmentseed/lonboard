@@ -68,17 +68,18 @@ class LonboardAccessor:
             nan_color : Color used to shade NaN observations formatted as an RGBA list.
                 Defaults to [255, 255, 255, 255]. If no alpha channel is passed it is
                 assumed to be 255.
-            color : Either a known string {"CartoDB Positron",
-                "CartoDB Positron No Label", "CartoDB Darkmatter",
-                "CartoDB Darkmatter No Label", "CartoDB Voyager",
-                "CartoDB Voyager No Label"}
+            color : single or array of colors passed to Layer.get_fill_color
                 or a lonboard.basemap object, or a string to a maplibre style basemap.
             vmin : Minimum value for color mapping.
             vmax : Maximum value for color mapping.
             wireframe : Whether to use wireframe styling in deckgl.
-            tiles : An existing Map object to plot onto.
+            tiles : Either a known string {"CartoDB Positron",
+                "CartoDB Positron No Label", "CartoDB Darkmatter",
+                "CartoDB Darkmatter No Label", "CartoDB Voyager", 
+                "CartoDB Voyager No Label"}
             highlight : Whether to highlight each feature on mouseover (passed to
                 lonboard.Layer's auto_highlight). Defaults to False.
+            m: An existing Map object to plot onto. 
 
         Returns:
         lonboard.Map
@@ -196,7 +197,6 @@ def _dexplore(
     if column is not None:
         try:
             from matplotlib import colormaps
-            from matplotlib.colors import
         except ImportError as e:
             raise ImportError(
                 "you must have matplotlib installed to style by a column"
