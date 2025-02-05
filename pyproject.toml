@@ -126,3 +126,10 @@ select = [
 "__init__.py" = [
     "F401", # Allow unused imports in __init__.py files
 ]
+
+[tool.uv]
+constraint-dependencies = [
+    # ensure lockfile grabs wheels for pyproj for each Python version
+    "pyproj==3.6; python_version == '3.9'",
+    "pyproj>=3.7; python_version >= '3.10'",
+]
