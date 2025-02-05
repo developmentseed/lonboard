@@ -1,7 +1,8 @@
 version = 1
 requires-python = ">=3.9"
 resolution-markers = [
-    "python_full_version >= '3.11'",
+    "python_full_version >= '3.12'",
+    "python_full_version == '3.11.*'",
     "python_full_version == '3.10.*'",
     "python_full_version < '3.10'",
 ]
@@ -695,7 +696,8 @@ name = "contourpy"
 version = "1.3.1"
 source = { registry = "https://pypi.org/simple" }
 resolution-markers = [
-    "python_full_version >= '3.11'",
+    "python_full_version >= '3.12'",
+    "python_full_version == '3.11.*'",
 ]
 dependencies = [
     { name = "numpy", marker = "python_full_version >= '3.11'" },
@@ -1757,6 +1759,7 @@ dev = [
     { name = "pre-commit" },
     { name = "pyarrow" },
     { name = "pyogrio" },
+    { name = "pyproj" },
     { name = "pytest" },
 ]
 docs = [
@@ -1785,7 +1788,8 @@ requires-dist = [
     { name = "numpy", specifier = ">=1.14" },
     { name = "pandas", marker = "extra == 'geopandas'", specifier = ">=2" },
     { name = "pyogrio", marker = "extra == 'cli'", specifier = ">=0.8" },
-    { name = "pyproj", specifier = ">=3.3" },
+    { name = "pyproj", marker = "python_full_version < '3.12'", specifier = ">=3.3" },
+    { name = "pyproj", marker = "python_full_version >= '3.12'", specifier = ">=3.5" },
     { name = "shapely", marker = "extra == 'cli'", specifier = ">=2" },
     { name = "shapely", marker = "extra == 'geopandas'", specifier = ">=2" },
     { name = "traitlets", specifier = ">=5.7.1" },
@@ -1806,6 +1810,8 @@ dev = [
     { name = "pre-commit", specifier = ">=3.5.0" },
     { name = "pyarrow", specifier = ">=17.0.0" },
     { name = "pyogrio", specifier = ">=0.9.0" },
+    { name = "pyproj", marker = "python_full_version < '3.12'", specifier = ">=3.3" },
+    { name = "pyproj", marker = "python_full_version >= '3.12'", specifier = ">=3.5" },
     { name = "pytest", specifier = ">=8.3.4" },
 ]
 docs = [
