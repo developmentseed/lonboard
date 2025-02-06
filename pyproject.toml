@@ -5,7 +5,7 @@ description = "Fast, interactive geospatial data visualization in Jupyter."
 authors = [{ name = "Kyle Barron", email = "kyle@developmentseed.org" }]
 license = "MIT"
 readme = "README.md"
-requires-python = ">=3.8"
+requires-python = ">=3.9"
 dependencies = [
     "anywidget~=0.9.0",
     # Version in Colab as of October 2024
@@ -125,4 +125,11 @@ select = [
 [tool.ruff.extend-per-file-ignores]
 "__init__.py" = [
     "F401", # Allow unused imports in __init__.py files
+]
+
+[tool.uv]
+constraint-dependencies = [
+    # ensure lockfile grabs wheels for pyproj for each Python version
+    "pyproj==3.6; python_version == '3.9'",
+    "pyproj>=3.7; python_version >= '3.10'",
 ]
