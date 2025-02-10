@@ -1,5 +1,11 @@
 # Changelog
 
+## [0.10.4] - 2025-02-10
+
+### Fixes :bug:
+
+- use dependency state in HTML export. For (https://github.com/developmentseed/lonboard/issues/725). https://github.com/developmentseed/lonboard/pull/731
+
 ## [0.10.3] - 2024-10-15
 
 ### Fixes :bug:
