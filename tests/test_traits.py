@@ -34,12 +34,14 @@ def test_color_accessor_validation_list_length():
         ColorAccessorWidget(color=())
 
     with pytest.raises(
-        TraitError, match="expected 3 or 4 values if passed a tuple or list"
+        TraitError,
+        match="expected 3 or 4 values if passed a tuple or list",
     ):
         ColorAccessorWidget(color=(1, 2))
 
     with pytest.raises(
-        TraitError, match="expected 3 or 4 values if passed a tuple or list"
+        TraitError,
+        match="expected 3 or 4 values if passed a tuple or list",
     ):
         ColorAccessorWidget(color=(1, 2, 3, 4, 5))
 
@@ -76,14 +78,14 @@ def test_color_accessor_validation_dim_shape_np_arr():
 
     with pytest.raises(TraitError):
         ColorAccessorWidget(
-            color=np.array([1, 2, 3, 4, 5], dtype=np.uint8).reshape(-1, 5)
+            color=np.array([1, 2, 3, 4, 5], dtype=np.uint8).reshape(-1, 5),
         )
 
     ColorAccessorWidget(
-        color=np.array([1, 2, 3], dtype=np.uint8).reshape(-1, 3).repeat(3, axis=0)
+        color=np.array([1, 2, 3], dtype=np.uint8).reshape(-1, 3).repeat(3, axis=0),
     )
     ColorAccessorWidget(
-        color=np.array([1, 2, 3, 255], dtype=np.uint8).reshape(-1, 4).repeat(3, axis=0)
+        color=np.array([1, 2, 3, 255], dtype=np.uint8).reshape(-1, 4).repeat(3, axis=0),
     )
 
 
@@ -93,7 +95,7 @@ def test_color_accessor_validation_np_dtype():
         ColorAccessorWidget(color=np.array([1, 2, 3]).reshape(-1, 3))
 
     ColorAccessorWidget(
-        color=np.array([1, 2, 3], dtype=np.uint8).reshape(-1, 3).repeat(3, axis=0)
+        color=np.array([1, 2, 3], dtype=np.uint8).reshape(-1, 3).repeat(3, axis=0),
     )
 
 
@@ -175,7 +177,8 @@ def test_float_accessor_validation_type():
 class FilterValueAccessorWidget(BaseArrowLayer):
     # This needs a data filter extension in the extensions array to validate filter_size
     extensions = VariableLengthTuple(trait=traitlets.Instance(BaseExtension)).tag(
-        sync=True, **ipywidgets.widget_serialization
+        sync=True,
+        **ipywidgets.widget_serialization,
     )
 
     table = ArrowTableTrait()
@@ -207,23 +210,33 @@ def test_filter_value_validation_filter_size_1():
     with pytest.raises(TraitError):
         FilterValueAccessorWidget(extensions=extensions, get_filter_value=(1, 2))
     FilterValueAccessorWidget(
-        extensions=extensions, get_filter_value=[1], filter_range=(0, 1)
+        extensions=extensions,
+        get_filter_value=[1],
+        filter_range=(0, 1),
     )
     FilterValueAccessorWidget(
-        extensions=extensions, get_filter_value=(1,), filter_range=(0, 1)
+        extensions=extensions,
+        get_filter_value=(1,),
+        filter_range=(0, 1),
     )
 
     # Allow floats and ints
     FilterValueAccessorWidget(
-        extensions=extensions, get_filter_value=2, filter_range=(0, 1)
+        extensions=extensions,
+        get_filter_value=2,
+        filter_range=(0, 1),
     )
     FilterValueAccessorWidget(
-        extensions=extensions, get_filter_value=2.0, filter_range=(0, 1)
+        extensions=extensions,
+        get_filter_value=2.0,
+        filter_range=(0, 1),
     )
 
     # Numpy arrays
     FilterValueAccessorWidget(
-        extensions=extensions, get_filter_value=np.array([2, 3, 4]), filter_range=(0, 1)
+        extensions=extensions,
+        get_filter_value=np.array([2, 3, 4]),
+        filter_range=(0, 1),
     )
     FilterValueAccessorWidget(
         extensions=extensions,
@@ -254,7 +267,8 @@ def test_filter_value_validation_filter_size_1():
     # Raises for non-numeric numpy array
     with pytest.raises(TraitError):
         FilterValueAccessorWidget(
-            extensions=extensions, get_filter_value=np.array(["2", "3", "4"])
+            extensions=extensions,
+            get_filter_value=np.array(["2", "3", "4"]),
         )
 
     # Accept 2D numpy arrays where the second dimension is 1
@@ -269,7 +283,8 @@ def test_filter_value_validation_filter_size_1():
         FilterValueAccessorWidget(
             extensions=extensions,
             get_filter_value=np.array([2, 3, 4, 6, 7, 8], dtype=np.float32).reshape(
-                -1, 2
+                -1,
+                2,
             ),
         )
 
@@ -312,10 +327,14 @@ def test_filter_value_validation_filter_size_3():
     with pytest.raises(TraitError):
         FilterValueAccessorWidget(extensions=extensions, get_filter_value=(1, 2))
     FilterValueAccessorWidget(
-        extensions=extensions, get_filter_value=[1, 2, 3], filter_range=(0, 1)
+        extensions=extensions,
+        get_filter_value=[1, 2, 3],
+        filter_range=(0, 1),
     )
     FilterValueAccessorWidget(
-        extensions=extensions, get_filter_value=(1, 2, 3), filter_range=(0, 1)
+        extensions=extensions,
+        get_filter_value=(1, 2, 3),
+        filter_range=(0, 1),
     )
 
     # Disallow floats and ints
@@ -327,19 +346,22 @@ def test_filter_value_validation_filter_size_3():
     # Numpy arrays
     with pytest.raises(TraitError):
         FilterValueAccessorWidget(
-            extensions=extensions, get_filter_value=np.array([2, 3, 4])
+            extensions=extensions,
+            get_filter_value=np.array([2, 3, 4]),
         )
     FilterValueAccessorWidget(
         extensions=extensions,
         get_filter_value=np.array(
-            [1, 2, 3, 4, 5, 6, 7, 8, 9], dtype=np.float32
+            [1, 2, 3, 4, 5, 6, 7, 8, 9],
+            dtype=np.float32,
         ).reshape(-1, 3),
         filter_range=(0, 1),
     )
     FilterValueAccessorWidget(
         extensions=extensions,
         get_filter_value=np.array(
-            [1, 2, 3, 4, 5, 6, 7, 8, 9], dtype=np.float64
+            [1, 2, 3, 4, 5, 6, 7, 8, 9],
+            dtype=np.float64,
         ).reshape(-1, 3),
         filter_range=(0, 1),
     )
@@ -347,13 +369,15 @@ def test_filter_value_validation_filter_size_3():
     # Disallow pandas series
     with pytest.raises(TraitError):
         FilterValueAccessorWidget(
-            extensions=extensions, get_filter_value=pd.Series([2, 3, 4])
+            extensions=extensions,
+            get_filter_value=pd.Series([2, 3, 4]),
         )
 
     # Raises for non-numeric numpy array
     with pytest.raises(TraitError):
         FilterValueAccessorWidget(
-            extensions=extensions, get_filter_value=np.array(["2", "3", "4"])
+            extensions=extensions,
+            get_filter_value=np.array(["2", "3", "4"]),
         )
 
     # Disallow 2D numpy arrays where the second dimension is 1
@@ -368,7 +392,8 @@ def test_filter_value_validation_filter_size_3():
         FilterValueAccessorWidget(
             extensions=extensions,
             get_filter_value=pa.FixedSizeListArray.from_arrays(
-                np.array([1, 2, 3, 4, 5, 6, 7, 8, 9], dtype=np.int64), 3
+                np.array([1, 2, 3, 4, 5, 6, 7, 8, 9], dtype=np.int64),
+                3,
             ),
         )
 
@@ -376,14 +401,16 @@ def test_filter_value_validation_filter_size_3():
     FilterValueAccessorWidget(
         extensions=extensions,
         get_filter_value=pa.FixedSizeListArray.from_arrays(
-            np.array([1, 2, 3, 4, 5, 6, 7, 8, 9], dtype=np.float32), 3
+            np.array([1, 2, 3, 4, 5, 6, 7, 8, 9], dtype=np.float32),
+            3,
         ),
         filter_range=(0, 1),
     )
     FilterValueAccessorWidget(
         extensions=extensions,
         get_filter_value=pa.FixedSizeListArray.from_arrays(
-            np.array([1, 2, 3, 4, 5, 6, 7, 8, 9], dtype=np.float64), 3
+            np.array([1, 2, 3, 4, 5, 6, 7, 8, 9], dtype=np.float64),
+            3,
         ),
         filter_range=(0, 1),
     )
@@ -410,7 +437,8 @@ def test_normal_accessor_validation_list_length():
 def test_normal_accessor_validation_list_type():
     # tuple or list must be of scalar type
     with pytest.raises(
-        TraitError, match="all elements of normal scalar to be int or float type"
+        TraitError,
+        match="all elements of normal scalar to be int or float type",
     ):
         NormalAccessorWidget(value=["1.1", 2.2, 3.3])
 
@@ -428,14 +456,16 @@ def test_normal_accessor_validation_dim_shape_np_arr():
 def test_normal_accessor_validation_np_dtype():
     arr_size3_int = np.array([1, 2, 3, 4, 5, 6, 7, 8, 9]).reshape(-1, 3)
     arr_size3_float = np.array([1, 2, 3, 4, 5, 6, 7, 8, 9], dtype=np.float64).reshape(
-        -1, 3
+        -1,
+        3,
     )
 
     NormalAccessorWidget(value=arr_size3_int)
     NormalAccessorWidget(value=arr_size3_float)
 
     arr_size3_str = np.array(["1", "2", "3", "4", "5", "6", "7", "8", "9"]).reshape(
-        -1, 3
+        -1,
+        3,
     )
 
     # acceptable data types within a numpy array are float32
@@ -446,7 +476,8 @@ def test_normal_accessor_validation_np_dtype():
 def test_normal_accessor_validation_pyarrow_array_type():
     # array type must be FixedSizeList, of length 3, of float32 type
     with pytest.raises(
-        TraitError, match="expected normal Arrow array to be a FixedSizeList"
+        TraitError,
+        match="expected normal Arrow array to be a FixedSizeList",
     ):
         NormalAccessorWidget(value=pa.array(np.array([1, 2, 3], dtype=np.float64)))
 
@@ -458,6 +489,7 @@ def test_normal_accessor_validation_pyarrow_array_type():
 
     np_arr = np.array([1, 2, 3], dtype=np.uint8).repeat(3, axis=0)
     with pytest.raises(
-        TraitError, match="expected Arrow array to be floating point type"
+        TraitError,
+        match="expected Arrow array to be floating point type",
     ):
         NormalAccessorWidget(value=pa.FixedSizeListArray.from_arrays(np_arr, 3))

@@ -83,17 +83,18 @@ class WeightedCentroid:
         existing_y_avg = self.y
 
         self.x = float(
-            existing_x_avg * existing_modifier + new_chunk_avg_x * new_chunk_modifier
+            existing_x_avg * existing_modifier + new_chunk_avg_x * new_chunk_modifier,
         )
         self.y = float(
-            existing_y_avg * existing_modifier + new_chunk_avg_y * new_chunk_modifier
+            existing_y_avg * existing_modifier + new_chunk_avg_y * new_chunk_modifier,
         )
         self.num_items += new_chunk_len
 
 
 def weighted_centroid(field: Field, column: ChunkedArray) -> WeightedCentroid:
     """Get the bounding box and geometric (weighted) center of the geometries in the
-    table."""
+    table.
+    """
     extension_type_name = field.metadata[b"ARROW:extension:name"]
 
     if extension_type_name == EXTENSION_NAME.POINT:

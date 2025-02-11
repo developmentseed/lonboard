@@ -1,4 +1,7 @@
+from __future__ import annotations
+
 import os
+from pathlib import Path
 
 from lonboard._constants import Environment
 
@@ -8,8 +11,8 @@ except ImportError:
     IPython = None
 
 
-def detect_environment() -> Environment:
-    """Try to detect user's environment
+def detect_environment() -> Environment:  # noqa: PLR0911
+    """Try to detect user's environment.
 
     This is ported from Plotly here:
     https://github.com/plotly/plotly.py/blob/38ded4acc91bd6c33fbe2c8090d629ba2215dce1/packages/python/plotly/plotly/io/_renderers.py#L446C1-L538C37
@@ -23,7 +26,7 @@ def detect_environment() -> Environment:
         except ImportError:
             pass
 
-    if os.path.exists("/kaggle/input"):
+    if Path("/kaggle/input").exists():
         return Environment.Kaggle
 
     if "AZURE_NOTEBOOKS_HOST" in os.environ:
@@ -50,7 +53,7 @@ def detect_environment() -> Environment:
 ENVIRONMENT = detect_environment()
 
 
-def default_height():
+def default_height() -> int | None:
     if ENVIRONMENT in [Environment.Vscode, Environment.Colab]:
         return 500
 

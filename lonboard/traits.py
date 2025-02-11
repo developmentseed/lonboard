@@ -97,6 +97,7 @@ class FixedErrorTraitType(traitlets.TraitType):
             A description of the expected value. By
             default this is infered from this trait's
             ``info`` method.
+
         """
         if error is not None:
             # handle nested error
@@ -117,8 +118,7 @@ class FixedErrorTraitType(traitlets.TraitType):
                     )
                 else:
                     error.args = (
-                        "The '{}' trait contains {} which "
-                        "expected {}, not {}.".format(
+                        "The '{}' trait contains {} which expected {}, not {}.".format(
                             self.name,
                             chain,
                             error.args[1],
@@ -126,31 +126,29 @@ class FixedErrorTraitType(traitlets.TraitType):
                         ),
                     )
             raise error
+        # this trait caused an error
+        if self.name is None:
+            # this is not the root trait
+            raise TraitError(value, info or self.info(), self)
+        # this is the root trait
+        if obj is not None:
+            e = "The '{}' trait of {} instance expected {}, not {}.".format(
+                self.name,
+                class_of(obj),
+                # CHANGED:
+                # Use info if provided
+                info or self.info(),
+                describe("the", value),
+            )
         else:
-            # this trait caused an error
-            if self.name is None:
-                # this is not the root trait
-                raise TraitError(value, info or self.info(), self)
-            else:
-                # this is the root trait
-                if obj is not None:
-                    e = "The '{}' trait of {} instance expected {}, not {}.".format(
-                        self.name,
-                        class_of(obj),
-                        # CHANGED:
-                        # Use info if provided
-                        info or self.info(),
-                        describe("the", value),
-                    )
-                else:
-                    e = "The '{}' trait expected {}, not {}.".format(
-                        self.name,
-                        # CHANGED:
-                        # Use info if provided
-                        info or self.info(),
-                        describe("the", value),
-                    )
-                raise TraitError(e)
+            e = "The '{}' trait expected {}, not {}.".format(
+                self.name,
+                # CHANGED:
+                # Use info if provided
+                info or self.info(),
+                describe("the", value),
+            )
+        raise TraitError(e)
 
 
 class ArrowTableTrait(FixedErrorTraitType):
@@ -202,7 +200,7 @@ class ArrowTableTrait(FixedErrorTraitType):
         # No restriction on the allowed geometry types in this table
         if allowed_geometry_types:
             geometry_extension_type = value.schema.field(geom_col_idx).metadata.get(
-                b"ARROW:extension:name"
+                b"ARROW:extension:name",
             )
 
             if (
@@ -344,8 +342,7 @@ class ColorAccessor(FixedErrorTraitType):
                 obj,
                 value,
                 info=(
-                    "Color Arrow array must have a FixedSizeList inner size of "
-                    "3 or 4."
+                    "Color Arrow array must have a FixedSizeList inner size of 3 or 4."
                 ),
             )
 
@@ -381,8 +378,7 @@ class FloatAccessor(FixedErrorTraitType):
 
     default_value = float(0)
     info_text = (
-        "a float value or numpy ndarray or Arrow array representing an array"
-        " of floats"
+        "a float value or numpy ndarray or Arrow array representing an array of floats"
     )
 
     def __init__(
@@ -473,7 +469,7 @@ class TextAccessor(FixedErrorTraitType):
             import pyarrow as pa
         except ImportError as e:
             raise ImportError(
-                "pyarrow is a required dependency when passing in a pandas series"
+                "pyarrow is a required dependency when passing in a pandas series",
             ) from e
 
         return ChunkedArray([pa.array(value)])
@@ -483,7 +479,7 @@ class TextAccessor(FixedErrorTraitType):
             import pyarrow as pa
         except ImportError as e:
             raise ImportError(
-                "pyarrow is a required dependency when passing in a numpy string array"
+                "pyarrow is a required dependency when passing in a numpy string array",
             ) from e
 
         return ChunkedArray([pa.StringArray.from_pandas(value)])
@@ -563,7 +559,9 @@ class PointAccessor(FixedErrorTraitType):
         return ChunkedArray([array])
 
     def validate(
-        self, obj: BaseArrowLayer, value
+        self,
+        obj: BaseArrowLayer,
+        value,
     ) -> Union[Tuple[int, ...], List[int], ChunkedArray]:
         if isinstance(value, np.ndarray):
             value = self._numpy_to_arrow(obj, value)
@@ -584,8 +582,7 @@ class PointAccessor(FixedErrorTraitType):
                 obj,
                 value,
                 info=(
-                    "point arrow array to be a FixedSizeList with list size of "
-                    "2 or 3"
+                    "point arrow array to be a FixedSizeList with list size of 2 or 3"
                 ),
             )
 
@@ -602,8 +599,7 @@ class PointAccessor(FixedErrorTraitType):
 
 
 class FilterValueAccessor(FixedErrorTraitType):
-    """
-    A trait to validate input for the `get_filter_value` accessor added by the
+    """A trait to validate input for the `get_filter_value` accessor added by the
     [`DataFilterExtension`][lonboard.layer_extension.DataFilterExtension], which can
     have between 1 and 4 float values per row.
 
@@ -651,8 +647,7 @@ class FilterValueAccessor(FixedErrorTraitType):
 
     default_value = float(0)
     info_text = (
-        "a float value or numpy ndarray or Arrow array representing an array"
-        " of floats"
+        "a float value or numpy ndarray or Arrow array representing an array of floats"
     )
 
     def __init__(
@@ -664,7 +659,10 @@ class FilterValueAccessor(FixedErrorTraitType):
         self.tag(sync=True, **ACCESSOR_SERIALIZATION)
 
     def _pandas_to_numpy(
-        self, obj: BaseArrowLayer, value, filter_size: int
+        self,
+        obj: BaseArrowLayer,
+        value,
+        filter_size: int,
     ) -> np.ndarray:
         # Assert that filter_size == 1 for a pandas series.
         # Pandas series can technically contain Python list objects inside them, but
@@ -676,7 +674,10 @@ class FilterValueAccessor(FixedErrorTraitType):
         return np.asarray(value)
 
     def _numpy_to_arrow(
-        self, obj: BaseArrowLayer, value, filter_size: int
+        self,
+        obj: BaseArrowLayer,
+        value,
+        filter_size: int,
     ) -> ChunkedArray:
         if not np.issubdtype(value.dtype, np.number):
             self.error(obj, value, info="numeric dtype")
@@ -698,8 +699,7 @@ class FilterValueAccessor(FixedErrorTraitType):
                 obj,
                 value,
                 info=(
-                    f"filter_size ({filter_size}) to match 2nd dimension of "
-                    "numpy array"
+                    f"filter_size ({filter_size}) to match 2nd dimension of numpy array"
                 ),
             )
 
@@ -707,7 +707,9 @@ class FilterValueAccessor(FixedErrorTraitType):
         return ChunkedArray([array])
 
     def validate(
-        self, obj: BaseArrowLayer, value
+        self,
+        obj: BaseArrowLayer,
+        value,
     ) -> Union[float, tuple, list, ChunkedArray]:
         # Find the data filter extension in the attributes of the parent object so we
         # can validate against the filter size.
@@ -801,14 +803,13 @@ class FilterValueAccessor(FixedErrorTraitType):
 
         # Cast values to float32
         value = value.cast(
-            DataType.list(Field("", DataType.float32()), value.type.list_size)
+            DataType.list(Field("", DataType.float32()), value.type.list_size),
         )
         return value.rechunk(max_chunksize=obj._rows_per_chunk)
 
 
 class NormalAccessor(FixedErrorTraitType):
-    """
-    A representation of a deck.gl "normal" accessor
+    """A representation of a deck.gl "normal" accessor
 
     This is primarily used in the [lonboard.PointCloudLayer].
 
@@ -849,7 +850,7 @@ class NormalAccessor(FixedErrorTraitType):
         if not np.issubdtype(value.dtype, np.float32):
             warnings.warn(
                 """Warning: Numpy array should be float32 type.
-                Converting to float32 point Arrow array"""
+                Converting to float32 point Arrow array""",
             )
             value = value.astype(np.float32)
 
@@ -857,12 +858,16 @@ class NormalAccessor(FixedErrorTraitType):
         return ChunkedArray([array])
 
     def validate(
-        self, obj: BaseArrowLayer, value
+        self,
+        obj: BaseArrowLayer,
+        value,
     ) -> Union[Tuple[int, ...], List[int], ChunkedArray]:
         if isinstance(value, (tuple, list)):
             if len(value) != 3:
                 self.error(
-                    obj, value, info="normal scalar to have length 3, (nx, ny, nz)"
+                    obj,
+                    value,
+                    info="normal scalar to have length 3, (nx, ny, nz)",
                 )
 
             if not all(isinstance(item, (int, float)) for item in value):
@@ -993,7 +998,9 @@ class DashArrayAccessor(FixedErrorTraitType):
         return ChunkedArray([array])
 
     def validate(
-        self, obj: BaseArrowLayer, value
+        self,
+        obj: BaseArrowLayer,
+        value,
     ) -> Union[Tuple[int, ...], List[int], ChunkedArray]:
         if isinstance(value, (tuple, list)):
             if len(value) != 2:
@@ -1075,9 +1082,7 @@ T = TypeVar("T")
 # class VariableLengthTuple(traitlets.Container[Tuple[T, ...]])
 # When we can upgrade to traitlets 5.10 (depends on Colab upgrading)
 class VariableLengthTuple(traitlets.Container):
-    """
-    An instance of a Python tuple with variable numbers of elements of the same type.
-    """
+    """An instance of a Python tuple with variable numbers of elements of the same type."""
 
     klass = list  # type:ignore[assignment]
     _cast_types: Any = (tuple,)
@@ -1115,6 +1120,7 @@ class VariableLengthTuple(traitlets.Container):
             The minimum length of the input list
         maxlen : Int [ default sys.maxsize ]
             The maximum length of the input list
+
         """
         self._maxlen = maxlen
         self._minlen = minlen

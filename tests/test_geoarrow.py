@@ -25,10 +25,13 @@ def test_geopandas_table_reprojection():
     layer_geom_field = layer.table.schema.field(layer_geom_col_idx)
 
     reprojected_crs_str = json.loads(
-        layer_geom_field.metadata[b"ARROW:extension:metadata"]
+        layer_geom_field.metadata[b"ARROW:extension:metadata"],
     )["crs"]
-    assert OGC_84 == CRS.from_json(
-        reprojected_crs_str
+    assert (
+        CRS.from_json(
+            reprojected_crs_str,
+        )
+        == OGC_84
     ), "layer should be reprojected to WGS84"
 
 
@@ -42,13 +45,13 @@ def test_geoarrow_table_reprojection():
     assert geom_col_idx is not None, "geom column should exist"
 
     geom_field = table.schema.field(geom_col_idx)
-    assert (
-        b"ARROW:extension:metadata" in geom_field.metadata
-    ), "Metadata key should exist"
+    assert b"ARROW:extension:metadata" in geom_field.metadata, (
+        "Metadata key should exist"
+    )
 
     crs_dict = json.loads(geom_field.metadata[b"ARROW:extension:metadata"])["crs"]
     assert gdf.crs == CRS.from_json_dict(
-        crs_dict
+        crs_dict,
     ), "round trip crs should match gdf crs"
 
     layer = SolidPolygonLayer(table=table)
@@ -57,10 +60,13 @@ def test_geoarrow_table_reprojection():
     layer_geom_field = layer.table.schema.field(layer_geom_col_idx)
 
     reprojected_crs_str = json.loads(
-        layer_geom_field.metadata[b"ARROW:extension:metadata"]
+        layer_geom_field.metadata[b"ARROW:extension:metadata"],
     )["crs"]
-    assert OGC_84 == CRS.from_json(
-        reprojected_crs_str
+    assert (
+        CRS.from_json(
+            reprojected_crs_str,
+        )
+        == OGC_84
     ), "layer should be reprojected to WGS84"
 
 

@@ -4,7 +4,6 @@ import json
 import webbrowser
 from pathlib import Path
 from tempfile import NamedTemporaryFile
-from typing import Dict, List, Optional
 
 import click
 from arro3.core import Table
@@ -15,10 +14,11 @@ from lonboard._constants import EXTENSION_NAME
 
 
 def read_pyogrio(path: Path) -> Table:
-    """Read path using pyogrio and convert field metadata to geoarrow
+    """Read path using pyogrio and convert field metadata to geoarrow.
 
     Args:
         path: Path to file readable by pyogrio
+
     """
     try:
         from pyogrio.raw import open_arrow
@@ -26,7 +26,7 @@ def read_pyogrio(path: Path) -> Table:
         raise ImportError(
             "pyogrio is a required dependency for the CLI for reading data sources \n"
             "other than GeoParquet.\n"
-            "Install with `pip install pyogrio`."
+            "Install with `pip install pyogrio`.",
         ) from e
 
     with open_arrow(path, use_pyarrow=False) as source:
@@ -47,7 +47,7 @@ def read_pyogrio(path: Path) -> Table:
     schema = table.schema
     field = schema.field(geometry_column_index)
 
-    metadata: Dict[bytes, bytes] = field.metadata
+    metadata: dict[bytes, bytes] = field.metadata
     if metadata.get(b"ARROW:extension:name") == EXTENSION_NAME.OGC_WKB:
         # Parse CRS and create PROJJSON
         ext_meta = {"crs": CRS.from_user_input(meta["crs"]).to_json_dict()}
@@ -76,6 +76,7 @@ def read_parquet(path: Path) -> tuple[Table, dict]:
 
     Returns:
         arro3 Table
+
     """
     try:
         import pyarrow.parquet as pq
@@ -94,7 +95,7 @@ def read_parquet(path: Path) -> tuple[Table, dict]:
 
         reader = read_parquet(path)
 
-        if "geo" not in reader.schema.metadata_str.keys():
+        if "geo" not in reader.schema.metadata_str:
             raise ValueError("Expected geo metadata in Parquet file")
 
         table = reader.read_all()
@@ -104,10 +105,11 @@ def read_parquet(path: Path) -> tuple[Table, dict]:
 
 
 def read_geoparquet(path: Path) -> Table:
-    """Read GeoParquet file at path using pyarrow or arro3.io
+    """Read GeoParquet file at path using pyarrow or arro3.io.
 
     Args:
         path: Path to GeoParquet file
+
     """
     table, geo_meta = read_parquet(path)
     geometry_column_name = geo_meta["primary_column"]
@@ -151,13 +153,12 @@ def read_geoparquet(path: Path) -> Table:
     ),
 )
 @click.argument("files", nargs=-1, type=click.Path(path_type=Path))
-def main(output: Optional[Path], open_browser: Optional[bool], files: List[Path]):
+def main(output: Path | None, open_browser: bool | None, files: list[Path]) -> None:
     """Interactively visualize geospatial data using Lonboard.
 
     This CLI can be used either to quickly view local files or to create static HTML
     files.
     """
-
     tables = []
     for path in files:
         if path.suffix == ".parquet":

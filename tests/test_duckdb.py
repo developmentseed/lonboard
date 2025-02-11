@@ -198,7 +198,8 @@ def test_create_table_as_custom_con():
     con.execute(sql)
 
     with pytest.raises(
-        duckdb.InvalidInputException, match="object was created by another Connection"
+        duckdb.InvalidInputException,
+        match="object was created by another Connection",
     ):
         m = viz(con.table("test"))
 

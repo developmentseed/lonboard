@@ -2,7 +2,7 @@ from __future__ import annotations
 
 import math
 from io import BytesIO
-from typing import TYPE_CHECKING, List, Optional, Union, overload
+from typing import TYPE_CHECKING, Any, overload
 
 import arro3.compute as ac
 from arro3.core import (
@@ -19,11 +19,11 @@ from arro3.core import (
 from traitlets import TraitError
 
 from lonboard._utils import timestamp_start_offset
-from lonboard.models import ViewState
 
 if TYPE_CHECKING:
     from lonboard._layer import BaseArrowLayer
     from lonboard.experimental._layer import TripsLayer
+    from lonboard.models import ViewState
 
 
 DEFAULT_PARQUET_COMPRESSION = "ZSTD"
@@ -39,7 +39,7 @@ DEFAULT_MAX_NUM_CHUNKS = 32
 
 
 def write_parquet_batch(record_batch: RecordBatch) -> bytes:
-    """Write a RecordBatch to a Parquet file
+    """Write a RecordBatch to a Parquet file.
 
     We still use pyarrow.parquet.ParquetWriter if pyarrow is installed because pyarrow
     has better encoding defaults. So Parquet files written by pyarrow are smaller by
@@ -63,7 +63,8 @@ def write_parquet_batch(record_batch: RecordBatch) -> bytes:
             compression_level=DEFAULT_PARQUET_COMPRESSION_LEVEL,
         ) as writer:
             writer.write_batch(
-                pa.record_batch(record_batch), row_group_size=record_batch.num_rows
+                pa.record_batch(record_batch),
+                row_group_size=record_batch.num_rows,
             )
 
         return bio.getvalue()
@@ -85,8 +86,8 @@ def write_parquet_batch(record_batch: RecordBatch) -> bytes:
         return bio.getvalue()
 
 
-def serialize_table_to_parquet(table: Table, *, max_chunksize: int) -> List[bytes]:
-    buffers: List[bytes] = []
+def serialize_table_to_parquet(table: Table, *, max_chunksize: int) -> list[bytes]:
+    buffers: list[bytes] = []
     assert max_chunksize > 0
 
     for record_batch in table.rechunk(max_chunksize=max_chunksize).to_batches():
@@ -96,9 +97,11 @@ def serialize_table_to_parquet(table: Table, *, max_chunksize: int) -> List[byte
 
 
 def serialize_pyarrow_column(
-    data: Array | ChunkedArray, *, max_chunksize: int
-) -> List[bytes]:
-    """Serialize a pyarrow column to a Parquet file with one column"""
+    data: Array | ChunkedArray,
+    *,
+    max_chunksize: int,
+) -> list[bytes]:
+    """Serialize a pyarrow column to a Parquet file with one column."""
     pyarrow_table = Table.from_pydict({"value": data})
     return serialize_table_to_parquet(pyarrow_table, max_chunksize=max_chunksize)
 
@@ -107,14 +110,14 @@ def serialize_pyarrow_column(
 def serialize_accessor(
     data: ChunkedArray,
     obj: BaseArrowLayer,
-) -> List[bytes]: ...
+) -> list[bytes]: ...
 @overload
 def serialize_accessor(
-    data: Union[str, int, float, list, tuple, bytes],
+    data: str | float | list | tuple | bytes,
     obj: BaseArrowLayer,
-) -> Union[str, int, float, list, tuple, bytes]: ...
+) -> str | int | float | list | tuple | bytes: ...
 def serialize_accessor(
-    data: Union[str, int, float, list, tuple, bytes, ChunkedArray],
+    data: str | float | list | tuple | bytes | ChunkedArray,
     obj: BaseArrowLayer,
 ):
     if data is None:
@@ -127,12 +130,12 @@ def serialize_accessor(
 
     assert isinstance(data, ChunkedArray)
     validate_accessor_length_matches_table(data, obj.table)
-    return serialize_pyarrow_column(data, max_chunksize=obj._rows_per_chunk)
+    return serialize_pyarrow_column(data, max_chunksize=obj._rows_per_chunk)  # noqa: SLF001
 
 
-def serialize_table(data: Table, obj: BaseArrowLayer):
+def serialize_table(data: Table, obj: BaseArrowLayer) -> list[bytes]:
     assert isinstance(data, Table), "expected Arrow table"
-    return serialize_table_to_parquet(data, max_chunksize=obj._rows_per_chunk)
+    return serialize_table_to_parquet(data, max_chunksize=obj._rows_per_chunk)  # noqa: SLF001
 
 
 def infer_rows_per_chunk(table: Table) -> int:
@@ -142,18 +145,18 @@ def infer_rows_per_chunk(table: Table) -> int:
     # Clamp to the maximum number of chunks
     num_chunks = min(num_chunks, DEFAULT_MAX_NUM_CHUNKS)
 
-    rows_per_chunk = math.ceil((table.num_rows / num_chunks))
-    return rows_per_chunk
+    return math.ceil(table.num_rows / num_chunks)
 
 
 def validate_accessor_length_matches_table(
-    accessor: Array | ChunkedArray, table: Table
-):
+    accessor: Array | ChunkedArray,
+    table: Table,
+) -> None:
     if len(accessor) != len(table):
         raise TraitError("accessor must have same length as table")
 
 
-def serialize_view_state(data: Optional[ViewState], obj):
+def serialize_view_state(data: ViewState | None, obj: Any) -> None | dict[str, Any]:
     if data is None:
         return None
 
@@ -161,10 +164,10 @@ def serialize_view_state(data: Optional[ViewState], obj):
 
 
 def serialize_timestamp_accessor(
-    timestamps: ChunkedArray, obj: TripsLayer
-) -> List[bytes]:
-    """
-    Subtract off min timestamp to fit into f32 integer range.
+    timestamps: ChunkedArray,
+    obj: TripsLayer,
+) -> list[bytes]:
+    """Subtract off min timestamp to fit into f32 integer range.
 
     Then cast to float32.
     """
@@ -173,7 +176,8 @@ def serialize_timestamp_accessor(
     timestamps = timestamps.cast(DataType.list(DataType.int64()))
 
     start_offset_adjustment = Scalar(
-        timestamp_start_offset(timestamps), type=DataType.int64()
+        timestamp_start_offset(timestamps),
+        type=DataType.int64(),
     )
 
     list_offsets_iter = list_offsets(timestamps)

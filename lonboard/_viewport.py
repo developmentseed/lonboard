@@ -1,4 +1,4 @@
-"""Helpers for viewport operations
+"""Helpers for viewport operations.
 
 This is partially derived from pydeck at
 (https://github.com/visgl/deck.gl/blob/63728ecbdaa2f99811900ec3709e5df0f9f8d228/bindings/pydeck/pydeck/data_utils/viewport_helpers.py)
@@ -8,17 +8,21 @@ under the Apache 2 license.
 from __future__ import annotations
 
 import math
-from typing import Sequence, Tuple
+from typing import TYPE_CHECKING, Any
 
 from lonboard._geoarrow.ops.bbox import Bbox
 from lonboard._geoarrow.ops.centroid import WeightedCentroid
-from lonboard._layer import BaseLayer
+
+if TYPE_CHECKING:
+    from collections.abc import Sequence
+
+    from lonboard._layer import BaseLayer
 
 
-def get_bbox_center(layers: Sequence[BaseLayer]) -> Tuple[Bbox, WeightedCentroid]:
+def get_bbox_center(layers: Sequence[BaseLayer]) -> tuple[Bbox, WeightedCentroid]:
     """Get the bounding box and geometric (weighted) center of the geometries in the
-    table."""
-
+    table.
+    """
     overall_bbox = Bbox()
     overall_centroid = WeightedCentroid()
 
@@ -30,12 +34,13 @@ def get_bbox_center(layers: Sequence[BaseLayer]) -> Tuple[Bbox, WeightedCentroid
 
 
 def bbox_to_zoom_level(bbox: Bbox) -> int:
-    """Computes the zoom level of a bounding box
+    """Compute the zoom level of a bounding box.
 
     This is copied from pydeck: https://github.com/visgl/deck.gl/blob/63728ecbdaa2f99811900ec3709e5df0f9f8d228/bindings/pydeck/pydeck/data_utils/viewport_helpers.py#L125C1-L149C22
 
     Returns:
         Zoom level of map in a WGS84 Mercator projection
+
     """
     lat_diff = max(bbox.miny, bbox.maxy) - min(bbox.miny, bbox.maxy)
     lng_diff = max(bbox.minx, bbox.maxx) - min(bbox.minx, bbox.maxx)
@@ -47,15 +52,14 @@ def bbox_to_zoom_level(bbox: Bbox) -> int:
     else:
         zoom_level = int(
             -1
-            * ((math.log(max_diff) / math.log(2.0)) - (math.log(360.0) / math.log(2)))
+            * ((math.log(max_diff) / math.log(2.0)) - (math.log(360.0) / math.log(2))),
         )
-        if zoom_level < 1:
-            zoom_level = 1
+        zoom_level = max(zoom_level, 1)
 
     return zoom_level
 
 
-def compute_view(layers: Sequence[BaseLayer]):
+def compute_view(layers: Sequence[BaseLayer]) -> dict[str, Any]:
     """Automatically computes a view state for the data passed in."""
     bbox, center = get_bbox_center(layers)
 

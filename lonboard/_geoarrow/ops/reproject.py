@@ -32,7 +32,7 @@ TransformerFromCRS = lru_cache(Transformer.from_crs)
 def no_crs_warning():
     warn(
         "No CRS exists on data. "
-        "If no data is shown on the map, double check that your CRS is WGS84."
+        "If no data is shown on the map, double check that your CRS is WGS84.",
     )
 
 
@@ -51,6 +51,7 @@ def reproject_table(
 
     Returns:
         A new table.
+
     """
     geom_col_idx = get_geometry_column_index(table.schema)
     # No geometry column in table
@@ -66,7 +67,10 @@ def reproject_table(
         return table
 
     new_field, new_column = reproject_column(
-        field=geom_field, column=geom_column, to_crs=to_crs, max_workers=max_workers
+        field=geom_field,
+        column=geom_column,
+        to_crs=to_crs,
+        max_workers=max_workers,
     )
     return table.set_column(geom_col_idx, new_field, new_column)
 
@@ -85,6 +89,7 @@ def reproject_column(
         column: A ChunkedArray
         to_crs: The target CRS. Defaults to OGC_84.
         max_workers: The maximum number of threads to use. Defaults to None.
+
     """
     extension_type_name = field.metadata[b"ARROW:extension:name"]
     crs_str = get_field_crs(field)
@@ -106,7 +111,7 @@ def reproject_column(
     # NOTE: Not sure the best place to put this warning
     warnings.warn(
         "Input being reprojected to EPSG:4326 CRS.\n"
-        "Lonboard is only able to render data in EPSG:4326 projection."
+        "Lonboard is only able to render data in EPSG:4326 projection.",
     )
 
     transformer = TransformerFromCRS(existing_crs, to_crs, always_xy=True)
@@ -125,7 +130,7 @@ def reproject_column(
         max_workers=max_workers,
     )
     new_field = field.with_type(new_chunked_array.type).with_metadata(
-        new_extension_metadata
+        new_extension_metadata,
     )
     return new_field, new_chunked_array
 
@@ -163,12 +168,12 @@ def _reproject_coords(arr: Array, transformer: Transformer):
 
     if list_size == 2:
         output_np_arr = np.column_stack(
-            transformer.transform(np_arr[:, 0], np_arr[:, 1])
+            transformer.transform(np_arr[:, 0], np_arr[:, 1]),
         )
         dims = CoordinateDimension.XY
     elif list_size == 3:
         output_np_arr = np.column_stack(
-            transformer.transform(np_arr[:, 0], np_arr[:, 1], np_arr[:, 2])
+            transformer.transform(np_arr[:, 0], np_arr[:, 1], np_arr[:, 2]),
         )
         dims = CoordinateDimension.XYZ
     else:

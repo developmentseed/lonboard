@@ -1,9 +1,8 @@
 from __future__ import annotations
 
-import sys
 from io import StringIO
 from pathlib import Path
-from typing import IO, TYPE_CHECKING, List, Optional, Sequence, TextIO, Union, overload
+from typing import IO, TYPE_CHECKING, Any, Callable, TextIO, Union, overload
 
 import ipywidgets
 import traitlets
@@ -22,10 +21,14 @@ from lonboard.traits import (
     VariableLengthTuple,
     ViewStateTrait,
 )
-from lonboard.types.map import MapKwargs
 
 if TYPE_CHECKING:
+    import sys
+    from collections.abc import Sequence
+
     from IPython.display import HTML  # type: ignore
+
+    from lonboard.types.map import MapKwargs
 
     if sys.version_info >= (3, 12):
         from typing import Unpack
@@ -57,8 +60,7 @@ _HTML_TEMPLATE = """<!DOCTYPE html>
 
 
 class Map(BaseAnyWidget):
-    """
-    The top-level class used to display a map in a Jupyter Widget.
+    """The top-level class used to display a map in a Jupyter Widget.
 
     **Example:**
 
@@ -85,7 +87,9 @@ class Map(BaseAnyWidget):
     """
 
     def __init__(
-        self, layers: Union[BaseLayer, Sequence[BaseLayer]], **kwargs: Unpack[MapKwargs]
+        self,
+        layers: Union[BaseLayer, Sequence[BaseLayer]],
+        **kwargs: Unpack[MapKwargs],
     ) -> None:
         """Create a new Map.
 
@@ -97,12 +101,15 @@ class Map(BaseAnyWidget):
 
         Returns:
             A Map object.
+
         """
         if isinstance(layers, BaseLayer):
             layers = [layers]
 
         def _handle_anywidget_dispatch(
-            widget: ipywidgets.Widget, msg: Union[str, list, dict], buffers: List[bytes]
+            widget: ipywidgets.Widget,
+            msg: str | list | dict,
+            buffers: list[bytes],
         ) -> None:
             if msg.get("kind") == "on-click":
                 self._click_handlers(tuple(msg.get("coordinate")))
@@ -111,7 +118,7 @@ class Map(BaseAnyWidget):
         self._click_handlers = CallbackDispatcher()
         self.on_msg(_handle_anywidget_dispatch)
 
-    def on_click(self, callback, remove=False):
+    def on_click(self, callback: Callable, *, remove: bool = False) -> None:
         """Register a callback to execute when the map is clicked.
 
         The callback will be called with one argument, a tuple of the coordinate
@@ -174,12 +181,13 @@ class Map(BaseAnyWidget):
     """
 
     layers = VariableLengthTuple(t.Instance(BaseLayer)).tag(
-        sync=True, **ipywidgets.widget_serialization
+        sync=True,
+        **ipywidgets.widget_serialization,
     )
     """One or more `Layer` objects to display on this map.
     """
 
-    show_tooltip = t.Bool(True).tag(sync=True)
+    show_tooltip = t.Bool(default_value=True).tag(sync=True)
     """
     Whether to render a tooltip on hover on the map.
 
@@ -213,7 +221,7 @@ class Map(BaseAnyWidget):
         [
             t.Unicode(allow_none=True),
             VariableLengthTuple(t.Unicode(allow_none=False)),
-        ]
+        ],
     ).tag(sync=True)
     """
     Custom attribution to display on the map.
@@ -347,7 +355,12 @@ class Map(BaseAnyWidget):
     """
 
     selected_bounds = t.Tuple(
-        t.Float(), t.Float(), t.Float(), t.Float(), allow_none=True, default_value=None
+        t.Float(),
+        t.Float(),
+        t.Float(),
+        t.Float(),
+        allow_none=True,
+        default_value=None,
     ).tag(sync=True)
     """
     Bounds selected by the user, represented as a tuple of floats ordered as
@@ -363,11 +376,10 @@ class Map(BaseAnyWidget):
         *,
         focus: bool = False,
         reset_zoom: bool = False,
-    ):
+    ) -> None:
         """Add one or more new layers to the map.
 
         Examples:
-
         ```py
         from lonboard import viz
 
@@ -389,8 +401,8 @@ class Map(BaseAnyWidget):
 
         Raises:
             ValueError: _description_
-        """
 
+        """
         if focus and reset_zoom:
             raise ValueError("focus and reset_zoom may not both be set.")
 
@@ -412,11 +424,11 @@ class Map(BaseAnyWidget):
     def set_view_state(
         self,
         *,
-        longitude: Optional[float] = None,
-        latitude: Optional[float] = None,
-        zoom: Optional[float] = None,
-        pitch: Optional[float] = None,
-        bearing: Optional[float] = None,
+        longitude: float | None = None,
+        latitude: float | None = None,
+        zoom: float | None = None,
+        pitch: float | None = None,
+        bearing: float | None = None,
     ) -> None:
         """Set the view state of the map.
 
@@ -428,6 +440,7 @@ class Map(BaseAnyWidget):
             zoom: the new zoom to set on the map. Defaults to None.
             pitch: the new pitch to set on the map. Defaults to None.
             bearing: the new bearing to set on the map. Defaults to None.
+
         """
         view_state = (
             self.view_state._asdict()  # type: ignore
@@ -451,17 +464,17 @@ class Map(BaseAnyWidget):
     def fly_to(
         self,
         *,
-        longitude: Union[int, float],
-        latitude: Union[int, float],
-        zoom: Union[int, float],
+        longitude: float,
+        latitude: float,
+        zoom: float,
         duration: int = 4000,
-        pitch: Union[int, float] = 0,
-        bearing: Union[int, float] = 0,
-        curve: Optional[Union[int, float]] = None,
-        speed: Optional[Union[int, float]] = None,
-        screen_speed: Optional[Union[int, float]] = None,
+        pitch: float = 0,
+        bearing: float = 0,
+        curve: float | None = None,
+        speed: float | None = None,
+        screen_speed: float | None = None,
     ):
-        """ "Fly" the map to a new location.
+        r""" "Fly" the map to a new location.
 
         Args:
             longitude: The longitude of the new viewport.
@@ -479,15 +492,16 @@ class Map(BaseAnyWidget):
             screen_speed: The average speed of the animation measured in screenfuls per
                 second. Similar to speed it linearly affects the duration, when
                 specified speed is ignored.
-        """
+
+        """  # noqa: D210
         if not isinstance(longitude, (int, float)):
             raise TypeError(
-                f"Expected longitude to be an int or float, got {type(longitude)}"
+                f"Expected longitude to be an int or float, got {type(longitude)}",
             )
 
         if not isinstance(latitude, (int, float)):
             raise TypeError(
-                f"Expected latitude to be an int or float, got {type(latitude)}"
+                f"Expected latitude to be an int or float, got {type(latitude)}",
             )
 
         if not isinstance(zoom, (int, float)):
@@ -511,21 +525,21 @@ class Map(BaseAnyWidget):
     def to_html(
         self,
         filename: None = None,
-        title: Optional[str] = None,
+        title: str | None = None,
     ) -> str: ...
 
     @overload
     def to_html(
         self,
-        filename: Union[str, Path, TextIO, IO[str]],
-        title: Optional[str] = None,
+        filename: str | Path | TextIO | IO[str],
+        title: str | None = None,
     ) -> None: ...
 
     def to_html(
         self,
-        filename: Union[str, Path, TextIO, IO[str], None] = None,
-        title: Optional[str] = None,
-    ) -> Union[None, str]:
+        filename: str | Path | TextIO | IO[str] | None = None,
+        title: str | None = None,
+    ) -> str | None:
         """Save the current map as a standalone HTML file.
 
         Args:
@@ -536,9 +550,10 @@ class Map(BaseAnyWidget):
 
         Returns:
             If `filename` is not passed, returns the HTML content as a `str`.
+
         """
 
-        def inner(fp):
+        def inner(fp: str | Path | TextIO | IO[str]) -> None:
             embed_minimal_html(
                 fp,
                 views=[self],
@@ -557,6 +572,7 @@ class Map(BaseAnyWidget):
 
         else:
             inner(filename)
+            return None
 
     def as_html(self) -> HTML:
         """Render the current map as a static HTML file in IPython.
@@ -581,11 +597,12 @@ class Map(BaseAnyWidget):
 
         Returns:
             IPython HTML object.
+
         """
         from IPython.display import HTML  # type: ignore
 
         return HTML(self.to_html())
 
     @traitlets.default("view_state")
-    def _default_initial_view_state(self):
+    def _default_initial_view_state(self) -> dict[str, Any]:
         return compute_view(self.layers)  # type: ignore

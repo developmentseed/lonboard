@@ -20,14 +20,10 @@ class Bbox:
     maxy: float = -math.inf
 
     def update(self, other: Bbox):
-        if other.minx < self.minx:
-            self.minx = other.minx
-        if other.miny < self.miny:
-            self.miny = other.miny
-        if other.maxx > self.maxx:
-            self.maxx = other.maxx
-        if other.maxy > self.maxy:
-            self.maxy = other.maxy
+        self.minx = min(self.minx, other.minx)
+        self.miny = min(self.miny, other.miny)
+        self.maxx = max(self.maxx, other.maxx)
+        self.maxy = max(self.maxy, other.maxy)
 
     def to_tuple(self) -> Tuple[float, float, float, float]:
         return (self.minx, self.miny, self.maxx, self.maxy)
