@@ -111,15 +111,52 @@ artifacts = ["lonboard/static/*.js", "lonboard/static/*.css"]
 [tool.hatch.build.targets.wheel.force-include]
 "MANIFEST.in" = "MANIFEST.in"
 
-[tool.ruff]
-select = [
-    # Pyflakes
-    "F",
-    # Pycodestyle
-    "E",
-    "W",
-    # isort
-    "I",
+[tool.ruff.lint]
+select = ["ALL"]
+ignore = [
+    "ANN401",  # Dynamically typed expressions (typing.Any) are disallowed
+    "B028",    # No explicit `stacklevel` keyword argument found
+    "B011",    # Do not `assert False` (`python -O` removes these calls), raise `AssertionError()`
+    "D100",    # Missing docstring in public module
+    "D406",    # Section name should end with a newline ("Returns")Ruff
+    "D407",    # Missing dashed underline after section
+    "E501",    # Line too long
+    "EM",      # Exception must not use a string literal, assign to variable first
+    "FIX002",  # Line contains TODO, consider resolving the issue
+    "PD901",   # Avoid using the generic variable name `df` for DataFrames
+    "PERF401", # Use a list comprehension to create a transformed list
+    "PGH003",  # Use specific rule codes when ignoring type issues
+    "PLR2004", # Magic value used in comparison
+    "RUF015",  # Prefer `next(...)` over single element slice
+    "S101",    # Use of `assert` detected
+    "TD",      # todo
+    "TRY003",  # Avoid specifying long messages outside the exception class
+]
+
+[tool.ruff.lint.per-file-ignores]
+"examples/*" = [
+    "A001",   # Variable `map` is shadowing a Python builtin
+    "D103",   # Missing docstring in public function
+    "ERA001", # Found commented-out code
+    "PTH",    # pathlib
+    "S113",   # Probable use of `requests` call without timeout
+    "T201",   # `print` found
+    "UP",
+]
+"lonboard/*" = [
+    "PT", # pytest
+]
+"tests/*" = [
+    "S101",    # assert
+    "ANN001",  # Missing type annotation for function argument `geom`Ruff
+    "ANN201",  # Missing return type annotation for public function
+    "ANN202",  # Missing return type annotation for private function `it`
+    "ANN204",  # Missing return type annotation for special method
+    "D",       # docstring
+    "PLR2004", # Magic value used in comparison, consider replacing `100` with a constant variable
+    "S301",    # `pickle` and modules that wrap it can be unsafe when used to deserialize untrusted data, possible security issue
+    "S608",    #  Possible SQL injection vector through string-based query construction
+    "SLF001",  # Private member accessed
 ]
 
 [tool.ruff.extend-per-file-ignores]

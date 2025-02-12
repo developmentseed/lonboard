@@ -1,3 +1,5 @@
+from typing import ClassVar
+
 import traitlets as t
 
 from lonboard._base import BaseExtension
@@ -11,9 +13,9 @@ from lonboard.traits import (
 
 
 class BrushingExtension(BaseExtension):
-    """
-    Adds GPU-based data brushing functionalities to layers. It allows the layer to
-    show/hide objects based on the current pointer position.
+    """Adds GPU-based data brushing functionalities to layers.
+
+    It allows the layer to show/hide objects based on the current pointer position.
 
     # Example
 
@@ -78,8 +80,8 @@ class BrushingExtension(BaseExtension):
 
     _extension_type = t.Unicode("brushing").tag(sync=True)
 
-    _layer_traits = {
-        "brushing_enabled": t.Bool(True).tag(sync=True),
+    _layer_traits: ClassVar = {
+        "brushing_enabled": t.Bool(default_value=True).tag(sync=True),
         "brushing_target": t.Unicode(None, allow_none=True).tag(sync=True),
         "brushing_radius": t.Float(None, allow_none=True, min=0).tag(sync=True),
         "get_brushing_target": PointAccessor(None, allow_none=True),
@@ -124,17 +126,17 @@ class CollisionFilterExtension(BaseExtension):
 
     _extension_type = t.Unicode("collision-filter").tag(sync=True)
 
-    _layer_traits = {
-        "collision_enabled": t.Bool(True).tag(sync=True),
+    _layer_traits: ClassVar = {
+        "collision_enabled": t.Bool(default_value=True).tag(sync=True),
         "collision_group": t.Unicode(None, allow_none=True).tag(sync=True),
         "get_collision_priority": FloatAccessor(None, allow_none=True),
     }
 
 
 class DataFilterExtension(BaseExtension):
-    """
-    Adds GPU-based data filtering functionalities to layers. It allows the layer to
-    show/hide objects based on user-defined properties.
+    """Adds GPU-based data filtering functionalities to layers.
+
+    It allows the layer to show/hide objects based on user-defined properties.
 
     # Example
 
@@ -316,7 +318,7 @@ class DataFilterExtension(BaseExtension):
 
     _extension_type = t.Unicode("data-filter").tag(sync=True)
 
-    _layer_traits = {
+    _layer_traits: ClassVar = {
         "filter_categories": t.Union(
             [
                 VariableLengthTuple(t.Any()),
@@ -329,7 +331,7 @@ class DataFilterExtension(BaseExtension):
             default_value=None,
             allow_none=True,
         ).tag(sync=True),
-        "filter_enabled": t.Bool(True).tag(sync=True),
+        "filter_enabled": t.Bool(default_value=True).tag(sync=True),
         "filter_range": t.Union(
             [
                 VariableLengthTuple(t.Float(), minlen=2, maxlen=2),
@@ -343,10 +345,13 @@ class DataFilterExtension(BaseExtension):
             allow_none=True,
         ).tag(sync=True),
         "filter_soft_range": t.Tuple(
-            t.Float(), t.Float(), default_value=None, allow_none=True
+            t.Float(),
+            t.Float(),
+            default_value=None,
+            allow_none=True,
         ).tag(sync=True),
-        "filter_transform_size": t.Bool(True).tag(sync=True),
-        "filter_transform_color": t.Bool(True).tag(sync=True),
+        "filter_transform_size": t.Bool(default_value=True).tag(sync=True),
+        "filter_transform_color": t.Bool(default_value=True).tag(sync=True),
         "get_filter_value": FilterValueAccessor(default_value=None, allow_none=True),
         "get_filter_category": FilterValueAccessor(default_value=None, allow_none=True),
     }
@@ -371,8 +376,7 @@ class DataFilterExtension(BaseExtension):
 
 
 class PathStyleExtension(BaseExtension):
-    """
-    Adds selected features to the PathLayer and composite layers that render
+    """Adds selected features to the PathLayer and composite layers that render
     the [PathLayer][lonboard.PathLayer], e.g. [PolygonLayer][lonboard.PolygonLayer].
 
     # Example
@@ -454,11 +458,11 @@ class PathStyleExtension(BaseExtension):
     The high precision mode pre-calculates path length on the CPU, so it may be slower
     and use more resources for large datasets. When a path contains a lot of short
     segments, this mode yields the best result.
-    """
+    """  # noqa: D205
 
     _extension_type = t.Unicode("path-style").tag(sync=True)
 
-    _layer_traits = {
+    _layer_traits: ClassVar = {
         "get_dash_array": DashArrayAccessor(None, allow_none=True),
         "dash_justified": t.Bool(None, allow_none=True).tag(sync=True),
         "get_offset": FloatAccessor(None, allow_none=True),

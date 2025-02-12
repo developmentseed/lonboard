@@ -90,8 +90,8 @@ OGC_84_dict = {
 OGC_84 = pyproj.CRS.from_json_dict(OGC_84_dict)
 
 
-class EXTENSION_NAME(bytes, Enum):
-    """GeoArrow extension name"""
+class EXTENSION_NAME(bytes, Enum):  # noqa: N801
+    """GeoArrow extension name."""
 
     POINT = b"geoarrow.point"
     LINESTRING = b"geoarrow.linestring"
@@ -103,7 +103,7 @@ class EXTENSION_NAME(bytes, Enum):
     WKT = b"geoarrow.wkt"
     OGC_WKB = b"ogc.wkb"
 
-    def __str__(self):
+    def __str__(self) -> str:
         return self.value.decode()
 
 
