@@ -12,7 +12,8 @@ cities_url = "https://naciscdn.org/naturalearth/110m/cultural/ne_110m_populated_
 cities_path = Path("ne_110m_populated_places_simple.zip")
 
 if not cities_path.exists():
-    urlretrieve(cities_url, "ne_110m_populated_places_simple.zip")
+    urlretrieve(cities_url, "ne_110m_populated_places_simple.zip")  # noqa: S310
+
 
 cities_gdal_path = f"/vsizip/{cities_path}"
 

@@ -1,3 +1,5 @@
+from typing import Any
+
 import geoarrow.pyarrow as gap
 import ipywidgets
 import numpy as np
@@ -183,7 +185,7 @@ class FilterValueAccessorWidget(BaseArrowLayer):
 
     table = ArrowTableTrait()
 
-    def __init__(self, *args, **kwargs):
+    def __init__(self, *args: Any, **kwargs: Any):
         # Any tests that are intended to pass validation checks must also have 3 rows,
         # since there's another length check in the serialization code.
         geometry = gap.as_geoarrow(["POINT (0 1)", "POINT (0 1)", "POINT (0 1)"])

@@ -4,21 +4,13 @@ Refer to https://traitlets.readthedocs.io/en/stable/defining_traits.html for
 documentation on how to define new traitlet types.
 """
 
+# ruff: noqa: ARG002, C901, D102, D107, PLR0912, SLF001
+
 from __future__ import annotations
 
 import sys
 import warnings
-from typing import (
-    TYPE_CHECKING,
-    Any,
-    List,
-    NoReturn,
-    Optional,
-    Set,
-    Tuple,
-    TypeVar,
-    Union,
-)
+from typing import TYPE_CHECKING, Any, NoReturn, Optional, TypeVar
 from typing import cast as type_cast
 from urllib.parse import urlparse
 
@@ -33,11 +25,8 @@ from arro3.core import (
     fixed_size_list_array,
 )
 from traitlets import TraitError, Undefined
-from traitlets.traitlets import TraitType
 from traitlets.utils.descriptions import class_of, describe
-from traitlets.utils.sentinel import Sentinel
 
-from lonboard._constants import EXTENSION_NAME
 from lonboard._serialization import (
     ACCESSOR_SERIALIZATION,
     TABLE_SERIALIZATION,
@@ -50,7 +39,10 @@ from lonboard.models import ViewState
 if TYPE_CHECKING:
     import pandas as pd
     from traitlets import HasTraits
+    from traitlets.traitlets import TraitType
+    from traitlets.utils.sentinel import Sentinel
 
+    from lonboard._constants import EXTENSION_NAME
     from lonboard._layer import BaseArrowLayer
 
 DEFAULT_INITIAL_VIEW_STATE = {
@@ -62,10 +54,14 @@ DEFAULT_INITIAL_VIEW_STATE = {
 }
 
 
-# This is a custom subclass of traitlets.TraitType because its `error` method ignores
-# the `info` passed in. See https://github.com/developmentseed/lonboard/issues/71 and
-# https://github.com/ipython/traitlets/pull/884
 class FixedErrorTraitType(traitlets.TraitType):
+    """A custom subclass of traitlets.TraitType.
+
+    This is because its `error` method ignores the `info` passed in. See
+    https://github.com/developmentseed/lonboard/issues/71 and
+    https://github.com/ipython/traitlets/pull/884.
+    """
+
     def error(
         self,
         obj: HasTraits | None,
@@ -73,7 +69,7 @@ class FixedErrorTraitType(traitlets.TraitType):
         error: Exception | None = None,
         info: str | None = None,
     ) -> NoReturn:
-        """Raise a TraitError
+        """Raise a TraitError.
 
         Parameters
         ----------
@@ -152,7 +148,7 @@ class FixedErrorTraitType(traitlets.TraitType):
 
 
 class ArrowTableTrait(FixedErrorTraitType):
-    """A trait to validate input for a geospatial Arrow-backed table
+    """A trait to validate input for a geospatial Arrow-backed table.
 
     Allowed input includes:
 
@@ -169,9 +165,9 @@ class ArrowTableTrait(FixedErrorTraitType):
 
     def __init__(
         self: TraitType,
-        *args,
-        allowed_geometry_types: Set[EXTENSION_NAME] | None = None,
-        allowed_dimensions: Optional[Set[int]] = None,
+        *args: Any,
+        allowed_geometry_types: set[EXTENSION_NAME] | None = None,
+        allowed_dimensions: set[int] | None = None,
         **kwargs: Any,
     ) -> None:
         super().__init__(*args, **kwargs)
@@ -182,15 +178,15 @@ class ArrowTableTrait(FixedErrorTraitType):
             **TABLE_SERIALIZATION,
         )
 
-    def validate(self, obj: BaseArrowLayer, value: Any):
+    def validate(self, obj: BaseArrowLayer, value: Any) -> Table:
         if not isinstance(value, Table):
             self.error(obj, value)
 
         allowed_geometry_types = self.metadata.get("allowed_geometry_types")
-        allowed_geometry_types = type_cast(Optional[Set[bytes]], allowed_geometry_types)
+        allowed_geometry_types = type_cast(Optional[set[bytes]], allowed_geometry_types)
 
         allowed_dimensions = self.metadata.get("allowed_dimensions")
-        allowed_dimensions = type_cast(Optional[Set[int]], allowed_dimensions)
+        allowed_dimensions = type_cast(Optional[set[int]], allowed_dimensions)
 
         geom_col_idx = get_geometry_column_index(value.schema)
 
@@ -264,7 +260,7 @@ class ColorAccessor(FixedErrorTraitType):
 
     def __init__(
         self: TraitType,
-        *args,
+        *args: Any,
         **kwargs: Any,
     ) -> None:
         super().__init__(*args, **kwargs)
@@ -287,7 +283,7 @@ class ColorAccessor(FixedErrorTraitType):
 
         return ChunkedArray([fixed_size_list_array(value.ravel("C"), list_size)])
 
-    def validate(self, obj: BaseArrowLayer, value) -> Union[tuple, list, ChunkedArray]:
+    def validate(self, obj: BaseArrowLayer, value: Any) -> tuple | list | ChunkedArray:
         if isinstance(value, (tuple, list)):
             if len(value) < 3 or len(value) > 4:
                 self.error(obj, value, info="3 or 4 values if passed a tuple or list")
@@ -383,14 +379,14 @@ class FloatAccessor(FixedErrorTraitType):
 
     def __init__(
         self: TraitType,
-        *args,
+        *args: Any,
         **kwargs: Any,
     ) -> None:
         super().__init__(*args, **kwargs)
         self.tag(sync=True, **ACCESSOR_SERIALIZATION)
 
     def _pandas_to_numpy(self, obj: BaseArrowLayer, value: pd.Series) -> np.ndarray:
-        """Cast pandas Series to numpy ndarray"""
+        """Cast pandas Series to numpy ndarray."""
         return np.asarray(value)
 
     def _numpy_to_arrow(self, obj: BaseArrowLayer, value: np.ndarray) -> ChunkedArray:
@@ -401,7 +397,7 @@ class FloatAccessor(FixedErrorTraitType):
         # possible/allowed to pass in ~int8 or a data type smaller than float32?
         return ChunkedArray([value.astype(np.float32)])
 
-    def validate(self, obj: BaseArrowLayer, value) -> Union[float, ChunkedArray]:
+    def validate(self, obj: BaseArrowLayer, value: Any) -> float | ChunkedArray:
         if isinstance(value, (int, float)):
             return float(value)
 
@@ -457,14 +453,14 @@ class TextAccessor(FixedErrorTraitType):
 
     def __init__(
         self: TraitType,
-        *args,
+        *args: Any,
         **kwargs: Any,
     ) -> None:
         super().__init__(*args, **kwargs)
         self.tag(sync=True, **ACCESSOR_SERIALIZATION)
 
     def pandas_to_arrow(self, obj: BaseArrowLayer, value: pd.Series) -> ChunkedArray:
-        """Cast pandas Series to arrow array"""
+        """Cast pandas Series to arrow array."""
         try:
             import pyarrow as pa
         except ImportError as e:
@@ -484,7 +480,7 @@ class TextAccessor(FixedErrorTraitType):
 
         return ChunkedArray([pa.StringArray.from_pandas(value)])
 
-    def validate(self, obj: BaseArrowLayer, value) -> Union[float, str, ChunkedArray]:
+    def validate(self, obj: BaseArrowLayer, value: Any) -> float | str | ChunkedArray:
         if isinstance(value, str):
             return value
 
@@ -536,7 +532,7 @@ class PointAccessor(FixedErrorTraitType):
 
     def __init__(
         self: TraitType,
-        *args,
+        *args: Any,
         **kwargs: Any,
     ) -> None:
         super().__init__(*args, **kwargs)
@@ -561,8 +557,8 @@ class PointAccessor(FixedErrorTraitType):
     def validate(
         self,
         obj: BaseArrowLayer,
-        value,
-    ) -> Union[Tuple[int, ...], List[int], ChunkedArray]:
+        value: Any,
+    ) -> tuple[int, ...] | list[int] | ChunkedArray:
         if isinstance(value, np.ndarray):
             value = self._numpy_to_arrow(obj, value)
         elif hasattr(value, "__arrow_c_array__"):
@@ -599,7 +595,9 @@ class PointAccessor(FixedErrorTraitType):
 
 
 class FilterValueAccessor(FixedErrorTraitType):
-    """A trait to validate input for the `get_filter_value` accessor added by the
+    """Validate input for `get_filter_value`.
+
+    A trait to validate input for the `get_filter_value` accessor added by the
     [`DataFilterExtension`][lonboard.layer_extension.DataFilterExtension], which can
     have between 1 and 4 float values per row.
 
@@ -652,7 +650,7 @@ class FilterValueAccessor(FixedErrorTraitType):
 
     def __init__(
         self: TraitType,
-        *args,
+        *args: Any,
         **kwargs: Any,
     ) -> None:
         super().__init__(*args, **kwargs)
@@ -661,7 +659,7 @@ class FilterValueAccessor(FixedErrorTraitType):
     def _pandas_to_numpy(
         self,
         obj: BaseArrowLayer,
-        value,
+        value: Any,
         filter_size: int,
     ) -> np.ndarray:
         # Assert that filter_size == 1 for a pandas series.
@@ -676,7 +674,7 @@ class FilterValueAccessor(FixedErrorTraitType):
     def _numpy_to_arrow(
         self,
         obj: BaseArrowLayer,
-        value,
+        value: Any,
         filter_size: int,
     ) -> ChunkedArray:
         if not np.issubdtype(value.dtype, np.number):
@@ -709,8 +707,8 @@ class FilterValueAccessor(FixedErrorTraitType):
     def validate(
         self,
         obj: BaseArrowLayer,
-        value,
-    ) -> Union[float, tuple, list, ChunkedArray]:
+        value: Any,
+    ) -> float | tuple | list | ChunkedArray:
         # Find the data filter extension in the attributes of the parent object so we
         # can validate against the filter size.
         data_filter_extension = [
@@ -809,7 +807,7 @@ class FilterValueAccessor(FixedErrorTraitType):
 
 
 class NormalAccessor(FixedErrorTraitType):
-    """A representation of a deck.gl "normal" accessor
+    """A representation of a deck.gl "normal" accessor.
 
     This is primarily used in the [lonboard.PointCloudLayer].
 
@@ -834,7 +832,7 @@ class NormalAccessor(FixedErrorTraitType):
 
     def __init__(
         self: TraitType,
-        *args,
+        *args: Any,
         **kwargs: Any,
     ) -> None:
         super().__init__(*args, **kwargs)
@@ -860,8 +858,8 @@ class NormalAccessor(FixedErrorTraitType):
     def validate(
         self,
         obj: BaseArrowLayer,
-        value,
-    ) -> Union[Tuple[int, ...], List[int], ChunkedArray]:
+        value: Any,
+    ) -> tuple[int, ...] | list[int] | ChunkedArray:
         if isinstance(value, (tuple, list)):
             if len(value) != 3:
                 self.error(
@@ -914,19 +912,21 @@ class NormalAccessor(FixedErrorTraitType):
 
 
 class ViewStateTrait(FixedErrorTraitType):
+    """Trait to validate view state input."""
+
     allow_none = True
     default_value = DEFAULT_INITIAL_VIEW_STATE
 
     def __init__(
         self: TraitType,
-        *args,
+        *args: Any,
         **kwargs: Any,
     ) -> None:
         super().__init__(*args, **kwargs)
 
         self.tag(sync=True, to_json=serialize_view_state)
 
-    def validate(self, obj, value):
+    def validate(self, obj: Any, value: Any) -> None | ViewState:
         if value is None:
             return None
 
@@ -969,7 +969,7 @@ class DashArrayAccessor(FixedErrorTraitType):
 
     def __init__(
         self: TraitType,
-        *args,
+        *args: Any,
         **kwargs: Any,
     ) -> None:
         super().__init__(*args, **kwargs)
@@ -1000,8 +1000,8 @@ class DashArrayAccessor(FixedErrorTraitType):
     def validate(
         self,
         obj: BaseArrowLayer,
-        value,
-    ) -> Union[Tuple[int, ...], List[int], ChunkedArray]:
+        value: Any,
+    ) -> tuple[int, ...] | list[int] | ChunkedArray:
         if isinstance(value, (tuple, list)):
             if len(value) != 2:
                 self.error(obj, value, info="2 value list only")
@@ -1053,9 +1053,11 @@ class DashArrayAccessor(FixedErrorTraitType):
 
 
 class BasemapUrl(traitlets.Unicode):
+    """Validation for basemap url."""
+
     def __init__(
         self: TraitType,
-        *args,
+        *args: Any,
         **kwargs: Any,
     ) -> None:
         super().__init__(*args, **kwargs)
@@ -1066,11 +1068,11 @@ class BasemapUrl(traitlets.Unicode):
 
         try:
             parsed = urlparse(value)
-        except:  # noqa
+        except:  # noqa: E722
             self.error(obj, value, info="to be a URL")
 
         if not parsed.scheme.startswith("http"):
-            self.error(obj, value, info="to be a HTTP(s) URL")
+            self.error(obj, value, info="to be a HTTP(s) URL")  # noqa: RET503
         else:
             return value
 
@@ -1079,7 +1081,7 @@ T = TypeVar("T")
 
 
 # TODO: switch to
-# class VariableLengthTuple(traitlets.Container[Tuple[T, ...]])
+# class VariableLengthTuple(traitlets.Container[tuple[T, ...]])
 # When we can upgrade to traitlets 5.10 (depends on Colab upgrading)
 class VariableLengthTuple(traitlets.Container):
     """An instance of a Python tuple with variable numbers of elements of the same type."""
@@ -1090,7 +1092,7 @@ class VariableLengthTuple(traitlets.Container):
     def __init__(
         self,
         trait: T | Sentinel = None,
-        default_value: Tuple[T] | Sentinel | None = Undefined,
+        default_value: tuple[T] | Sentinel | None = Undefined,
         minlen: int = 0,
         maxlen: int = sys.maxsize,
         **kwargs: Any,
@@ -1120,6 +1122,8 @@ class VariableLengthTuple(traitlets.Container):
             The minimum length of the input list
         maxlen : Int [ default sys.maxsize ]
             The maximum length of the input list
+        kwargs:
+            passed on to traitlets.Container.
 
         """
         self._maxlen = maxlen
@@ -1133,7 +1137,7 @@ class VariableLengthTuple(traitlets.Container):
             self._minlen,
             self._maxlen,
         )
-        e += ", but a value of %s was specified." % (value,)
+        e += f", but a value of {value} was specified."
         raise TraitError(e)
 
     def validate_elements(self, obj: Any, value: Any) -> Any:
@@ -1146,8 +1150,8 @@ class VariableLengthTuple(traitlets.Container):
         validated = []
         for v in value:
             try:
-                v = trait._validate(obj, v)
-            except TraitError as error:
+                v = trait._validate(obj, v)  # noqa: PLW2901
+            except TraitError as error:  # noqa: PERF203
                 self.error(obj, v, error)
             else:
                 validated.append(v)

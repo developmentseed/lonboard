@@ -115,6 +115,8 @@ artifacts = ["lonboard/static/*.js", "lonboard/static/*.css"]
 select = ["ALL"]
 ignore = [
     "ANN401",  # Dynamically typed expressions (typing.Any) are disallowed
+    "B028",    # No explicit `stacklevel` keyword argument found
+    "B011",    # Do not `assert False` (`python -O` removes these calls), raise `AssertionError()`
     "D100",    # Missing docstring in public module
     "D407",    # Missing dashed underline after section
     "E501",    # Line too long
@@ -131,6 +133,9 @@ ignore = [
 ]
 
 [tool.ruff.lint.per-file-ignores]
+"lonboard/*" = [
+    "PT", # pytest
+]
 "tests/*" = [
     "S101",    # assert
     "ANN001",  # Missing type annotation for function argument `geom`Ruff
