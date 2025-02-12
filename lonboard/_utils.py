@@ -1,27 +1,31 @@
 from __future__ import annotations
 
-from typing import TYPE_CHECKING, Any, Dict, List, Optional, Sequence, Tuple, TypeVar
+import contextlib
+from typing import TYPE_CHECKING, Any, TypeVar
 
 import arro3.compute as ac
 import numpy as np
 from arro3.core import ChunkedArray, DataType, Scalar, Schema, list_flatten
 
-from lonboard._base import BaseExtension
 from lonboard._compat import check_pandas_version
 from lonboard._constants import EXTENSION_NAME, MIN_INTEGER_FLOAT32
 
 if TYPE_CHECKING:
+    from collections.abc import Sequence
+
     import geopandas as gpd
     import pandas as pd
     from numpy.typing import NDArray
+
+    from lonboard._base import BaseExtension
 
     DF = TypeVar("DF", bound=pd.DataFrame)
 
 GEOARROW_EXTENSION_TYPE_NAMES = {e.value for e in EXTENSION_NAME}
 
 
-def get_geometry_column_index(schema: Schema) -> Optional[int]:
-    """Get the positional index of the geometry column in a pyarrow Schema"""
+def get_geometry_column_index(schema: Schema) -> int | None:
+    """Get the positional index of the geometry column in a pyarrow Schema."""
     field_idxs = []
 
     for field_idx in range(len(schema)):
@@ -35,20 +39,20 @@ def get_geometry_column_index(schema: Schema) -> Optional[int]:
 
     if len(field_idxs) > 1:
         raise ValueError("Multiple geometry columns not supported.")
-    elif len(field_idxs) == 1:
+    if len(field_idxs) == 1:
         return field_idxs[0]
-    else:
-        return None
+    return None
 
 
 def auto_downcast(df: DF) -> DF:
-    """Automatically downcast types to smallest data size
+    """Automatically downcast types to smallest data size.
 
     Args:
         df: pandas DataFrame or geopandas GeoDataFrame
 
     Returns:
         DataFrame with downcasted data types
+
     """
     import pandas as pd
 
@@ -73,55 +77,56 @@ def auto_downcast(df: DF) -> DF:
     # errors='ignore' to return signed integer data types for columns with negative
     # integers.
     for col_name in df.select_dtypes(np.integer).columns:  # type: ignore
-        try:
+        with contextlib.suppress(Exception):
             df[col_name] = pd.to_numeric(
-                df[col_name], downcast="unsigned", dtype_backend="pyarrow"
+                df[col_name],
+                downcast="unsigned",
+                dtype_backend="pyarrow",
             )
-        except Exception:
-            pass
 
     # For any integer columns that are still signed integer, downcast those to smaller
     # signed types
     for col_name in df.select_dtypes(np.signedinteger).columns:  # type: ignore
-        try:
+        with contextlib.suppress(Exception):
             df[col_name] = pd.to_numeric(
-                df[col_name], downcast="signed", dtype_backend="pyarrow"
+                df[col_name],
+                downcast="signed",
+                dtype_backend="pyarrow",
             )
-        except Exception:
-            pass
 
     for col_name in df.select_dtypes(np.floating).columns:  # type: ignore
-        try:
+        with contextlib.suppress(Exception):
             df[col_name] = pd.to_numeric(
-                df[col_name], downcast="float", dtype_backend="pyarrow"
+                df[col_name],
+                downcast="float",
+                dtype_backend="pyarrow",
             )
-        except Exception:
-            pass
 
     return df
 
 
 def remove_extension_kwargs(
-    extensions: Sequence[BaseExtension], kwargs: Dict[str, Any]
-) -> Dict[str, Any]:
+    extensions: Sequence[BaseExtension],
+    kwargs: dict[str, Any],
+) -> dict[str, Any]:
     """Remove extension properties from kwargs, returning the removed properties.
 
     **This mutates the kwargs input.**
     """
-    extension_kwargs: Dict[str, Any] = {}
+    extension_kwargs: dict[str, Any] = {}
     if extensions:
         for extension in extensions:
-            for extension_prop_name in extension._layer_traits.keys():
+            for extension_prop_name in extension._layer_traits:  # noqa: SLF001
                 if extension_prop_name in kwargs:
                     extension_kwargs[extension_prop_name] = kwargs.pop(
-                        extension_prop_name
+                        extension_prop_name,
                     )
 
     return extension_kwargs
 
 
-def split_mixed_gdf(gdf: gpd.GeoDataFrame) -> List[gpd.GeoDataFrame]:
-    """Split a GeoDataFrame into one or more GeoDataFrames with unique geometry type"""
+def split_mixed_gdf(gdf: gpd.GeoDataFrame) -> list[gpd.GeoDataFrame]:
+    """Split a GeoDataFrame into one or more GeoDataFrames with unique geometry type."""
     indices = indices_by_geometry_type(gdf.geometry)
     if indices is None:
         return [gdf]
@@ -146,8 +151,8 @@ def split_mixed_gdf(gdf: gpd.GeoDataFrame) -> List[gpd.GeoDataFrame]:
 
 def split_mixed_shapely_array(
     geometry: NDArray[np.object_],
-) -> List[NDArray[np.object_]]:
-    """Split a shapely array into one or more arrays with unique geometry type"""
+) -> list[NDArray[np.object_]]:
+    """Split a shapely array into one or more arrays with unique geometry type."""
     indices = indices_by_geometry_type(geometry)
     if indices is None:
         return [geometry]
@@ -172,7 +177,7 @@ def split_mixed_shapely_array(
 
 def indices_by_geometry_type(
     geometry: NDArray[np.object_],
-) -> Tuple[NDArray[np.int64], NDArray[np.int64], NDArray[np.int64]] | None:
+) -> tuple[NDArray[np.int64], NDArray[np.int64], NDArray[np.int64]] | None:
     import shapely
     from shapely import GeometryType
 
@@ -199,16 +204,16 @@ def indices_by_geometry_type(
             return None
 
     point_indices = np.where(
-        (type_ids == GeometryType.POINT) | (type_ids == GeometryType.MULTIPOINT)
+        (type_ids == GeometryType.POINT) | (type_ids == GeometryType.MULTIPOINT),
     )[0]
 
     linestring_indices = np.where(
         (type_ids == GeometryType.LINESTRING)
-        | (type_ids == GeometryType.MULTILINESTRING)
+        | (type_ids == GeometryType.MULTILINESTRING),
     )[0]
 
     polygon_indices = np.where(
-        (type_ids == GeometryType.POLYGON) | (type_ids == GeometryType.MULTIPOLYGON)
+        (type_ids == GeometryType.POLYGON) | (type_ids == GeometryType.MULTIPOLYGON),
     )[0]
 
     return point_indices, linestring_indices, polygon_indices
@@ -228,6 +233,7 @@ def timestamp_max_physical_value(timestamps: ChunkedArray) -> int:
     min_timestamp = ac.min(list_flatten(timestamps))
     max_timestamp = ac.max(list_flatten(timestamps))
     start_offset_adjustment = Scalar(
-        MIN_INTEGER_FLOAT32 - min_timestamp.as_py(), type=DataType.int64()
+        MIN_INTEGER_FLOAT32 - min_timestamp.as_py(),
+        type=DataType.int64(),
     )
     return start_offset_adjustment.as_py() + max_timestamp.as_py()

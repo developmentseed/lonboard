@@ -1,6 +1,9 @@
+"""Colormap helpers."""
+
 from __future__ import annotations
 
-from typing import TYPE_CHECKING, Any, Mapping, Sequence, Tuple, Union
+from collections.abc import Mapping, Sequence
+from typing import TYPE_CHECKING, Any, Union
 
 import numpy as np
 from arro3.compute import dictionary_encode
@@ -11,7 +14,6 @@ from arro3.core import (
     dictionary_dictionary,
     dictionary_indices,
 )
-from arro3.core.types import ArrowArrayExportable, ArrowStreamExportable
 
 from lonboard._vendor.matplotlib.colors import _to_rgba_no_colorcycle
 
@@ -19,16 +21,17 @@ if TYPE_CHECKING:
     import matplotlib as mpl
     import pandas as pd
     import pyarrow as pa
+    from arro3.core.types import ArrowArrayExportable, ArrowStreamExportable
     from numpy.typing import NDArray
     from palettable.palette import Palette
 
 
 __all__ = (
-    "apply_continuous_cmap",
     "apply_categorical_cmap",
+    "apply_continuous_cmap",
 )
 
-RGBColor = Union[Tuple[int, int, int], Tuple[int, int, int, int], Sequence[int], str]
+RGBColor = Union[tuple[int, int, int], tuple[int, int, int, int], Sequence[int], str]
 """A type definition for an RGB or RGBA color value
 
 All values must range between 0 and 255 (inclusive). If only three values are provided,
@@ -84,9 +87,9 @@ colormap should be integers.
 
 def apply_continuous_cmap(
     values: NDArray[np.floating],
-    cmap: Union[Palette, mpl.colors.Colormap],
+    cmap: Palette | mpl.colors.Colormap,
     *,
-    alpha: Union[float, int, NDArray[np.floating], None] = None,
+    alpha: float | NDArray[np.floating] | None = None,
 ) -> NDArray[np.uint8]:
     """Apply a colormap to a column of continuous values.
 
@@ -117,20 +120,21 @@ def apply_continuous_cmap(
         A two dimensional numpy array with data type [np.uint8][numpy.uint8]. The second
             dimension will have a length of either `3` if `alpha` is `None`, or `4` is
             each color has an alpha value.
+
     """
     try:
         from palettable.palette import Palette
     except ImportError:
-        Palette = None
+        Palette = None  # noqa: N806
 
     try:
-        import matplotlib
+        import matplotlib as mpl
     except ImportError:
-        matplotlib = None
+        mpl = None
 
     if Palette is not None and isinstance(cmap, Palette):
         colors: NDArray[np.uint8] = cmap.mpl_colormap(values, alpha=alpha, bytes=True)  # type: ignore
-    elif matplotlib is not None and isinstance(cmap, matplotlib.colors.Colormap):
+    elif mpl is not None and isinstance(cmap, mpl.colors.Colormap):
         colors: NDArray[np.uint8] = cmap(values, alpha=alpha, bytes=True)  # type: ignore
     else:
         raise TypeError("Expected cmap to be a palettable or matplotlib colormap.")
@@ -142,18 +146,18 @@ def apply_continuous_cmap(
     return colors
 
 
-def apply_categorical_cmap(
-    values: Union[
-        NDArray,
-        pd.Series,
-        pa.Array,
-        pa.ChunkedArray,
-        ArrowArrayExportable,
-        ArrowStreamExportable,
-    ],
+def apply_categorical_cmap(  # noqa: C901
+    values: (
+        NDArray
+        | pd.Series
+        | pa.Array
+        | pa.ChunkedArray
+        | ArrowArrayExportable
+        | ArrowStreamExportable
+    ),
     cmap: DiscreteColormap,
     *,
-    alpha: int | float | None = None,
+    alpha: float | None = None,
 ) -> NDArray[np.uint8]:
     """Apply a colormap to a column of categorical values.
 
@@ -182,6 +186,7 @@ def apply_categorical_cmap(
         A two dimensional numpy array with data type [np.uint8][numpy.uint8]. The second
             dimension will have a length of either `3` if `alpha` is `None`, or `4` is
             each color has an alpha value.
+
     """
     if isinstance(values, np.ndarray):
         values = Array.from_numpy(values)
@@ -225,7 +230,7 @@ def apply_categorical_cmap(
             lut[i] = color
         else:
             raise ValueError(
-                "Expected color to be 3 or 4 values representing RGB or RGBA."
+                "Expected color to be 3 or 4 values representing RGB or RGBA.",
             )
 
     colors = lut[indices]

@@ -1,7 +1,9 @@
+# ruff: noqa
+
 from __future__ import annotations
 
 import json
-from typing import TYPE_CHECKING, Dict, List, Tuple
+from typing import TYPE_CHECKING
 
 import numpy as np
 from arro3.core import (
@@ -23,25 +25,17 @@ if TYPE_CHECKING:
     from movingpandas import TrajectoryCollection
 
 
-# TODO (lonboard-specific):
-# - update timestamp serialization to cast to float32 at that point
-# # offset by earliest timestamp
-# timestamps -= timestamps.min()
-
-# # Cast to float32
-# timestamps = timestamps.astype(np.float32)
-
-
 def movingpandas_to_geoarrow(
     traj_collection: TrajectoryCollection,
-) -> Tuple[Table, ChunkedArray]:
-    """Convert a MovingPandas TrajectoryCollection to GeoArrow
+) -> tuple[Table, ChunkedArray]:
+    """Convert a MovingPandas TrajectoryCollection to GeoArrow.
 
     Args:
         traj_collection: _description_
 
     Returns:
         _description_
+
     """
     import pyarrow as pa
     import shapely
@@ -53,7 +47,7 @@ def movingpandas_to_geoarrow(
     num_trajectories = len(traj_collection)
     offsets = np.zeros(num_trajectories + 1, dtype=np.int32)
     datetime_dtypes = set()
-    attr_schemas: List[pa.Schema] = []
+    attr_schemas: list[pa.Schema] = []
 
     # Loop the first time to infer offsets for each trajectory
     for i, traj in enumerate(traj_collection.trajectories):
@@ -71,9 +65,9 @@ def movingpandas_to_geoarrow(
         arrow_schema = pa.Schema.from_pandas(df_attr, preserve_index=False)
         attr_schemas.append(arrow_schema)
 
-    assert (
-        len(datetime_dtypes) == 1
-    ), "Expected only one datetime dtype across all trajectories."
+    assert len(datetime_dtypes) == 1, (
+        "Expected only one datetime dtype across all trajectories."
+    )
     datetime_dtype = list(datetime_dtypes)[0]
 
     # We currently always provision space for XYZ coordinates, and then only use 2d if
@@ -84,7 +78,7 @@ def movingpandas_to_geoarrow(
     timestamps = np.zeros(num_coords, dtype=np.int64)
 
     attr_schema = pa.unify_schemas(attr_schemas, promote_options="permissive")
-    attr_tables: List[pa.Table] = []
+    attr_tables: list[pa.Table] = []
 
     # Loop second time to fill timestamps and coords
     for i, traj in enumerate(traj_collection.trajectories):
@@ -101,7 +95,9 @@ def movingpandas_to_geoarrow(
         df_attr = traj.df.drop(columns=[geom_col_name])
 
         attr_table = pa.Table.from_pandas(
-            traj.df, schema=attr_schema, preserve_index=False
+            traj.df,
+            schema=attr_schema,
+            preserve_index=False,
         )
         attr_tables.append(attr_table)
 
@@ -118,7 +114,7 @@ def movingpandas_to_geoarrow(
         coords = coords[:, :2]
     else:
         assert not np.any(
-            np.isnan(coords[:, 2])
+            np.isnan(coords[:, 2]),
         ), "Mixed 2D and 3D coordinates not currently supported"
         coord_list_size = 3
 
@@ -126,7 +122,7 @@ def movingpandas_to_geoarrow(
     coords_fixed_size_list = fixed_size_list_array(coords_arr, coord_list_size)
     linestrings_arr = list_array(offsets, coords_fixed_size_list)
 
-    extension_metadata: Dict[str, str] = {"ARROW:extension:name": "geoarrow.linestring"}
+    extension_metadata: dict[str, str] = {"ARROW:extension:name": "geoarrow.linestring"}
     if crs_json is not None:
         extension_metadata["ARROW:extension:metadata"] = json.dumps({"crs": crs_json})
 
@@ -142,16 +138,18 @@ def movingpandas_to_geoarrow(
     timestamp_col = ChunkedArray([timestamp_arr])
 
     table = nested_attr_table.append_column(
-        linestrings_field, ChunkedArray([linestrings_arr])
+        linestrings_field,
+        ChunkedArray([linestrings_arr]),
     )
     return table, timestamp_col
 
 
 def infer_timestamp_dtype(dtype: np.dtype | pd.DatetimeTZDtype) -> DataType:
-    """Infer an arrow time unit from the numpy data type
+    """Infer an arrow time unit from the numpy data type.
 
     Raises:
         ValueError: If not a known numpy datetime dtype
+
     """
     import pandas as pd
 

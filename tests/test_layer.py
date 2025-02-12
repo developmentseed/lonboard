@@ -49,16 +49,22 @@ def test_accessor_length_validation_extension():
 
     with pytest.raises(TraitError, match="same length as table"):
         _layer = ScatterplotLayer.from_geopandas(
-            gdf, extensions=[extension], get_filter_value=np.array([1])
+            gdf,
+            extensions=[extension],
+            get_filter_value=np.array([1]),
         )
 
     with pytest.raises(TraitError, match="same length as table"):
         _layer = ScatterplotLayer.from_geopandas(
-            gdf, extensions=[extension], get_filter_value=np.array([1, 2, 3])
+            gdf,
+            extensions=[extension],
+            get_filter_value=np.array([1, 2, 3]),
         )
 
     _layer = ScatterplotLayer.from_geopandas(
-        gdf, extensions=[extension], get_radius=np.array([1, 2])
+        gdf,
+        extensions=[extension],
+        get_radius=np.array([1, 2]),
     )
 
 

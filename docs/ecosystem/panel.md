@@ -7,7 +7,7 @@
 To run the code below, you need to install the following packages:
 
 ```bash
-pip install panel colorcet ipywidgets_bokeh geopandas palettable lonboard pyogrio watchfiles
+pip install panel colorcet ipywidgets_bokeh geopandas palettable lonboard pyogrio watchfiles matplotlib pyarrow
 ```
 
 ## Tutorial
@@ -27,7 +27,7 @@ pn.extension("ipywidgets")
 
 @pn.cache
 def get_data():
-    return gpd.read_file(gpd.datasets.get_path("naturalearth_cities"))
+    return gpd.read_file(r"https://naciscdn.org/naturalearth/110m/cultural/ne_110m_populated_places_simple.zip")
 
 gdf = get_data()
 layer = ScatterplotLayer.from_geopandas(gdf, radius_min_pixels=2, get_fill_color="red")
@@ -73,7 +73,7 @@ colors = {
 
 @pn.cache
 def get_data():
-    return gpd.read_file(gpd.datasets.get_path("naturalearth_cities"))
+    return gpd.read_file(r"https://naciscdn.org/naturalearth/110m/cultural/ne_110m_populated_places_simple.zip")
 
 gdf = get_data()
 layer = ScatterplotLayer.from_geopandas(gdf, radius_min_pixels=2, get_fill_color="red")

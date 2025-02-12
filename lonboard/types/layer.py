@@ -1,20 +1,15 @@
+# ruff: noqa: D101
+# Missing docstring in public class
+
+
 from __future__ import annotations
 
 import sys
-from typing import (
-    TYPE_CHECKING,
-    List,
-    Literal,
-    Sequence,
-    Tuple,
-    Union,
-)
+from typing import TYPE_CHECKING, Literal, Union
 
 import numpy as np
 from arro3.core.types import ArrowArrayExportable, ArrowStreamExportable
 from numpy.typing import NDArray
-
-from lonboard._base import BaseExtension
 
 if sys.version_info >= (3, 12):
     from typing import TypedDict
@@ -22,21 +17,25 @@ else:
     from typing_extensions import TypedDict
 
 if TYPE_CHECKING:
+    from collections.abc import Sequence
+
     import pandas as pd
-    import pyarrow
+    import pyarrow as pa
+
+    from lonboard._base import BaseExtension
 
 
 IntFloat = Union[int, float]
 Units = Literal["meters", "common", "pixels"]
 
 ColorAccessorInput = Union[
-    List[int],
-    Tuple[int, int, int],
-    Tuple[int, ...],
+    list[int],
+    tuple[int, int, int],
+    tuple[int, ...],
     str,
     NDArray[np.uint8],
-    "pyarrow.FixedSizeListArray",
-    "pyarrow.ChunkedArray",
+    "pa.FixedSizeListArray",
+    "pa.ChunkedArray",
     ArrowArrayExportable,
     ArrowStreamExportable,
 ]
@@ -45,18 +44,18 @@ FloatAccessorInput = Union[
     float,
     NDArray[np.number],
     "pd.Series",
-    "pyarrow.FloatingPointArray",
-    "pyarrow.ChunkedArray",
+    "pa.FloatingPointArray",
+    "pa.ChunkedArray",
     ArrowArrayExportable,
     ArrowStreamExportable,
 ]
 NormalAccessorInput = Union[
-    List[int],
-    Tuple[int, int, int],
-    Tuple[int, ...],
+    list[int],
+    tuple[int, int, int],
+    tuple[int, ...],
     NDArray[np.floating],
-    "pyarrow.FixedSizeListArray",
-    "pyarrow.ChunkedArray",
+    "pa.FixedSizeListArray",
+    "pa.ChunkedArray",
     ArrowArrayExportable,
     ArrowStreamExportable,
 ]
@@ -64,9 +63,9 @@ TextAccessorInput = Union[
     str,
     NDArray[np.str_],
     "pd.Series",
-    "pyarrow.StringArray",
-    "pyarrow.LargeStringArray",
-    "pyarrow.ChunkedArray",
+    "pa.StringArray",
+    "pa.LargeStringArray",
+    "pa.ChunkedArray",
     ArrowArrayExportable,
     ArrowStreamExportable,
 ]
@@ -82,29 +81,30 @@ class BaseLayerKwargs(TypedDict, total=False):
 
 class BitmapLayerKwargs(BaseLayerKwargs, total=False):
     image: str
-    bounds: Union[
-        Tuple[IntFloat, IntFloat, IntFloat, IntFloat],
-        Tuple[
-            Tuple[IntFloat, IntFloat],
-            Tuple[IntFloat, IntFloat],
-            Tuple[IntFloat, IntFloat],
-            Tuple[IntFloat, IntFloat],
-        ],
-    ]
+    bounds: (
+        tuple[IntFloat, IntFloat, IntFloat, IntFloat]
+        | tuple[
+            tuple[IntFloat, IntFloat],
+            tuple[IntFloat, IntFloat],
+            tuple[IntFloat, IntFloat],
+            tuple[IntFloat, IntFloat],
+        ]
+    )
+
     desaturate: IntFloat
     transparent_color: Sequence[IntFloat]
     tint_color: Sequence[IntFloat]
 
 
 class BitmapTileLayerKwargs(BaseLayerKwargs, total=False):
-    data: Union[str, Sequence[str]]
+    data: str | Sequence[str]
     tile_size: int
     zoom_offset: int
     max_zoom: int
     min_zoom: int
     extent: Sequence[IntFloat]
     max_cache_size: int
-    # max_cache_byte_size: int
+    # max_cache_byte_size: int  # noqa: ERA001
     refinement_strategy: Literal["best-available", "no-overlap", "never"]
     max_requests: int
     desaturate: IntFloat
@@ -116,7 +116,7 @@ class ColumnLayerKwargs(BaseLayerKwargs, total=False):
     disk_resolution: int
     radius: IntFloat
     angle: IntFloat
-    offset: Tuple[IntFloat, IntFloat]
+    offset: tuple[IntFloat, IntFloat]
     coverage: IntFloat
     elevation_scale: IntFloat
     filled: bool
@@ -222,7 +222,7 @@ class HeatmapLayerKwargs(BaseLayerKwargs, total=False):
     radius_pixels: IntFloat
     intensity: IntFloat
     threshold: IntFloat
-    color_domain: Tuple[IntFloat, IntFloat]
+    color_domain: tuple[IntFloat, IntFloat]
     aggregation: Literal["SUM", "MEAN"]
     weights_texture_size: int
     debounce_timeout: int
