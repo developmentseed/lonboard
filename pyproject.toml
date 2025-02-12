@@ -134,6 +134,15 @@ ignore = [
 ]
 
 [tool.ruff.lint.per-file-ignores]
+"examples/*" = [
+    "A001",   # Variable `map` is shadowing a Python builtin
+    "D103",   # Missing docstring in public function
+    "ERA001", # Found commented-out code
+    "PTH",    # pathlib
+    "S113",   # Probable use of `requests` call without timeout
+    "T201",   # `print` found
+    "UP",
+]
 "lonboard/*" = [
     "PT", # pytest
 ]

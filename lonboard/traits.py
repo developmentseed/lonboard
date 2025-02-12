@@ -4,7 +4,7 @@ Refer to https://traitlets.readthedocs.io/en/stable/defining_traits.html for
 documentation on how to define new traitlet types.
 """
 
-# ruff: noqa: ARG002, C901, D102, D107, PLR0912, SLF001
+# ruff: noqa: ARG002, C901, D102, D107, PLR0912, SLF001, UP031
 
 from __future__ import annotations
 
