@@ -72,6 +72,9 @@ jobs:
         if: "${{ matrix.python-version == 3.11 }}"
         run: uv run --group docs mkdocs build --strict
 
+      # Use ruff-action so we get annotations
+      - uses: astral-sh/ruff-action@v3
+
       - name: Cache pre-commit virtualenvs
         uses: actions/cache@v4
         if: "${{ matrix.python-version == 3.11 }}"
