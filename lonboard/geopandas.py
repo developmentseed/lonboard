@@ -292,12 +292,11 @@ def _get_categorical_cmap(categories, cmap, nan_color, alpha):  # noqa: ANN001, 
     return apply_categorical_cmap(cat_codes, temp_cmap)
 
 def _query_name(name: str) -> basemap:
-    """Return :class:`TileProvider` based on the name query.
+    """Return basemap URL based on the name query (mimicking behavior from xyzservices).
 
-    Returns a matching :class:`TileProvider` from the :class:`Bunch` if the ``name``
-    contains the same letters in the same order as the provider's name irrespective
-    of the letter case, spaces, dashes and other characters.
-    See examples for details.
+    Returns a matching basemap from name contains the same letters in the same
+    order as the provider's name irrespective of the letter case, spaces, dashes
+    and other characters. See examples for details.
 
     Parameters
     ----------
@@ -306,7 +305,7 @@ def _query_name(name: str) -> basemap:
 
     Returns
     -------
-    match: TileProvider
+    match: lonboard.basemap
 
     Examples
     --------
@@ -314,12 +313,12 @@ def _query_name(name: str) -> basemap:
 
     All these queries return the same ``CartoDB.Positron`` TileProvider:
 
-    >>> xyz.query_name("CartoDB Positron")
-    >>> xyz.query_name("cartodbpositron")
-    >>> xyz.query_name("cartodb-positron")
-    >>> xyz.query_name("carto db/positron")
-    >>> xyz.query_name("CARTO_DB_POSITRON")
-    >>> xyz.query_name("CartoDB.Positron")
+    >>> xyz._query_name("CartoDB Positron")
+    >>> xyz._query_name("cartodbpositron")
+    >>> xyz._query_name("cartodb-positron")
+    >>> xyz._query_name("carto db/positron")
+    >>> xyz._query_name("CARTO_DB_POSITRON")
+    >>> xyz._query_name("CartoDB.Positron")
 
     """
     providers = {
