@@ -112,6 +112,7 @@ class LonboardAccessor:
 
 def _dexplore(
     gdf,
+    *,
     column=None,
     cmap=None,
     scheme=None,
