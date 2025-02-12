@@ -1,4 +1,6 @@
-from typing import Any, Dict, List, Optional, Union
+from __future__ import annotations
+
+from typing import Any
 
 import geopandas as gpd
 import numpy as np
@@ -9,42 +11,45 @@ from .colormap import apply_categorical_cmap, apply_continuous_cmap
 
 __all__ = ["LonboardAccessor"]
 
+QUERY_NAME_TRANSLATION = str.maketrans({x: "" for x in "., -_/"})
+
 
 @pd.api.extensions.register_dataframe_accessor("lb")
 class LonboardAccessor:
-    def __init__(self, pandas_obj):
+    """Geopandas Extension class to provide the `explore` method."""
+
+    def __init__(self, pandas_obj) -> None:  # noqa: ANN001, D107
         self._validate(pandas_obj)
         self._obj = pandas_obj
 
     @staticmethod
-    def _validate(obj):
+    def _validate(obj) -> None:  # noqa: ANN001
         if not isinstance(obj, gpd.GeoDataFrame):
-            raise AttributeError("must be a geodataframe")
+            raise TypeError("must be a geodataframe")
 
-    def explore(
+    def explore(  # noqa: PLR0913
         self,
-        column: Optional[str] = None,
-        cmap: Optional[str] = None,
-        scheme: Optional[str] = None,
-        k: Optional[int] = 6,
+        column: str | None = None,
+        cmap: str | None = None,
+        scheme: str | None = None,
+        k: int | None = 6,
         categorical: bool = False,
-        elevation: Union[str, np.ndarray] = None,
-        extruded: bool = False,
-        elevation_scale: Optional[float] = 1,
-        alpha: Optional[float] = 1,
-        layer_kwargs: Optional[Dict[str, Any]] = None,
-        map_kwargs: Optional[Dict[str, Any]] = None,
-        classification_kwds: Optional[Dict[str, Any]] = None,
-        nan_color: Optional[Union[List[int], np.ndarray[int]]] = [255, 255, 255, 255],
-        color: Optional[str] = None,
-        vmin: Optional[float] = None,
-        vmax: Optional[float] = None,
+        elevation: str | np.ndarray = None,
+        elevation_scale: float | None = 1,
+        alpha: float | None = 1,
+        layer_kwargs: dict[str, Any] | None = None,
+        map_kwargs: dict[str, Any] | None = None,
+        classification_kwds: dict[str, Any] | None = None,
+        nan_color: list[int] | np.ndarray[int] | None = None,
+        color: str | None = None,
+        vmin: float | None = None,
+        vmax: float | None = None,
         wireframe: bool = False,
-        tiles: Optional[str] = None,
+        tiles: str | None = None,
         highlight: bool = False,
-        m: Optional[Map] = None,
+        m: Map | None = None,
     ) -> Map:
-        """explore a dataframe using lonboard and deckgl
+        """Explore a dataframe using lonboard and deckgl.
 
         Keyword Args:
             column : Name of column on dataframe to visualize on map.
@@ -55,7 +60,6 @@ class LonboardAccessor:
                 continuous.
             elevation : Name of column on the dataframe used to extrude each geometry or
                 an array-like in the same order as observations. Defaults to None.
-            extruded : Whether to extrude geometries using the z-dimension.
             elevation_scale : Constant scaler multiplied by elevation value.
             alpha : Alpha (opacity) parameter in the range (0,1) passed to
                 mapclassify.util.get_color_array.
@@ -84,57 +88,56 @@ class LonboardAccessor:
         Returns:
         lonboard.Map
             a lonboard map with geodataframe included as a Layer object.
+
         """
         return _dexplore(
             self._obj,
-            column,
-            cmap,
-            scheme,
-            k,
-            categorical,
-            elevation,
-            extruded,
-            elevation_scale,
-            alpha,
-            layer_kwargs,
-            map_kwargs,
-            classification_kwds,
-            nan_color,
-            color,
-            vmin,
-            vmax,
-            wireframe,
-            tiles,
-            highlight,
-            m,
+            column=column,
+            cmap=cmap,
+            scheme=scheme,
+            k=k,
+            categorical=categorical,
+            elevation=elevation,
+            elevation_scale=elevation_scale,
+            alpha=alpha,
+            layer_kwargs=layer_kwargs,
+            map_kwargs=map_kwargs,
+            classification_kwds=classification_kwds,
+            nan_color=nan_color,
+            color=color,
+            vmin=vmin,
+            vmax=vmax,
+            wireframe=wireframe,
+            tiles=tiles,
+            highlight=highlight,
+            m=m,
         )
 
 
-def _dexplore(
-    gdf,
+def _dexplore(  # noqa: C901, PLR0912, PLR0913, PLR0915
+    gdf,  # noqa: ANN001
     *,
-    column=None,
-    cmap=None,
-    scheme=None,
-    k=6,
-    categorical=False,
-    elevation=None,
-    extruded=False,
-    elevation_scale=1,
-    alpha=1,
-    layer_kwargs=None,
-    map_kwargs=None,
-    classification_kwds=None,
-    nan_color=[255, 255, 255, 255],
-    color=None,
-    vmin=None,
-    vmax=None,
-    wireframe=False,
-    tiles="CartoDB Darkmatter",
-    highlight=False,
-    m=None,
-):
-    """explore a dataframe using lonboard and deckgl.
+    column,  # noqa: ANN001
+    cmap,  # noqa: ANN001
+    scheme,  # noqa: ANN001
+    k,  # noqa: ANN001
+    categorical,  # noqa: ANN001
+    elevation,  # noqa: ANN001
+    elevation_scale,  # noqa: ANN001
+    alpha,  # noqa: ANN001
+    layer_kwargs,  # noqa: ANN001
+    map_kwargs,  # noqa: ANN001
+    classification_kwds,  # noqa: ANN001
+    nan_color,  # noqa: ANN001
+    color,  # noqa: ANN001
+    vmin,  # noqa: ANN001
+    vmax,  # noqa: ANN001
+    wireframe,  # noqa: ANN001
+    tiles,  # noqa: ANN001
+    highlight,  # noqa: ANN001
+    m,  # noqa: ANN001
+) -> Map:
+    """Explore a dataframe using lonboard and deckgl.
 
     See the public docstring for detailed parameter information
 
@@ -144,35 +147,27 @@ def _dexplore(
         a lonboard map with geodataframe included as a Layer object.
 
     """
-
-    providers = {
-        "CartoDB Positron": basemap.CartoBasemap.Positron,
-        "CartoDB Positron No Label": basemap.CartoBasemap.PositronNoLabels,
-        "CartoDB Darkmatter": basemap.CartoBasemap.DarkMatter,
-        "CartoDB Darkmatter No Label": basemap.CartoBasemap.DarkMatterNoLabels,
-        "CartoDB Voyager": basemap.CartoBasemap.Voyager,
-        "CartoDB Voyager No Label": basemap.CartoBasemap.VoyagerNoLabels,
-    }
-
     if map_kwargs is None:
-        map_kwargs = dict()
+        map_kwargs = {}
     if classification_kwds is None:
-        classification_kwds = dict()
+        classification_kwds = {}
     if layer_kwargs is None:
-        layer_kwargs = dict()
+        layer_kwargs = {}
     if isinstance(elevation, str):
         if elevation in gdf.columns:
             elevation = gdf[elevation]
         else:
             raise ValueError(
-                f"the designated height column {elevation} is not in the dataframe"
+                f"the designated height column {elevation} is not in the dataframe",
             )
         if not pd.api.types.is_numeric_dtype(elevation):
             raise ValueError("elevation must be a numeric data type")
-
+    if elevation is not None:
+        layer_kwargs["extruded"] = True
+    if nan_color is None:
+        nan_color = [255, 255, 255, 255]
     if not pd.api.types.is_list_like(nan_color):
         raise ValueError("nan_color must be an iterable of 3 or 4 values")
-
     if len(nan_color) != 4:
         if len(nan_color) == 3:
             nan_color = np.append(nan_color, [255])
@@ -182,16 +177,15 @@ def _dexplore(
     # only polygons have z
     if ["Polygon", "MultiPolygon"] in gdf.geometry.geom_type.unique():
         layer_kwargs["get_elevation"] = elevation
-        layer_kwargs["extruded"] = extruded
         layer_kwargs["elevation_scale"] = elevation_scale
         layer_kwargs["wireframe"] = wireframe
         layer_kwargs["auto_highlight"] = highlight
 
-    LINE = False  # set color of lines, not fill_color
+    line = False  # set color of lines, not fill_color
     if ["LineString", "MultiLineString"] in gdf.geometry.geom_type.unique():
-        LINE = True
+        line = True
     if color:
-        if LINE:
+        if line:
             layer_kwargs["get_color"] = color
         else:
             layer_kwargs["get_fill_color"] = color
@@ -200,7 +194,7 @@ def _dexplore(
             from matplotlib import colormaps
         except ImportError as e:
             raise ImportError(
-                "you must have matplotlib installed to style by a column"
+                "you must have matplotlib installed to style by a column",
             ) from e
 
         if column not in gdf.columns:
@@ -209,7 +203,7 @@ def _dexplore(
             categorical = True
         if cmap is not None and cmap not in colormaps:
             raise ValueError(
-                f"`cmap` must be one of {list(colormaps.keys())} but {cmap} was passed"
+                f"`cmap` must be one of {list(colormaps.keys())} but {cmap} was passed",
             )
         if cmap is None:
             cmap = "tab20" if categorical else "viridis"
@@ -223,7 +217,9 @@ def _dexplore(
             # minmax scale the column first, matplotlib needs 0-1
             transformed = (gdf[column] - vmin) / (vmax - vmin)
             color_array = apply_continuous_cmap(
-                values=transformed, cmap=colormaps[cmap], alpha=alpha
+                values=transformed,
+                cmap=colormaps[cmap],
+                alpha=alpha,
             )
         else:
             try:
@@ -235,13 +231,13 @@ def _dexplore(
             except ImportError as e:
                 raise ImportError(
                     "you must have the `mapclassify` package installed to use the "
-                    "`scheme` keyword"
+                    "`scheme` keyword",
                 ) from e
             if scheme.replace("_", "") not in _klasses:
                 raise ValueError(
                     "the classification scheme must be a valid mapclassify"
                     f"classifier in {_klasses},"
-                    f"but {scheme} was passed instead"
+                    f"but {scheme} was passed instead",
                 )
             if k is not None and "k" in classification_kwds:
                 # k passed directly takes precedence
@@ -256,13 +252,13 @@ def _dexplore(
                 **classification_kwds,
             )
 
-        if LINE:
+        if line:
             layer_kwargs["get_color"] = color_array
 
         else:
             layer_kwargs["get_fill_color"] = color_array
     if tiles:
-        map_kwargs["basemap_style"] = providers[tiles]
+        map_kwargs["basemap_style"] = _query_name(tiles)
     new_m = viz(
         gdf,
         polygon_kwargs=layer_kwargs,
@@ -276,12 +272,12 @@ def _dexplore(
     return new_m
 
 
-def _get_categorical_cmap(categories, cmap, nan_color, alpha):
+def _get_categorical_cmap(categories, cmap, nan_color, alpha):  # noqa: ANN001, ANN202
     try:
         from matplotlib import colormaps
     except ImportError as e:
         raise ImportError(
-            "this function requres the lonboard package to be installed"
+            "this function requres the lonboard package to be installed",
         ) from e
 
     cat_codes = pd.Series(pd.Categorical(categories).codes, dtype="category")
@@ -293,5 +289,53 @@ def _get_categorical_cmap(categories, cmap, nan_color, alpha):
     colors = colormaps[cmap].resampled(n_cats)(list(range(n_cats)), alpha, bytes=True)
     colors = np.vstack([colors, nan_color])
     temp_cmap = dict(zip(range(n_cats + 1), colors))
-    fill_color = apply_categorical_cmap(cat_codes, temp_cmap)
-    return fill_color
+    return apply_categorical_cmap(cat_codes, temp_cmap)
+
+def _query_name(name: str) -> basemap:
+    """Return :class:`TileProvider` based on the name query.
+
+    Returns a matching :class:`TileProvider` from the :class:`Bunch` if the ``name``
+    contains the same letters in the same order as the provider's name irrespective
+    of the letter case, spaces, dashes and other characters.
+    See examples for details.
+
+    Parameters
+    ----------
+    name : str
+        Name of the tile provider. Formatting does not matter.
+
+    Returns
+    -------
+    match: TileProvider
+
+    Examples
+    --------
+    >>> import xyzservices.providers as xyz
+
+    All these queries return the same ``CartoDB.Positron`` TileProvider:
+
+    >>> xyz.query_name("CartoDB Positron")
+    >>> xyz.query_name("cartodbpositron")
+    >>> xyz.query_name("cartodb-positron")
+    >>> xyz.query_name("carto db/positron")
+    >>> xyz.query_name("CARTO_DB_POSITRON")
+    >>> xyz.query_name("CartoDB.Positron")
+
+    """
+    providers = {
+    "CartoDB Positron": basemap.CartoBasemap.Positron,
+    "CartoDB Positron No Label": basemap.CartoBasemap.PositronNoLabels,
+    "CartoDB Darkmatter": basemap.CartoBasemap.DarkMatter,
+    "CartoDB Darkmatter No Label": basemap.CartoBasemap.DarkMatterNoLabels,
+    "CartoDB Voyager": basemap.CartoBasemap.Voyager,
+    "CartoDB Voyager No Label": basemap.CartoBasemap.VoyagerNoLabels,
+    }
+    xyz_flat_lower = {
+        k.translate(QUERY_NAME_TRANSLATION).lower(): v
+        for k, v in providers.items()
+    }
+    name_clean = name.translate(QUERY_NAME_TRANSLATION).lower()
+    if name_clean in xyz_flat_lower:
+        return xyz_flat_lower[name_clean]
+
+    raise ValueError(f"No matching provider found for the query '{name}'.")
