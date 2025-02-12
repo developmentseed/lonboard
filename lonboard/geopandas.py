@@ -33,7 +33,7 @@ class LonboardAccessor:
         cmap: str | None = None,
         scheme: str | None = None,
         k: int | None = 6,
-        categorical: bool = False,
+        categorical: bool = False,  # noqa: FBT001, FBT002
         elevation: str | np.ndarray = None,
         elevation_scale: float | None = 1,
         alpha: float | None = 1,
@@ -44,9 +44,9 @@ class LonboardAccessor:
         color: str | None = None,
         vmin: float | None = None,
         vmax: float | None = None,
-        wireframe: bool = False,
+        wireframe: bool = False,  # noqa: FBT001, FBT002
         tiles: str | None = None,
-        highlight: bool = False,
+        highlight: bool = False,  # noqa: FBT001, FBT002
         m: Map | None = None,
     ) -> Map:
         """Explore a dataframe using lonboard and deckgl.
@@ -277,7 +277,7 @@ def _get_categorical_cmap(categories, cmap, nan_color, alpha):  # noqa: ANN001, 
         from matplotlib import colormaps
     except ImportError as e:
         raise ImportError(
-            "this function requres the lonboard package to be installed",
+            "this function requires the `lonboard` package to be installed",
         ) from e
 
     cat_codes = pd.Series(pd.Categorical(categories).codes, dtype="category")
