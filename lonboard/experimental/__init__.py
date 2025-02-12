@@ -1,4 +1,4 @@
-"""Experimental layers for lonboard
+"""Experimental layers for lonboard.
 
 These layers have not been as well tested as other layers. You may encounter crashes or
 unexpected behavior when using them.

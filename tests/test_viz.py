@@ -36,7 +36,7 @@ def mixed_gdf():
 
 
 class GeoInterfaceHolder:
-    """A wrapper class that only exposes __geo_interface__"""
+    """A wrapper class that only exposes __geo_interface__."""
 
     def __init__(self, geom) -> None:
         self.geom = geom
@@ -190,7 +190,8 @@ def test_viz_geoarrow_pyarrow_array_interleaved():
     assert isinstance(map_.layers[0], ScatterplotLayer)
 
     data = gap.as_geoarrow(
-        ["LINESTRING (30 10, 10 30, 40 40)"], coord_type=gap.CoordType.INTERLEAVED
+        ["LINESTRING (30 10, 10 30, 40 40)"],
+        coord_type=gap.CoordType.INTERLEAVED,
     )
     map_ = viz(data)
     assert isinstance(map_.layers[0], PathLayer)
@@ -211,13 +212,15 @@ def test_viz_geoarrow_pyarrow_array_interleaved():
 
 def test_viz_geoarrow_pyarrow_array_separated():
     data = gap.as_geoarrow(
-        ["POINT (0 1)", "POINT (2 1)", "POINT (3 1)"], coord_type=gap.CoordType.SEPARATE
+        ["POINT (0 1)", "POINT (2 1)", "POINT (3 1)"],
+        coord_type=gap.CoordType.SEPARATE,
     )
     map_ = viz(data)
     assert isinstance(map_.layers[0], ScatterplotLayer)
 
     data = gap.as_geoarrow(
-        ["LINESTRING (30 10, 10 30, 40 40)"], coord_type=gap.CoordType.SEPARATE
+        ["LINESTRING (30 10, 10 30, 40 40)"],
+        coord_type=gap.CoordType.SEPARATE,
     )
     map_ = viz(data)
     assert isinstance(map_.layers[0], PathLayer)

@@ -1,19 +1,18 @@
-"""Notes:
+# Notes:
+#
+# - See module docstring of lonboard._layer for note on passing None as default value.
 
-- See module docstring of lonboard._layer for note on passing None as default value.
-"""
+# ruff: noqa
 
 from __future__ import annotations
 
-import sys
 from datetime import datetime, timedelta
-from typing import TYPE_CHECKING, Optional, Union
+from typing import TYPE_CHECKING
 
 import ipywidgets
 import traitlets
 import traitlets as t
 from arro3.core import DataType, Scalar
-from arro3.core.types import ArrowStreamExportable
 
 from lonboard._constants import EXTENSION_NAME, MIN_INTEGER_FLOAT32
 from lonboard._layer import BaseArrowLayer
@@ -26,13 +25,17 @@ from lonboard.traits import (
     PointAccessor,
     TextAccessor,
 )
-from lonboard.types.layer import TripsLayerKwargs
 
 if TYPE_CHECKING:
+    import sys
+
     import duckdb
     import geopandas as gpd
     import pyproj
+    from arro3.core.types import ArrowStreamExportable
     from movingpandas import TrajectoryCollection
+
+    from lonboard.types.layer import TripsLayerKwargs
 
     if sys.version_info >= (3, 11):
         from typing import Self
@@ -406,7 +409,7 @@ class TripsLayer(BaseArrowLayer):
     table = ArrowTableTrait(
         allowed_geometry_types={
             EXTENSION_NAME.LINESTRING,
-        }
+        },
     )
 
     width_units = traitlets.Unicode(default_value=None, allow_none=True).tag(sync=True)
@@ -420,7 +423,7 @@ class TripsLayer(BaseArrowLayer):
     """
 
     width_scale = traitlets.Float(default_value=None, allow_none=True, min=0).tag(
-        sync=True
+        sync=True,
     )
     """
     The path width multiplier that multiplied to all paths.
@@ -430,7 +433,7 @@ class TripsLayer(BaseArrowLayer):
     """
 
     width_min_pixels = traitlets.Float(default_value=None, allow_none=True, min=0).tag(
-        sync=True
+        sync=True,
     )
     """
     The minimum path width in pixels. This prop can be used to prevent the path from
@@ -441,7 +444,7 @@ class TripsLayer(BaseArrowLayer):
     """
 
     width_max_pixels = traitlets.Float(default_value=None, allow_none=True, min=0).tag(
-        sync=True
+        sync=True,
     )
     """
     The maximum path width in pixels. This prop can be used to prevent the path from
@@ -549,9 +552,9 @@ class TripsLayer(BaseArrowLayer):
         *,
         table: ArrowStreamExportable,
         get_timestamps: ArrowStreamExportable,
-        _rows_per_chunk: Optional[int] = None,
+        _rows_per_chunk: int | None = None,
         **kwargs: Unpack[TripsLayerKwargs],
-    ):
+    ) -> None:
         """Construct a TripsLayer from existing Arrow data.
 
         Args:
@@ -560,6 +563,7 @@ class TripsLayer(BaseArrowLayer):
             get_timestamps: An Arrow column or ChunkedArray with timestamps that
                 correspond to the `LineString` geometries in the main table. This column
                 must be a list-typed array containing a timestamp-typed child array.
+
         """
         super().__init__(
             table=table,
@@ -587,11 +591,11 @@ class TripsLayer(BaseArrowLayer):
     @classmethod
     def from_duckdb(  # type: ignore
         cls,
-        sql: Union[str, duckdb.DuckDBPyRelation],
-        con: Optional[duckdb.DuckDBPyConnection] = None,
+        sql: str | duckdb.DuckDBPyRelation,
+        con: duckdb.DuckDBPyConnection | None = None,
         *,
         get_timestamps: ArrowStreamExportable,
-        crs: Optional[Union[str, pyproj.CRS]] = None,
+        crs: str | pyproj.CRS | None = None,
         **kwargs: Unpack[TripsLayerKwargs],
     ) -> Self:
         return super().from_duckdb(
@@ -608,8 +612,7 @@ class TripsLayer(BaseArrowLayer):
         traj_collection: TrajectoryCollection,
         **kwargs: Unpack[TripsLayerKwargs],
     ) -> Self:
-        """
-        Construct a TripsLayer from a MovingPandas
+        """Construct a TripsLayer from a MovingPandas
         [`TrajectoryCollection`][movingpandas.TrajectoryCollection].
 
         This is the simplest way to construct a `TripsLayer`. Under the hood, this
@@ -627,15 +630,18 @@ class TripsLayer(BaseArrowLayer):
         from lonboard._geoarrow.movingpandas_interop import movingpandas_to_geoarrow
 
         (table, timestamp_col) = movingpandas_to_geoarrow(
-            traj_collection=traj_collection
+            traj_collection=traj_collection,
         )
         return cls(table=table, get_timestamps=timestamp_col, **kwargs)
 
     def animate(
-        self, *, step: timedelta, fps: int | float = 50, strftime_fmt: str | None = None
+        self,
+        *,
+        step: timedelta,
+        fps: float = 50,
+        strftime_fmt: str | None = None,
     ) -> ipywidgets.widgets.widget_box.HBox:
-        """
-        Animate this layer with an
+        """Animate this layer with an
         [`ipywidgets.Play`][ipywidgets.widgets.widget_int.Play] controller.
 
         You can change how "fast" the animation is perceived by either increasing the
@@ -666,6 +672,7 @@ class TripsLayer(BaseArrowLayer):
                 manage animation playback and an
                 [`ipywidgets.Output`][ipywidgets.widgets.widget_output.Output] to
                 display the current datetime of the map.
+
         """
         assert isinstance(step, timedelta), "expected step to be a timedelta."
 
@@ -708,7 +715,7 @@ class TripsLayer(BaseArrowLayer):
         )
 
         # Some callback prep done outside of the callback for perf
-        tz_str: Union[str, None] = self.get_timestamps.type.value_type.tz
+        tz_str: str | None = self.get_timestamps.type.value_type.tz
 
         # Custom datetime format without Z/local time because we append the tz string
         # below
@@ -716,7 +723,7 @@ class TripsLayer(BaseArrowLayer):
         if time_unit != "s":
             default_strftime += ".%f"
 
-        def update_timestamp_output(change):
+        def update_timestamp_output(change) -> None:
             current_datetime = self._current_time_to_datetime(change["new"])
             # Ignore timezone info because we also print tz str
             current_datetime.replace(tzinfo=None)
@@ -743,6 +750,7 @@ class TripsLayer(BaseArrowLayer):
 
         Returns:
             datetime object with current time.
+
         """
         return self._current_time_to_datetime(self._current_time)
 
@@ -750,7 +758,7 @@ class TripsLayer(BaseArrowLayer):
         start_offset = timestamp_start_offset(self.get_timestamps)
         timestamp_int = int(current_time - start_offset)
         timestamp_scalar = Scalar(timestamp_int, type=DataType.int64()).cast(
-            self.get_timestamps.type.value_type
+            self.get_timestamps.type.value_type,
         )
         return timestamp_scalar.as_py()
 
