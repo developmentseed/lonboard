@@ -23,6 +23,7 @@ import { NextUIProvider } from "@nextui-org/react";
 import Toolbar from "./toolbar.js";
 import throttle from "lodash.throttle";
 import SidePanel from "./sidepanel/index";
+import { getTooltip } from "./tooltip/index.js";
 
 await initParquetWasm();
 
@@ -242,6 +243,7 @@ function App() {
               ? layers.concat(bboxSelectPolygonLayer)
               : layers
           }
+          getTooltip={(showTooltip && getTooltip) || undefined}
           getCursor={() => (isDrawingBBoxSelection ? "crosshair" : "grab")}
           pickingRadius={pickingRadius}
           onClick={onMapClickHandler}
