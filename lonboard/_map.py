@@ -2,7 +2,7 @@ from __future__ import annotations
 
 from io import StringIO
 from pathlib import Path
-from typing import IO, TYPE_CHECKING, Any, Callable, TextIO, Union, overload
+from typing import IO, TYPE_CHECKING, Any, Callable, TextIO, overload
 
 import ipywidgets
 import traitlets
@@ -88,7 +88,7 @@ class Map(BaseAnyWidget):
 
     def __init__(
         self,
-        layers: Union[BaseLayer, Sequence[BaseLayer]],
+        layers: BaseLayer | Sequence[BaseLayer],
         **kwargs: Unpack[MapKwargs],
     ) -> None:
         """Create a new Map.
@@ -99,6 +99,9 @@ class Map(BaseAnyWidget):
         Args:
             layers: One or more layers to render on this map.
 
+        Keyword Args:
+            kwargs: Passed on to class variables.
+
         Returns:
             A Map object.
 
@@ -107,9 +110,9 @@ class Map(BaseAnyWidget):
             layers = [layers]
 
         def _handle_anywidget_dispatch(
-            widget: ipywidgets.Widget,
-            msg: str | list | dict,
-            buffers: list[bytes],
+            widget: ipywidgets.Widget,  # noqa: ARG001
+            msg: dict,
+            buffers: list[bytes],  # noqa: ARG001
         ) -> None:
             if msg.get("kind") == "on-click":
                 self._click_handlers(tuple(msg.get("coordinate")))
@@ -124,13 +127,13 @@ class Map(BaseAnyWidget):
         The callback will be called with one argument, a tuple of the coordinate
         clicked (x,y)/(Longitude/Latitude).
 
-        Parameters
-        ----------
-        remove: bool (optional)
-            Set to true to remove the callback from the list of callbacks.
+
+        Args:
+            callback: function callback to pass to click handler.
+            remove: bool (optional)
+                Set to true to remove the callback from the list of callbacks.
 
         !!! note
-
             If the map is zoomed to a very large scale and can see the earth wrapped
             around, it is possible the coordinate's x/Longitude value may be greater
             than or less than expected.  Example: If you can see Paris, France three
@@ -461,7 +464,7 @@ class Map(BaseAnyWidget):
 
         self.view_state = view_state
 
-    def fly_to(
+    def fly_to(  # noqa: PLR0913
         self,
         *,
         longitude: float,
@@ -473,7 +476,7 @@ class Map(BaseAnyWidget):
         curve: float | None = None,
         speed: float | None = None,
         screen_speed: float | None = None,
-    ):
+    ) -> None:
         r""" "Fly" the map to a new location.
 
         Args:

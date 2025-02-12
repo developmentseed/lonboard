@@ -1,9 +1,8 @@
-"""Compute the weighted centroid of geometries"""
+"""Compute the weighted centroid of geometries."""
 
 from __future__ import annotations
 
 from dataclasses import dataclass
-from typing import Optional
 
 import numpy as np
 from arro3.core import Array, ChunkedArray, DataType, Field, list_flatten
@@ -14,11 +13,11 @@ from lonboard._constants import EXTENSION_NAME
 @dataclass
 class WeightedCentroid:
     # Existing average for x and y
-    x: Optional[float] = None
-    y: Optional[float] = None
+    x: float | None = None
+    y: float | None = None
     num_items: int = 0
 
-    def update(self, other: WeightedCentroid):
+    def update(self, other: WeightedCentroid) -> None:
         new_chunk_len = other.num_items
 
         if self.x is None or self.y is None:
@@ -49,8 +48,8 @@ class WeightedCentroid:
         )
         self.num_items += new_chunk_len
 
-    def update_coords(self, coords: Array):
-        """Update the average for x and y based on a new chunk of data
+    def update_coords(self, coords: Array) -> None:
+        """Update the average for x and y based on a new chunk of data.
 
         Note that this does not keep a cumulative sum due to precision concerns. Rather
         it incrementally updates based on a delta, and never multiplies to large
@@ -92,8 +91,9 @@ class WeightedCentroid:
 
 
 def weighted_centroid(field: Field, column: ChunkedArray) -> WeightedCentroid:
-    """Get the bounding box and geometric (weighted) center of the geometries in the
-    table.
+    """Get the bounding box and geometric (weighted) center.
+
+    Of all geometries in the table.
     """
     extension_type_name = field.metadata[b"ARROW:extension:name"]
 

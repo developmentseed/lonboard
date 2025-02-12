@@ -5,8 +5,10 @@
 #   Then the default value in the JS GeoArrow layer (defined in
 #   `@geoarrow/deck.gl-layers`) will be used.
 
-# ruff: noqa: D205
-# 1 blank line required between summary line and descriptionRuff
+# ruff: noqa: D205, ERA001, SLF001
+# 1 blank line required between summary line and description
+# Found commented-out code
+# Private member accessed: `_layer_traits`
 
 
 from __future__ import annotations
@@ -1997,7 +1999,7 @@ class HeatmapLayer(BaseArrowLayer):
         *,
         table: ArrowStreamExportable,
         **kwargs: Unpack[HeatmapLayerKwargs],
-    ):
+    ) -> None:
         err_msg = """
         The `HeatmapLayer` is not currently working.
 

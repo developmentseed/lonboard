@@ -146,15 +146,15 @@ def apply_continuous_cmap(
     return colors
 
 
-def apply_categorical_cmap(
-    values: Union[
-        NDArray,
-        pd.Series,
-        pa.Array,
-        pa.ChunkedArray,
-        ArrowArrayExportable,
-        ArrowStreamExportable,
-    ],
+def apply_categorical_cmap(  # noqa: C901
+    values: (
+        NDArray
+        | pd.Series
+        | pa.Array
+        | pa.ChunkedArray
+        | ArrowArrayExportable
+        | ArrowStreamExportable
+    ),
     cmap: DiscreteColormap,
     *,
     alpha: float | None = None,

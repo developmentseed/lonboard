@@ -5,6 +5,8 @@ This is partially derived from pydeck at
 under the Apache 2 license.
 """
 
+# ruff: noqa: SLF001
+
 from __future__ import annotations
 
 import math
@@ -20,8 +22,9 @@ if TYPE_CHECKING:
 
 
 def get_bbox_center(layers: Sequence[BaseLayer]) -> tuple[Bbox, WeightedCentroid]:
-    """Get the bounding box and geometric (weighted) center of the geometries in the
-    table.
+    """Get the bounding box and geometric (weighted) center.
+
+    Of all geometries in the table.
     """
     overall_bbox = Bbox()
     overall_centroid = WeightedCentroid()
@@ -66,18 +69,19 @@ def compute_view(layers: Sequence[BaseLayer]) -> dict[str, Any]:
     # When no geo column is found, bbox will have inf values
     try:
         zoom = bbox_to_zoom_level(bbox)
-        return {
-            "longitude": center.x,
-            "latitude": center.y,
-            "zoom": zoom,
-            "pitch": 0,
-            "bearing": 0,
-        }
     except OverflowError:
         return {
             "longitude": center.x or 0,
             "latitude": center.y or 0,
             "zoom": 0,
+            "pitch": 0,
+            "bearing": 0,
+        }
+    else:
+        return {
+            "longitude": center.x,
+            "latitude": center.y,
+            "zoom": zoom,
             "pitch": 0,
             "bearing": 0,
         }

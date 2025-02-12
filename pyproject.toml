@@ -118,6 +118,7 @@ ignore = [
     "B028",    # No explicit `stacklevel` keyword argument found
     "B011",    # Do not `assert False` (`python -O` removes these calls), raise `AssertionError()`
     "D100",    # Missing docstring in public module
+    "D406",    # Section name should end with a newline ("Returns")Ruff
     "D407",    # Missing dashed underline after section
     "E501",    # Line too long
     "EM",      # Exception must not use a string literal, assign to variable first

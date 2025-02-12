@@ -81,25 +81,25 @@ def read_parquet(path: Path) -> tuple[Table, dict]:
     try:
         import pyarrow.parquet as pq
 
-        file = pq.ParquetFile(path)
-        if b"geo" not in file.metadata.metadata:
-            raise ValueError("Expected geo metadata in Parquet file")
-        geo_meta = json.loads(file.metadata.metadata.get(b"geo"))
-
-        table = Table.from_arrow(file.read())
-
-        return table, geo_meta
-
     except ImportError:
         from arro3.io import read_parquet
 
         reader = read_parquet(path)
 
         if "geo" not in reader.schema.metadata_str:
-            raise ValueError("Expected geo metadata in Parquet file")
+            raise ValueError("Expected geo metadata in Parquet file")  # noqa: B904
 
         table = reader.read_all()
         geo_meta = json.loads(table.schema.metadata_str["geo"])
+
+        return table, geo_meta
+    else:
+        file = pq.ParquetFile(path)
+        if b"geo" not in file.metadata.metadata:
+            raise ValueError("Expected geo metadata in Parquet file")
+        geo_meta = json.loads(file.metadata.metadata.get(b"geo"))
+
+        table = Table.from_arrow(file.read())
 
         return table, geo_meta
 

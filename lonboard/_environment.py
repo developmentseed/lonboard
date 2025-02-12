@@ -22,7 +22,7 @@ def detect_environment() -> Environment:  # noqa: PLR0911
         try:
             import google.colab  # noqa: F401
 
-            return Environment.Colab
+            return Environment.Colab  # noqa: TRY300
         except ImportError:
             pass
 

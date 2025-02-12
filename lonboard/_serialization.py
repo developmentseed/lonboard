@@ -156,7 +156,7 @@ def validate_accessor_length_matches_table(
         raise TraitError("accessor must have same length as table")
 
 
-def serialize_view_state(data: ViewState | None, obj: Any) -> None | dict[str, Any]:
+def serialize_view_state(data: ViewState | None, obj: Any) -> None | dict[str, Any]:  # noqa: ARG001
     if data is None:
         return None
 

@@ -1,5 +1,7 @@
 """High-level, super-simple API for visualizing GeoDataFrames."""
 
+# ruff: noqa: C901, PLR0911, PLR0912, PLR0913, PLR0915
+
 from __future__ import annotations
 
 import json
