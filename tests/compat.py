@@ -22,7 +22,7 @@ except ImportError:
     HAS_GEOPANDAS = False
 
 try:
-    import shapely  # noqa
+    import shapely
 
     if not Version(shapely.__version__) >= Version("2.0.0"):
         raise ValueError("Shapely v2 or later is required.")

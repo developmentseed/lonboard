@@ -1,5 +1,6 @@
 # Vendored from matplotlib at
 # https://github.com/matplotlib/matplotlib/blob/6166e5b990b32c7f46847782c0354653e483560d/lib/matplotlib/colors.py#L75
+# ruff: noqa
 
 from __future__ import annotations
 
@@ -30,20 +31,19 @@ _colors_full_map = {}
 # Set by reverse priority order.
 _colors_full_map.update(XKCD_COLORS)
 _colors_full_map.update(
-    {k.replace("grey", "gray"): v for k, v in XKCD_COLORS.items() if "grey" in k}
+    {k.replace("grey", "gray"): v for k, v in XKCD_COLORS.items() if "grey" in k},
 )
 _colors_full_map.update(CSS4_COLORS)
 _colors_full_map.update(TABLEAU_COLORS)
 _colors_full_map.update(
-    {k.replace("gray", "grey"): v for k, v in TABLEAU_COLORS.items() if "gray" in k}
+    {k.replace("gray", "grey"): v for k, v in TABLEAU_COLORS.items() if "gray" in k},
 )
 _colors_full_map.update(BASE_COLORS)
 _colors_full_map = _ColorMapping(_colors_full_map)
 
 
-def _to_rgba_no_colorcycle(c, alpha: int | float | None = None) -> Tuple[float, ...]:
-    """
-    Convert *c* to an RGBA color, with no support for color-cycle syntax.
+def _to_rgba_no_colorcycle(c, alpha: float | None = None) -> Tuple[float, ...]:
+    """Convert *c* to an RGBA color, with no support for color-cycle syntax.
 
     If *alpha* is given, force the alpha value of the returned RGBA tuple
     to *alpha*. Otherwise, the alpha value from *c* is used, if it has alpha
@@ -106,7 +106,7 @@ def _to_rgba_no_colorcycle(c, alpha: int | float | None = None) -> Tuple[float, 
             if not (0 <= c <= 1):
                 raise ValueError(
                     f"Invalid string grayscale value {orig_c!r}. "
-                    f"Value must be within 0-1 range"
+                    f"Value must be within 0-1 range",
                 )
             return c, c, c, alpha if alpha is not None else 1.0
         raise ValueError(f"Invalid RGBA argument: {orig_c!r}")

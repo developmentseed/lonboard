@@ -12,7 +12,7 @@ jobs:
     runs-on: ubuntu-latest
     strategy:
       matrix:
-        python-version: [3.8, 3.9, "3.10", "3.11"]
+        python-version: [3.9, "3.10", "3.11", "3.12"]
 
     steps:
       - uses: actions/checkout@v4
@@ -71,6 +71,9 @@ jobs:
       - name: Check docs
         if: "${{ matrix.python-version == 3.11 }}"
         run: uv run --group docs mkdocs build --strict
+
+      # Use ruff-action so we get annotations in the Github UI
+      - uses: astral-sh/ruff-action@v3
 
       - name: Cache pre-commit virtualenvs
         uses: actions/cache@v4

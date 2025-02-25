@@ -1,3 +1,5 @@
+"""Basemap helpers."""
+
 from enum import Enum
 
 

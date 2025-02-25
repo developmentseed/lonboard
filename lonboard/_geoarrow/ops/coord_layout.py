@@ -1,6 +1,4 @@
-"""Convert a GeoArrow array to interleaved representation"""
-
-from typing import Tuple
+"""Convert a GeoArrow array to interleaved representation."""
 
 import numpy as np
 from arro3.core import (
@@ -26,7 +24,7 @@ from lonboard._utils import get_geometry_column_index
 def make_geometry_interleaved(
     table: Table,
 ) -> Table:
-    """Convert geometry columns in table to interleaved coordinate layout"""
+    """Convert geometry columns in table to interleaved coordinate layout."""
     geom_col_idx = get_geometry_column_index(table.schema)
     # No geometry column in table
     if geom_col_idx is None:
@@ -43,7 +41,7 @@ def transpose_column(
     *,
     field: Field,
     column: ChunkedArray,
-) -> Tuple[Field, ChunkedArray]:
+) -> tuple[Field, ChunkedArray]:
     extension_type_name = field.metadata[b"ARROW:extension:name"]
 
     new_chunked_array = _transpose_column(
@@ -76,7 +74,7 @@ def _transpose_column(
     return ChunkedArray([func(chunk) for chunk in column.chunks])
 
 
-def _transpose_coords(arr: Array):
+def _transpose_coords(arr: Array) -> Array:
     if DataType.is_fixed_size_list(arr.type):
         return arr
 
@@ -96,17 +94,17 @@ def _transpose_coords(arr: Array):
     raise ValueError(f"Expected struct with 2 or 3 fields, got {arr.type.num_fields}")
 
 
-def _transpose_chunk_nest_0(arr: Array):
+def _transpose_chunk_nest_0(arr: Array) -> Array:
     return _map_coords_nest_0(arr, _transpose_coords)
 
 
-def _transpose_chunk_nest_1(arr: Array):
+def _transpose_chunk_nest_1(arr: Array) -> Array:
     return _map_coords_nest_1(arr, _transpose_coords)
 
 
-def _transpose_chunk_nest_2(arr: Array):
+def _transpose_chunk_nest_2(arr: Array) -> Array:
     return _map_coords_nest_2(arr, _transpose_coords)
 
 
-def _transpose_chunk_nest_3(arr: Array):
+def _transpose_chunk_nest_3(arr: Array) -> Array:
     return _map_coords_nest_3(arr, _transpose_coords)

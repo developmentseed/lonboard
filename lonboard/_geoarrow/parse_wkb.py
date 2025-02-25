@@ -1,7 +1,6 @@
-"""Handle GeoArrow tables with WKB-encoded geometry"""
+"""Handle GeoArrow tables with WKB-encoded geometry."""
 
 import json
-from typing import Dict, List
 
 import numpy as np
 from arro3.core import Table
@@ -13,7 +12,7 @@ from lonboard._geoarrow.utils import is_native_geoarrow
 from lonboard._utils import get_geometry_column_index
 
 
-def parse_serialized_table(table: Table) -> List[Table]:
+def parse_serialized_table(table: Table) -> list[Table]:
     """Parse a table with a serialized WKB/WKT column into GeoArrow-native geometries.
 
     If no columns are WKB/WKT-encoded, returns the input. Note that WKB columns must be
@@ -63,23 +62,23 @@ def parse_serialized_table(table: Table) -> List[Table]:
         raise ValueError("LinearRings not currently supported")
 
     point_indices = np.where(
-        (type_ids == GeometryType.POINT) | (type_ids == GeometryType.MULTIPOINT)
+        (type_ids == GeometryType.POINT) | (type_ids == GeometryType.MULTIPOINT),
     )[0]
 
     linestring_indices = np.where(
         (type_ids == GeometryType.LINESTRING)
-        | (type_ids == GeometryType.MULTILINESTRING)
+        | (type_ids == GeometryType.MULTILINESTRING),
     )[0]
 
     polygon_indices = np.where(
-        (type_ids == GeometryType.POLYGON) | (type_ids == GeometryType.MULTIPOLYGON)
+        (type_ids == GeometryType.POLYGON) | (type_ids == GeometryType.MULTIPOLYGON),
     )[0]
 
     # Here we intentionally check geometries in a specific order.
     # Starting from polygons, then linestrings, then points,
     # so that the order of generated layers is polygon, then path then scatterplot.
     # This ensures that points are rendered on top and polygons on the bottom.
-    parsed_tables: List[Table] = []
+    parsed_tables: list[Table] = []
     for single_type_geometry_indices in (
         polygon_indices,
         linestring_indices,
@@ -110,7 +109,7 @@ def parse_serialized_table(table: Table) -> List[Table]:
 
 
 def parse_geoparquet_table(table: Table) -> Table:
-    """Parse GeoParquet table metadata, assigning it to GeoArrow metadata"""
+    """Parse GeoParquet table metadata, assigning it to GeoArrow metadata."""
     # If a column already has geoarrow metadata, don't parse from GeoParquet metadata
     if get_geometry_column_index(table.schema) is not None:
         return table
@@ -136,7 +135,7 @@ def parse_geoparquet_table(table: Table) -> Table:
         existing_field = table.schema.field(column_idx)
         existing_column = table.column(column_idx)
         crs_metadata = {"crs": column_meta.get("crs", OGC_84.to_json_dict())}
-        metadata: Dict[bytes, bytes] = {
+        metadata: dict[bytes, bytes] = {
             b"ARROW:extension:name": EXTENSION_NAME.WKB,
             b"ARROW:extension:metadata": json.dumps(crs_metadata).encode(),
         }
