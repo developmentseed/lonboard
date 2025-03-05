@@ -213,68 +213,72 @@ function App() {
   );
 
   return (
-    <div
-      id={`map-${mapId}`}
-      className="flex"
-      style={{ height: mapHeight ? `${mapHeight}px` : "24rem" }}
-    >
-      <Toolbar />
+    <div className="lonboard">
+      <div
+        id={`map-${mapId}`}
+        className="flex"
+        style={{ height: mapHeight ? `${mapHeight}px` : "24rem" }}
+      >
+        <Toolbar />
 
-      {showTooltip && highlightedFeature && (
-        <SidePanel
-          info={highlightedFeature}
-          onClose={() => actorRef.send({ type: "Close side panel" })}
-        />
-      )}
-      <div className="bg-red-800 h-full w-full relative">
-        <DeckGL
-          style={{ width: "100%", height: "100%" }}
-          initialViewState={
-            ["longitude", "latitude", "zoom"].every((key) =>
-              Object.keys(initialViewState).includes(key),
-            )
-              ? initialViewState
-              : DEFAULT_INITIAL_VIEW_STATE
-          }
-          controller={true}
-          layers={
-            bboxSelectPolygonLayer
-              ? layers.concat(bboxSelectPolygonLayer)
-              : layers
-          }
-          getCursor={() => (isDrawingBBoxSelection ? "crosshair" : "grab")}
-          pickingRadius={pickingRadius}
-          onClick={onMapClickHandler}
-          onHover={onMapHoverHandler}
-          useDevicePixels={isDefined(useDevicePixels) ? useDevicePixels : true}
-          // https://deck.gl/docs/api-reference/core/deck#_typedarraymanagerprops
-          _typedArrayManagerProps={{
-            overAlloc: 1,
-            poolSize: 0,
-          }}
-          onViewStateChange={(event) => {
-            const { viewState } = event;
-
-            // This condition is necessary to confirm that the viewState is
-            // of type MapViewState.
-            if ("latitude" in viewState) {
-              const { longitude, latitude, zoom, pitch, bearing } = viewState;
-              setViewState({
-                longitude,
-                latitude,
-                zoom,
-                pitch,
-                bearing,
-              });
+        {showTooltip && highlightedFeature && (
+          <SidePanel
+            info={highlightedFeature}
+            onClose={() => actorRef.send({ type: "Close side panel" })}
+          />
+        )}
+        <div className="bg-red-800 h-full w-full relative">
+          <DeckGL
+            style={{ width: "100%", height: "100%" }}
+            initialViewState={
+              ["longitude", "latitude", "zoom"].every((key) =>
+                Object.keys(initialViewState).includes(key),
+              )
+                ? initialViewState
+                : DEFAULT_INITIAL_VIEW_STATE
             }
-          }}
-          parameters={parameters || {}}
-        >
-          <Map
-            mapStyle={mapStyle || DEFAULT_MAP_STYLE}
-            customAttribution={customAttribution}
-          ></Map>
-        </DeckGL>
+            controller={true}
+            layers={
+              bboxSelectPolygonLayer
+                ? layers.concat(bboxSelectPolygonLayer)
+                : layers
+            }
+            getCursor={() => (isDrawingBBoxSelection ? "crosshair" : "grab")}
+            pickingRadius={pickingRadius}
+            onClick={onMapClickHandler}
+            onHover={onMapHoverHandler}
+            useDevicePixels={
+              isDefined(useDevicePixels) ? useDevicePixels : true
+            }
+            // https://deck.gl/docs/api-reference/core/deck#_typedarraymanagerprops
+            _typedArrayManagerProps={{
+              overAlloc: 1,
+              poolSize: 0,
+            }}
+            onViewStateChange={(event) => {
+              const { viewState } = event;
+
+              // This condition is necessary to confirm that the viewState is
+              // of type MapViewState.
+              if ("latitude" in viewState) {
+                const { longitude, latitude, zoom, pitch, bearing } = viewState;
+                setViewState({
+                  longitude,
+                  latitude,
+                  zoom,
+                  pitch,
+                  bearing,
+                });
+              }
+            }}
+            parameters={parameters || {}}
+          >
+            <Map
+              mapStyle={mapStyle || DEFAULT_MAP_STYLE}
+              customAttribution={customAttribution}
+            ></Map>
+          </DeckGL>
+        </div>
       </div>
     </div>
   );
