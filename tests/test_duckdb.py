@@ -240,3 +240,25 @@ def test_geometry_only_column_type_geometry():
 
     # Should create layer without erroring
     _layer = ScatterplotLayer.from_duckdb(query, con)
+
+
+def test_sanitize_column_name():
+    # For WKB parsing
+    pytest.importorskip("shapely")
+
+    con = duckdb.connect()
+    sql = f"""
+        INSTALL spatial;
+        LOAD spatial;
+        SELECT
+          * EXCLUDE geom,
+          geom as "non_alphanum_colname_()"
+        FROM ST_Read("{cities_gdal_path}");
+        """
+    rel = con.sql(sql)
+
+    with pytest.raises(
+        duckdb.duckdb.ParserException,
+        match="Parser Error: syntax error at or near",
+    ):
+        viz(rel, con=con)
