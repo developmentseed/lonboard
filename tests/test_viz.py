@@ -1,5 +1,7 @@
+from __future__ import annotations
+
 from pathlib import Path
-from typing import cast
+from typing import TYPE_CHECKING, cast
 
 import geoarrow.pyarrow as gap
 import geodatasets
@@ -7,7 +9,6 @@ import numpy as np
 import pyarrow as pa
 import pyarrow.parquet as pq
 import pytest
-from arro3.core import Table
 from geoarrow.rust.core import geometry_col, read_pyogrio, to_wkb
 from pyogrio.raw import read_arrow
 
@@ -17,6 +18,9 @@ from lonboard._constants import EXTENSION_NAME
 from . import compat
 
 fixtures_dir = Path(__file__).parent / "fixtures"
+
+if TYPE_CHECKING:
+    from arro3.core import Table
 
 
 def mixed_shapely_geoms():
@@ -165,7 +169,7 @@ def test_viz_geoarrow_rust_table():
 def test_viz_geoarrow_rust_array():
     # `read_pyogrio` has incorrect typing currently
     # https://github.com/geoarrow/geoarrow-rs/pull/807
-    table = cast(Table, read_pyogrio(geodatasets.get_path("naturalearth.land")))
+    table = cast("Table", read_pyogrio(geodatasets.get_path("naturalearth.land")))
     map_ = viz(geometry_col(table).chunk(0))
     assert isinstance(map_.layers[0], PolygonLayer)
 

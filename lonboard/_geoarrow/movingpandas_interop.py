@@ -1,5 +1,3 @@
-# ruff: noqa
-
 from __future__ import annotations
 
 import json
@@ -25,7 +23,7 @@ if TYPE_CHECKING:
     from movingpandas import TrajectoryCollection
 
 
-def movingpandas_to_geoarrow(
+def movingpandas_to_geoarrow(  # noqa: PLR0915
     traj_collection: TrajectoryCollection,
 ) -> tuple[Table, ChunkedArray]:
     """Convert a MovingPandas TrajectoryCollection to GeoArrow.
