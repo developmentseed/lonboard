@@ -1,3 +1,32 @@
-@tailwind base;
+div.lonboard {
+  color: #11181c;
+  color: hsl(var(--nextui-foreground));
+  background-color: #fff;
+  background-color: hsl(var(--nextui-background));
+  margin: 0;
+  line-height: 1.5;
+  -webkit-text-size-adjust: 100%;
+  tab-size: 4;
+  font-family:
+    ui-sans-serif,
+    system-ui,
+    -apple-system,
+    Segoe UI,
+    Roboto,
+    Ubuntu,
+    Cantarell,
+    Noto Sans,
+    sans-serif,
+    "Apple Color Emoji",
+    "Segoe UI Emoji",
+    Segoe UI Symbol,
+    "Noto Color Emoji";
+  font-feature-settings: normal;
+  font-variation-settings: normal;
+  -webkit-tap-highlight-color: transparent;
+
+  @tailwind base;
+}
+
 @tailwind components;
 @tailwind utilities;

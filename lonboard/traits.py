@@ -183,10 +183,13 @@ class ArrowTableTrait(FixedErrorTraitType):
             self.error(obj, value)
 
         allowed_geometry_types = self.metadata.get("allowed_geometry_types")
-        allowed_geometry_types = type_cast(Optional[set[bytes]], allowed_geometry_types)
+        allowed_geometry_types = type_cast(
+            "Optional[set[bytes]]",
+            allowed_geometry_types,
+        )
 
         allowed_dimensions = self.metadata.get("allowed_dimensions")
-        allowed_dimensions = type_cast(Optional[set[int]], allowed_dimensions)
+        allowed_dimensions = type_cast("Optional[set[int]]", allowed_dimensions)
 
         geom_col_idx = get_geometry_column_index(value.schema)
 
