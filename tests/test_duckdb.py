@@ -258,7 +258,7 @@ def test_sanitize_column_name():
     rel = con.sql(sql)
 
     with pytest.raises(
-        duckdb.duckdb.ParserException,
-        match="Parser Error: syntax error at or near",
+        AssertionError,
+        match="Expected geometry column name to match regex:",
     ):
         viz(rel, con=con)
