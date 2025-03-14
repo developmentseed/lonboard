@@ -115,7 +115,7 @@ def _from_geometry(
     # A poor-man's string interpolation check
     # We can't pass in SQL-templated strings for the column name
     re_match = r"[a-zA-Z][a-zA-Z0-9_]*"
-    assert re.match(
+    assert re.fullmatch(
         re_match,
         geom_col_name,
     ), f"Expected geometry column name to match regex: {re_match}"
