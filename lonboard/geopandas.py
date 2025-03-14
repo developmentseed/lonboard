@@ -11,7 +11,7 @@ from .colormap import apply_categorical_cmap, apply_continuous_cmap
 
 __all__ = ["LonboardAccessor"]
 
-QUERY_NAME_TRANSLATION = str.maketrans({x: "" for x in "., -_/"})
+QUERY_NAME_TRANSLATION = str.maketrans(dict.fromkeys("., -_/", ""))
 
 
 @pd.api.extensions.register_dataframe_accessor("lb")
