@@ -1,6 +1,3 @@
-# ruff: noqa: S608
-# Possible SQL injection vector through string-based query construction
-
 from __future__ import annotations
 
 import json
