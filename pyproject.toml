@@ -72,7 +72,7 @@ docs = [
     "black>=24.8.0",
 ]
 dev = [
-    "duckdb>=1.1.3",
+    "duckdb>=1.2.0",
     "fiona<1.10",
     "geoarrow-pyarrow>=0.1.2",
     "geoarrow-rust-core>=0.3.0",
@@ -85,6 +85,7 @@ dev = [
     "pyarrow>=17.0.0",
     "pyogrio>=0.9.0",
     "pytest>=8.3.4",
+    "ruff>=0.11.0",
 ]
 # Note: this is defined as a separate group so that it can be not installed in
 # CI. See:
@@ -126,6 +127,7 @@ ignore = [
     "PD901",   # Avoid using the generic variable name `df` for DataFrames
     "PERF401", # Use a list comprehension to create a transformed list
     "PGH003",  # Use specific rule codes when ignoring type issues
+    "PGH004",  # Use specific rule codes when using `ruff: noqa`
     "PLR2004", # Magic value used in comparison
     "RUF015",  # Prefer `next(...)` over single element slice
     "S101",    # Use of `assert` detected
