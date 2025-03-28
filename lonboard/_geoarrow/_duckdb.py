@@ -1,6 +1,3 @@
-# ruff: noqa: S608
-# Possible SQL injection vector through string-based query construction
-
 from __future__ import annotations
 
 import json
@@ -17,6 +14,7 @@ from arro3.core import (
     list_array,
     struct_field,
 )
+from duckdb import ColumnExpression, FunctionExpression
 
 from lonboard._constants import EXTENSION_NAME
 
@@ -101,7 +99,7 @@ def from_duckdb(
 def _from_geometry(
     rel: duckdb.DuckDBPyRelation,
     *,
-    con: duckdb.DuckDBPyConnection | None = None,
+    con: duckdb.DuckDBPyConnection | None = None,  # noqa: ARG001
     geom_col_idx: int,
     crs: str | pyproj.CRS | None = None,
 ) -> Table:
@@ -120,34 +118,13 @@ def _from_geometry(
         geom_col_name,
     ), f"Expected geometry column name to match regex: {re_match}"
 
-    if con is not None:
-        geom_table = Table.from_arrow(
-            con.sql(f"""
-        SELECT ST_AsWKB( {geom_col_name} ) as {geom_col_name} FROM rel;
-        """).arrow(),
-        )
-    else:
-        import duckdb
-
-        # We need to re-import the spatial extension because this is a different context
-        # as the user's context.
-        # It would be nice to re-use the user's context, but in the case of `viz` where
-        # we want to visualize a single input object, we want to accept a
-        # DuckDBPyRelation as input.
-        sql = f"""
-            INSTALL spatial;
-            LOAD spatial;
-            SELECT ST_AsWKB( {geom_col_name} ) as {geom_col_name} FROM rel;
-            """
-        # duckdb.default_connection changed from attribute to callable in duckdb 1.2
-        default_con = (
-            duckdb.default_connection()
-            if callable(duckdb.default_connection)
-            else duckdb.default_connection
-        )
-        geom_table = Table.from_arrow(
-            duckdb.execute(sql, connection=default_con).arrow(),
-        )
+    geom_table = Table.from_arrow(
+        rel.select(
+            FunctionExpression("st_aswkb", ColumnExpression(geom_col_name)).alias(
+                geom_col_name,
+            ),
+        ).arrow(),
+    )
 
     metadata = _make_geoarrow_field_metadata(EXTENSION_NAME.WKB, crs)
     geom_field = geom_table.schema.field(0).with_metadata(metadata)
