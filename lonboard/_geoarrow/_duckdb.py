@@ -1,3 +1,6 @@
+# ruff: noqa: S608
+# Possible SQL injection vector through string-based query construction
+
 from __future__ import annotations
 
 import json
@@ -136,24 +139,15 @@ def _from_geometry(
             LOAD spatial;
             SELECT ST_AsWKB( {geom_col_name} ) as {geom_col_name} FROM rel;
             """
-        try:
-            # duckdb.default_connection changed from attribute to callable in duckdb 1.2
-            default_con = (
-                duckdb.default_connection()
-                if callable(duckdb.default_connection)
-                else duckdb.default_connection
-            )
-            geom_table = Table.from_arrow(
-                duckdb.execute(sql, connection=default_con).arrow(),
-            )
-        except duckdb.CatalogException as err:
-            msg = (
-                "Could not coerce type GEOMETRY to WKB.\n"
-                "This often happens from using a custom DuckDB connection object.\n"
-                "Either pass in a `con` object containing the DuckDB connection or "
-                "cast to WKB manually with `ST_AsWKB`."
-            )
-            raise ValueError(msg) from err
+        # duckdb.default_connection changed from attribute to callable in duckdb 1.2
+        default_con = (
+            duckdb.default_connection()
+            if callable(duckdb.default_connection)
+            else duckdb.default_connection
+        )
+        geom_table = Table.from_arrow(
+            duckdb.execute(sql, connection=default_con).arrow(),
+        )
 
     metadata = _make_geoarrow_field_metadata(EXTENSION_NAME.WKB, crs)
     geom_field = geom_table.schema.field(0).with_metadata(metadata)
