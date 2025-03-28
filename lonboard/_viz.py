@@ -146,7 +146,7 @@ def viz(
 
             con = duckdb.connect()
             con.execute("CREATE TABLE spatial_table AS ...;")
-            viz(con.table(), con=con)
+            viz(con.table("spatial_table"), con=con)
             ```
 
         !!! warning
