@@ -18,6 +18,22 @@ if not cities_path.exists():
 cities_gdal_path = f"/vsizip/{cities_path}"
 
 
+def test_viz_geometry_default_con():
+    # For WKB parsing
+    pytest.importorskip("shapely")
+
+    sql = f"""
+        INSTALL spatial;
+        LOAD spatial;
+        SELECT * FROM ST_Read("{cities_gdal_path}");
+        """
+    rel = duckdb.sql(sql)
+    assert rel.types[-1] == "GEOMETRY"
+
+    m = viz(rel)
+    assert isinstance(m.layers[0], ScatterplotLayer)
+
+
 def test_viz_geometry():
     # For WKB parsing
     pytest.importorskip("shapely")
