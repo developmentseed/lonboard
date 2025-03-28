@@ -214,14 +214,7 @@ def test_create_table_as_custom_con():
     con = duckdb.connect()
     con.execute(sql)
 
-    with pytest.raises(
-        duckdb.InvalidInputException,
-        match="object was created by another Connection",
-    ):
-        m = viz(con.table("test"))
-
-    # Succeeds when passing in con object
-    m = viz(con.table("test"), con=con)
+    m = viz(con.table("test"))
     assert isinstance(m.layers[0], ScatterplotLayer)
 
 
