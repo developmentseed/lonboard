@@ -46,7 +46,12 @@ def test_viz_geometry():
         """
     rel = con.sql(sql)
     assert rel.types[-1] == "GEOMETRY"
-    m = viz(rel, con=con)
+    m = viz(rel)
+    assert isinstance(m.layers[0], ScatterplotLayer)
+
+    # Tolerates legacy con parameter
+    with pytest.warns(DeprecationWarning, match="The 'con' argument is deprecated"):
+        m = viz(rel, con=con)
     assert isinstance(m.layers[0], ScatterplotLayer)
 
 
@@ -217,6 +222,11 @@ def test_create_table_as_custom_con():
     m = viz(con.table("test"))
     assert isinstance(m.layers[0], ScatterplotLayer)
 
+    # Tolerates legacy con parameter
+    with pytest.warns(DeprecationWarning, match="The 'con' argument is deprecated"):
+        m = viz(con.table("test"), con=con)
+    assert isinstance(m.layers[0], ScatterplotLayer)
+
 
 def test_geometry_only_column():
     con = duckdb.connect()
@@ -230,7 +240,12 @@ def test_geometry_only_column():
 
     _layer = ScatterplotLayer.from_duckdb(con.table("data"), con)
 
-    m = viz(con.table("data"), con=con)
+    m = viz(con.table("data"))
+    assert isinstance(m.layers[0], ScatterplotLayer)
+
+    # Tolerates legacy con parameter
+    with pytest.warns(DeprecationWarning, match="The 'con' argument is deprecated"):
+        m = viz(con.table("data"), con=con)
     assert isinstance(m.layers[0], ScatterplotLayer)
 
 
@@ -270,4 +285,4 @@ def test_sanitize_column_name():
         AssertionError,
         match="Expected geometry column name to match regex:",
     ):
-        viz(rel, con=con)
+        viz(rel)

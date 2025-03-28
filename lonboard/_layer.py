@@ -420,8 +420,7 @@ class BaseArrowLayer(BaseLayer):
             sql: The SQL input to visualize. This can either be a string containing a
                 SQL query or the output of the duckdb `sql` function.
             con: The current DuckDB connection. This is required when passing a `str` to
-                the `sql` parameter or when using a non-global DuckDB connection.
-                Defaults to None.
+                the `sql` parameter.
 
         Keyword Args:
             crs: The CRS of the input data. This can either be a string passed to
@@ -436,9 +435,9 @@ class BaseArrowLayer(BaseLayer):
             assert con is not None, "con must be provided when sql is a str"
 
             rel = con.sql(sql)
-            table = _from_duckdb(rel, con=con, crs=crs)
+            table = _from_duckdb(rel, crs=crs)
         else:
-            table = _from_duckdb(sql, con=con, crs=crs)
+            table = _from_duckdb(sql, crs=crs)
 
         return cls(table=table, **kwargs)
 

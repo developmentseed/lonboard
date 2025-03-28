@@ -35,7 +35,6 @@ DUCKDB_SPATIAL_TYPES = {
 def from_duckdb(
     rel: duckdb.DuckDBPyRelation,
     *,
-    con: duckdb.DuckDBPyConnection | None = None,
     crs: str | pyproj.CRS | None = None,
 ) -> Table:
     geom_col_idxs = [
@@ -65,7 +64,7 @@ def from_duckdb(
             crs=crs,
         )
     if geom_type == "GEOMETRY":
-        return _from_geometry(rel, con=con, geom_col_idx=geom_col_idx, crs=crs)
+        return _from_geometry(rel, geom_col_idx=geom_col_idx, crs=crs)
     if geom_type == "POINT_2D":
         return _from_geoarrow(
             rel,
@@ -99,7 +98,6 @@ def from_duckdb(
 def _from_geometry(
     rel: duckdb.DuckDBPyRelation,
     *,
-    con: duckdb.DuckDBPyConnection | None = None,  # noqa: ARG001
     geom_col_idx: int,
     crs: str | pyproj.CRS | None = None,
 ) -> Table:
