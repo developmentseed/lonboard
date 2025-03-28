@@ -5,6 +5,7 @@
 from __future__ import annotations
 
 import json
+import warnings
 from textwrap import dedent
 from typing import (
     TYPE_CHECKING,
@@ -126,18 +127,6 @@ def viz(
             viz(query)
             ```
 
-            If you're using a custom connection, ensure you pass in the `con` parameter:
-
-            ```py
-            import duckdb
-            from lonboard import viz
-
-            con = duckdb.connect()
-            sql = "SELECT * FROM spatial_table;"
-            query = con.sql(sql)
-            viz(query, con=con)
-            ```
-
             You can also render an entire table by using the `table()` method:
 
             ```py
@@ -146,7 +135,7 @@ def viz(
 
             con = duckdb.connect()
             con.execute("CREATE TABLE spatial_table AS ...;")
-            viz(con.table(), con=con)
+            viz(con.table())
             ```
 
         !!! warning
@@ -179,9 +168,8 @@ def viz(
             [`PolygonLayer`][lonboard.PolygonLayer]s.
         map_kwargs: a `dict` of parameters to pass down to the generated
             [`Map`][lonboard.Map].
-        con: the active DuckDB connection. This is necessary in some cases when passing
-            in a DuckDB query. In particular, if you're using a non-global DuckDB
-            connection and if your SQL query outputs the default `GEOMETRY` type.
+        con: Deprecated: the active DuckDB connection. This argument has no effect and
+            might be removed in the future.
 
     For more control over rendering, construct [`Map`][lonboard.Map] and `Layer` objects
     directly.
@@ -192,6 +180,14 @@ def viz(
     """
     global COLOR_COUNTER  # noqa: PLW0603 Using the global statement to update `COLOR_COUNTER` is discouraged
 
+    if con is not None:
+        warnings.warn(
+            "The 'con' argument is deprecated and may be removed in a future version. "
+            "It has no effect.",
+            category=DeprecationWarning,
+            stacklevel=2,
+        )
+
     if isinstance(data, (list, tuple)):
         layers: list[ScatterplotLayer | PathLayer | PolygonLayer] = []
         for i, item in enumerate(data):
@@ -201,7 +197,6 @@ def viz(
                 scatterplot_kwargs=scatterplot_kwargs,
                 path_kwargs=path_kwargs,
                 polygon_kwargs=polygon_kwargs,
-                con=con,
             )
             layers.extend(ls)
 
@@ -213,7 +208,6 @@ def viz(
             scatterplot_kwargs=scatterplot_kwargs,
             path_kwargs=path_kwargs,
             polygon_kwargs=polygon_kwargs,
-            con=con,
         )
         COLOR_COUNTER += 1
 
@@ -228,27 +222,13 @@ def viz(
 DUCKDB_PY_CONN_ERROR = dedent("""\
     Must pass in DuckDBPyRelation object, not DuckDBPyConnection.
 
-    Instead of using `duckdb.execute()` or `con.execute()`, use `duckdb.sql()` or
-    `con.sql()`.
-
-    If using `con.sql()`, ensure you pass the `con` into the `viz()` function:
-
-    ```
-    viz(con.sql("SELECT * FROM table;", con=con))
-    ```
-
-    Alternatively, you can call the `table()` method of `con`:
-
-    ```
-    viz(con.table("table_name", con=con))
-    ```
+    Instead of using `duckdb.execute()` or `con.execute()`, use `duckdb.sql()`,
+    `con.sql()` or `con.table()`.
     """)
 
 
 def create_layers_from_data_input(
     data: VizDataInput,
-    *,
-    con: duckdb.DuckDBPyConnection | None = None,
     **kwargs: Any,
 ) -> list[ScatterplotLayer | PathLayer | PolygonLayer]:
     """Create one or more renderable layers from data input.
@@ -274,7 +254,7 @@ def create_layers_from_data_input(
         data.__class__.__module__.startswith("duckdb")
         and data.__class__.__name__ == "DuckDBPyRelation"
     ):
-        return _viz_duckdb_relation(data, con=con, **kwargs)  # type: ignore
+        return _viz_duckdb_relation(data, **kwargs)  # type: ignore
 
     if (
         data.__class__.__module__.startswith("duckdb")
@@ -354,12 +334,11 @@ def _viz_geopandas_geoseries(
 
 def _viz_duckdb_relation(
     data: duckdb.DuckDBPyRelation,
-    con: duckdb.DuckDBPyConnection | None = None,
     **kwargs: Any,
 ) -> list[ScatterplotLayer | PathLayer | PolygonLayer]:
     from lonboard._geoarrow._duckdb import from_duckdb
 
-    table = from_duckdb(data, con=con)
+    table = from_duckdb(data)
     return _viz_geoarrow_table(table, **kwargs)
 
 
