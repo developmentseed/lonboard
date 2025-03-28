@@ -140,8 +140,14 @@ def _from_geometry(
             SELECT ST_AsWKB( {geom_col_name} ) as {geom_col_name} FROM rel;
             """
         try:
+            # duckdb.default_connection changed from attribute to callable in duckdb 1.2
+            default_con = (
+                duckdb.default_connection()
+                if callable(duckdb.default_connection)
+                else duckdb.default_connection
+            )
             geom_table = Table.from_arrow(
-                duckdb.execute(sql, connection=duckdb.default_connection).arrow(),
+                duckdb.execute(sql, connection=default_con).arrow(),
             )
         except duckdb.CatalogException as err:
             msg = (
