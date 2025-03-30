@@ -1,6 +1,3 @@
-# ruff: noqa: S608
-# Possible SQL injection vector through string-based query construction
-
 from __future__ import annotations
 
 import json
@@ -17,6 +14,7 @@ from arro3.core import (
     list_array,
     struct_field,
 )
+from duckdb import ColumnExpression, FunctionExpression
 
 from lonboard._constants import EXTENSION_NAME
 
@@ -37,7 +35,6 @@ DUCKDB_SPATIAL_TYPES = {
 def from_duckdb(
     rel: duckdb.DuckDBPyRelation,
     *,
-    con: duckdb.DuckDBPyConnection | None = None,
     crs: str | pyproj.CRS | None = None,
 ) -> Table:
     geom_col_idxs = [
@@ -67,7 +64,7 @@ def from_duckdb(
             crs=crs,
         )
     if geom_type == "GEOMETRY":
-        return _from_geometry(rel, con=con, geom_col_idx=geom_col_idx, crs=crs)
+        return _from_geometry(rel, geom_col_idx=geom_col_idx, crs=crs)
     if geom_type == "POINT_2D":
         return _from_geoarrow(
             rel,
@@ -101,7 +98,6 @@ def from_duckdb(
 def _from_geometry(
     rel: duckdb.DuckDBPyRelation,
     *,
-    con: duckdb.DuckDBPyConnection | None = None,
     geom_col_idx: int,
     crs: str | pyproj.CRS | None = None,
 ) -> Table:
@@ -120,43 +116,13 @@ def _from_geometry(
         geom_col_name,
     ), f"Expected geometry column name to match regex: {re_match}"
 
-    if con is not None:
-        geom_table = Table.from_arrow(
-            con.sql(f"""
-        SELECT ST_AsWKB( {geom_col_name} ) as {geom_col_name} FROM rel;
-        """).arrow(),
-        )
-    else:
-        import duckdb
-
-        # We need to re-import the spatial extension because this is a different context
-        # as the user's context.
-        # It would be nice to re-use the user's context, but in the case of `viz` where
-        # we want to visualize a single input object, we want to accept a
-        # DuckDBPyRelation as input.
-        sql = f"""
-            INSTALL spatial;
-            LOAD spatial;
-            SELECT ST_AsWKB( {geom_col_name} ) as {geom_col_name} FROM rel;
-            """
-        try:
-            # duckdb.default_connection changed from attribute to callable in duckdb 1.2
-            default_con = (
-                duckdb.default_connection()
-                if callable(duckdb.default_connection)
-                else duckdb.default_connection
-            )
-            geom_table = Table.from_arrow(
-                duckdb.execute(sql, connection=default_con).arrow(),
-            )
-        except duckdb.CatalogException as err:
-            msg = (
-                "Could not coerce type GEOMETRY to WKB.\n"
-                "This often happens from using a custom DuckDB connection object.\n"
-                "Either pass in a `con` object containing the DuckDB connection or "
-                "cast to WKB manually with `ST_AsWKB`."
-            )
-            raise ValueError(msg) from err
+    geom_table = Table.from_arrow(
+        rel.select(
+            FunctionExpression("st_aswkb", ColumnExpression(geom_col_name)).alias(
+                geom_col_name,
+            ),
+        ).arrow(),
+    )
 
     metadata = _make_geoarrow_field_metadata(EXTENSION_NAME.WKB, crs)
     geom_field = geom_table.schema.field(0).with_metadata(metadata)
