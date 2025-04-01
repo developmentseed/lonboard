@@ -120,6 +120,8 @@ ignore = [
     "B028",    # No explicit `stacklevel` keyword argument found
     "B011",    # Do not `assert False` (`python -O` removes these calls), raise `AssertionError()`
     "D100",    # Missing docstring in public module
+    "D203",    # incorrect-blank-line-before-class
+    "D213",    # multi-line-summary-second-line
     "D406",    # Section name should end with a newline ("Returns")Ruff
     "D407",    # Missing dashed underline after section
     "E501",    # Line too long
@@ -162,7 +164,7 @@ ignore = [
     "SLF001",  # Private member accessed
 ]
 
-[tool.ruff.extend-per-file-ignores]
+[tool.ruff.lint.extend-per-file-ignores]
 "__init__.py" = [
     "F401", # Allow unused imports in __init__.py files
 ]
