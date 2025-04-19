@@ -54,6 +54,38 @@ m
     information, so the user must ensure that data has been reprojected to
     EPSG:4326.
 
+You can also render an entire table by using the `table()` method:
+
+```py
+import duckdb
+from lonboard import viz
+
+duckdb.sql("CREATE TABLE spatial_table AS ...;")
+viz(duckdb.table("spatial_table"), con=con)
+```
+
+## Custom Connection
+
+If y you're using a custom DuckDB connection (not the global default connection), such as `con = duckdb.connect()`, then instead of `duckdb.sql()` and `duckdb.table()`, you can use `con.sql()` and `con.table()`.
+
+## Directly passing a query string to `from_duckdb` of a layer class
+
+The `from_duckdb` method of Lonboard layer classes supports directly passing a SQL string, but then you need to also pass the connection object into the `con` named parameter of `from_duckdb`:
+
+```py
+import duckdb
+from lonboard import Map, PolygonLayer
+
+con = duckdb.connect()
+layer = PolygonLayer.from_duckdb(
+    "SELECT * FROM polygon_table;",
+    con=con,
+    get_fill_color=[255, 0, 0],
+)
+m = Map(layer)
+m
+```
+
 ### Implementation Notes
 
 Lonboard integrates with DuckDB by using its [Arrow export support](https://duckdb.org/docs/guides/python/export_arrow).
