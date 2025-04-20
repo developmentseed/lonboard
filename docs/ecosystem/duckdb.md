@@ -61,7 +61,7 @@ import duckdb
 from lonboard import viz
 
 duckdb.sql("CREATE TABLE spatial_table AS ...;")
-viz(duckdb.table("spatial_table"), con=con)
+viz(duckdb.table("spatial_table"))
 ```
 
 ## Custom Connection
