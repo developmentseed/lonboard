@@ -1,5 +1,7 @@
+from __future__ import annotations
+
 from pathlib import Path
-from typing import cast
+from typing import TYPE_CHECKING, cast
 
 import geoarrow.pyarrow as gap
 import geodatasets
@@ -7,7 +9,6 @@ import numpy as np
 import pyarrow as pa
 import pyarrow.parquet as pq
 import pytest
-from arro3.core import Table
 from geoarrow.rust.core import geometry_col, read_pyogrio, to_wkb
 from pyogrio.raw import read_arrow
 
@@ -17,6 +18,9 @@ from lonboard._constants import EXTENSION_NAME
 from . import compat
 
 fixtures_dir = Path(__file__).parent / "fixtures"
+
+if TYPE_CHECKING:
+    from arro3.core import Table
 
 
 def mixed_shapely_geoms():
@@ -36,7 +40,7 @@ def mixed_gdf():
 
 
 class GeoInterfaceHolder:
-    """A wrapper class that only exposes __geo_interface__"""
+    """A wrapper class that only exposes __geo_interface__."""
 
     def __init__(self, geom) -> None:
         self.geom = geom
@@ -165,7 +169,7 @@ def test_viz_geoarrow_rust_table():
 def test_viz_geoarrow_rust_array():
     # `read_pyogrio` has incorrect typing currently
     # https://github.com/geoarrow/geoarrow-rs/pull/807
-    table = cast(Table, read_pyogrio(geodatasets.get_path("naturalearth.land")))
+    table = cast("Table", read_pyogrio(geodatasets.get_path("naturalearth.land")))
     map_ = viz(geometry_col(table).chunk(0))
     assert isinstance(map_.layers[0], PolygonLayer)
 
@@ -190,7 +194,8 @@ def test_viz_geoarrow_pyarrow_array_interleaved():
     assert isinstance(map_.layers[0], ScatterplotLayer)
 
     data = gap.as_geoarrow(
-        ["LINESTRING (30 10, 10 30, 40 40)"], coord_type=gap.CoordType.INTERLEAVED
+        ["LINESTRING (30 10, 10 30, 40 40)"],
+        coord_type=gap.CoordType.INTERLEAVED,
     )
     map_ = viz(data)
     assert isinstance(map_.layers[0], PathLayer)
@@ -211,13 +216,15 @@ def test_viz_geoarrow_pyarrow_array_interleaved():
 
 def test_viz_geoarrow_pyarrow_array_separated():
     data = gap.as_geoarrow(
-        ["POINT (0 1)", "POINT (2 1)", "POINT (3 1)"], coord_type=gap.CoordType.SEPARATE
+        ["POINT (0 1)", "POINT (2 1)", "POINT (3 1)"],
+        coord_type=gap.CoordType.SEPARATE,
     )
     map_ = viz(data)
     assert isinstance(map_.layers[0], ScatterplotLayer)
 
     data = gap.as_geoarrow(
-        ["LINESTRING (30 10, 10 30, 40 40)"], coord_type=gap.CoordType.SEPARATE
+        ["LINESTRING (30 10, 10 30, 40 40)"],
+        coord_type=gap.CoordType.SEPARATE,
     )
     map_ = viz(data)
     assert isinstance(map_.layers[0], PathLayer)

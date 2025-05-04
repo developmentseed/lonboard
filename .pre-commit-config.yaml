@@ -6,7 +6,7 @@ default_language_version:
   python: python3
 
 # Optionally both commit and push
-default_stages: [commit]
+default_stages: [pre-commit]
 
 repos:
   - repo: https://github.com/pre-commit/pre-commit-hooks
@@ -18,7 +18,7 @@ repos:
         args: ["--maxkb=5500"]
 
   - repo: https://github.com/astral-sh/ruff-pre-commit
-    rev: v0.3.4
+    rev: v0.11.0
     hooks:
       - id: ruff
         args: ["--fix"]

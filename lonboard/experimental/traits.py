@@ -1,3 +1,5 @@
+# ruff: noqa
+
 from __future__ import annotations
 
 import math
@@ -15,7 +17,6 @@ from arro3.core import (
     list_flatten,
     list_offsets,
 )
-from traitlets.traitlets import TraitType
 
 from lonboard._constants import MAX_INTEGER_FLOAT32, MIN_INTEGER_FLOAT32
 from lonboard._serialization import TIMESTAMP_ACCESSOR_SERIALIZATION
@@ -23,6 +24,8 @@ from lonboard._utils import get_geometry_column_index
 from lonboard.traits import FixedErrorTraitType
 
 if TYPE_CHECKING:
+    from traitlets.traitlets import TraitType
+
     from lonboard._layer import BaseArrowLayer
 
 
@@ -49,14 +52,16 @@ class TimestampAccessor(FixedErrorTraitType):
 
     def __init__(
         self: TraitType,
-        *args,
+        *args: Any,
         **kwargs: Any,
     ) -> None:
         super().__init__(*args, **kwargs)
         self.tag(sync=True, **TIMESTAMP_ACCESSOR_SERIALIZATION)
 
     def _reduce_precision(
-        self, obj: BaseArrowLayer, value: ChunkedArray
+        self,
+        obj: BaseArrowLayer,
+        value: ChunkedArray,
     ) -> ChunkedArray:
         # First, find the "spread" of existing values: the range between min and max of
         # the existing timestamps.
@@ -145,7 +150,7 @@ class TimestampAccessor(FixedErrorTraitType):
         new_time_unit = new_data_type.time_unit
         warnings.warn(
             f"Reducing precision of input timestamp data to '{new_time_unit}'"
-            " to fit into available GPU precision."
+            " to fit into available GPU precision.",
         )
 
         # Actually reduce the precision of each chunk of the input data, assigning the
@@ -158,17 +163,17 @@ class TimestampAccessor(FixedErrorTraitType):
         reduced_precision_chunks = []
         for offsets, inner_values in zip(offsets_reader, inner_values_reader):
             reduced_precision_values = ac.div(
-                inner_values.cast(DataType.int64()), divisor
+                inner_values.cast(DataType.int64()),
+                divisor,
             )
             reduced_precision_chunks.append(
-                list_array(offsets, reduced_precision_values.cast(new_data_type))
+                list_array(offsets, reduced_precision_values.cast(new_data_type)),
             )
 
         return ChunkedArray(reduced_precision_chunks)
 
     def _validate_timestamp_offsets(self, obj: BaseArrowLayer, value: ChunkedArray):
-        """
-        Validate that the offsets of the list array used for the timestamp column match
+        """Validate that the offsets of the list array used for the timestamp column match
         the offsets of the list array used for the LineString array in the geometry
         column.
         """

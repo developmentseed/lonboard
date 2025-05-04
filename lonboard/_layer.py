@@ -1,31 +1,26 @@
-"""Notes:
+# Notes:
+# - When we pass a value of `None` as a default value to a trait, that value will be
+#   serialized to JS as `null` and will not be passed into the GeoArrow model (see the
+#   lengthy assignments of type `..(isDefined(this.param) && { param: this.param })`).
+#   Then the default value in the JS GeoArrow layer (defined in
+#   `@geoarrow/deck.gl-layers`) will be used.
 
-- When we pass a value of `None` as a default value to a trait, that value will be
-  serialized to JS as `null` and will not be passed into the GeoArrow model (see the
-  lengthy assignments of type `..(isDefined(this.param) && { param: this.param })`).
-  Then the default value in the JS GeoArrow layer (defined in
-  `@geoarrow/deck.gl-layers`) will be used.
-"""
+# ruff: noqa: D205, ERA001, SLF001
+# 1 blank line required between summary line and description
+# Found commented-out code
+# Private member accessed: `_layer_traits`
+
 
 from __future__ import annotations
 
-import sys
 import warnings
 from textwrap import dedent
-from typing import (
-    TYPE_CHECKING,
-    List,
-    Optional,
-    Sequence,
-    Tuple,
-    Union,
-)
+from typing import TYPE_CHECKING, Any
 
 import ipywidgets
 import traitlets
 import traitlets as t
 from arro3.core import Table
-from arro3.core.types import ArrowStreamExportable
 
 from lonboard._base import BaseExtension, BaseWidget
 from lonboard._constants import EXTENSION_NAME, OGC_84
@@ -48,7 +43,11 @@ from lonboard.traits import (
 )
 
 if TYPE_CHECKING:
+    import sys
+    from collections.abc import Sequence
+
     import geopandas as gpd
+    from arro3.core.types import ArrowStreamExportable
 
     from lonboard.types.layer import (
         BaseLayerKwargs,
@@ -85,7 +84,12 @@ class BaseLayer(BaseWidget):
 
     # The following traitlets **are** serialized to JS
 
-    def __init__(self, *, extensions: Sequence[BaseExtension] = (), **kwargs):
+    def __init__(
+        self,
+        *,
+        extensions: Sequence[BaseExtension] = (),
+        **kwargs: Any,
+    ) -> None:
         # We allow layer extensions to dynamically inject properties onto the layer
         # widgets where the layer is defined. We wish to allow extensions and their
         # properties to be passed in the layer constructor. _However_, if
@@ -98,7 +102,7 @@ class BaseLayer(BaseWidget):
         self._add_extension_traits(extensions)
 
         # Assign any extension properties that we took out before calling __init__
-        added_names: List[str] = []
+        added_names: list[str] = []
         for prop_name, prop_value in extension_kwargs.items():
             self.set_trait(prop_name, prop_value)
             added_names.append(prop_name)
@@ -108,14 +112,15 @@ class BaseLayer(BaseWidget):
     # TODO: validate that only one extension per type is included. E.g. you can't have
     # two data filter extensions.
     extensions = VariableLengthTuple(t.Instance(BaseExtension)).tag(
-        sync=True, **ipywidgets.widget_serialization
+        sync=True,
+        **ipywidgets.widget_serialization,
     )
     """
     A list of [layer extension](https://developmentseed.org/lonboard/latest/api/layer-extensions/)
     objects to add additional features to a layer.
     """
 
-    def _add_extension_traits(self, extensions: Sequence[BaseExtension]):
+    def _add_extension_traits(self, extensions: Sequence[BaseExtension]) -> None:
         """Assign selected traits from the extension onto this Layer."""
         for extension in extensions:
             # NOTE: here it's important that we call `traitlets.HasTraits.add_traits`
@@ -188,7 +193,7 @@ class BaseLayer(BaseWidget):
 
     #     self.send_state(added_names + ["extensions"])
 
-    pickable = t.Bool(True).tag(sync=True)
+    pickable = t.Bool(default_value=True).tag(sync=True)
     """
     Whether the layer responds to mouse pointer picking events.
 
@@ -204,7 +209,7 @@ class BaseLayer(BaseWidget):
     - Default: `True`
     """
 
-    visible = t.Bool(True).tag(sync=True)
+    visible = t.Bool(default_value=True).tag(sync=True)
     """
     Whether the layer is visible.
 
@@ -227,7 +232,7 @@ class BaseLayer(BaseWidget):
     - Default: `1`
     """
 
-    auto_highlight = t.Bool(False).tag(sync=True)
+    auto_highlight = t.Bool(default_value=False).tag(sync=True)
     """
     When true, the current object pointed to by the mouse pointer (when hovered over) is
     highlighted with `highlightColor`.
@@ -239,7 +244,10 @@ class BaseLayer(BaseWidget):
     """
 
     highlight_color = VariableLengthTuple(
-        t.Int(), default_value=None, minlen=3, maxlen=4
+        t.Int(),
+        default_value=None,
+        minlen=3,
+        maxlen=4,
     )
     """
     RGBA color to blend with the highlighted object (the hovered over object if
@@ -274,7 +282,7 @@ class BaseLayer(BaseWidget):
 
 def default_geoarrow_viewport(
     table: Table,
-) -> Optional[Tuple[Bbox, WeightedCentroid]]:
+) -> tuple[Bbox, WeightedCentroid] | None:
     # Note: in the ArcLayer we won't necessarily have a column with a geoarrow
     # extension type/metadata
     geom_col_idx = get_geometry_column_index(table.schema)
@@ -308,7 +316,7 @@ def default_geoarrow_viewport(
 
 
 class BaseArrowLayer(BaseLayer):
-    """Any Arrow-based layer should subclass from BaseArrowLayer"""
+    """Any Arrow-based layer should subclass from BaseArrowLayer."""
 
     # Note: these class attributes are **not** serialized to JS
 
@@ -327,9 +335,9 @@ class BaseArrowLayer(BaseLayer):
         self,
         *,
         table: ArrowStreamExportable,
-        _rows_per_chunk: Optional[int] = None,
+        _rows_per_chunk: int | None = None,
         **kwargs: Unpack[BaseLayerKwargs],
-    ):
+    ) -> None:
         table_o3 = Table.from_arrow(table)
         parsed_tables = parse_serialized_table(table_o3)
         assert len(parsed_tables) == 1, (
@@ -379,9 +387,11 @@ class BaseArrowLayer(BaseLayer):
                 if possible without loss of precision. This calls
                 [pandas.DataFrame.convert_dtypes][pandas.DataFrame.convert_dtypes] and
                 [pandas.to_numeric][pandas.to_numeric] under the hood.
+            kwargs: parameters passed on to `__init__`
 
         Returns:
             A Layer with the initialized data.
+
         """
         if auto_downcast:
             # Note: we don't deep copy because we don't need to clone geometries
@@ -393,10 +403,10 @@ class BaseArrowLayer(BaseLayer):
     @classmethod
     def from_duckdb(
         cls,
-        sql: Union[str, duckdb.DuckDBPyRelation],
-        con: Optional[duckdb.DuckDBPyConnection] = None,
+        sql: str | duckdb.DuckDBPyRelation,
+        con: duckdb.DuckDBPyConnection | None = None,
         *,
-        crs: Optional[Union[str, pyproj.CRS]] = None,
+        crs: str | pyproj.CRS | None = None,
         **kwargs: Unpack[BaseLayerKwargs],
     ) -> Self:
         """Construct a Layer from a duckdb-spatial query.
@@ -410,30 +420,30 @@ class BaseArrowLayer(BaseLayer):
             sql: The SQL input to visualize. This can either be a string containing a
                 SQL query or the output of the duckdb `sql` function.
             con: The current DuckDB connection. This is required when passing a `str` to
-                the `sql` parameter or when using a non-global DuckDB connection.
-                Defaults to None.
+                the `sql` parameter.
 
         Keyword Args:
             crs: The CRS of the input data. This can either be a string passed to
                 `pyproj.CRS.from_user_input` or a `pyproj.CRS` object. Defaults to None.
+            kwargs: parameters passed on to `__init__`
 
         Returns:
             A Layer with the initialized data.
+
         """
         if isinstance(sql, str):
             assert con is not None, "con must be provided when sql is a str"
 
             rel = con.sql(sql)
-            table = _from_duckdb(rel, con=con, crs=crs)
+            table = _from_duckdb(rel, crs=crs)
         else:
-            table = _from_duckdb(sql, con=con, crs=crs)
+            table = _from_duckdb(sql, crs=crs)
 
         return cls(table=table, **kwargs)
 
 
 class BitmapLayer(BaseLayer):
-    """
-    The `BitmapLayer` renders a bitmap (e.g. PNG, JPEG, or WebP) at specified
+    """The `BitmapLayer` renders a bitmap (e.g. PNG, JPEG, or WebP) at specified
     boundaries.
 
     **Example:**
@@ -450,7 +460,7 @@ class BitmapLayer(BaseLayer):
     ```
     """
 
-    def __init__(self, **kwargs: BitmapLayerKwargs):
+    def __init__(self, **kwargs: BitmapLayerKwargs) -> None:
         super().__init__(**kwargs)  # type: ignore
 
     _layer_type = t.Unicode("bitmap").tag(sync=True)
@@ -469,7 +479,7 @@ class BitmapLayer(BaseLayer):
                 minlen=4,
                 maxlen=4,
             ),
-        ]
+        ],
     ).tag(sync=True)
     """The bounds of the image.
 
@@ -488,7 +498,11 @@ class BitmapLayer(BaseLayer):
     """
 
     transparent_color = VariableLengthTuple(
-        t.Float(), default_value=None, allow_none=True, minlen=3, maxlen=4
+        t.Float(),
+        default_value=None,
+        allow_none=True,
+        minlen=3,
+        maxlen=4,
     )
     """The color to use for transparent pixels, in `[r, g, b, a]`.
 
@@ -497,7 +511,11 @@ class BitmapLayer(BaseLayer):
     """
 
     tint_color = VariableLengthTuple(
-        t.Float(), default_value=None, allow_none=True, minlen=3, maxlen=4
+        t.Float(),
+        default_value=None,
+        allow_none=True,
+        minlen=3,
+        maxlen=4,
     )
     """The color to tint the bitmap by, in `[r, g, b]`.
 
@@ -531,8 +549,7 @@ class BitmapLayer(BaseLayer):
 
 
 class BitmapTileLayer(BaseLayer):
-    """
-    The BitmapTileLayer renders image tiles (e.g. PNG, JPEG, or WebP) in the web
+    """The BitmapTileLayer renders image tiles (e.g. PNG, JPEG, or WebP) in the web
     mercator tiling system. Only the tiles visible in the current viewport are loaded
     and rendered.
 
@@ -553,13 +570,13 @@ class BitmapTileLayer(BaseLayer):
     ```
     """
 
-    def __init__(self, **kwargs: BitmapTileLayerKwargs):
+    def __init__(self, **kwargs: BitmapTileLayerKwargs) -> None:
         super().__init__(**kwargs)  # type: ignore
 
     _layer_type = t.Unicode("bitmap-tile").tag(sync=True)
 
     data = t.Union([t.Unicode(), VariableLengthTuple(t.Unicode(), minlen=1)]).tag(
-        sync=True
+        sync=True,
     )
     """
     Either a URL template or an array of URL templates from which the tile data should
@@ -615,7 +632,11 @@ class BitmapTileLayer(BaseLayer):
     """
 
     extent = VariableLengthTuple(
-        t.Float(), minlen=4, maxlen=4, allow_none=True, default_value=None
+        t.Float(),
+        minlen=4,
+        maxlen=4,
+        allow_none=True,
+        default_value=None,
     ).tag(sync=True)
     """
     The bounding box of the layer's data, in the form of `[min_x, min_y, max_x, max_y]`.
@@ -698,7 +719,11 @@ class BitmapTileLayer(BaseLayer):
     """
 
     transparent_color = VariableLengthTuple(
-        t.Float(), default_value=None, allow_none=True, minlen=3, maxlen=4
+        t.Float(),
+        default_value=None,
+        allow_none=True,
+        minlen=3,
+        maxlen=4,
     )
     """The color to use for transparent pixels, in `[r, g, b, a]`.
 
@@ -707,7 +732,11 @@ class BitmapTileLayer(BaseLayer):
     """
 
     tint_color = VariableLengthTuple(
-        t.Float(), default_value=None, allow_none=True, minlen=3, maxlen=4
+        t.Float(),
+        default_value=None,
+        allow_none=True,
+        minlen=3,
+        maxlen=4,
     )
     """The color to tint the bitmap by, in `[r, g, b]`.
 
@@ -717,8 +746,7 @@ class BitmapTileLayer(BaseLayer):
 
 
 class ColumnLayer(BaseArrowLayer):
-    """
-    The ColumnLayer renders extruded cylinders (tessellated regular polygons) at given
+    """The ColumnLayer renders extruded cylinders (tessellated regular polygons) at given
     coordinates.
     """
 
@@ -726,9 +754,9 @@ class ColumnLayer(BaseArrowLayer):
         self,
         *,
         table: ArrowStreamExportable,
-        _rows_per_chunk: Optional[int] = None,
+        _rows_per_chunk: int | None = None,
         **kwargs: Unpack[ColumnLayerKwargs],
-    ):
+    ) -> None:
         super().__init__(table=table, _rows_per_chunk=_rows_per_chunk, **kwargs)
 
     @classmethod
@@ -744,10 +772,10 @@ class ColumnLayer(BaseArrowLayer):
     @classmethod
     def from_duckdb(
         cls,
-        sql: Union[str, duckdb.DuckDBPyRelation],
-        con: Optional[duckdb.DuckDBPyConnection] = None,
+        sql: str | duckdb.DuckDBPyRelation,
+        con: duckdb.DuckDBPyConnection | None = None,
         *,
-        crs: Optional[Union[str, pyproj.CRS]] = None,
+        crs: str | pyproj.CRS | None = None,
         **kwargs: Unpack[ColumnLayerKwargs],
     ) -> Self:
         return super().from_duckdb(sql=sql, con=con, crs=crs, **kwargs)
@@ -792,7 +820,7 @@ class ColumnLayer(BaseArrowLayer):
     """
 
     offset = t.Tuple(t.Float(), t.Float(), default_value=None, allow_none=True).tag(
-        sync=True
+        sync=True,
     )
     """
     Disk offset from the position, relative to the radius. By default, the disk is
@@ -1013,9 +1041,9 @@ class PolygonLayer(BaseArrowLayer):
         self,
         *,
         table: ArrowStreamExportable,
-        _rows_per_chunk: Optional[int] = None,
+        _rows_per_chunk: int | None = None,
         **kwargs: Unpack[PolygonLayerKwargs],
-    ):
+    ) -> None:
         super().__init__(table=table, _rows_per_chunk=_rows_per_chunk, **kwargs)
 
     @classmethod
@@ -1031,10 +1059,10 @@ class PolygonLayer(BaseArrowLayer):
     @classmethod
     def from_duckdb(
         cls,
-        sql: Union[str, duckdb.DuckDBPyRelation],
-        con: Optional[duckdb.DuckDBPyConnection] = None,
+        sql: str | duckdb.DuckDBPyRelation,
+        con: duckdb.DuckDBPyConnection | None = None,
         *,
-        crs: Optional[Union[str, pyproj.CRS]] = None,
+        crs: str | pyproj.CRS | None = None,
         **kwargs: Unpack[PolygonLayerKwargs],
     ) -> Self:
         return super().from_duckdb(sql=sql, con=con, crs=crs, **kwargs)
@@ -1042,7 +1070,7 @@ class PolygonLayer(BaseArrowLayer):
     _layer_type = t.Unicode("polygon").tag(sync=True)
 
     table = ArrowTableTrait(
-        allowed_geometry_types={EXTENSION_NAME.POLYGON, EXTENSION_NAME.MULTIPOLYGON}
+        allowed_geometry_types={EXTENSION_NAME.POLYGON, EXTENSION_NAME.MULTIPOLYGON},
     )
     """A GeoArrow table with a Polygon or MultiPolygon column.
 
@@ -1258,9 +1286,9 @@ class ScatterplotLayer(BaseArrowLayer):
         self,
         *,
         table: ArrowStreamExportable,
-        _rows_per_chunk: Optional[int] = None,
+        _rows_per_chunk: int | None = None,
         **kwargs: Unpack[ScatterplotLayerKwargs],
-    ):
+    ) -> None:
         super().__init__(table=table, _rows_per_chunk=_rows_per_chunk, **kwargs)
 
     @classmethod
@@ -1276,10 +1304,10 @@ class ScatterplotLayer(BaseArrowLayer):
     @classmethod
     def from_duckdb(
         cls,
-        sql: Union[str, duckdb.DuckDBPyRelation],
-        con: Optional[duckdb.DuckDBPyConnection] = None,
+        sql: str | duckdb.DuckDBPyRelation,
+        con: duckdb.DuckDBPyConnection | None = None,
         *,
-        crs: Optional[Union[str, pyproj.CRS]] = None,
+        crs: str | pyproj.CRS | None = None,
         **kwargs: Unpack[ScatterplotLayerKwargs],
     ) -> Self:
         return super().from_duckdb(sql=sql, con=con, crs=crs, **kwargs)
@@ -1287,7 +1315,7 @@ class ScatterplotLayer(BaseArrowLayer):
     _layer_type = t.Unicode("scatterplot").tag(sync=True)
 
     table = ArrowTableTrait(
-        allowed_geometry_types={EXTENSION_NAME.POINT, EXTENSION_NAME.MULTIPOINT}
+        allowed_geometry_types={EXTENSION_NAME.POINT, EXTENSION_NAME.MULTIPOINT},
     )
     """A GeoArrow table with a Point or MultiPoint column.
 
@@ -1457,8 +1485,7 @@ class ScatterplotLayer(BaseArrowLayer):
 
 
 class PathLayer(BaseArrowLayer):
-    """
-    The `PathLayer` renders lists of coordinate points as extruded polylines with
+    """The `PathLayer` renders lists of coordinate points as extruded polylines with
     mitering.
 
     **Example:**
@@ -1500,9 +1527,9 @@ class PathLayer(BaseArrowLayer):
         self,
         *,
         table: ArrowStreamExportable,
-        _rows_per_chunk: Optional[int] = None,
+        _rows_per_chunk: int | None = None,
         **kwargs: Unpack[PathLayerKwargs],
-    ):
+    ) -> None:
         super().__init__(table=table, _rows_per_chunk=_rows_per_chunk, **kwargs)
 
     @classmethod
@@ -1518,10 +1545,10 @@ class PathLayer(BaseArrowLayer):
     @classmethod
     def from_duckdb(
         cls,
-        sql: Union[str, duckdb.DuckDBPyRelation],
-        con: Optional[duckdb.DuckDBPyConnection] = None,
+        sql: str | duckdb.DuckDBPyRelation,
+        con: duckdb.DuckDBPyConnection | None = None,
         *,
-        crs: Optional[Union[str, pyproj.CRS]] = None,
+        crs: str | pyproj.CRS | None = None,
         **kwargs: Unpack[PathLayerKwargs],
     ) -> Self:
         return super().from_duckdb(sql=sql, con=con, crs=crs, **kwargs)
@@ -1532,7 +1559,7 @@ class PathLayer(BaseArrowLayer):
         allowed_geometry_types={
             EXTENSION_NAME.LINESTRING,
             EXTENSION_NAME.MULTILINESTRING,
-        }
+        },
     )
     """A GeoArrow table with a LineString or MultiLineString column.
 
@@ -1640,8 +1667,7 @@ class PathLayer(BaseArrowLayer):
 
 
 class PointCloudLayer(BaseArrowLayer):
-    """
-    The `PointCloudLayer` renders a point cloud with 3D positions, normals and colors.
+    """The `PointCloudLayer` renders a point cloud with 3D positions, normals and colors.
 
     The `PointCloudLayer` can be more efficient at rendering large quantities of points
     than the [`ScatterplotLayer`][lonboard.ScatterplotLayer], but has fewer rendering
@@ -1671,9 +1697,9 @@ class PointCloudLayer(BaseArrowLayer):
         self,
         *,
         table: ArrowStreamExportable,
-        _rows_per_chunk: Optional[int] = None,
+        _rows_per_chunk: int | None = None,
         **kwargs: Unpack[PointCloudLayerKwargs],
-    ):
+    ) -> None:
         super().__init__(table=table, _rows_per_chunk=_rows_per_chunk, **kwargs)
 
     @classmethod
@@ -1689,10 +1715,10 @@ class PointCloudLayer(BaseArrowLayer):
     @classmethod
     def from_duckdb(
         cls,
-        sql: Union[str, duckdb.DuckDBPyRelation],
-        con: Optional[duckdb.DuckDBPyConnection] = None,
+        sql: str | duckdb.DuckDBPyRelation,
+        con: duckdb.DuckDBPyConnection | None = None,
         *,
-        crs: Optional[Union[str, pyproj.CRS]] = None,
+        crs: str | pyproj.CRS | None = None,
         **kwargs: Unpack[PointCloudLayerKwargs],
     ) -> Self:
         return super().from_duckdb(sql=sql, con=con, crs=crs, **kwargs)
@@ -1700,7 +1726,8 @@ class PointCloudLayer(BaseArrowLayer):
     _layer_type = t.Unicode("point-cloud").tag(sync=True)
 
     table = ArrowTableTrait(
-        allowed_geometry_types={EXTENSION_NAME.POINT}, allowed_dimensions={3}
+        allowed_geometry_types={EXTENSION_NAME.POINT},
+        allowed_dimensions={3},
     )
     """A GeoArrow table with a Point column.
 
@@ -1757,8 +1784,7 @@ class PointCloudLayer(BaseArrowLayer):
 
 
 class SolidPolygonLayer(BaseArrowLayer):
-    """
-    The `SolidPolygonLayer` renders filled and/or extruded polygons.
+    """The `SolidPolygonLayer` renders filled and/or extruded polygons.
 
     !!! note
 
@@ -1804,9 +1830,9 @@ class SolidPolygonLayer(BaseArrowLayer):
         self,
         *,
         table: ArrowStreamExportable,
-        _rows_per_chunk: Optional[int] = None,
+        _rows_per_chunk: int | None = None,
         **kwargs: Unpack[SolidPolygonLayerKwargs],
-    ):
+    ) -> None:
         super().__init__(table=table, _rows_per_chunk=_rows_per_chunk, **kwargs)
 
     @classmethod
@@ -1822,10 +1848,10 @@ class SolidPolygonLayer(BaseArrowLayer):
     @classmethod
     def from_duckdb(
         cls,
-        sql: Union[str, duckdb.DuckDBPyRelation],
-        con: Optional[duckdb.DuckDBPyConnection] = None,
+        sql: str | duckdb.DuckDBPyRelation,
+        con: duckdb.DuckDBPyConnection | None = None,
         *,
-        crs: Optional[Union[str, pyproj.CRS]] = None,
+        crs: str | pyproj.CRS | None = None,
         **kwargs: Unpack[SolidPolygonLayerKwargs],
     ) -> Self:
         return super().from_duckdb(sql=sql, con=con, crs=crs, **kwargs)
@@ -1833,7 +1859,7 @@ class SolidPolygonLayer(BaseArrowLayer):
     _layer_type = t.Unicode("solid-polygon").tag(sync=True)
 
     table = ArrowTableTrait(
-        allowed_geometry_types={EXTENSION_NAME.POLYGON, EXTENSION_NAME.MULTIPOLYGON}
+        allowed_geometry_types={EXTENSION_NAME.POLYGON, EXTENSION_NAME.MULTIPOLYGON},
     )
     """A GeoArrow table with a Polygon or MultiPolygon column.
 
@@ -1968,8 +1994,11 @@ class HeatmapLayer(BaseArrowLayer):
     """
 
     def __init__(
-        self, *, table: ArrowStreamExportable, **kwargs: Unpack[HeatmapLayerKwargs]
-    ):
+        self,
+        *,
+        table: ArrowStreamExportable,
+        **kwargs: Unpack[HeatmapLayerKwargs],
+    ) -> None:
         err_msg = """
         The `HeatmapLayer` is not currently working.
 
@@ -2001,10 +2030,10 @@ class HeatmapLayer(BaseArrowLayer):
     @classmethod
     def from_duckdb(
         cls,
-        sql: Union[str, duckdb.DuckDBPyRelation],
-        con: Optional[duckdb.DuckDBPyConnection] = None,
+        sql: str | duckdb.DuckDBPyRelation,
+        con: duckdb.DuckDBPyConnection | None = None,
         *,
-        crs: Optional[Union[str, pyproj.CRS]] = None,
+        crs: str | pyproj.CRS | None = None,
         **kwargs: Unpack[HeatmapLayerKwargs],
     ) -> Self:
         return super().from_duckdb(sql=sql, con=con, crs=crs, **kwargs)
@@ -2057,7 +2086,11 @@ class HeatmapLayer(BaseArrowLayer):
     """
 
     color_domain = VariableLengthTuple(
-        t.Float(), default_value=None, allow_none=True, minlen=2, maxlen=2
+        t.Float(),
+        default_value=None,
+        allow_none=True,
+        minlen=2,
+        maxlen=2,
     ).tag(sync=True)
     # """
     # Controls how weight values are mapped to the `color_range`, as an array of two

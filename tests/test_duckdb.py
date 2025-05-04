@@ -12,9 +12,26 @@ cities_url = "https://naciscdn.org/naturalearth/110m/cultural/ne_110m_populated_
 cities_path = Path("ne_110m_populated_places_simple.zip")
 
 if not cities_path.exists():
-    urlretrieve(cities_url, "ne_110m_populated_places_simple.zip")
+    urlretrieve(cities_url, "ne_110m_populated_places_simple.zip")  # noqa: S310
+
 
 cities_gdal_path = f"/vsizip/{cities_path}"
+
+
+def test_viz_geometry_default_con():
+    # For WKB parsing
+    pytest.importorskip("shapely")
+
+    sql = f"""
+        INSTALL spatial;
+        LOAD spatial;
+        SELECT * FROM ST_Read("{cities_gdal_path}");
+        """
+    rel = duckdb.sql(sql)
+    assert rel.types[-1] == "GEOMETRY"
+
+    m = viz(rel)
+    assert isinstance(m.layers[0], ScatterplotLayer)
 
 
 def test_viz_geometry():
@@ -29,7 +46,12 @@ def test_viz_geometry():
         """
     rel = con.sql(sql)
     assert rel.types[-1] == "GEOMETRY"
-    m = viz(rel, con=con)
+    m = viz(rel)
+    assert isinstance(m.layers[0], ScatterplotLayer)
+
+    # Tolerates legacy con parameter
+    with pytest.warns(DeprecationWarning, match="The 'con' argument is deprecated"):
+        m = viz(rel, con=con)
     assert isinstance(m.layers[0], ScatterplotLayer)
 
 
@@ -197,13 +219,12 @@ def test_create_table_as_custom_con():
     con = duckdb.connect()
     con.execute(sql)
 
-    with pytest.raises(
-        duckdb.InvalidInputException, match="object was created by another Connection"
-    ):
-        m = viz(con.table("test"))
+    m = viz(con.table("test"))
+    assert isinstance(m.layers[0], ScatterplotLayer)
 
-    # Succeeds when passing in con object
-    m = viz(con.table("test"), con=con)
+    # Tolerates legacy con parameter
+    with pytest.warns(DeprecationWarning, match="The 'con' argument is deprecated"):
+        m = viz(con.table("test"), con=con)
     assert isinstance(m.layers[0], ScatterplotLayer)
 
 
@@ -219,7 +240,12 @@ def test_geometry_only_column():
 
     _layer = ScatterplotLayer.from_duckdb(con.table("data"), con)
 
-    m = viz(con.table("data"), con=con)
+    m = viz(con.table("data"))
+    assert isinstance(m.layers[0], ScatterplotLayer)
+
+    # Tolerates legacy con parameter
+    with pytest.warns(DeprecationWarning, match="The 'con' argument is deprecated"):
+        m = viz(con.table("data"), con=con)
     assert isinstance(m.layers[0], ScatterplotLayer)
 
 
@@ -238,3 +264,25 @@ def test_geometry_only_column_type_geometry():
 
     # Should create layer without erroring
     _layer = ScatterplotLayer.from_duckdb(query, con)
+
+
+def test_sanitize_column_name():
+    # For WKB parsing
+    pytest.importorskip("shapely")
+
+    con = duckdb.connect()
+    sql = f"""
+        INSTALL spatial;
+        LOAD spatial;
+        SELECT
+          * EXCLUDE geom,
+          geom as "non_alphanum_colname_()"
+        FROM ST_Read("{cities_gdal_path}");
+        """
+    rel = con.sql(sql)
+
+    with pytest.raises(
+        AssertionError,
+        match="Expected geometry column name to match regex:",
+    ):
+        viz(rel)
