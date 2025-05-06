@@ -1141,7 +1141,7 @@ class PolygonLayer(BaseArrowLayer):
 
     line_width_units = t.Unicode(None, allow_none=True).tag(sync=True)
     """
-    The units of the line width, one of `'meters'`, `'common'`, and `'pixels'`. See
+    The units of the outline width, one of `'meters'`, `'common'`, and `'pixels'`. See
     [unit
     system](https://deck.gl/docs/developer-guide/coordinate-systems#supported-units).
 
@@ -1151,7 +1151,7 @@ class PolygonLayer(BaseArrowLayer):
 
     line_width_scale = t.Float(None, allow_none=True, min=0).tag(sync=True)
     """
-    The line width multiplier that multiplied to all outlines of `Polygon` and
+    The outline width multiplier that multiplied to all outlines of `Polygon` and
     `MultiPolygon` features if the `stroked` attribute is true.
 
     - Type: `float`, optional
@@ -1160,8 +1160,8 @@ class PolygonLayer(BaseArrowLayer):
 
     line_width_min_pixels = t.Float(None, allow_none=True, min=0).tag(sync=True)
     """
-    The minimum line width in pixels. This can be used to prevent the line from getting
-    too small when zoomed out.
+    The minimum outline width in pixels. This can be used to prevent the outline from
+    getting too small when zoomed out.
 
     - Type: `float`, optional
     - Default: `0`
@@ -1169,8 +1169,8 @@ class PolygonLayer(BaseArrowLayer):
 
     line_width_max_pixels = t.Float(None, allow_none=True, min=0).tag(sync=True)
     """
-    The maximum line width in pixels. This can be used to prevent the line from getting
-    too big when zoomed in.
+    The maximum outline width in pixels. This can be used to prevent the outline from
+    getting too big when zoomed in.
 
     - Type: `float`, optional
     - Default: `None`
@@ -1207,16 +1207,16 @@ class PolygonLayer(BaseArrowLayer):
 
     get_line_color = ColorAccessor(None, allow_none=True)
     """
-    The line color of each polygon in the format of `[r, g, b, [a]]`. Each channel is a
-    number between 0-255 and `a` is 255 if not supplied.
+    The outline color of each polygon in the format of `[r, g, b, [a]]`. Each channel is
+    a number between 0-255 and `a` is 255 if not supplied.
 
-    Only applies if `extruded=True`.
+    Only applies if `stroked=True`.
 
     - Type: [ColorAccessor][lonboard.traits.ColorAccessor], optional
-        - If a single `list` or `tuple` is provided, it is used as the line color for
+        - If a single `list` or `tuple` is provided, it is used as the outline color for
           all polygons.
         - If a numpy or pyarrow array is provided, each value in the array will be used
-          as the line color for the polygon at the same row index.
+          as the outline color for the polygon at the same row index.
     - Default: `[0, 0, 0, 255]`.
     """
 
