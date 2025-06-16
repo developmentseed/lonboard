@@ -25,6 +25,7 @@ from arro3.core import Table
 from lonboard._base import BaseExtension, BaseWidget
 from lonboard._constants import EXTENSION_NAME, OGC_84
 from lonboard._geoarrow._duckdb import from_duckdb as _from_duckdb
+from lonboard._geoarrow.box_to_polygon import parse_box_encoded_table
 from lonboard._geoarrow.geopandas_interop import geopandas_to_geoarrow
 from lonboard._geoarrow.ops import reproject_table
 from lonboard._geoarrow.ops.bbox import Bbox, total_bounds
@@ -1066,6 +1067,7 @@ class PolygonLayer(BaseArrowLayer):
         _rows_per_chunk: int | None = None,
         **kwargs: Unpack[PolygonLayerKwargs],
     ) -> None:
+        table = parse_box_encoded_table(Table.from_arrow(table))
         super().__init__(table=table, _rows_per_chunk=_rows_per_chunk, **kwargs)
 
     @classmethod
@@ -1855,6 +1857,7 @@ class SolidPolygonLayer(BaseArrowLayer):
         _rows_per_chunk: int | None = None,
         **kwargs: Unpack[SolidPolygonLayerKwargs],
     ) -> None:
+        table = parse_box_encoded_table(Table.from_arrow(table))
         super().__init__(table=table, _rows_per_chunk=_rows_per_chunk, **kwargs)
 
     @classmethod

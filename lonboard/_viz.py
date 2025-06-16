@@ -543,7 +543,11 @@ def _viz_geoarrow_table(
 
         return [PathLayer(table=table, **path_kwargs)]
 
-    if geometry_ext_type in [EXTENSION_NAME.POLYGON, EXTENSION_NAME.MULTIPOLYGON]:
+    if geometry_ext_type in [
+        EXTENSION_NAME.POLYGON,
+        EXTENSION_NAME.MULTIPOLYGON,
+        EXTENSION_NAME.BOX,
+    ]:
         polygon_kwargs = polygon_kwargs if polygon_kwargs else {}
 
         if "get_fill_color" not in polygon_kwargs:
