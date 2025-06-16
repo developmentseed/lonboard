@@ -333,11 +333,33 @@ class BaseArrowLayer(BaseLayer):
 
     def __init__(
         self,
-        *,
         table: ArrowStreamExportable,
+        *,
         _rows_per_chunk: int | None = None,
         **kwargs: Unpack[BaseLayerKwargs],
     ) -> None:
+        """Construct a Layer from a [GeoArrow] table.
+
+        [GeoArrow]: https://geoarrow.org/
+
+        This accepts Arrow data from any library implementing the [Arrow PyCapsule
+        Interface], including pyarrow, arro3, DuckDB, and others.
+
+        [Arrow PyCapsule Interface]: https://arrow.apache.org/docs/format/CDataInterface/PyCapsuleInterface.html
+
+        The geometry column will be reprojected to `EPSG:4326` if it is not already in
+        that coordinate system.
+
+        Args:
+            table: An Arrow table or stream object from a library implementing the [Arrow PyCapsule Interface]. This object must contain a column with a geometry type that has the `geoarrow` extension metadata.
+
+        Keyword Args:
+            kwargs: parameters passed on to `__init__`
+
+        Returns:
+            A Layer with the initialized data.
+
+        """
         table_o3 = Table.from_arrow(table)
         parsed_tables = parse_serialized_table(table_o3)
         assert len(parsed_tables) == 1, (
@@ -376,7 +398,7 @@ class BaseArrowLayer(BaseLayer):
     ) -> Self:
         """Construct a Layer from a geopandas GeoDataFrame.
 
-        The GeoDataFrame will be reprojected to EPSG:4326 if it is not already in that
+        The GeoDataFrame will be reprojected to `EPSG:4326` if it is not already in that
         coordinate system.
 
         Args:
@@ -752,8 +774,8 @@ class ColumnLayer(BaseArrowLayer):
 
     def __init__(
         self,
-        *,
         table: ArrowStreamExportable,
+        *,
         _rows_per_chunk: int | None = None,
         **kwargs: Unpack[ColumnLayerKwargs],
     ) -> None:
@@ -1039,8 +1061,8 @@ class PolygonLayer(BaseArrowLayer):
 
     def __init__(
         self,
-        *,
         table: ArrowStreamExportable,
+        *,
         _rows_per_chunk: int | None = None,
         **kwargs: Unpack[PolygonLayerKwargs],
     ) -> None:
@@ -1284,8 +1306,8 @@ class ScatterplotLayer(BaseArrowLayer):
 
     def __init__(
         self,
-        *,
         table: ArrowStreamExportable,
+        *,
         _rows_per_chunk: int | None = None,
         **kwargs: Unpack[ScatterplotLayerKwargs],
     ) -> None:
@@ -1525,8 +1547,8 @@ class PathLayer(BaseArrowLayer):
 
     def __init__(
         self,
-        *,
         table: ArrowStreamExportable,
+        *,
         _rows_per_chunk: int | None = None,
         **kwargs: Unpack[PathLayerKwargs],
     ) -> None:
@@ -1695,8 +1717,8 @@ class PointCloudLayer(BaseArrowLayer):
 
     def __init__(
         self,
-        *,
         table: ArrowStreamExportable,
+        *,
         _rows_per_chunk: int | None = None,
         **kwargs: Unpack[PointCloudLayerKwargs],
     ) -> None:
@@ -1828,8 +1850,8 @@ class SolidPolygonLayer(BaseArrowLayer):
 
     def __init__(
         self,
-        *,
         table: ArrowStreamExportable,
+        *,
         _rows_per_chunk: int | None = None,
         **kwargs: Unpack[SolidPolygonLayerKwargs],
     ) -> None:
@@ -1995,7 +2017,6 @@ class HeatmapLayer(BaseArrowLayer):
 
     def __init__(
         self,
-        *,
         table: ArrowStreamExportable,
         **kwargs: Unpack[HeatmapLayerKwargs],
     ) -> None:
