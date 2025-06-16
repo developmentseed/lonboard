@@ -74,7 +74,7 @@ docs = [
 dev = [
     "duckdb>=1.2.0",
     "fiona<1.10",
-    "geoarrow-pyarrow>=0.2",
+    "geoarrow-pyarrow>=0.2.0",
     "geoarrow-rust-core>=0.3.0",
     "geodatasets>=2024.8.0",
     "jupyterlab>=4.3.3",
