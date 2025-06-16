@@ -102,7 +102,8 @@ def parse_box_encoded_table(table: Table) -> Table:
             box_col_idx = idx
 
     if box_col_idx is None:
-        raise ValueError("No geoarrow.box column found in the table.")
+        # No box column found, return the table unchanged
+        return table
 
     # Convert the box column to a polygon column
     box_col = table.column(box_col_idx)
