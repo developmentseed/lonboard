@@ -190,9 +190,17 @@ class Map(BaseAnyWidget):
     """One or more `Layer` objects to display on this map.
     """
 
-    show_tooltip = t.Bool(default_value=True).tag(sync=True)
+    show_tooltip = t.Bool(default_value=False).tag(sync=True)
     """
     Whether to render a tooltip on hover on the map.
+
+    - Type: `bool`
+    - Default: `False`
+    """
+
+    show_side_panel = t.Bool(default_value=True).tag(sync=True)
+    """
+    Whether to render a side panel upon clicking on elements.
 
     - Type: `bool`
     - Default: `True`
