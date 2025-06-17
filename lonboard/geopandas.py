@@ -1,17 +1,34 @@
 from __future__ import annotations
 
-from typing import Any
+from typing import TYPE_CHECKING, Any
 
 import geopandas as gpd
 import numpy as np
 import pandas as pd
 
-from . import Map, basemap, viz
-from .colormap import apply_categorical_cmap, apply_continuous_cmap
+from lonboard import Map, viz
+from lonboard.basemap import CartoBasemap
+from lonboard.colormap import apply_categorical_cmap, apply_continuous_cmap
+
+if TYPE_CHECKING:
+    from numpy.typing import NDArray
+
 
 __all__ = ["LonboardAccessor"]
 
 QUERY_NAME_TRANSLATION = str.maketrans(dict.fromkeys("., -_/", ""))
+BASEMAP_PROVIDERS = {
+    "CartoDB Positron": CartoBasemap.Positron,
+    "CartoDB Positron No Label": CartoBasemap.PositronNoLabels,
+    "CartoDB Darkmatter": CartoBasemap.DarkMatter,
+    "CartoDB Darkmatter No Label": CartoBasemap.DarkMatterNoLabels,
+    "CartoDB Voyager": CartoBasemap.Voyager,
+    "CartoDB Voyager No Label": CartoBasemap.VoyagerNoLabels,
+}
+# Convert keys to lower case without spaces
+BASEMAP_PROVIDERS = {
+    k.translate(QUERY_NAME_TRANSLATION).lower(): v for k, v in BASEMAP_PROVIDERS.items()
+}
 
 
 @pd.api.extensions.register_dataframe_accessor("lb")
@@ -34,13 +51,13 @@ class LonboardAccessor:
         scheme: str | None = None,
         k: int | None = 6,
         categorical: bool = False,  # noqa: FBT001, FBT002
-        elevation: str | np.ndarray = None,
+        elevation: str | np.ndarray | None = None,
         elevation_scale: float | None = 1,
         alpha: float | None = 1,
         layer_kwargs: dict[str, Any] | None = None,
         map_kwargs: dict[str, Any] | None = None,
         classification_kwds: dict[str, Any] | None = None,
-        nan_color: list[int] | np.ndarray[int] | None = None,
+        nan_color: list[int] | NDArray[np.number] | None = None,
         color: str | None = None,
         vmin: float | None = None,
         vmax: float | None = None,
@@ -292,49 +309,15 @@ def _get_categorical_cmap(categories, cmap, nan_color, alpha):  # noqa: ANN001, 
     return apply_categorical_cmap(cat_codes, temp_cmap)
 
 
-def _query_name(name: str) -> basemap:
+def _query_name(name: str) -> CartoBasemap:
     """Return basemap URL based on the name query (mimicking behavior from xyzservices).
 
     Returns a matching basemap from name contains the same letters in the same
     order as the provider's name irrespective of the letter case, spaces, dashes
     and other characters. See examples for details.
-
-    Parameters
-    ----------
-    name : str
-        Name of the tile provider. Formatting does not matter.
-
-    Returns
-    -------
-    match: lonboard.basemap
-
-    Examples
-    --------
-    >>> import xyzservices.providers as xyz
-
-    All these queries return the same ``CartoDB.Positron`` TileProvider:
-
-    >>> xyz._query_name("CartoDB Positron")
-    >>> xyz._query_name("cartodbpositron")
-    >>> xyz._query_name("cartodb-positron")
-    >>> xyz._query_name("carto db/positron")
-    >>> xyz._query_name("CARTO_DB_POSITRON")
-    >>> xyz._query_name("CartoDB.Positron")
-
     """
-    providers = {
-        "CartoDB Positron": basemap.CartoBasemap.Positron,
-        "CartoDB Positron No Label": basemap.CartoBasemap.PositronNoLabels,
-        "CartoDB Darkmatter": basemap.CartoBasemap.DarkMatter,
-        "CartoDB Darkmatter No Label": basemap.CartoBasemap.DarkMatterNoLabels,
-        "CartoDB Voyager": basemap.CartoBasemap.Voyager,
-        "CartoDB Voyager No Label": basemap.CartoBasemap.VoyagerNoLabels,
-    }
-    xyz_flat_lower = {
-        k.translate(QUERY_NAME_TRANSLATION).lower(): v for k, v in providers.items()
-    }
     name_clean = name.translate(QUERY_NAME_TRANSLATION).lower()
-    if name_clean in xyz_flat_lower:
-        return xyz_flat_lower[name_clean]
+    if name_clean in BASEMAP_PROVIDERS:
+        return BASEMAP_PROVIDERS[name_clean]
 
     raise ValueError(f"No matching provider found for the query '{name}'.")
