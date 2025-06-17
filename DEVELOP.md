@@ -68,7 +68,13 @@ Push a new tag to the main branch of the format `v*`. A new version will be publ
 The documentation website is generated with `mkdocs` and [`mkdocs-material`](https://squidfunk.github.io/mkdocs-material). You can serve the docs website locally with
 
 ```
-uv run mkdocs serve
+uv run --group docs mkdocs serve
 ```
 
 Publishing documentation happens automatically via CI when a new tag is published of the format `v*`. It can also be triggered manually through the Github Actions dashboard on [this page](https://github.com/developmentseed/lonboard/actions/workflows/deploy-mkdocs.yml). Note that publishing docs manually is **not advised if there have been new code additions since the last release** as the new functionality will be associated in the documentation with the tag of the _previous_ release. In this case, prefer publishing a new patch or minor release, which will publish both a new Python package and the new documentation for it.
+
+Note that the `jupyter-mkdocs` plugin is only turned on when the `CI` env variable is set. If you're inspecting the docs with a Jupyter notebook, start the local dev server with:
+
+```
+CI=true uv run --group docs mkdocs serve
+```

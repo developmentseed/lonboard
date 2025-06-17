@@ -158,6 +158,7 @@ plugins:
   - mkdocs-jupyter:
       include_source: true
       ignore: ["**/.ipynb_checkpoints/*.ipynb"]
+      enabled: !ENV [CI, false]
   - mkdocstrings:
       enable_inventory: true
       handlers:
