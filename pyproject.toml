@@ -180,7 +180,3 @@ constraint-dependencies = [
     "pyproj==3.6; python_version == '3.9'",
     "pyproj>=3.7; python_version >= '3.10'",
 ]
-
-[tool.uv.sources]
-geoarrow-rust-core = { path = "../../geoarrow/geoarrow-rs/python/geoarrow-core" }
-geoarrow-rust-io = { path = "../../geoarrow/geoarrow-rs/python/geoarrow-io" }
