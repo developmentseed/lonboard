@@ -1,5 +1,64 @@
 # Changelog
 
+## [0.11.0] - 2025-06-17
+
+### Breaking changes :hammer:
+
+- Require Python 3.9 or higher by @kylebarron in https://github.com/developmentseed/lonboard/pull/743
+
+### New features :sparkles:
+
+- feat: Reinstate tooltip by @vgeorge in https://github.com/developmentseed/lonboard/pull/736.
+
+  You can now turn on the tooltip by passing `show_tooltip=True` to `Map`. You may also want to pass `show_side_panel=False` to disable the side panel.
+- Clicked point to Lonboard map by @ATL2001 in https://github.com/developmentseed/lonboard/pull/671
+- feat: Support `geoarrow.box` arrays from GeoArrow 0.2 spec by @kylebarron in https://github.com/developmentseed/lonboard/pull/793
+- feat: Allow passing Arrow table as positional argument to layer constructors by @kylebarron in https://github.com/developmentseed/lonboard/pull/795
+- Switch to the DuckDB Expression API to mitigate sql injection risk by @danielsparing in https://github.com/developmentseed/lonboard/pull/777
+
+### Visual changes :art:
+
+- Improve side panel layout by @vgeorge in https://github.com/developmentseed/lonboard/pull/701
+
+### Bug fixes :bug:
+
+- Scope tailwind preflight styles by @Bjoern-Rapp in https://github.com/developmentseed/lonboard/pull/740
+- Pass state in `to_html` by @kylebarron in https://github.com/developmentseed/lonboard/pull/726
+- use dependency state in export by @knaaptime in https://github.com/developmentseed/lonboard/pull/731
+- fix: ensure GeoArrow field names are set in conversion from shapely by @kylebarron in https://github.com/developmentseed/lonboard/pull/794
+- Fix accessing default connection for duckdb 1.2 by @kylebarron in https://github.com/developmentseed/lonboard/pull/772
+- Sanitize geomcolname by @danielsparing in https://github.com/developmentseed/lonboard/pull/769
+
+### Documentation :book:
+
+- Replace DS Medium link by LinkedIn by @willemarcel in https://github.com/developmentseed/lonboard/pull/700
+- Geoarrow docstring update by @ATL2001 in https://github.com/developmentseed/lonboard/pull/705
+- Add docs page with external resources by @kylebarron in https://github.com/developmentseed/lonboard/pull/710
+- Panel example update by @ATL2001 in https://github.com/developmentseed/lonboard/pull/746
+- docs: Reword section in "How it works" to reflect GeoParquet 1.1 by @kylebarron in https://github.com/developmentseed/lonboard/pull/804
+- docs: Add duckdb intersphinx mapping by @kylebarron in https://github.com/developmentseed/lonboard/pull/800
+- Remove references to custom connection parameter by @danielsparing in https://github.com/developmentseed/lonboard/pull/784
+- updates for polygon layer documentation by @ATL2001 in https://github.com/developmentseed/lonboard/pull/789
+
+### Internal changes :wrench:
+
+- Switch dependency management to uv by @kylebarron in https://github.com/developmentseed/lonboard/pull/721
+- Support Py3.12 in tests by constraining pyproj in lockfile to versions with wheels by @ceholden in https://github.com/developmentseed/lonboard/pull/745
+- Enable more ruff linters by @kylebarron in https://github.com/developmentseed/lonboard/pull/753
+- Reduce ruff warnings by @danielsparing in https://github.com/developmentseed/lonboard/pull/778
+- chore: Ensure support for GeoArrow 0.2 CRS by @kylebarron in https://github.com/developmentseed/lonboard/pull/797
+- chore: Bump deck.gl to 9.1 by @kylebarron in https://github.com/developmentseed/lonboard/pull/802
+- test: Test that parsing WKB/WKT works with Arrow view types by @kylebarron in https://github.com/developmentseed/lonboard/pull/801
+
+## New Contributors
+
+- @knaaptime made their first contribution in https://github.com/developmentseed/lonboard/pull/731
+- @ceholden made their first contribution in https://github.com/developmentseed/lonboard/pull/745
+- @Bjoern-Rapp made their first contribution in https://github.com/developmentseed/lonboard/pull/740
+- @danielsparing made their first contribution in https://github.com/developmentseed/lonboard/pull/769
+
+**Full Changelog**: https://github.com/developmentseed/lonboard/compare/v0.10.3...v0.11.0
+
 ## [0.10.3] - 2024-10-15
 
 ### Fixes :bug:
