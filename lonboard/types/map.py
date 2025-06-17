@@ -20,5 +20,6 @@ class MapKwargs(TypedDict, total=False):
     parameters: dict[str, Any]
     picking_radius: int
     show_tooltip: bool
+    show_side_panel: bool
     use_device_pixels: int | float | bool
     view_state: dict[str, Any]
