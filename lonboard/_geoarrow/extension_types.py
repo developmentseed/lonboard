@@ -7,10 +7,13 @@ from typing import TYPE_CHECKING
 import numpy as np
 from arro3.core import Array, DataType, Field, fixed_size_list_array, list_array
 
+from lonboard._geoarrow.crs import serialize_crs
+
 if TYPE_CHECKING:
     from collections.abc import Sequence
 
     from numpy.typing import NDArray
+    from pyproj import CRS
 
 
 class CoordinateDimension(str, Enum):
@@ -200,7 +203,7 @@ def construct_geometry_array(  # noqa: PLR0915
     include_z: bool | None = None,
     *,
     field_name: str = "geometry",
-    crs: dict | None = None,
+    crs: CRS | None = None,
 ) -> tuple[Field, Array]:
     import shapely
     from shapely import GeometryType
@@ -220,7 +223,7 @@ def construct_geometry_array(  # noqa: PLR0915
 
     extension_metadata: dict[str, str] = {}
     if crs is not None:
-        extension_metadata["ARROW:extension:metadata"] = json.dumps({"crs": crs})
+        extension_metadata["ARROW:extension:metadata"] = json.dumps(serialize_crs(crs))
 
     if geom_type == GeometryType.POINT:
         arrow_coords = fixed_size_list_array(coords.ravel("C"), len(dims)).cast(
