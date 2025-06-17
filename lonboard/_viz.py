@@ -1,17 +1,16 @@
-"""High-level, super-simple API for visualizing GeoDataFrames"""
+"""High-level, super-simple API for visualizing GeoDataFrames."""
+
+# ruff: noqa: C901, PLR0911, PLR0912, PLR0913, PLR0915
 
 from __future__ import annotations
 
 import json
+import warnings
 from textwrap import dedent
 from typing import (
     TYPE_CHECKING,
     Any,
-    Dict,
-    List,
-    Optional,
     Protocol,
-    Tuple,
     Union,
     cast,
 )
@@ -36,7 +35,7 @@ from lonboard.basemap import CartoBasemap
 if TYPE_CHECKING:
     import duckdb
     import geopandas as gpd
-    import pyarrow
+    import pyarrow as pa
     import shapely.geometry
     import shapely.geometry.base
     from arro3.core.types import ArrowArrayExportable, ArrowStreamExportable
@@ -56,13 +55,13 @@ if TYPE_CHECKING:
     VizDataInput = Union[
         gpd.GeoDataFrame,
         gpd.GeoSeries,
-        pyarrow.Table,
+        pa.Table,
         NDArray[np.object_],
         shapely.geometry.base.BaseGeometry,
         ArrowArrayExportable,
         ArrowStreamExportable,
         GeoInterfaceProtocol,
-        Dict[str, Any],
+        dict[str, Any],
         duckdb.DuckDBPyRelation,
     ]
     """A type definition for allowed data inputs to the `viz` function."""
@@ -88,15 +87,15 @@ DEFAULT_POLYGON_LINE_COLOR = [0, 0, 0, 200]
 
 
 def viz(
-    data: Union[VizDataInput, List[VizDataInput], Tuple[VizDataInput, ...]],
+    data: VizDataInput | list[VizDataInput] | tuple[VizDataInput, ...],
     *,
-    scatterplot_kwargs: Optional[ScatterplotLayerKwargs] = None,
-    path_kwargs: Optional[PathLayerKwargs] = None,
-    polygon_kwargs: Optional[PolygonLayerKwargs] = None,
-    map_kwargs: Optional[MapKwargs] = None,
-    con: Optional[duckdb.DuckDBPyConnection] = None,
+    scatterplot_kwargs: ScatterplotLayerKwargs | None = None,
+    path_kwargs: PathLayerKwargs | None = None,
+    polygon_kwargs: PolygonLayerKwargs | None = None,
+    map_kwargs: MapKwargs | None = None,
+    con: duckdb.DuckDBPyConnection | None = None,
 ) -> Map:
-    """A high-level function to plot your data easily.
+    """Plot your data easily.
 
     The goal of this function is to make it simple to get _something_ showing on a map.
     For more control over rendering, construct `Map` and `Layer` objects directly.
@@ -128,18 +127,6 @@ def viz(
             viz(query)
             ```
 
-            If you're using a custom connection, ensure you pass in the `con` parameter:
-
-            ```py
-            import duckdb
-            from lonboard import viz
-
-            con = duckdb.connect()
-            sql = "SELECT * FROM spatial_table;"
-            query = con.sql(sql)
-            viz(query, con=con)
-            ```
-
             You can also render an entire table by using the `table()` method:
 
             ```py
@@ -148,7 +135,7 @@ def viz(
 
             con = duckdb.connect()
             con.execute("CREATE TABLE spatial_table AS ...;")
-            viz(con.table(), con=con)
+            viz(con.table("spatial_table"))
             ```
 
         !!! warning
@@ -181,20 +168,28 @@ def viz(
             [`PolygonLayer`][lonboard.PolygonLayer]s.
         map_kwargs: a `dict` of parameters to pass down to the generated
             [`Map`][lonboard.Map].
-        con: the active DuckDB connection. This is necessary in some cases when passing
-            in a DuckDB query. In particular, if you're using a non-global DuckDB
-            connection and if your SQL query outputs the default `GEOMETRY` type.
+        con: Deprecated: the active DuckDB connection. This argument has no effect and
+            might be removed in the future.
 
     For more control over rendering, construct [`Map`][lonboard.Map] and `Layer` objects
     directly.
 
     Returns:
         widget visualizing the provided data.
+
     """
-    global COLOR_COUNTER
+    global COLOR_COUNTER  # noqa: PLW0603 Using the global statement to update `COLOR_COUNTER` is discouraged
+
+    if con is not None:
+        warnings.warn(
+            "The 'con' argument is deprecated and may be removed in a future version. "
+            "It has no effect.",
+            category=DeprecationWarning,
+            stacklevel=2,
+        )
 
     if isinstance(data, (list, tuple)):
-        layers: List[Union[ScatterplotLayer, PathLayer, PolygonLayer]] = []
+        layers: list[ScatterplotLayer | PathLayer | PolygonLayer] = []
         for i, item in enumerate(data):
             ls = create_layers_from_data_input(
                 item,
@@ -202,7 +197,6 @@ def viz(
                 scatterplot_kwargs=scatterplot_kwargs,
                 path_kwargs=path_kwargs,
                 polygon_kwargs=polygon_kwargs,
-                con=con,
             )
             layers.extend(ls)
 
@@ -214,13 +208,12 @@ def viz(
             scatterplot_kwargs=scatterplot_kwargs,
             path_kwargs=path_kwargs,
             polygon_kwargs=polygon_kwargs,
-            con=con,
         )
         COLOR_COUNTER += 1
 
-    map_kwargs = {} if not map_kwargs else map_kwargs
+    map_kwargs = map_kwargs if map_kwargs else {}
 
-    if "basemap_style" not in map_kwargs.keys():
+    if "basemap_style" not in map_kwargs:
         map_kwargs["basemap_style"] = CartoBasemap.DarkMatter
 
     return Map(layers=layers, **map_kwargs)
@@ -229,31 +222,19 @@ def viz(
 DUCKDB_PY_CONN_ERROR = dedent("""\
     Must pass in DuckDBPyRelation object, not DuckDBPyConnection.
 
-    Instead of using `duckdb.execute()` or `con.execute()`, use `duckdb.sql()` or
-    `con.sql()`.
-
-    If using `con.sql()`, ensure you pass the `con` into the `viz()` function:
-
-    ```
-    viz(con.sql("SELECT * FROM table;", con=con))
-    ```
-
-    Alternatively, you can call the `table()` method of `con`:
-
-    ```
-    viz(con.table("table_name", con=con))
-    ```
+    Instead of using `duckdb.execute()` or `con.execute()`, use `duckdb.sql()`,
+    `con.sql()` or `con.table()`.
     """)
 
 
 def create_layers_from_data_input(
-    data: VizDataInput, *, con: Optional[duckdb.DuckDBPyConnection] = None, **kwargs
-) -> List[Union[ScatterplotLayer, PathLayer, PolygonLayer]]:
+    data: VizDataInput,
+    **kwargs: Any,
+) -> list[ScatterplotLayer | PathLayer | PolygonLayer]:
     """Create one or more renderable layers from data input.
 
     This helper function can create multiple layers in the case of mixed input.
     """
-
     # geopandas GeoDataFrame
     if (
         data.__class__.__module__.startswith("geopandas")
@@ -273,7 +254,7 @@ def create_layers_from_data_input(
         data.__class__.__module__.startswith("duckdb")
         and data.__class__.__name__ == "DuckDBPyRelation"
     ):
-        return _viz_duckdb_relation(data, con=con, **kwargs)  # type: ignore
+        return _viz_duckdb_relation(data, **kwargs)  # type: ignore
 
     if (
         data.__class__.__module__.startswith("duckdb")
@@ -287,7 +268,7 @@ def create_layers_from_data_input(
 
     # Shapely scalar
     if data.__class__.__module__.startswith("shapely") and any(
-        (cls.__name__ == "BaseGeometry" for cls in data.__class__.__mro__)
+        cls.__name__ == "BaseGeometry" for cls in data.__class__.__mro__
     ):
         return _viz_shapely_scalar(data, **kwargs)  # type: ignore
 
@@ -323,16 +304,17 @@ def create_layers_from_data_input(
 
         raise ValueError(
             "If passing a dict, must be a GeoJSON "
-            "Geometry, Feature, or FeatureCollection."
+            "Geometry, Feature, or FeatureCollection.",
         )
 
     raise ValueError
 
 
 def _viz_geopandas_geodataframe(
-    data: gpd.GeoDataFrame, **kwargs
-) -> List[Union[ScatterplotLayer, PathLayer, PolygonLayer]]:
-    layers: List[Union[ScatterplotLayer, PathLayer, PolygonLayer]] = []
+    data: gpd.GeoDataFrame,
+    **kwargs: Any,
+) -> list[ScatterplotLayer | PathLayer | PolygonLayer]:
+    layers: list[ScatterplotLayer | PathLayer | PolygonLayer] = []
     for partial_gdf in split_mixed_gdf(data):
         table = geopandas_to_geoarrow(partial_gdf)
         layers.extend(_viz_geoarrow_table(table, **kwargs))
@@ -341,8 +323,9 @@ def _viz_geopandas_geodataframe(
 
 
 def _viz_geopandas_geoseries(
-    data: gpd.GeoSeries, **kwargs
-) -> List[Union[ScatterplotLayer, PathLayer, PolygonLayer]]:
+    data: gpd.GeoSeries,
+    **kwargs: Any,
+) -> list[ScatterplotLayer | PathLayer | PolygonLayer]:
     import geopandas as gpd
 
     gdf = gpd.GeoDataFrame(geometry=data)  # type: ignore
@@ -351,25 +334,26 @@ def _viz_geopandas_geoseries(
 
 def _viz_duckdb_relation(
     data: duckdb.DuckDBPyRelation,
-    con: Optional[duckdb.DuckDBPyConnection] = None,
-    **kwargs,
-) -> List[Union[ScatterplotLayer, PathLayer, PolygonLayer]]:
+    **kwargs: Any,
+) -> list[ScatterplotLayer | PathLayer | PolygonLayer]:
     from lonboard._geoarrow._duckdb import from_duckdb
 
-    table = from_duckdb(data, con=con)
+    table = from_duckdb(data)
     return _viz_geoarrow_table(table, **kwargs)
 
 
 def _viz_shapely_scalar(
-    data: shapely.geometry.base.BaseGeometry, **kwargs
-) -> List[Union[ScatterplotLayer, PathLayer, PolygonLayer]]:
+    data: shapely.geometry.base.BaseGeometry,
+    **kwargs: Any,
+) -> list[ScatterplotLayer | PathLayer | PolygonLayer]:
     return _viz_shapely_array(np.array([data]), **kwargs)
 
 
 def _viz_shapely_array(
-    data: NDArray[np.object_], **kwargs
-) -> List[Union[ScatterplotLayer, PathLayer, PolygonLayer]]:
-    layers: List[Union[ScatterplotLayer, PathLayer, PolygonLayer]] = []
+    data: NDArray[np.object_],
+    **kwargs: Any,
+) -> list[ScatterplotLayer | PathLayer | PolygonLayer]:
+    layers: list[ScatterplotLayer | PathLayer | PolygonLayer] = []
     for partial_geometry_array in split_mixed_shapely_array(data):
         field, geom_arr = construct_geometry_array(
             partial_geometry_array,
@@ -381,14 +365,15 @@ def _viz_shapely_array(
 
 
 def _viz_geo_interface(
-    data: dict, **kwargs
-) -> List[Union[ScatterplotLayer, PathLayer, PolygonLayer]]:
+    data: dict,
+    **kwargs: Any,
+) -> list[ScatterplotLayer | PathLayer | PolygonLayer]:
     try:
         import pyarrow as pa
     except ImportError as e:
         raise ImportError(
             "pyarrow required for visualizing __geo_interface__ objects.\n"
-            "Run `pip install pyarrow`."
+            "Run `pip install pyarrow`.",
         ) from e
 
     try:
@@ -396,7 +381,7 @@ def _viz_geo_interface(
     except ImportError as e:
         raise ImportError(
             "shapely required for visualizing __geo_interface__ objects.\n"
-            "Run `pip install shapely`."
+            "Run `pip install shapely`.",
         ) from e
 
     if data["type"] in [
@@ -425,7 +410,7 @@ def _viz_geo_interface(
         check_pandas_version()
 
         attribute_columns_struct = pa.array(
-            [feature["properties"] for feature in data["features"]]
+            [feature["properties"] for feature in data["features"]],
         )
 
         fields = []
@@ -438,7 +423,7 @@ def _viz_geo_interface(
         df = table.to_pandas(types_mapper=pd.ArrowDtype)
 
         shapely_geom_arr = shapely.from_geojson(
-            [json.dumps(feature["geometry"]) for feature in data["features"]]
+            [json.dumps(feature["geometry"]) for feature in data["features"]],
         )
         gdf = gpd.GeoDataFrame(df, geometry=shapely_geom_arr)  # type: ignore
         return _viz_geopandas_geodataframe(gdf, **kwargs)
@@ -449,8 +434,8 @@ def _viz_geo_interface(
 
 def _viz_geoarrow_array(
     data: ArrowArrayExportable,
-    **kwargs,
-) -> List[Union[ScatterplotLayer, PathLayer, PolygonLayer]]:
+    **kwargs: Any,
+) -> list[ScatterplotLayer | PathLayer | PolygonLayer]:
     array = Array.from_arrow(data)
     field = array.field.with_name("geometry")
     schema = Schema([field])
@@ -474,13 +459,13 @@ def _viz_geoarrow_table(
     table: Table,
     *,
     _viz_color: str,
-    scatterplot_kwargs: Optional[ScatterplotLayerKwargs] = None,
-    path_kwargs: Optional[PathLayerKwargs] = None,
-    polygon_kwargs: Optional[PolygonLayerKwargs] = None,
-) -> List[Union[ScatterplotLayer, PathLayer, PolygonLayer]]:
+    scatterplot_kwargs: ScatterplotLayerKwargs | None = None,
+    path_kwargs: PathLayerKwargs | None = None,
+    polygon_kwargs: PolygonLayerKwargs | None = None,
+) -> list[ScatterplotLayer | PathLayer | PolygonLayer]:
     parsed_tables = parse_serialized_table(table)
     if len(parsed_tables) > 1:
-        output: List[Union[ScatterplotLayer, PathLayer, PolygonLayer]] = []
+        output: list[ScatterplotLayer | PathLayer | PolygonLayer] = []
         for parsed_table in parsed_tables:
             output.extend(
                 _viz_geoarrow_table(
@@ -489,28 +474,27 @@ def _viz_geoarrow_table(
                     scatterplot_kwargs=scatterplot_kwargs,
                     path_kwargs=path_kwargs,
                     polygon_kwargs=polygon_kwargs,
-                )
+                ),
             )
 
         return output
-    else:
-        table = parsed_tables[0]
+    table = parsed_tables[0]
 
     geometry_column_index = get_geometry_column_index(table.schema)
-    assert (
-        geometry_column_index is not None
-    ), "One column must have GeoArrow extension metadata"
+    assert geometry_column_index is not None, (
+        "One column must have GeoArrow extension metadata"
+    )
 
     geometry_field = table.schema.field(geometry_column_index)
     geometry_ext_type = geometry_field.metadata.get(b"ARROW:extension:name")
 
     if geometry_ext_type in [EXTENSION_NAME.POINT, EXTENSION_NAME.MULTIPOINT]:
-        scatterplot_kwargs = {} if not scatterplot_kwargs else scatterplot_kwargs
+        scatterplot_kwargs = scatterplot_kwargs if scatterplot_kwargs else {}
 
-        if "get_fill_color" not in scatterplot_kwargs.keys():
+        if "get_fill_color" not in scatterplot_kwargs:
             scatterplot_kwargs["get_fill_color"] = _viz_color
 
-        if "radius_min_pixels" not in scatterplot_kwargs.keys():
+        if "radius_min_pixels" not in scatterplot_kwargs:
             if len(table) <= 10_000:
                 scatterplot_kwargs["radius_min_pixels"] = 2
             elif len(table) <= 100_000:
@@ -520,7 +504,7 @@ def _viz_geoarrow_table(
             else:
                 scatterplot_kwargs["radius_min_pixels"] = 0.2
 
-        if "opacity" not in scatterplot_kwargs.keys():
+        if "opacity" not in scatterplot_kwargs:
             if len(table) <= 10_000:
                 scatterplot_kwargs["opacity"] = 0.9
             elif len(table) <= 100_000:
@@ -530,16 +514,16 @@ def _viz_geoarrow_table(
 
         return [ScatterplotLayer(table=table, **scatterplot_kwargs)]
 
-    elif geometry_ext_type in [
+    if geometry_ext_type in [
         EXTENSION_NAME.LINESTRING,
         EXTENSION_NAME.MULTILINESTRING,
     ]:
-        path_kwargs = {} if not path_kwargs else path_kwargs
+        path_kwargs = path_kwargs if path_kwargs else {}
 
-        if "get_color" not in path_kwargs.keys():
+        if "get_color" not in path_kwargs:
             path_kwargs["get_color"] = _viz_color
 
-        if "width_min_pixels" not in path_kwargs.keys():
+        if "width_min_pixels" not in path_kwargs:
             if len(table) <= 1_000:
                 path_kwargs["width_min_pixels"] = 1.5
             elif len(table) <= 10_000:
@@ -549,7 +533,7 @@ def _viz_geoarrow_table(
             else:
                 path_kwargs["width_min_pixels"] = 0.5
 
-        if "opacity" not in path_kwargs.keys():
+        if "opacity" not in path_kwargs:
             if len(table) <= 1_000:
                 path_kwargs["opacity"] = 0.9
             elif len(table) <= 10_000:
@@ -559,19 +543,23 @@ def _viz_geoarrow_table(
 
         return [PathLayer(table=table, **path_kwargs)]
 
-    elif geometry_ext_type in [EXTENSION_NAME.POLYGON, EXTENSION_NAME.MULTIPOLYGON]:
-        polygon_kwargs = {} if not polygon_kwargs else polygon_kwargs
+    if geometry_ext_type in [
+        EXTENSION_NAME.POLYGON,
+        EXTENSION_NAME.MULTIPOLYGON,
+        EXTENSION_NAME.BOX,
+    ]:
+        polygon_kwargs = polygon_kwargs if polygon_kwargs else {}
 
-        if "get_fill_color" not in polygon_kwargs.keys():
+        if "get_fill_color" not in polygon_kwargs:
             polygon_kwargs["get_fill_color"] = _viz_color
 
-        if "get_line_color" not in polygon_kwargs.keys():
+        if "get_line_color" not in polygon_kwargs:
             polygon_kwargs["get_line_color"] = DEFAULT_POLYGON_LINE_COLOR
 
-        if "opacity" not in polygon_kwargs.keys():
+        if "opacity" not in polygon_kwargs:
             polygon_kwargs["opacity"] = 0.5
 
-        if "line_width_min_pixels" not in polygon_kwargs.keys():
+        if "line_width_min_pixels" not in polygon_kwargs:
             if len(table) <= 100:
                 polygon_kwargs["line_width_min_pixels"] = 0.5
             if len(table) <= 1_000:

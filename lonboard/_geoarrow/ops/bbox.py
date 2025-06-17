@@ -1,10 +1,9 @@
-"""Compute the total bounds of a geoarrow column"""
+"""Compute the total bounds of a geoarrow column."""
 
 from __future__ import annotations
 
 import math
 from dataclasses import dataclass
-from typing import Tuple
 
 import numpy as np
 from arro3.core import Array, ChunkedArray, DataType, Field, list_flatten
@@ -19,22 +18,18 @@ class Bbox:
     maxx: float = -math.inf
     maxy: float = -math.inf
 
-    def update(self, other: Bbox):
-        if other.minx < self.minx:
-            self.minx = other.minx
-        if other.miny < self.miny:
-            self.miny = other.miny
-        if other.maxx > self.maxx:
-            self.maxx = other.maxx
-        if other.maxy > self.maxy:
-            self.maxy = other.maxy
+    def update(self, other: Bbox) -> None:
+        self.minx = min(self.minx, other.minx)
+        self.miny = min(self.miny, other.miny)
+        self.maxx = max(self.maxx, other.maxx)
+        self.maxy = max(self.maxy, other.maxy)
 
-    def to_tuple(self) -> Tuple[float, float, float, float]:
+    def to_tuple(self) -> tuple[float, float, float, float]:
         return (self.minx, self.miny, self.maxx, self.maxy)
 
 
 def total_bounds(field: Field, column: ChunkedArray) -> Bbox:
-    """Compute the total bounds of a geometry column"""
+    """Compute the total bounds of a geometry column."""
     extension_type_name = field.metadata[b"ARROW:extension:name"]
 
     if extension_type_name == EXTENSION_NAME.POINT:

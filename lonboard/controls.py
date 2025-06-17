@@ -1,5 +1,6 @@
+from collections.abc import Sequence
 from functools import partial
-from typing import Sequence
+from typing import Any
 
 import traitlets
 from ipywidgets import FloatRangeSlider
@@ -63,17 +64,18 @@ class MultiRangeSlider(VBox):
     # https://github.com/jupyter-widgets/ipywidgets/blob/b2531796d414b0970f18050d6819d932417b9953/python/ipywidgets/ipywidgets/widgets/widget_box.py#L52-L54
     value = TypedTuple(trait=TypedTuple(trait=traitlets.Float())).tag(sync=True)
 
-    def __init__(self, children: Sequence[FloatRangeSlider], **kwargs):
+    def __init__(self, children: Sequence[FloatRangeSlider], **kwargs: Any) -> None:
+        """Create a new MultiRangeSlider."""
         if len(children) == 1:
             raise ValueError(
                 "Expected more than one slider. "
                 "For filtering data from a single column, "
-                "use a FloatRangeSlider directly."
+                "use a FloatRangeSlider directly.",
             )
 
         # We manage a list of lists to match what deck.gl expects for the
         # DataFilterExtension
-        def callback(change, *, i: int):
+        def callback(change: dict, *, i: int) -> None:
             value = list(self.value)
             value[i] = change["new"]
             self.set_trait("value", value)

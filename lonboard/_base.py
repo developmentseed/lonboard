@@ -1,4 +1,4 @@
-from typing import Dict
+from typing import Any, ClassVar
 
 import traitlets
 from anywidget import AnyWidget
@@ -13,12 +13,12 @@ parameter of the layer.
 
 
 class BaseWidget(Widget):
-    def __init__(self, **kwargs):
+    def __init__(self, **kwargs: Any) -> None:
         # Raise error on unknown keyword name
         # Note: we don't use `class_own_traits()` because some layer props are set on
         # BaseLayer
         layer_trait_names = self.trait_names()
-        for provided_trait_name in kwargs.keys():
+        for provided_trait_name in kwargs:
             if provided_trait_name not in layer_trait_names:
                 raise TypeError(msg.format(provided_trait_name=provided_trait_name))
 
@@ -26,10 +26,10 @@ class BaseWidget(Widget):
 
 
 class BaseAnyWidget(AnyWidget):
-    def __init__(self, **kwargs):
+    def __init__(self, **kwargs: Any) -> None:
         # Raise error on unknown keyword name
         layer_trait_names = self.trait_names()
-        for provided_trait_name in kwargs.keys():
+        for provided_trait_name in kwargs:
             if provided_trait_name not in layer_trait_names:
                 raise TypeError(msg.format(provided_trait_name=provided_trait_name))
 
@@ -39,5 +39,5 @@ class BaseAnyWidget(AnyWidget):
 class BaseExtension(BaseWidget):
     _extension_type: traitlets.Unicode
 
-    _layer_traits: Dict[str, traitlets.TraitType] = {}
+    _layer_traits: ClassVar[dict[str, traitlets.TraitType]] = {}
     """Traits from this extension to dynamically assign onto a layer."""

@@ -2,6 +2,8 @@ from typing import NamedTuple
 
 
 class ViewState(NamedTuple):
+    """State of a view position of a map."""
+
     longitude: float
     """Longitude at the map center"""
 

@@ -5,7 +5,7 @@ description = "Fast, interactive geospatial data visualization in Jupyter."
 authors = [{ name = "Kyle Barron", email = "kyle@developmentseed.org" }]
 license = "MIT"
 readme = "README.md"
-requires-python = ">=3.8"
+requires-python = ">=3.9"
 dependencies = [
     "anywidget~=0.9.0",
     # Version in Colab as of October 2024
@@ -72,9 +72,9 @@ docs = [
     "black>=24.8.0",
 ]
 dev = [
-    "duckdb>=1.1.3",
+    "duckdb>=1.2.0",
     "fiona<1.10",
-    "geoarrow-pyarrow>=0.1.2",
+    "geoarrow-pyarrow>=0.2.0",
     "geoarrow-rust-core>=0.3.0",
     "geodatasets>=2024.8.0",
     "jupyterlab>=4.3.3",
@@ -85,6 +85,9 @@ dev = [
     "pyarrow>=17.0.0",
     "pyogrio>=0.9.0",
     "pytest>=8.3.4",
+    "ruff>=0.11.0",
+    "sidecar>=0.7.0",
+    "types-shapely>=2.1.0.20250512",
 ]
 # Note: this is defined as a separate group so that it can be not installed in
 # CI. See:
@@ -111,18 +114,70 @@ artifacts = ["lonboard/static/*.js", "lonboard/static/*.css"]
 [tool.hatch.build.targets.wheel.force-include]
 "MANIFEST.in" = "MANIFEST.in"
 
-[tool.ruff]
-select = [
-    # Pyflakes
-    "F",
-    # Pycodestyle
-    "E",
-    "W",
-    # isort
-    "I",
+[[tool.mypy.overrides]]
+module = ["pyogrio.*", "pyarrow.*", "geodatasets.*", "ipywidgets.*"]
+ignore_missing_imports = true
+
+[tool.ruff.lint]
+select = ["ALL"]
+ignore = [
+    "ANN401",  # Dynamically typed expressions (typing.Any) are disallowed
+    "B028",    # No explicit `stacklevel` keyword argument found
+    "B011",    # Do not `assert False` (`python -O` removes these calls), raise `AssertionError()`
+    "D100",    # Missing docstring in public module
+    "D203",    # incorrect-blank-line-before-class
+    "D213",    # multi-line-summary-second-line
+    "D406",    # Section name should end with a newline ("Returns")Ruff
+    "D407",    # Missing dashed underline after section
+    "E501",    # Line too long
+    "EM",      # Exception must not use a string literal, assign to variable first
+    "FIX002",  # Line contains TODO, consider resolving the issue
+    "PD901",   # Avoid using the generic variable name `df` for DataFrames
+    "PERF401", # Use a list comprehension to create a transformed list
+    "PGH003",  # Use specific rule codes when ignoring type issues
+    "PGH004",  # Use specific rule codes when using `ruff: noqa`
+    "PLC0415", # `import` should be at the top-level of a file
+    "PLR2004", # Magic value used in comparison
+    "RUF015",  # Prefer `next(...)` over single element slice
+    "S101",    # Use of `assert` detected
+    "TD",      # todo
+    "TRY003",  # Avoid specifying long messages outside the exception class
 ]
 
-[tool.ruff.extend-per-file-ignores]
+[tool.ruff.lint.per-file-ignores]
+"examples/*" = [
+    "A001",   # Variable `map` is shadowing a Python builtin
+    "D103",   # Missing docstring in public function
+    "ERA001", # Found commented-out code
+    "PTH",    # pathlib
+    "S113",   # Probable use of `requests` call without timeout
+    "T201",   # `print` found
+    "UP",
+]
+"lonboard/*" = [
+    "PT", # pytest
+]
+"tests/*" = [
+    "S101",    # assert
+    "ANN001",  # Missing type annotation for function argument `geom`Ruff
+    "ANN201",  # Missing return type annotation for public function
+    "ANN202",  # Missing return type annotation for private function `it`
+    "ANN204",  # Missing return type annotation for special method
+    "D",       # docstring
+    "PLR2004", # Magic value used in comparison, consider replacing `100` with a constant variable
+    "S301",    # `pickle` and modules that wrap it can be unsafe when used to deserialize untrusted data, possible security issue
+    "S608",    #  Possible SQL injection vector through string-based query construction
+    "SLF001",  # Private member accessed
+]
+
+[tool.ruff.lint.extend-per-file-ignores]
 "__init__.py" = [
     "F401", # Allow unused imports in __init__.py files
+]
+
+[tool.uv]
+constraint-dependencies = [
+    # ensure lockfile grabs wheels for pyproj for each Python version
+    "pyproj==3.6; python_version == '3.9'",
+    "pyproj>=3.7; python_version >= '3.10'",
 ]
