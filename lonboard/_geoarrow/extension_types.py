@@ -197,7 +197,7 @@ def offsets_to_arrow(
 
 def construct_geometry_array(  # noqa: PLR0915
     shapely_arr: NDArray[np.object_],
-    include_z: bool | None = None,
+    include_z: bool | None = None,  # noqa: FBT001
     *,
     field_name: str = "geometry",
     crs: dict | None = None,

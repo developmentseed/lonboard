@@ -14,7 +14,7 @@ if TYPE_CHECKING:
 def geopandas_to_geoarrow(
     gdf: gpd.GeoDataFrame,
     columns: list[str] | None = None,
-    preserve_index: bool | None = None,
+    preserve_index: bool | None = None,  # noqa: FBT001
 ) -> Table:
     try:
         import pyarrow as pa
