@@ -87,6 +87,7 @@ dev = [
     "pytest>=8.3.4",
     "ruff>=0.11.0",
     "sidecar>=0.7.0",
+    "types-shapely>=2.1.0.20250512",
 ]
 # Note: this is defined as a separate group so that it can be not installed in
 # CI. See:
@@ -112,6 +113,10 @@ artifacts = ["lonboard/static/*.js", "lonboard/static/*.css"]
 
 [tool.hatch.build.targets.wheel.force-include]
 "MANIFEST.in" = "MANIFEST.in"
+
+[[tool.mypy.overrides]]
+module = ["pyogrio.*", "pyarrow.*", "geodatasets.*", "ipywidgets.*"]
+ignore_missing_imports = true
 
 [tool.ruff.lint]
 select = ["ALL"]
