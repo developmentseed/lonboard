@@ -87,6 +87,7 @@ dev = [
     "pytest>=8.3.4",
     "ruff>=0.11.0",
     "sidecar>=0.7.0",
+    "types-shapely>=2.1.0.20250512",
 ]
 # Note: this is defined as a separate group so that it can be not installed in
 # CI. See:
@@ -113,6 +114,10 @@ artifacts = ["lonboard/static/*.js", "lonboard/static/*.css"]
 [tool.hatch.build.targets.wheel.force-include]
 "MANIFEST.in" = "MANIFEST.in"
 
+[[tool.mypy.overrides]]
+module = ["pyogrio.*", "pyarrow.*", "geodatasets.*", "ipywidgets.*"]
+ignore_missing_imports = true
+
 [tool.ruff.lint]
 select = ["ALL"]
 ignore = [
@@ -131,6 +136,7 @@ ignore = [
     "PERF401", # Use a list comprehension to create a transformed list
     "PGH003",  # Use specific rule codes when ignoring type issues
     "PGH004",  # Use specific rule codes when using `ruff: noqa`
+    "PLC0415", # `import` should be at the top-level of a file
     "PLR2004", # Magic value used in comparison
     "RUF015",  # Prefer `next(...)` over single element slice
     "S101",    # Use of `assert` detected
