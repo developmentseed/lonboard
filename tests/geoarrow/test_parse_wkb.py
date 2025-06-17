@@ -25,8 +25,10 @@ def test_parse_wkb(
     points = shapely.points([1, 2, 3], [4, 5, 6])
     if serialization == "wkb":
         serialized_np_arr: NDArray = shapely.to_wkb(points)
+        geoarrow_type = "geoarrow.wkb"
     else:
         serialized_np_arr = shapely.to_wkt(points)
+        geoarrow_type = "geoarrow.wkt"
 
     if serialization == "wkb":
         dtype = DataType.binary_view() if view_type else DataType.binary()
@@ -39,7 +41,7 @@ def test_parse_wkb(
             Field(
                 "geometry",
                 arr.type,
-                metadata={"ARROW:extension:name": "geoarrow.wkb"},
+                metadata={"ARROW:extension:name": geoarrow_type},
             ),
         ],
     )
