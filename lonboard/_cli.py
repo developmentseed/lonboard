@@ -153,7 +153,11 @@ def read_geoparquet(path: Path) -> Table:
     ),
 )
 @click.argument("files", nargs=-1, type=click.Path(path_type=Path))
-def main(output: Path | None, open_browser: bool | None, files: list[Path]) -> None:
+def main(
+    output: Path | None,
+    open_browser: bool | None,  # noqa: FBT001
+    files: list[Path],
+) -> None:
     """Interactively visualize geospatial data using Lonboard.
 
     This CLI can be used either to quickly view local files or to create static HTML

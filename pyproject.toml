@@ -136,6 +136,7 @@ ignore = [
     "PERF401", # Use a list comprehension to create a transformed list
     "PGH003",  # Use specific rule codes when ignoring type issues
     "PGH004",  # Use specific rule codes when using `ruff: noqa`
+    "PLC0415", # `import` should be at the top-level of a file
     "PLR2004", # Magic value used in comparison
     "RUF015",  # Prefer `next(...)` over single element slice
     "S101",    # Use of `assert` detected
