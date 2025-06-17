@@ -291,6 +291,7 @@ def _get_categorical_cmap(categories, cmap, nan_color, alpha):  # noqa: ANN001, 
     temp_cmap = dict(zip(range(n_cats + 1), colors))
     return apply_categorical_cmap(cat_codes, temp_cmap)
 
+
 def _query_name(name: str) -> basemap:
     """Return basemap URL based on the name query (mimicking behavior from xyzservices).
 
@@ -322,16 +323,15 @@ def _query_name(name: str) -> basemap:
 
     """
     providers = {
-    "CartoDB Positron": basemap.CartoBasemap.Positron,
-    "CartoDB Positron No Label": basemap.CartoBasemap.PositronNoLabels,
-    "CartoDB Darkmatter": basemap.CartoBasemap.DarkMatter,
-    "CartoDB Darkmatter No Label": basemap.CartoBasemap.DarkMatterNoLabels,
-    "CartoDB Voyager": basemap.CartoBasemap.Voyager,
-    "CartoDB Voyager No Label": basemap.CartoBasemap.VoyagerNoLabels,
+        "CartoDB Positron": basemap.CartoBasemap.Positron,
+        "CartoDB Positron No Label": basemap.CartoBasemap.PositronNoLabels,
+        "CartoDB Darkmatter": basemap.CartoBasemap.DarkMatter,
+        "CartoDB Darkmatter No Label": basemap.CartoBasemap.DarkMatterNoLabels,
+        "CartoDB Voyager": basemap.CartoBasemap.Voyager,
+        "CartoDB Voyager No Label": basemap.CartoBasemap.VoyagerNoLabels,
     }
     xyz_flat_lower = {
-        k.translate(QUERY_NAME_TRANSLATION).lower(): v
-        for k, v in providers.items()
+        k.translate(QUERY_NAME_TRANSLATION).lower(): v for k, v in providers.items()
     }
     name_clean = name.translate(QUERY_NAME_TRANSLATION).lower()
     if name_clean in xyz_flat_lower:
