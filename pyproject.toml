@@ -82,6 +82,7 @@ dev = [
     "matplotlib>=3.7.5",
     "movingpandas>=0.20.0",
     "palettable>=3.3.3",
+    "pandas-stubs>=2.2.2.240807",
     "pre-commit>=3.5.0",
     "pyarrow>=17.0.0",
     "pyogrio>=0.9.0",
@@ -116,7 +117,13 @@ artifacts = ["lonboard/static/*.js", "lonboard/static/*.css"]
 "MANIFEST.in" = "MANIFEST.in"
 
 [[tool.mypy.overrides]]
-module = ["pyogrio.*", "pyarrow.*", "geodatasets.*", "ipywidgets.*"]
+module = [
+    "pyogrio.*",
+    "pyarrow.*",
+    "geodatasets.*",
+    "ipywidgets.*",
+    "geopandas.*",
+]
 ignore_missing_imports = true
 
 [tool.ruff.lint]
