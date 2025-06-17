@@ -2130,6 +2130,7 @@ dev = [
     { name = "pytest" },
     { name = "ruff" },
     { name = "sidecar" },
+    { name = "types-shapely" },
 ]
 docs = [
     { name = "black" },
@@ -2182,6 +2183,7 @@ dev = [
     { name = "pytest", specifier = ">=8.3.4" },
     { name = "ruff", specifier = ">=0.11.0" },
     { name = "sidecar", specifier = ">=0.7.0" },
+    { name = "types-shapely", specifier = ">=2.1.0.20250512" },
 ]
 docs = [
     { name = "black", specifier = ">=24.8.0" },
@@ -4195,6 +4197,20 @@ source = { registry = "https://pypi.org/simple" }
 sdist = { url = "https://files.pythonhosted.org/packages/ef/88/d65ed807393285204ab6e2801e5d11fbbea811adcaa979a2ed3b67a5ef41/types_python_dateutil-2.9.0.20250516.tar.gz", hash = "sha256:13e80d6c9c47df23ad773d54b2826bd52dbbb41be87c3f339381c1700ad21ee5", size = 13943, upload-time = "2025-05-16T03:06:58.385Z" }
 wheels = [
     { url = "https://files.pythonhosted.org/packages/c5/3f/b0e8db149896005adc938a1e7f371d6d7e9eca4053a29b108978ed15e0c2/types_python_dateutil-2.9.0.20250516-py3-none-any.whl", hash = "sha256:2b2b3f57f9c6a61fba26a9c0ffb9ea5681c9b83e69cd897c6b5f668d9c0cab93", size = 14356, upload-time = "2025-05-16T03:06:57.249Z" },
+]
+
+[[package]]
+name = "types-shapely"
+version = "2.1.0.20250512"
+source = { registry = "https://pypi.org/simple" }
+dependencies = [
+    { name = "numpy", version = "2.0.2", source = { registry = "https://pypi.org/simple" }, marker = "python_full_version < '3.10'" },
+    { name = "numpy", version = "2.2.6", source = { registry = "https://pypi.org/simple" }, marker = "python_full_version == '3.10.*'" },
+    { name = "numpy", version = "2.3.0", source = { registry = "https://pypi.org/simple" }, marker = "python_full_version >= '3.11'" },
+]
+sdist = { url = "https://files.pythonhosted.org/packages/8b/56/286d7ce3459bb764ee6860c1a313147726f69a58abb507adc5e5cf21e47e/types_shapely-2.1.0.20250512.tar.gz", hash = "sha256:15f08bdb7fa937dca0039510c6d8fda72e8464bfd43bd9ac59127a61a38ce7c8", size = 25735, upload-time = "2025-05-12T03:08:05.791Z" }
+wheels = [
+    { url = "https://files.pythonhosted.org/packages/16/0f/a07e652433c0df2fcf5407a785368d37a19397579289adec8c1258682d89/types_shapely-2.1.0.20250512-py3-none-any.whl", hash = "sha256:e57b6d30758d717a218e682bc4e32c5a46e3c948008c79f0a653216ca93b65fb", size = 36888, upload-time = "2025-05-12T03:08:04.625Z" },
 ]
 
 [[package]]
