@@ -18,7 +18,7 @@ dependencies = [
     "numpy>=1.14",
     # The same version pin as geopandas
     "pyproj>=3.3",
-    "typing-extensions~=4.6.0; python_version < '3.12'",
+    "typing-extensions>=4.6.0; python_version < '3.12'",
 ]
 keywords = [
     "GIS",
