@@ -14,7 +14,6 @@ from arro3.core import (
     list_array,
     struct_field,
 )
-from duckdb import ColumnExpression, FunctionExpression
 
 from lonboard._constants import EXTENSION_NAME
 
@@ -118,7 +117,7 @@ def _from_geometry(
 
     geom_table = Table.from_arrow(
         rel.select(
-            FunctionExpression("st_aswkb", ColumnExpression(geom_col_name)).alias(
+            duckdb.FunctionExpression("st_aswkb", duckdb.ColumnExpression(geom_col_name)).alias(
                 geom_col_name,
             ),
         ).arrow(),
