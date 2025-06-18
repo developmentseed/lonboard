@@ -14,7 +14,7 @@ if TYPE_CHECKING:
 def geopandas_to_geoarrow(
     gdf: gpd.GeoDataFrame,
     columns: list[str] | None = None,
-    preserve_index: bool | None = None,
+    preserve_index: bool | None = None,  # noqa: FBT001
 ) -> Table:
     try:
         import pyarrow as pa
@@ -32,7 +32,7 @@ def geopandas_to_geoarrow(
     pyarrow_table = pa.Table.from_pandas(df_attr, preserve_index=preserve_index)
     field, geom_arr = construct_geometry_array(
         np.array(gdf.geometry),
-        crs=gdf.crs.to_json_dict() if gdf.crs is not None else None,
+        crs=gdf.crs,
     )
     return Table.from_arrow(pyarrow_table).append_column(
         field,

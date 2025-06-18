@@ -8,7 +8,7 @@ Lonboard is built on four foundational technologies: deck.gl, GeoArrow, GeoParqu
 - [GeoParquet](https://geoparquet.org/) is a file format for efficiently encoding and decoding geospatial vector data. As a file format, GeoParquet contains very efficient compression, and needs to be parsed before it can be used. [^1]
 - [anywidget](https://anywidget.dev/) is a framework for building custom Jupyter widgets that makes the process much easier than before.
 
-[^1]: lonboard currently doesn't use "official" GeoParquet 1.0, because the 1.0 spec requires encoding geometries as Well-Known Binary (WKB) inside of the Parquet file. lonboard uses the highly-efficient GeoArrow encoding inside of GeoParquet (which may [become part of the GeoParquet spec in 1.1](https://github.com/opengeospatial/geoparquet/issues/185)). This is faster and easier to write when the writer and reader are both using GeoArrow anyways.
+[^1]: For subtle technical reasons, Lonboard's internal data transfer doesn't match the exact GeoParquet specification. Lonboard uses the highly-efficient GeoArrow encoding inside of GeoParquet instead of storing geometries as Well-Known Binary (WKB). While the GeoParquet 1.1 spec does support a "native" GeoArrow-like encoding, note that GeoArrow defines two [_coordinate layouts_](https://geoarrow.org/format.html#coordinate): "separated" and "interleaved". Only "separated" is allowed in the GeoParquet spec because only the "separated" layout generates useful column statistics to be used for cloud-native spatial queries. However, deck.gl expects the "interleaved" layout. So Lonboard prepares Arrow data in that exact format to avoid an extra memory copy on the JavaScript side before uploading to the GPU.
 
 ## How is it so fast?
 

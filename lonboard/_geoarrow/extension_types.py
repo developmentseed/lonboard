@@ -7,10 +7,13 @@ from typing import TYPE_CHECKING
 import numpy as np
 from arro3.core import Array, DataType, Field, fixed_size_list_array, list_array
 
+from lonboard._geoarrow.crs import serialize_crs
+
 if TYPE_CHECKING:
     from collections.abc import Sequence
 
     from numpy.typing import NDArray
+    from pyproj import CRS
 
 
 class CoordinateDimension(str, Enum):
@@ -181,20 +184,26 @@ def multipolygon_storage_type(
 
 def offsets_to_arrow(
     offsets: tuple[NDArray[np.int64], ...],
-) -> Sequence[Array]:
+) -> tuple[Sequence[Array], bool]:
+    """Return a tuple of Arrow arrays from offsets.
+
+    Returns:
+        Arrays; whether they're large.
+
+    """
     # Shapely produces int64 offset arrays. We downcast those to int32 if possible
     if any(offset_arr[-1] >= np.iinfo(np.int32).max for offset_arr in offsets):
-        return [Array(offset_arr) for offset_arr in offsets]
+        return [Array(offset_arr) for offset_arr in offsets], True
 
-    return [Array(offset_arr.astype(np.int32)) for offset_arr in offsets]
+    return [Array(offset_arr.astype(np.int32)) for offset_arr in offsets], False
 
 
 def construct_geometry_array(  # noqa: PLR0915
     shapely_arr: NDArray[np.object_],
-    include_z: bool | None = None,
+    include_z: bool | None = None,  # noqa: FBT001
     *,
     field_name: str = "geometry",
-    crs: dict | None = None,
+    crs: CRS | None = None,
 ) -> tuple[Field, Array]:
     import shapely
     from shapely import GeometryType
@@ -203,7 +212,7 @@ def construct_geometry_array(  # noqa: PLR0915
         shapely_arr,
         include_z=include_z,
     )
-    offsets = offsets_to_arrow(offsets)
+    offsets, is_large_offset = offsets_to_arrow(offsets)
 
     if coords.shape[-1] == 2:
         dims = CoordinateDimension.XY
@@ -214,10 +223,12 @@ def construct_geometry_array(  # noqa: PLR0915
 
     extension_metadata: dict[str, str] = {}
     if crs is not None:
-        extension_metadata["ARROW:extension:metadata"] = json.dumps({"crs": crs})
+        extension_metadata["ARROW:extension:metadata"] = json.dumps(serialize_crs(crs))
 
     if geom_type == GeometryType.POINT:
-        arrow_coords = fixed_size_list_array(coords.ravel("C"), len(dims))
+        arrow_coords = fixed_size_list_array(coords.ravel("C"), len(dims)).cast(
+            coord_storage_type(interleaved=True, dims=dims),
+        )
         extension_metadata["ARROW:extension:name"] = "geoarrow.point"
         field = Field(
             field_name,
@@ -231,7 +242,13 @@ def construct_geometry_array(  # noqa: PLR0915
         assert len(offsets) == 1, "Expected one offsets array"
         (geom_offsets,) = offsets
         arrow_coords = fixed_size_list_array(coords.ravel("C"), len(dims))
-        arrow_geoms = list_array(geom_offsets, arrow_coords)
+        arrow_geoms = list_array(geom_offsets, arrow_coords).cast(
+            linestring_storage_type(
+                interleaved=True,
+                dims=dims,
+                large_list=is_large_offset,
+            ),
+        )
         extension_metadata["ARROW:extension:name"] = "geoarrow.linestring"
         field = Field(
             field_name,
@@ -246,7 +263,13 @@ def construct_geometry_array(  # noqa: PLR0915
         ring_offsets, geom_offsets = offsets
         arrow_coords = fixed_size_list_array(coords.ravel("C"), len(dims))
         arrow_rings = list_array(ring_offsets, arrow_coords)
-        arrow_geoms = list_array(geom_offsets, arrow_rings)
+        arrow_geoms = list_array(geom_offsets, arrow_rings).cast(
+            polygon_storage_type(
+                interleaved=True,
+                dims=dims,
+                large_list=is_large_offset,
+            ),
+        )
         extension_metadata["ARROW:extension:name"] = "geoarrow.polygon"
         field = Field(
             field_name,
@@ -260,7 +283,13 @@ def construct_geometry_array(  # noqa: PLR0915
         assert len(offsets) == 1, "Expected one offsets array"
         (geom_offsets,) = offsets
         arrow_coords = fixed_size_list_array(coords.ravel("C"), len(dims))
-        arrow_geoms = list_array(geom_offsets, arrow_coords)
+        arrow_geoms = list_array(geom_offsets, arrow_coords).cast(
+            multipoint_storage_type(
+                interleaved=True,
+                dims=dims,
+                large_list=is_large_offset,
+            ),
+        )
         extension_metadata["ARROW:extension:name"] = "geoarrow.multipoint"
         field = Field(
             field_name,
@@ -275,7 +304,13 @@ def construct_geometry_array(  # noqa: PLR0915
         ring_offsets, geom_offsets = offsets
         arrow_coords = fixed_size_list_array(coords.ravel("C"), len(dims))
         arrow_rings = list_array(ring_offsets, arrow_coords)
-        arrow_geoms = list_array(geom_offsets, arrow_rings)
+        arrow_geoms = list_array(geom_offsets, arrow_rings).cast(
+            multilinestring_storage_type(
+                interleaved=True,
+                dims=dims,
+                large_list=is_large_offset,
+            ),
+        )
         extension_metadata["ARROW:extension:name"] = "geoarrow.multilinestring"
         field = Field(
             field_name,
@@ -291,7 +326,13 @@ def construct_geometry_array(  # noqa: PLR0915
         arrow_coords = fixed_size_list_array(coords.ravel("C"), len(dims))
         arrow_rings = list_array(ring_offsets, arrow_coords)
         arrow_polygons = list_array(polygon_offsets, arrow_rings)
-        arrow_geoms = list_array(geom_offsets, arrow_polygons)
+        arrow_geoms = list_array(geom_offsets, arrow_polygons).cast(
+            multipolygon_storage_type(
+                interleaved=True,
+                dims=dims,
+                large_list=is_large_offset,
+            ),
+        )
         extension_metadata["ARROW:extension:name"] = "geoarrow.multipolygon"
         field = Field(
             field_name,

@@ -1075,9 +1075,9 @@ class BasemapUrl(traitlets.Unicode):
             self.error(obj, value, info="to be a URL")
 
         if not parsed.scheme.startswith("http"):
-            self.error(obj, value, info="to be a HTTP(s) URL")  # noqa: RET503
-        else:
-            return value
+            self.error(obj, value, info="to be a HTTP(s) URL")
+
+        return value
 
 
 T = TypeVar("T")
