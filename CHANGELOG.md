@@ -1,5 +1,14 @@
 # Changelog
 
+## [0.11.1] - 2025-06-18
+
+### Bug fixes :bug:
+
+- fix: move duckdb imports to inside function by @danielsparing in https://github.com/developmentseed/lonboard/pull/813
+- chore: Use `>=` in typing-extensions version constraint by @kylebarron in https://github.com/developmentseed/lonboard/pull/814
+
+**Full Changelog**: https://github.com/developmentseed/lonboard/compare/v0.11.0...v0.11.1
+
 ## [0.11.0] - 2025-06-17
 
 ### Breaking changes :hammer:
@@ -9,7 +18,6 @@
 ### New features :sparkles:
 
 - feat: Reinstate tooltip by @vgeorge in https://github.com/developmentseed/lonboard/pull/736.
-
   You can now turn on the tooltip by passing `show_tooltip=True` to `Map`. You may also want to pass `show_side_panel=False` to disable the side panel.
 - Clicked point to Lonboard map by @ATL2001 in https://github.com/developmentseed/lonboard/pull/671
 - feat: Support `geoarrow.box` arrays from GeoArrow 0.2 spec by @kylebarron in https://github.com/developmentseed/lonboard/pull/793
@@ -50,7 +58,7 @@
 - chore: Bump deck.gl to 9.1 by @kylebarron in https://github.com/developmentseed/lonboard/pull/802
 - test: Test that parsing WKB/WKT works with Arrow view types by @kylebarron in https://github.com/developmentseed/lonboard/pull/801
 
-## New Contributors
+### New Contributors
 
 - @knaaptime made their first contribution in https://github.com/developmentseed/lonboard/pull/731
 - @ceholden made their first contribution in https://github.com/developmentseed/lonboard/pull/745
