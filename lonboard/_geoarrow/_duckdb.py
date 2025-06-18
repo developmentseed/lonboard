@@ -103,8 +103,8 @@ def _from_geometry(
     
     try:
         import duckdb
-    except ImportError as ie:
-        raise ImportError("duckdb must be installed to use this function.") from ie
+    except ImportError as exc:
+        raise ImportError("duckdb must be installed to use this function.") from exc
 
     other_col_names = [name for i, name in enumerate(rel.columns) if i != geom_col_idx]
     if other_col_names:
