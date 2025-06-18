@@ -23,6 +23,7 @@ import { NextUIProvider } from "@nextui-org/react";
 import Toolbar from "./toolbar.js";
 import throttle from "lodash.throttle";
 import SidePanel from "./sidepanel/index";
+import { getTooltip } from "./tooltip/index.js";
 
 await initParquetWasm();
 
@@ -98,6 +99,7 @@ function App() {
   const [mapStyle] = useModelState<string>("basemap_style");
   const [mapHeight] = useModelState<number>("_height");
   const [showTooltip] = useModelState<boolean>("show_tooltip");
+  const [showSidePanel] = useModelState<boolean>("show_side_panel");
   const [pickingRadius] = useModelState<number>("picking_radius");
   const [useDevicePixels] = useModelState<number | boolean>(
     "use_device_pixels",
@@ -221,7 +223,7 @@ function App() {
       >
         <Toolbar />
 
-        {showTooltip && highlightedFeature && (
+        {showSidePanel && highlightedFeature && (
           <SidePanel
             info={highlightedFeature}
             onClose={() => actorRef.send({ type: "Close side panel" })}
@@ -243,6 +245,7 @@ function App() {
                 ? layers.concat(bboxSelectPolygonLayer)
                 : layers
             }
+            getTooltip={(showTooltip && getTooltip) || undefined}
             getCursor={() => (isDrawingBBoxSelection ? "crosshair" : "grab")}
             pickingRadius={pickingRadius}
             onClick={onMapClickHandler}

@@ -25,6 +25,7 @@ from arro3.core import Table
 from lonboard._base import BaseExtension, BaseWidget
 from lonboard._constants import EXTENSION_NAME, OGC_84
 from lonboard._geoarrow._duckdb import from_duckdb as _from_duckdb
+from lonboard._geoarrow.box_to_polygon import parse_box_encoded_table
 from lonboard._geoarrow.geopandas_interop import geopandas_to_geoarrow
 from lonboard._geoarrow.ops import reproject_table
 from lonboard._geoarrow.ops.bbox import Bbox, total_bounds
@@ -333,11 +334,33 @@ class BaseArrowLayer(BaseLayer):
 
     def __init__(
         self,
-        *,
         table: ArrowStreamExportable,
+        *,
         _rows_per_chunk: int | None = None,
         **kwargs: Unpack[BaseLayerKwargs],
     ) -> None:
+        """Construct a Layer from a [GeoArrow] table.
+
+        [GeoArrow]: https://geoarrow.org/
+
+        This accepts Arrow data from any library implementing the [Arrow PyCapsule
+        Interface], including pyarrow, arro3, DuckDB, and others.
+
+        [Arrow PyCapsule Interface]: https://arrow.apache.org/docs/format/CDataInterface/PyCapsuleInterface.html
+
+        The geometry column will be reprojected to `EPSG:4326` if it is not already in
+        that coordinate system.
+
+        Args:
+            table: An Arrow table or stream object from a library implementing the [Arrow PyCapsule Interface]. This object must contain a column with a geometry type that has the `geoarrow` extension metadata.
+
+        Keyword Args:
+            kwargs: parameters passed on to `__init__`
+
+        Returns:
+            A Layer with the initialized data.
+
+        """
         table_o3 = Table.from_arrow(table)
         parsed_tables = parse_serialized_table(table_o3)
         assert len(parsed_tables) == 1, (
@@ -376,7 +399,7 @@ class BaseArrowLayer(BaseLayer):
     ) -> Self:
         """Construct a Layer from a geopandas GeoDataFrame.
 
-        The GeoDataFrame will be reprojected to EPSG:4326 if it is not already in that
+        The GeoDataFrame will be reprojected to `EPSG:4326` if it is not already in that
         coordinate system.
 
         Args:
@@ -752,8 +775,8 @@ class ColumnLayer(BaseArrowLayer):
 
     def __init__(
         self,
-        *,
         table: ArrowStreamExportable,
+        *,
         _rows_per_chunk: int | None = None,
         **kwargs: Unpack[ColumnLayerKwargs],
     ) -> None:
@@ -1039,11 +1062,12 @@ class PolygonLayer(BaseArrowLayer):
 
     def __init__(
         self,
-        *,
         table: ArrowStreamExportable,
+        *,
         _rows_per_chunk: int | None = None,
         **kwargs: Unpack[PolygonLayerKwargs],
     ) -> None:
+        table = parse_box_encoded_table(Table.from_arrow(table))
         super().__init__(table=table, _rows_per_chunk=_rows_per_chunk, **kwargs)
 
     @classmethod
@@ -1141,7 +1165,7 @@ class PolygonLayer(BaseArrowLayer):
 
     line_width_units = t.Unicode(None, allow_none=True).tag(sync=True)
     """
-    The units of the line width, one of `'meters'`, `'common'`, and `'pixels'`. See
+    The units of the outline width, one of `'meters'`, `'common'`, and `'pixels'`. See
     [unit
     system](https://deck.gl/docs/developer-guide/coordinate-systems#supported-units).
 
@@ -1151,7 +1175,7 @@ class PolygonLayer(BaseArrowLayer):
 
     line_width_scale = t.Float(None, allow_none=True, min=0).tag(sync=True)
     """
-    The line width multiplier that multiplied to all outlines of `Polygon` and
+    The outline width multiplier that multiplied to all outlines of `Polygon` and
     `MultiPolygon` features if the `stroked` attribute is true.
 
     - Type: `float`, optional
@@ -1160,8 +1184,8 @@ class PolygonLayer(BaseArrowLayer):
 
     line_width_min_pixels = t.Float(None, allow_none=True, min=0).tag(sync=True)
     """
-    The minimum line width in pixels. This can be used to prevent the line from getting
-    too small when zoomed out.
+    The minimum outline width in pixels. This can be used to prevent the outline from
+    getting too small when zoomed out.
 
     - Type: `float`, optional
     - Default: `0`
@@ -1169,8 +1193,8 @@ class PolygonLayer(BaseArrowLayer):
 
     line_width_max_pixels = t.Float(None, allow_none=True, min=0).tag(sync=True)
     """
-    The maximum line width in pixels. This can be used to prevent the line from getting
-    too big when zoomed in.
+    The maximum outline width in pixels. This can be used to prevent the outline from
+    getting too big when zoomed in.
 
     - Type: `float`, optional
     - Default: `None`
@@ -1207,16 +1231,16 @@ class PolygonLayer(BaseArrowLayer):
 
     get_line_color = ColorAccessor(None, allow_none=True)
     """
-    The line color of each polygon in the format of `[r, g, b, [a]]`. Each channel is a
-    number between 0-255 and `a` is 255 if not supplied.
+    The outline color of each polygon in the format of `[r, g, b, [a]]`. Each channel is
+    a number between 0-255 and `a` is 255 if not supplied.
 
-    Only applies if `extruded=True`.
+    Only applies if `stroked=True`.
 
     - Type: [ColorAccessor][lonboard.traits.ColorAccessor], optional
-        - If a single `list` or `tuple` is provided, it is used as the line color for
+        - If a single `list` or `tuple` is provided, it is used as the outline color for
           all polygons.
         - If a numpy or pyarrow array is provided, each value in the array will be used
-          as the line color for the polygon at the same row index.
+          as the outline color for the polygon at the same row index.
     - Default: `[0, 0, 0, 255]`.
     """
 
@@ -1284,8 +1308,8 @@ class ScatterplotLayer(BaseArrowLayer):
 
     def __init__(
         self,
-        *,
         table: ArrowStreamExportable,
+        *,
         _rows_per_chunk: int | None = None,
         **kwargs: Unpack[ScatterplotLayerKwargs],
     ) -> None:
@@ -1525,8 +1549,8 @@ class PathLayer(BaseArrowLayer):
 
     def __init__(
         self,
-        *,
         table: ArrowStreamExportable,
+        *,
         _rows_per_chunk: int | None = None,
         **kwargs: Unpack[PathLayerKwargs],
     ) -> None:
@@ -1695,8 +1719,8 @@ class PointCloudLayer(BaseArrowLayer):
 
     def __init__(
         self,
-        *,
         table: ArrowStreamExportable,
+        *,
         _rows_per_chunk: int | None = None,
         **kwargs: Unpack[PointCloudLayerKwargs],
     ) -> None:
@@ -1828,11 +1852,12 @@ class SolidPolygonLayer(BaseArrowLayer):
 
     def __init__(
         self,
-        *,
         table: ArrowStreamExportable,
+        *,
         _rows_per_chunk: int | None = None,
         **kwargs: Unpack[SolidPolygonLayerKwargs],
     ) -> None:
+        table = parse_box_encoded_table(Table.from_arrow(table))
         super().__init__(table=table, _rows_per_chunk=_rows_per_chunk, **kwargs)
 
     @classmethod
@@ -1995,7 +2020,6 @@ class HeatmapLayer(BaseArrowLayer):
 
     def __init__(
         self,
-        *,
         table: ArrowStreamExportable,
         **kwargs: Unpack[HeatmapLayerKwargs],
     ) -> None:

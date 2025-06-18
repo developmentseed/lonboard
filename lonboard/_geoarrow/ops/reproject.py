@@ -96,12 +96,10 @@ def reproject_column(
 
     """
     extension_type_name = field.metadata[b"ARROW:extension:name"]
-    crs_str = get_field_crs(field)
-    if crs_str is None:
+    existing_crs = get_field_crs(field)
+    if existing_crs is None:
         no_crs_warning()
         return field, column
-
-    existing_crs = CRS(crs_str)
 
     if existing_crs == to_crs:
         return field, column
