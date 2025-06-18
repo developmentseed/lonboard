@@ -123,7 +123,8 @@ def _from_geometry(
     geom_table = Table.from_arrow(
         rel.select(
             duckdb.FunctionExpression(
-                "st_aswkb", duckdb.ColumnExpression(geom_col_name)
+                "st_aswkb",
+                duckdb.ColumnExpression(geom_col_name),
             ).alias(
                 geom_col_name,
             ),
