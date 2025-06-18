@@ -100,6 +100,12 @@ def _from_geometry(
     geom_col_idx: int,
     crs: str | pyproj.CRS | None = None,
 ) -> Table:
+    
+    try:
+        import duckdb
+    except ImportError:
+        raise ImportError("duckdb must be installed to use this function.")
+
     other_col_names = [name for i, name in enumerate(rel.columns) if i != geom_col_idx]
     if other_col_names:
         non_geo_table = Table.from_arrow(rel.select(*other_col_names).arrow())
