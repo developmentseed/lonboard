@@ -100,7 +100,6 @@ def _from_geometry(
     geom_col_idx: int,
     crs: str | pyproj.CRS | None = None,
 ) -> Table:
-    
     try:
         import duckdb
     except ImportError as exc:
@@ -123,7 +122,9 @@ def _from_geometry(
 
     geom_table = Table.from_arrow(
         rel.select(
-            duckdb.FunctionExpression("st_aswkb", duckdb.ColumnExpression(geom_col_name)).alias(
+            duckdb.FunctionExpression(
+                "st_aswkb", duckdb.ColumnExpression(geom_col_name)
+            ).alias(
                 geom_col_name,
             ),
         ).arrow(),
