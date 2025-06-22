@@ -48,7 +48,7 @@ _HTML_TEMPLATE = """<!DOCTYPE html>
 </head>
 <style>
     html {{ height: 100%; }}
-    body {{ height: 100%; }}
+    body {{ height: 100%; overflow: hidden;}}
     .widget-subarea {{ height: 100%; }}
     .jupyter-widgets-disconnected {{ height: 100%; }}
 </style>
@@ -120,6 +120,8 @@ class Map(BaseAnyWidget):
         super().__init__(layers=layers, **kwargs)
         self._click_handlers = CallbackDispatcher()
         self.on_msg(_handle_anywidget_dispatch)
+        self.layout.height = "100%"
+        self.layout.width = "100%"
 
     def on_click(self, callback: Callable, *, remove: bool = False) -> None:
         """Register a callback to execute when the map is clicked.
@@ -177,7 +179,7 @@ class Map(BaseAnyWidget):
     Indicates if a click handler has been registered.
     """
 
-    _height = t.Int(default_value=DEFAULT_HEIGHT, allow_none=True).tag(sync=True)
+    height = t.Unicode(default_value=DEFAULT_HEIGHT).tag(sync=True)
     """Height of the map in pixels.
 
     This API is not yet stabilized and may change in the future.
