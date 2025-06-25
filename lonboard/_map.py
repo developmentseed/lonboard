@@ -179,8 +179,8 @@ class Map(BaseAnyWidget):
     Indicates if a click handler has been registered.
     """
 
-    height = t.Unicode(default_value=DEFAULT_HEIGHT).tag(sync=True)
-    """Height of the map in pixels.
+    height = t.Union([t.Unicode(default_value=DEFAULT_HEIGHT), t.Int()]).tag(sync=True)
+    """Height of the map in pixels, or valid CSS height property.
 
     This API is not yet stabilized and may change in the future.
     """
@@ -567,16 +567,22 @@ class Map(BaseAnyWidget):
         """
 
         def inner(fp: str | Path | TextIO | IO[str]) -> None:
-            embed_minimal_html(
-                fp,
-                views=[self],
-                title=title or "Lonboard export",
-                template=_HTML_TEMPLATE,
-                drop_defaults=False,
-                # Necessary to pass the state of _this_ specific map. Otherwise, the
-                # state of all known widgets will be included, ballooning the file size.
-                state=dependency_state((self), drop_defaults=False),
-            )
+            original_height = self.height
+            try:
+                self.height = "100%"
+                embed_minimal_html(
+                    fp,
+                    views=[self],
+                    title=title or "Lonboard export",
+                    template=_HTML_TEMPLATE,
+                    drop_defaults=False,
+                    # Necessary to pass the state of _this_ specific map. Otherwise, the
+                    # state of all known widgets will be included, ballooning the file size.
+                    state=dependency_state((self), drop_defaults=False),
+                )
+            finally:
+                # If the map had a height before the HTML was generated, reset it.
+                self.height = original_height
 
         if filename is None:
             with StringIO() as sio:
