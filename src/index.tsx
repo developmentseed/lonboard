@@ -214,14 +214,9 @@ function App() {
     [isOnMapHoverEventEnabled, justClicked],
   );
 
-  let height = String(mapHeight);
-  if (typeof mapHeight === "number") {
-    // if a number is used for height, assume pixels
-    height = height + "px";
-  }
 
   return (
-    <div className="lonboard" style={{ height: height }}>
+    <div className="lonboard" style={{ height: mapHeight }}>
       <div
         id={`map-${mapId}`}
         className="flex"

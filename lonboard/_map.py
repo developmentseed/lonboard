@@ -11,13 +11,13 @@ from ipywidgets import CallbackDispatcher
 from ipywidgets.embed import dependency_state, embed_minimal_html
 
 from lonboard._base import BaseAnyWidget
-from lonboard._environment import DEFAULT_HEIGHT
 from lonboard._layer import BaseLayer
 from lonboard._viewport import compute_view
 from lonboard.basemap import CartoBasemap
 from lonboard.traits import (
     DEFAULT_INITIAL_VIEW_STATE,
     BasemapUrl,
+    HeightTrait,
     VariableLengthTuple,
     ViewStateTrait,
 )
@@ -179,7 +179,7 @@ class Map(BaseAnyWidget):
     Indicates if a click handler has been registered.
     """
 
-    height = t.Union([t.Unicode(default_value=DEFAULT_HEIGHT), t.Int()]).tag(sync=True)
+    height = HeightTrait().tag(sync=True)
     """Height of the map in pixels, or valid CSS height property.
 
     This API is not yet stabilized and may change in the future.
@@ -569,17 +569,18 @@ class Map(BaseAnyWidget):
         def inner(fp: str | Path | TextIO | IO[str]) -> None:
             original_height = self.height
             try:
-                self.height = "100%"
-                embed_minimal_html(
-                    fp,
-                    views=[self],
-                    title=title or "Lonboard export",
-                    template=_HTML_TEMPLATE,
-                    drop_defaults=False,
-                    # Necessary to pass the state of _this_ specific map. Otherwise, the
-                    # state of all known widgets will be included, ballooning the file size.
-                    state=dependency_state((self), drop_defaults=False),
-                )
+                with self.hold_trait_notifications():
+                    self.height = "100%"
+                    embed_minimal_html(
+                        fp,
+                        views=[self],
+                        title=title or "Lonboard export",
+                        template=_HTML_TEMPLATE,
+                        drop_defaults=False,
+                        # Necessary to pass the state of _this_ specific map. Otherwise, the
+                        # state of all known widgets will be included, ballooning the file size.
+                        state=dependency_state((self), drop_defaults=False),
+                    )
             finally:
                 # If the map had a height before the HTML was generated, reset it.
                 self.height = original_height
