@@ -55,9 +55,8 @@ ENVIRONMENT = detect_environment()
 
 def default_height() -> int | None:
     if ENVIRONMENT in [Environment.Vscode, Environment.Colab]:
-        return 500
-
-    return None
+        return "500px"
+    return "24rem"
 
 
 DEFAULT_HEIGHT = default_height()

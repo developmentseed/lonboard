@@ -27,6 +27,7 @@ from arro3.core import (
 from traitlets import TraitError, Undefined
 from traitlets.utils.descriptions import class_of, describe
 
+from lonboard._environment import DEFAULT_HEIGHT
 from lonboard._serialization import (
     ACCESSOR_SERIALIZATION,
     TABLE_SERIALIZATION,
@@ -1160,3 +1161,29 @@ class VariableLengthTuple(traitlets.Container):
                 validated.append(v)
 
         return tuple(validated)
+
+
+class HeightTrait(FixedErrorTraitType):
+    """Trait to validate map height input."""
+
+    allow_none = True
+    default_value = DEFAULT_HEIGHT
+
+    def __init__(
+        self: TraitType,
+        *args: Any,
+        **kwargs: Any,
+    ) -> None:
+        super().__init__(*args, **kwargs)
+
+        self.tag(sync=True)
+
+    def validate(self, obj: Any, value: Any) -> str:
+        if isinstance(value, int):
+            return f"{value}px"
+
+        if isinstance(value, str):
+            return value
+
+        self.error(obj, value)
+        assert False
