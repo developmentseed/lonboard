@@ -214,7 +214,6 @@ function App() {
     [isOnMapHoverEventEnabled, justClicked],
   );
 
-
   return (
     <div className="lonboard" style={{ height: mapHeight }}>
       <div
