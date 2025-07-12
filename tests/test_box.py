@@ -1,7 +1,7 @@
 import geoarrow.pyarrow as ga
-from arro3.core import Table
+from arro3.core import ChunkedArray, Table
 
-from lonboard import PolygonLayer, SolidPolygonLayer, viz
+from lonboard import Map, PolygonLayer, SolidPolygonLayer, viz
 
 
 def test_viz_box():
@@ -15,6 +15,31 @@ def test_viz_box():
 
     m = viz(arr)
     assert isinstance(m.layers[0], PolygonLayer)
+
+
+def test_box_polygon_layer():
+    arr = ga.box(
+        [
+            "LINESTRING (0 10, 34 -1)",
+            "LINESTRING (10 20, 44 -10)",
+            "LINESTRING (20 40, 54 5)",
+        ],
+    )
+    layer = PolygonLayer(arr)
+    _m = Map(layer)
+
+
+def test_box_polygon_layer_chunked_array():
+    arr = ga.box(
+        [
+            "LINESTRING (0 10, 34 -1)",
+            "LINESTRING (10 20, 44 -10)",
+            "LINESTRING (20 40, 54 5)",
+        ],
+    )
+    ca = ChunkedArray([arr])
+    layer = PolygonLayer(ca)
+    _m = Map(layer)
 
 
 def test_viz_box_polygon_layer():

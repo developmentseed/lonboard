@@ -24,6 +24,7 @@ from lonboard._geoarrow.c_stream_import import import_arrow_c_stream
 from lonboard._geoarrow.extension_types import construct_geometry_array
 from lonboard._geoarrow.geopandas_interop import geopandas_to_geoarrow
 from lonboard._geoarrow.parse_wkb import parse_serialized_table
+from lonboard._geoarrow.row_index import add_positional_row_index
 from lonboard._layer import PathLayer, PolygonLayer, ScatterplotLayer
 from lonboard._map import Map
 from lonboard._utils import (
@@ -447,18 +448,7 @@ def _viz_geoarrow_chunked_array(
     field = ca.field.with_name("geometry")
     schema = Schema([field])
     table = Table.from_arrays([ca], schema=schema)
-
-    num_rows = len(ca)
-    if num_rows <= np.iinfo(np.uint8).max:
-        arange_col = Array(np.arange(num_rows, dtype=np.uint8))
-    elif num_rows <= np.iinfo(np.uint16).max:
-        arange_col = Array(np.arange(num_rows, dtype=np.uint16))
-    elif num_rows <= np.iinfo(np.uint32).max:
-        arange_col = Array(np.arange(num_rows, dtype=np.uint32))
-    else:
-        arange_col = Array(np.arange(num_rows, dtype=np.uint64))
-
-    table = table.append_column("row_index", ChunkedArray([arange_col]))
+    table = add_positional_row_index(table)
     return _viz_geoarrow_table(table, **kwargs)
 
 

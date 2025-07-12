@@ -33,6 +33,11 @@ def make_geometry_interleaved(
     geom_field = table.schema.field(geom_col_idx)
     geom_column = table.column(geom_col_idx)
 
+    # The GeoArrow box extension type is only struct, not interleaved. It will be
+    # converted to an interleaved polygon separately, if needed.
+    if geom_field.metadata.get(b"ARROW:extension:name") == EXTENSION_NAME.BOX:
+        return table
+
     new_field, new_column = transpose_column(field=geom_field, column=geom_column)
     return table.set_column(geom_col_idx, new_field, new_column)
 
