@@ -1,5 +1,15 @@
 # Developer Documentation
 
+## Clone repository
+
+The repository is rather large because the website is published and saved for _every_ Python tag and release. So the example notebooks are duplicated for every version.
+
+It's suggested to perform a shallow clone of the repository for development without the `gh-pages` branch:
+
+```bash
+git clone --depth 1 https://github.com/developmentseed/lonboard.git
+```
+
 ## Python
 
 Install [uv](https://docs.astral.sh/uv/).
