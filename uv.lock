@@ -2161,6 +2161,7 @@ dev = [
     { name = "pytest" },
     { name = "ruff" },
     { name = "sidecar" },
+    { name = "types-geopandas" },
     { name = "types-shapely" },
 ]
 docs = [
@@ -2215,6 +2216,7 @@ dev = [
     { name = "pytest", specifier = ">=8.3.4" },
     { name = "ruff", specifier = ">=0.12.0" },
     { name = "sidecar", specifier = ">=0.7.0" },
+    { name = "types-geopandas", specifier = ">=1.1.1.20250708" },
     { name = "types-shapely", specifier = ">=2.1.0.20250512" },
 ]
 docs = [
@@ -4255,6 +4257,25 @@ source = { registry = "https://pypi.org/simple" }
 sdist = { url = "https://files.pythonhosted.org/packages/eb/79/72064e6a701c2183016abbbfedaba506d81e30e232a68c9f0d6f6fcd1574/traitlets-5.14.3.tar.gz", hash = "sha256:9ed0579d3502c94b4b3732ac120375cda96f923114522847de4b3bb98b96b6b7", size = 161621, upload-time = "2024-04-19T11:11:49.746Z" }
 wheels = [
     { url = "https://files.pythonhosted.org/packages/00/c0/8f5d070730d7836adc9c9b6408dec68c6ced86b304a9b26a14df072a6e8c/traitlets-5.14.3-py3-none-any.whl", hash = "sha256:b74e89e397b1ed28cc831db7aea759ba6640cb3de13090ca145426688ff1ac4f", size = 85359, upload-time = "2024-04-19T11:11:46.763Z" },
+]
+
+[[package]]
+name = "types-geopandas"
+version = "1.1.1.20250708"
+source = { registry = "https://pypi.org/simple" }
+dependencies = [
+    { name = "numpy", version = "2.0.2", source = { registry = "https://pypi.org/simple" }, marker = "python_full_version < '3.10'" },
+    { name = "numpy", version = "2.2.6", source = { registry = "https://pypi.org/simple" }, marker = "python_full_version == '3.10.*'" },
+    { name = "numpy", version = "2.3.0", source = { registry = "https://pypi.org/simple" }, marker = "python_full_version >= '3.11'" },
+    { name = "pandas-stubs", version = "2.2.2.240807", source = { registry = "https://pypi.org/simple" }, marker = "python_full_version < '3.10'" },
+    { name = "pandas-stubs", version = "2.3.0.250703", source = { registry = "https://pypi.org/simple" }, marker = "python_full_version >= '3.10'" },
+    { name = "pyproj", version = "3.6.0", source = { registry = "https://pypi.org/simple" }, marker = "python_full_version < '3.10'" },
+    { name = "pyproj", version = "3.7.1", source = { registry = "https://pypi.org/simple" }, marker = "python_full_version >= '3.10'" },
+    { name = "types-shapely" },
+]
+sdist = { url = "https://files.pythonhosted.org/packages/89/72/4c461033d8b6b6c959b487aecef2277ffeadebb766e97bb6b0da84f8561a/types_geopandas-1.1.1.20250708.tar.gz", hash = "sha256:276942267558af0a5288a29a9054509c7d03cc00944174406ee4c815c4e65e7c", size = 23395, upload-time = "2025-07-08T03:15:11.603Z" }
+wheels = [
+    { url = "https://files.pythonhosted.org/packages/b3/04/59dc29f8c80cd8f98387584365b75b74bbcbf6680b8e24e6245ac7f6ebeb/types_geopandas-1.1.1.20250708-py3-none-any.whl", hash = "sha256:cf5153d40f18aa007718227955b6f1e31ceff4afcf914fa6ef00b1692848e2cd", size = 31796, upload-time = "2025-07-08T03:15:10.755Z" },
 ]
 
 [[package]]

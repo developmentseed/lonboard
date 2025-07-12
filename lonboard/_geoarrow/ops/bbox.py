@@ -6,7 +6,7 @@ import math
 from dataclasses import dataclass
 
 import numpy as np
-from arro3.core import Array, ChunkedArray, DataType, Field, list_flatten
+from arro3.core import Array, ChunkedArray, DataType, Field, list_flatten, struct_field
 
 from lonboard._constants import EXTENSION_NAME
 
@@ -43,6 +43,9 @@ def total_bounds(field: Field, column: ChunkedArray) -> Bbox:
 
     if extension_type_name == EXTENSION_NAME.MULTIPOLYGON:
         return _total_bounds_nest_3(column)
+
+    if extension_type_name == EXTENSION_NAME.BOX:
+        return _total_bounds_box(column)
 
     assert False
 
@@ -89,5 +92,32 @@ def _total_bounds_nest_3(column: ChunkedArray) -> Bbox:
     flat_array = list_flatten(list_flatten(list_flatten(column)))
     for coords in flat_array:
         bbox.update(_coords_bbox(coords))
+
+    return bbox
+
+
+def _total_bounds_box(column: ChunkedArray) -> Bbox:
+    """Compute the total bounds of a geoarrow.box column."""
+    bbox = Bbox()
+    for chunk in column.chunks:
+        is_2d = len(chunk.field.type.fields) == 4
+        is_3d = len(chunk.field.type.fields) == 6
+
+        if is_2d:
+            minx = np.min(struct_field(chunk, 0))
+            miny = np.min(struct_field(chunk, 1))
+            maxx = np.max(struct_field(chunk, 2))
+            maxy = np.max(struct_field(chunk, 3))
+        elif is_3d:
+            minx = np.min(struct_field(chunk, 0))
+            miny = np.min(struct_field(chunk, 1))
+            maxx = np.max(struct_field(chunk, 3))
+            maxy = np.max(struct_field(chunk, 4))
+        else:
+            raise ValueError(
+                f"Unexpected box type with {len(chunk.field.type.fields)} fields.\n"
+                "Only 2D and 3D boxes are supported.",
+            )
+        bbox.update(Bbox(minx=minx, miny=miny, maxx=maxx, maxy=maxy))
 
     return bbox

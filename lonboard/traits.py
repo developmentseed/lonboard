@@ -27,6 +27,8 @@ from arro3.core import (
 from traitlets import TraitError, Undefined
 from traitlets.utils.descriptions import class_of, describe
 
+from lonboard._constants import EXTENSION_NAME
+from lonboard._geoarrow.box_to_polygon import parse_box_encoded_table
 from lonboard._serialization import (
     ACCESSOR_SERIALIZATION,
     TABLE_SERIALIZATION,
@@ -42,7 +44,6 @@ if TYPE_CHECKING:
     from traitlets.traitlets import TraitType
     from traitlets.utils.sentinel import Sentinel
 
-    from lonboard._constants import EXTENSION_NAME
     from lonboard._layer import BaseArrowLayer
 
 DEFAULT_INITIAL_VIEW_STATE = {
@@ -198,6 +199,11 @@ class ArrowTableTrait(FixedErrorTraitType):
 
         # No restriction on the allowed geometry types in this table
         if allowed_geometry_types:
+            # If we allow polygons as input, then we also allow geoarrow.box.
+            # Convert boxes to Polygons
+            if EXTENSION_NAME.POLYGON in allowed_geometry_types:
+                value = parse_box_encoded_table(value)
+
             geometry_extension_type = value.schema.field(geom_col_idx).metadata.get(
                 b"ARROW:extension:name",
             )
