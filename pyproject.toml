@@ -116,7 +116,13 @@ artifacts = ["lonboard/static/*.js", "lonboard/static/*.css"]
 "MANIFEST.in" = "MANIFEST.in"
 
 [[tool.mypy.overrides]]
-module = ["pyogrio.*", "pyarrow.*", "geodatasets.*", "ipywidgets.*"]
+module = [
+    "pyogrio.*",
+    "pyarrow.*",
+    "geodatasets.*",
+    "ipywidgets.*",
+    "geoarrow.pyarrow.*",
+]
 ignore_missing_imports = true
 
 [tool.ruff.lint]
