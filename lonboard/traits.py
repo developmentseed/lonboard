@@ -169,6 +169,7 @@ class ArrowTableTrait(FixedErrorTraitType):
         *args: Any,
         allowed_geometry_types: set[EXTENSION_NAME] | None = None,
         allowed_dimensions: set[int] | None = None,
+        geometry_required: bool = True,
         **kwargs: Any,
     ) -> None:
         super().__init__(*args, **kwargs)
@@ -176,6 +177,7 @@ class ArrowTableTrait(FixedErrorTraitType):
             sync=True,
             allowed_geometry_types=allowed_geometry_types,
             allowed_dimensions=allowed_dimensions,
+            geometry_required=geometry_required,
             **TABLE_SERIALIZATION,
         )
 
@@ -194,7 +196,8 @@ class ArrowTableTrait(FixedErrorTraitType):
 
         geom_col_idx = get_geometry_column_index(value.schema)
 
-        if geom_col_idx is None:
+        geometry_required = self.metadata.get("geometry_required")
+        if geometry_required and geom_col_idx is None:
             return self.error(obj, value, info="geometry column in table")
 
         # No restriction on the allowed geometry types in this table
