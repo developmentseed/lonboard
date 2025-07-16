@@ -53,7 +53,7 @@ class ArcLayer(BaseArrowLayer):
 
     _layer_type = t.Unicode("arc").tag(sync=True)
 
-    table = ArrowTableTrait()
+    table = ArrowTableTrait(geometry_required=False)
     """A GeoArrow table.
 
     This is the fastest way to plot data from an existing GeoArrow source, such as
