@@ -20,9 +20,11 @@ from arro3.core import Array, ChunkedArray, Schema, Table, struct_field
 
 from lonboard._compat import check_pandas_version
 from lonboard._constants import EXTENSION_NAME
+from lonboard._geoarrow.c_stream_import import import_arrow_c_stream
 from lonboard._geoarrow.extension_types import construct_geometry_array
 from lonboard._geoarrow.geopandas_interop import geopandas_to_geoarrow
 from lonboard._geoarrow.parse_wkb import parse_serialized_table
+from lonboard._geoarrow.row_index import add_positional_row_index
 from lonboard._layer import PathLayer, PolygonLayer, ScatterplotLayer
 from lonboard._map import Map
 from lonboard._utils import (
@@ -275,12 +277,19 @@ def create_layers_from_data_input(
     # Anything with __arrow_c_array__
     if hasattr(data, "__arrow_c_array__"):
         data = cast("ArrowArrayExportable", data)
-        return _viz_geoarrow_array(data, **kwargs)
+        array = Array.from_arrow(data)
+        ca = ChunkedArray([array])
+        return _viz_geoarrow_chunked_array(ca, **kwargs)
 
     # Anything with __arrow_c_stream__
     if hasattr(data, "__arrow_c_stream__"):
         data = cast("ArrowStreamExportable", data)
-        return _viz_geoarrow_table(Table.from_arrow(data), **kwargs)
+        imported_stream = import_arrow_c_stream(data)
+        if isinstance(imported_stream, Table):
+            return _viz_geoarrow_table(imported_stream, **kwargs)
+
+        assert isinstance(imported_stream, ChunkedArray)
+        return _viz_geoarrow_chunked_array(imported_stream, **kwargs)
 
     # Anything with __geo_interface__
     if hasattr(data, "__geo_interface__"):
@@ -432,26 +441,14 @@ def _viz_geo_interface(
     raise ValueError(f"type '{geo_interface_type}' not supported.")
 
 
-def _viz_geoarrow_array(
-    data: ArrowArrayExportable,
+def _viz_geoarrow_chunked_array(
+    ca: ChunkedArray,
     **kwargs: Any,
 ) -> list[ScatterplotLayer | PathLayer | PolygonLayer]:
-    array = Array.from_arrow(data)
-    field = array.field.with_name("geometry")
+    field = ca.field.with_name("geometry")
     schema = Schema([field])
-    table = Table.from_arrays([array], schema=schema)
-
-    num_rows = len(array)
-    if num_rows <= np.iinfo(np.uint8).max:
-        arange_col = Array(np.arange(num_rows, dtype=np.uint8))
-    elif num_rows <= np.iinfo(np.uint16).max:
-        arange_col = Array(np.arange(num_rows, dtype=np.uint16))
-    elif num_rows <= np.iinfo(np.uint32).max:
-        arange_col = Array(np.arange(num_rows, dtype=np.uint32))
-    else:
-        arange_col = Array(np.arange(num_rows, dtype=np.uint64))
-
-    table = table.append_column("row_index", ChunkedArray([arange_col]))
+    table = Table.from_arrays([ca], schema=schema)
+    table = add_positional_row_index(table)
     return _viz_geoarrow_table(table, **kwargs)
 
 
@@ -575,4 +572,4 @@ def _viz_geoarrow_table(
 
         return [PolygonLayer(table=table, **polygon_kwargs)]
 
-    raise ValueError(f"Unsupported extension type: '{geometry_ext_type}'.")
+    raise ValueError(f"Unsupported extension type: '{geometry_ext_type!r}'.")

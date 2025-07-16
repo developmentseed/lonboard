@@ -208,11 +208,11 @@ def construct_geometry_array(  # noqa: PLR0915
     import shapely
     from shapely import GeometryType
 
-    geom_type, coords, offsets = shapely.to_ragged_array(
+    geom_type, coords, np_offsets = shapely.to_ragged_array(
         shapely_arr,
         include_z=include_z,
     )
-    offsets, is_large_offset = offsets_to_arrow(offsets)
+    offsets, is_large_offset = offsets_to_arrow(np_offsets)
 
     if coords.shape[-1] == 2:
         dims = CoordinateDimension.XY

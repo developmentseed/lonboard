@@ -50,7 +50,7 @@ def parse_serialized_table(table: Table) -> list[Table]:
     elif extension_type_name == EXTENSION_NAME.WKT:
         shapely_arr = shapely.from_wkt(column)
     else:
-        raise ValueError(f"Unexpected GeoArrow extension name {extension_type_name}")
+        raise ValueError(f"Unexpected GeoArrow extension name {extension_type_name!r}")
 
     type_ids = np.array(shapely.get_type_id(shapely_arr))
     unique_type_ids = set(np.unique(type_ids))
@@ -115,22 +115,22 @@ def parse_geoparquet_table(table: Table) -> Table:
         return table
 
     schema_metadata = table.schema.metadata or {}
-    geo_metadata = schema_metadata.get(b"geo")
-    if not geo_metadata:
+    geo_metadata_bytes = schema_metadata.get(b"geo")
+    if not geo_metadata_bytes:
         return table
 
     try:
-        geo_metadata = json.loads(geo_metadata)
+        geo_metadata = json.loads(geo_metadata_bytes)
     except json.JSONDecodeError:
         return table
 
     primary_column = geo_metadata["primary_column"]
     column_meta = geo_metadata["columns"][primary_column]
-    column_idx = [
+    column_idxes = [
         idx for idx, name in enumerate(table.column_names) if name == primary_column
     ]
-    assert len(column_idx) == 1, f"Expected one column with name {primary_column}"
-    column_idx = column_idx[0]
+    assert len(column_idxes) == 1, f"Expected one column with name {primary_column}"
+    column_idx = column_idxes[0]
     if column_meta["encoding"] == "WKB":
         existing_field = table.schema.field(column_idx)
         existing_column = table.column(column_idx)

@@ -27,6 +27,8 @@ from arro3.core import (
 from traitlets import TraitError, Undefined
 from traitlets.utils.descriptions import class_of, describe
 
+from lonboard._constants import EXTENSION_NAME
+from lonboard._geoarrow.box_to_polygon import parse_box_encoded_table
 from lonboard._serialization import (
     ACCESSOR_SERIALIZATION,
     TABLE_SERIALIZATION,
@@ -42,7 +44,6 @@ if TYPE_CHECKING:
     from traitlets.traitlets import TraitType
     from traitlets.utils.sentinel import Sentinel
 
-    from lonboard._constants import EXTENSION_NAME
     from lonboard._layer import BaseArrowLayer
 
 DEFAULT_INITIAL_VIEW_STATE = {
@@ -168,6 +169,7 @@ class ArrowTableTrait(FixedErrorTraitType):
         *args: Any,
         allowed_geometry_types: set[EXTENSION_NAME] | None = None,
         allowed_dimensions: set[int] | None = None,
+        geometry_required: bool = True,
         **kwargs: Any,
     ) -> None:
         super().__init__(*args, **kwargs)
@@ -175,6 +177,7 @@ class ArrowTableTrait(FixedErrorTraitType):
             sync=True,
             allowed_geometry_types=allowed_geometry_types,
             allowed_dimensions=allowed_dimensions,
+            geometry_required=geometry_required,
             **TABLE_SERIALIZATION,
         )
 
@@ -193,11 +196,17 @@ class ArrowTableTrait(FixedErrorTraitType):
 
         geom_col_idx = get_geometry_column_index(value.schema)
 
-        if geom_col_idx is None:
+        geometry_required = self.metadata.get("geometry_required")
+        if geometry_required and geom_col_idx is None:
             return self.error(obj, value, info="geometry column in table")
 
         # No restriction on the allowed geometry types in this table
         if allowed_geometry_types:
+            # If we allow polygons as input, then we also allow geoarrow.box.
+            # Convert boxes to Polygons
+            if EXTENSION_NAME.POLYGON in allowed_geometry_types:
+                value = parse_box_encoded_table(value)
+
             geometry_extension_type = value.schema.field(geom_col_idx).metadata.get(
                 b"ARROW:extension:name",
             )

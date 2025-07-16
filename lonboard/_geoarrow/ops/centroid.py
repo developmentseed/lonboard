@@ -5,7 +5,7 @@ from __future__ import annotations
 from dataclasses import dataclass
 
 import numpy as np
-from arro3.core import Array, ChunkedArray, DataType, Field, list_flatten
+from arro3.core import Array, ChunkedArray, DataType, Field, list_flatten, struct_field
 
 from lonboard._constants import EXTENSION_NAME
 
@@ -109,6 +109,9 @@ def weighted_centroid(field: Field, column: ChunkedArray) -> WeightedCentroid:
     if extension_type_name == EXTENSION_NAME.MULTIPOLYGON:
         return _weighted_centroid_nest_3(column)
 
+    if extension_type_name == EXTENSION_NAME.BOX:
+        return _weighted_centroid_box(column)
+
     assert False
 
 
@@ -144,5 +147,36 @@ def _weighted_centroid_nest_3(column: ChunkedArray) -> WeightedCentroid:
     flat_array = list_flatten(list_flatten(list_flatten(column)))
     for coords in flat_array:
         centroid.update_coords(coords)
+
+    return centroid
+
+
+def _weighted_centroid_box(column: ChunkedArray) -> WeightedCentroid:
+    """Compute the weighted centroid of a box geometry."""
+    centroid = WeightedCentroid()
+    for chunk in column.chunks:
+        is_2d = len(chunk.field.type.fields) == 4
+        is_3d = len(chunk.field.type.fields) == 6
+
+        if is_2d:
+            minx = struct_field(chunk, 0)
+            miny = struct_field(chunk, 1)
+            maxx = struct_field(chunk, 2)
+            maxy = struct_field(chunk, 3)
+        elif is_3d:
+            minx = struct_field(chunk, 0)
+            miny = struct_field(chunk, 1)
+            maxx = struct_field(chunk, 3)
+            maxy = struct_field(chunk, 4)
+        else:
+            raise ValueError(
+                f"Unexpected box type with {len(chunk.field.type.fields)} fields.\n"
+                "Only 2D and 3D boxes are supported.",
+            )
+
+        meanx = float((np.mean(minx) + np.mean(maxx)) / 2)
+        meany = float((np.mean(miny) + np.mean(maxy)) / 2)
+
+        centroid.update(WeightedCentroid(x=meanx, y=meany, num_items=len(chunk)))
 
     return centroid
