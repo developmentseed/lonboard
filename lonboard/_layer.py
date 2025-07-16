@@ -20,18 +20,19 @@ from typing import TYPE_CHECKING, Any
 import ipywidgets
 import traitlets
 import traitlets as t
-from arro3.core import Table
+from arro3.core import ChunkedArray, Schema, Table
 
 from lonboard._base import BaseExtension, BaseWidget
 from lonboard._constants import EXTENSION_NAME, OGC_84
 from lonboard._geoarrow._duckdb import from_duckdb as _from_duckdb
-from lonboard._geoarrow.box_to_polygon import parse_box_encoded_table
+from lonboard._geoarrow.c_stream_import import import_arrow_c_stream
 from lonboard._geoarrow.geopandas_interop import geopandas_to_geoarrow
 from lonboard._geoarrow.ops import reproject_table
 from lonboard._geoarrow.ops.bbox import Bbox, total_bounds
 from lonboard._geoarrow.ops.centroid import WeightedCentroid, weighted_centroid
 from lonboard._geoarrow.ops.coord_layout import make_geometry_interleaved
 from lonboard._geoarrow.parse_wkb import parse_serialized_table
+from lonboard._geoarrow.row_index import add_positional_row_index
 from lonboard._serialization import infer_rows_per_chunk
 from lonboard._utils import auto_downcast as _auto_downcast
 from lonboard._utils import get_geometry_column_index, remove_extension_kwargs
@@ -361,6 +362,16 @@ class BaseArrowLayer(BaseLayer):
             A Layer with the initialized data.
 
         """
+        imported_stream = import_arrow_c_stream(table)
+        if isinstance(imported_stream, Table):
+            table_o3 = imported_stream
+        else:
+            assert isinstance(imported_stream, ChunkedArray)
+            field = imported_stream.field.with_name("geometry")
+            schema = Schema([field])
+            table = Table.from_arrays([imported_stream], schema=schema)
+            table = add_positional_row_index(table)
+
         table_o3 = Table.from_arrow(table)
         parsed_tables = parse_serialized_table(table_o3)
         assert len(parsed_tables) == 1, (
@@ -1067,7 +1078,6 @@ class PolygonLayer(BaseArrowLayer):
         _rows_per_chunk: int | None = None,
         **kwargs: Unpack[PolygonLayerKwargs],
     ) -> None:
-        table = parse_box_encoded_table(Table.from_arrow(table))
         super().__init__(table=table, _rows_per_chunk=_rows_per_chunk, **kwargs)
 
     @classmethod
@@ -1857,7 +1867,6 @@ class SolidPolygonLayer(BaseArrowLayer):
         _rows_per_chunk: int | None = None,
         **kwargs: Unpack[SolidPolygonLayerKwargs],
     ) -> None:
-        table = parse_box_encoded_table(Table.from_arrow(table))
         super().__init__(table=table, _rows_per_chunk=_rows_per_chunk, **kwargs)
 
     @classmethod

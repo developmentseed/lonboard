@@ -1,7 +1,6 @@
 from __future__ import annotations
 
 from pathlib import Path
-from typing import TYPE_CHECKING, cast
 
 import geoarrow.pyarrow as gap
 import geodatasets
@@ -9,8 +8,8 @@ import numpy as np
 import pyarrow as pa
 import pyarrow.parquet as pq
 import pytest
-from geoarrow.rust.core import geometry_col, read_pyogrio, to_wkb
-from pyogrio.raw import read_arrow
+from geoarrow.rust.core import to_wkb
+from pyogrio import read_arrow
 
 from lonboard import PathLayer, PolygonLayer, ScatterplotLayer, viz
 from lonboard._constants import EXTENSION_NAME
@@ -18,9 +17,6 @@ from lonboard._constants import EXTENSION_NAME
 from . import compat
 
 fixtures_dir = Path(__file__).parent / "fixtures"
-
-if TYPE_CHECKING:
-    from arro3.core import Table
 
 
 def mixed_shapely_geoms():
@@ -156,31 +152,31 @@ def test_viz_shapely_mixed_array():
     assert isinstance(map_.layers[2], PolygonLayer)
 
 
-# read_pyogrio currently keeps geometries as WKB
 @pytest.mark.skipif(not compat.HAS_SHAPELY, reason="shapely not available")
-def test_viz_geoarrow_rust_table():
-    table = read_pyogrio(geodatasets.get_path("naturalearth.land"))
+def test_viz_pyogrio_table():
+    _meta, table = read_arrow(geodatasets.get_path("naturalearth.land"))
     map_ = viz(table)
     assert isinstance(map_.layers[0], PolygonLayer)
 
 
-# read_pyogrio currently keeps geometries as WKB
 @pytest.mark.skipif(not compat.HAS_SHAPELY, reason="shapely not available")
-def test_viz_geoarrow_rust_array():
-    # `read_pyogrio` has incorrect typing currently
-    # https://github.com/geoarrow/geoarrow-rs/pull/807
-    table = cast("Table", read_pyogrio(geodatasets.get_path("naturalearth.land")))
-    map_ = viz(geometry_col(table).chunk(0))
+def test_viz_pyogrio_chunked_array():
+    _meta, table = read_arrow(geodatasets.get_path("naturalearth.land"))
+    map_ = viz(table["wkb_geometry"])
     assert isinstance(map_.layers[0], PolygonLayer)
 
 
-# read_pyogrio currently keeps geometries as WKB
-@pytest.mark.skip("to_wkb gives panic on todo!(), not yet implemented")
 @pytest.mark.skipif(not compat.HAS_SHAPELY, reason="shapely not available")
-def test_viz_geoarrow_rust_wkb_array():
-    table = read_pyogrio(geodatasets.get_path("naturalearth.land"))
-    arr = geometry_col(table).chunk(0)
-    wkb_arr = to_wkb(arr)
+def test_viz_pyogrio_array():
+    _meta, table = read_arrow(geodatasets.get_path("naturalearth.land"))
+    map_ = viz(table["wkb_geometry"].chunk(0))
+    assert isinstance(map_.layers[0], PolygonLayer)
+
+
+@pytest.mark.skipif(not compat.HAS_SHAPELY, reason="shapely not available")
+def test_viz_array_reader():
+    _meta, table = read_arrow(geodatasets.get_path("naturalearth.land"))
+    wkb_arr = to_wkb(table["wkb_geometry"])
     map_ = viz(wkb_arr)
     assert isinstance(map_.layers[0], PolygonLayer)
 
