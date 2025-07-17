@@ -4,6 +4,7 @@
 
 - [Speedtest data ![](../assets/scatterplot-layer-network-speeds.jpg)](../examples/internet-speeds) using [`ScatterplotLayer`](../api/layers/scatterplot-layer)
 - [North America roads ![](../assets/path-layer-roads.jpg)](../examples/north-america-roads) using [`PathLayer`](../api/layers/path-layer)
+- [Spatially-Partitioned GeoParquet ![](../assets/spatially-partitioned-geoparquet.jpg)](../examples/overture-geoparquet) using [`PolygonLayer`](../api/layers/polygon-layer)
 - [Overture Maps buildings ![](../assets/overture.jpg)](../examples/overture-maps) using [`PolygonLayer`](../api/layers/polygon-layer)
 - [Air Traffic Control animation ![](../assets/air-traffic-control.gif)](../examples/air-traffic-control) using [`TripsLayer`](../api/layers/trips-layer)
 - [Global boundaries ![](../assets/boundaries.png)](../examples/global-boundaries) using [`PolygonLayer`](../api/layers/polygon-layer)
