@@ -432,6 +432,8 @@
       
         
       
+        
+      
     
     
     
@@ -548,6 +550,29 @@
   
   
     <li class="md-nav__item">
+      <a href="../overture-geoparquet/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    Visualizing Spatially-Partitioned GeoParquet with Lonboard, Obstore &amp; GeoArrow-Rust
+    
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
       <a href="../air-traffic-control/" class="md-nav__link">
         
   
@@ -642,6 +667,15 @@
       Table of contents
     </label>
     <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
+      
+        <li class="md-nav__item">
+  <a href="#dependencies" class="md-nav__link">
+    <span class="md-ellipsis">
+      Dependencies
+    </span>
+  </a>
+  
+</li>
       
         <li class="md-nav__item">
   <a href="#imports" class="md-nav__link">
@@ -755,10 +789,10 @@
       
         
         
-        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_2_11" >
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_2_12" >
         
           
-          <label class="md-nav__link" for="__nav_2_11" id="__nav_2_11_label" tabindex="0">
+          <label class="md-nav__link" for="__nav_2_12" id="__nav_2_12_label" tabindex="0">
             
   
   
@@ -771,8 +805,8 @@
             <span class="md-nav__icon md-icon"></span>
           </label>
         
-        <nav class="md-nav" data-md-level="2" aria-labelledby="__nav_2_11_label" aria-expanded="false">
-          <label class="md-nav__title" for="__nav_2_11">
+        <nav class="md-nav" data-md-level="2" aria-labelledby="__nav_2_12_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_2_12">
             <span class="md-nav__icon md-icon"></span>
             Integrations
           </label>
@@ -899,10 +933,10 @@
       
         
         
-        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_2_12" >
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_2_13" >
         
           
-          <label class="md-nav__link" for="__nav_2_12" id="__nav_2_12_label" tabindex="0">
+          <label class="md-nav__link" for="__nav_2_13" id="__nav_2_13_label" tabindex="0">
             
   
   
@@ -915,8 +949,8 @@
             <span class="md-nav__icon md-icon"></span>
           </label>
         
-        <nav class="md-nav" data-md-level="2" aria-labelledby="__nav_2_12_label" aria-expanded="false">
-          <label class="md-nav__title" for="__nav_2_12">
+        <nav class="md-nav" data-md-level="2" aria-labelledby="__nav_2_13_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_2_13">
             <span class="md-nav__icon md-icon"></span>
             30 Day Map Challenge
           </label>
@@ -2297,6 +2331,15 @@
     <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
       
         <li class="md-nav__item">
+  <a href="#dependencies" class="md-nav__link">
+    <span class="md-ellipsis">
+      Dependencies
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
   <a href="#imports" class="md-nav__link">
     <span class="md-ellipsis">
       Imports
@@ -2795,6 +2838,58 @@ span.linenos.special { color: #000000; background-color: #ffffc0; padding-left: 
 </style>
 <!-- End of mermaid configuration --><div class="jupyter-wrapper">
 <div class="jp-Notebook" data-jp-theme-light="true" data-jp-theme-name="JupyterLab Light">
+<div class="jp-Cell jp-CodeCell jp-Notebook-cell jp-mod-noOutputs">
+<div class="jp-Cell jp-CodeCell jp-Notebook-cell jp-mod-noOutputs" id="cell-id=889465c9">
+<div class="jp-Cell-inputWrapper" tabindex="0">
+<div class="jp-Collapser jp-InputCollapser jp-Cell-inputCollapser">
+</div>
+<div class="jp-InputArea jp-Cell-inputArea">
+<div class="jp-InputPrompt jp-InputArea-prompt">In [ ]:</div><div class="jp-CodeMirrorEditor jp-Editor jp-InputArea-editor" data-type="inline">
+<div class="CodeMirror cm-s-jupyter">
+<div class="zeroclipboard-container">
+<clipboard-copy ,="" aria-label="Copy to Clipboard" for="cell-1">
+<div>
+<span class="notice" hidden="">Copied!</span>
+<svg aria-hidden="true" class="clipboard-copy-icon" data-view-component="true" height="20" version="1.1" viewbox="0 0 16 16" width="20">
+<path d="M0 6.75C0 5.784.784 5 1.75 5h1.5a.75.75 0 010 1.5h-1.5a.25.25 0 00-.25.25v7.5c0 .138.112.25.25.25h7.5a.25.25 0 00.25-.25v-1.5a.75.75 0 011.5 0v1.5A1.75 1.75 0 019.25 16h-7.5A1.75 1.75 0 010 14.25v-7.5z" fill="currentColor" fill-rule="evenodd"></path>
+<path d="M5 1.75C5 .784 5.784 0 6.75 0h7.5C15.216 0 16 .784 16 1.75v7.5A1.75 1.75 0 0114.25 11h-7.5A1.75 1.75 0 015 9.25v-7.5zm1.75-.25a.25.25 0 00-.25.25v7.5c0 .138.112.25.25.25h7.5a.25.25 0 00.25-.25v-7.5a.25.25 0 00-.25-.25h-7.5z" fill="currentColor" fill-rule="evenodd"></path>
+</svg>
+</div>
+</clipboard-copy>
+</div>
+<div class="highlight-ipynb hl-python"><pre><span></span><span class="c1"># /// script</span>
+<span class="c1"># requires-python = "&gt;=3.12"</span>
+<span class="c1"># dependencies = [</span>
+<span class="c1">#     "geopandas",</span>
+<span class="c1">#     "lonboard",</span>
+<span class="c1">#     "matplotlib",</span>
+<span class="c1">#     "numpy",</span>
+<span class="c1">#     "pandas",</span>
+<span class="c1">#     "pyarrow",</span>
+<span class="c1">#     "requests",</span>
+<span class="c1">#     "shapely",</span>
+<span class="c1"># ]</span>
+<span class="c1"># ///</span>
+</pre></div>
+<div class="clipboard-copy-txt" id="cell-1"># /// script
+# requires-python = "&gt;=3.12"
+# dependencies = [
+#     "geopandas",
+#     "lonboard",
+#     "matplotlib",
+#     "numpy",
+#     "pandas",
+#     "pyarrow",
+#     "requests",
+#     "shapely",
+# ]
+# ///</div>
+</div>
+</div>
+</div>
+</div>
+</div>
+</div>
 <div class="jp-Cell jp-MarkdownCell jp-Notebook-cell" id="cell-id=ef775cd2">
 <div class="jp-Cell-inputWrapper" tabindex="0">
 <div class="jp-Collapser jp-InputCollapser jp-Cell-inputCollapser">
@@ -2804,6 +2899,20 @@ span.linenos.special { color: #000000; background-color: #ffffc0; padding-left: 
 <h1 id="us-county-to-county-migration">U.S. County-to-County Migration<a class="anchor-link" href="#us-county-to-county-migration">¶</a></h1><p>This notebook is derived from the original deck.gl example in JavaScript, which you can see <a href="https://deck.gl/examples/brushing-extension">here</a>.</p>
 <p>This dataset originally came from the U.S. Census Bureau and represents people moving in and out of each county between 2009-2013.</p>
 <p>You can view a <a href="https://notebooksharing.space/view/1ce5db3fbfc7806587325d68a82f8553d152c05b4f3bd07d3cc84a85f1e3d619#displayOptions=">hosted version of this notebook on Notebook Sharing Space</a> (6MB download).</p>
+</div>
+</div>
+</div>
+</div>
+<div class="jp-Cell jp-MarkdownCell jp-Notebook-cell" id="cell-id=6b4469a3">
+<div class="jp-Cell-inputWrapper" tabindex="0">
+<div class="jp-Collapser jp-InputCollapser jp-Cell-inputCollapser">
+</div>
+<div class="jp-InputArea jp-Cell-inputArea"><div class="jp-InputPrompt jp-InputArea-prompt">
+</div><div class="jp-RenderedHTMLCommon jp-RenderedMarkdown jp-MarkdownOutput" data-mime-type="text/markdown">
+<h2 id="dependencies">Dependencies<a class="anchor-link" href="#dependencies">¶</a></h2><p>Install <a href="https://docs.astral.sh/uv"><code>uv</code></a> and then launch this notebook with:</p>
+<pre><code>uvx juv run examples/migration.ipynb
+</code></pre>
+<p>(The <code>uvx</code> command is included when installing <code>uv</code>).</p>
 </div>
 </div>
 </div>
@@ -2827,7 +2936,7 @@ span.linenos.special { color: #000000; background-color: #ffffc0; padding-left: 
 <div class="jp-InputPrompt jp-InputArea-prompt">In [1]:</div><div class="jp-CodeMirrorEditor jp-Editor jp-InputArea-editor" data-type="inline">
 <div class="CodeMirror cm-s-jupyter">
 <div class="zeroclipboard-container">
-<clipboard-copy ,="" aria-label="Copy to Clipboard" for="cell-1">
+<clipboard-copy ,="" aria-label="Copy to Clipboard" for="cell-2">
 <div>
 <span class="notice" hidden="">Copied!</span>
 <svg aria-hidden="true" class="clipboard-copy-icon" data-view-component="true" height="20" version="1.1" viewbox="0 0 16 16" width="20">
@@ -2849,7 +2958,7 @@ span.linenos.special { color: #000000; background-color: #ffffc0; padding-left: 
 <span class="kn">from</span><span class="w"> </span><span class="nn">lonboard.experimental</span><span class="w"> </span><span class="kn">import</span> <span class="n">ArcLayer</span>
 <span class="kn">from</span><span class="w"> </span><span class="nn">lonboard.layer_extension</span><span class="w"> </span><span class="kn">import</span> <span class="n">BrushingExtension</span>
 </pre></div>
-<div class="clipboard-copy-txt" id="cell-1">import geopandas as gpd
+<div class="clipboard-copy-txt" id="cell-2">import geopandas as gpd
 import numpy as np
 import pandas as pd
 import pyarrow as pa
@@ -2885,7 +2994,7 @@ from lonboard.layer_extension import BrushingExtension</div>
 <div class="jp-InputPrompt jp-InputArea-prompt">In [2]:</div><div class="jp-CodeMirrorEditor jp-Editor jp-InputArea-editor" data-type="inline">
 <div class="CodeMirror cm-s-jupyter">
 <div class="zeroclipboard-container">
-<clipboard-copy ,="" aria-label="Copy to Clipboard" for="cell-2">
+<clipboard-copy ,="" aria-label="Copy to Clipboard" for="cell-3">
 <div>
 <span class="notice" hidden="">Copied!</span>
 <svg aria-hidden="true" class="clipboard-copy-icon" data-view-component="true" height="20" version="1.1" viewbox="0 0 16 16" width="20">
@@ -2899,7 +3008,7 @@ from lonboard.layer_extension import BrushingExtension</div>
 <span class="n">r</span> <span class="o">=</span> <span class="n">requests</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="n">url</span><span class="p">)</span>
 <span class="n">source_data</span> <span class="o">=</span> <span class="n">r</span><span class="o">.</span><span class="n">json</span><span class="p">()</span>
 </pre></div>
-<div class="clipboard-copy-txt" id="cell-2">url = "https://raw.githubusercontent.com/visgl/deck.gl-data/master/examples/arc/counties.json"
+<div class="clipboard-copy-txt" id="cell-3">url = "https://raw.githubusercontent.com/visgl/deck.gl-data/master/examples/arc/counties.json"
 r = requests.get(url)
 source_data = r.json()</div>
 </div>
@@ -2925,10 +3034,10 @@ source_data = r.json()</div>
 <div class="jp-Collapser jp-InputCollapser jp-Cell-inputCollapser">
 </div>
 <div class="jp-InputArea jp-Cell-inputArea">
-<div class="jp-InputPrompt jp-InputArea-prompt">In [ ]:</div><div class="jp-CodeMirrorEditor jp-Editor jp-InputArea-editor" data-type="inline">
+<div class="jp-InputPrompt jp-InputArea-prompt">In [3]:</div><div class="jp-CodeMirrorEditor jp-Editor jp-InputArea-editor" data-type="inline">
 <div class="CodeMirror cm-s-jupyter">
 <div class="zeroclipboard-container">
-<clipboard-copy ,="" aria-label="Copy to Clipboard" for="cell-3">
+<clipboard-copy ,="" aria-label="Copy to Clipboard" for="cell-4">
 <div>
 <span class="notice" hidden="">Copied!</span>
 <svg aria-hidden="true" class="clipboard-copy-icon" data-view-component="true" height="20" version="1.1" viewbox="0 0 16 16" width="20">
@@ -3013,7 +3122,7 @@ source_data = r.json()</div>
 <span class="n">targets</span> <span class="o">=</span> <span class="nb">sorted</span><span class="p">(</span><span class="n">targets</span><span class="p">,</span> <span class="n">key</span><span class="o">=</span><span class="k">lambda</span> <span class="n">d</span><span class="p">:</span> <span class="nb">abs</span><span class="p">(</span><span class="n">d</span><span class="p">[</span><span class="s2">"net"</span><span class="p">]),</span> <span class="n">reverse</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
 <span class="n">normalizer</span> <span class="o">=</span> <span class="n">Normalize</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="nb">abs</span><span class="p">(</span><span class="n">targets</span><span class="p">[</span><span class="mi">0</span><span class="p">][</span><span class="s2">"net"</span><span class="p">]))</span>
 </pre></div>
-<div class="clipboard-copy-txt" id="cell-3">arcs = []
+<div class="clipboard-copy-txt" id="cell-4">arcs = []
 targets = []
 sources = []
 pairs = {}
@@ -3128,7 +3237,7 @@ normalizer = Normalize(0, abs(targets[0]["net"]))</div>
 <div class="jp-InputPrompt jp-InputArea-prompt">In [4]:</div><div class="jp-CodeMirrorEditor jp-Editor jp-InputArea-editor" data-type="inline">
 <div class="CodeMirror cm-s-jupyter">
 <div class="zeroclipboard-container">
-<clipboard-copy ,="" aria-label="Copy to Clipboard" for="cell-4">
+<clipboard-copy ,="" aria-label="Copy to Clipboard" for="cell-5">
 <div>
 <span class="notice" hidden="">Copied!</span>
 <svg aria-hidden="true" class="clipboard-copy-icon" data-view-component="true" height="20" version="1.1" viewbox="0 0 16 16" width="20">
@@ -3149,7 +3258,7 @@ normalizer = Normalize(0, abs(targets[0]["net"]))</div>
 <span class="n">SOURCE_LOOKUP</span> <span class="o">=</span> <span class="mi">0</span>
 <span class="n">TARGET_LOOKUP</span> <span class="o">=</span> <span class="mi">1</span>
 </pre></div>
-<div class="clipboard-copy-txt" id="cell-4"># migrate out
+<div class="clipboard-copy-txt" id="cell-5"># migrate out
 SOURCE_COLOR = [166, 3, 3]
 # migrate in
 TARGET_COLOR = [35, 181, 184]
@@ -3173,7 +3282,7 @@ TARGET_LOOKUP = 1</div>
 <div class="jp-InputPrompt jp-InputArea-prompt">In [5]:</div><div class="jp-CodeMirrorEditor jp-Editor jp-InputArea-editor" data-type="inline">
 <div class="CodeMirror cm-s-jupyter">
 <div class="zeroclipboard-container">
-<clipboard-copy ,="" aria-label="Copy to Clipboard" for="cell-5">
+<clipboard-copy ,="" aria-label="Copy to Clipboard" for="cell-6">
 <div>
 <span class="notice" hidden="">Copied!</span>
 <svg aria-hidden="true" class="clipboard-copy-icon" data-view-component="true" height="20" version="1.1" viewbox="0 0 16 16" width="20">
@@ -3186,7 +3295,7 @@ TARGET_LOOKUP = 1</div>
 <div class="highlight-ipynb hl-python"><pre><span></span><span class="n">brushing_extension</span> <span class="o">=</span> <span class="n">BrushingExtension</span><span class="p">()</span>
 <span class="n">brushing_radius</span> <span class="o">=</span> <span class="mi">200000</span>
 </pre></div>
-<div class="clipboard-copy-txt" id="cell-5">brushing_extension = BrushingExtension()
+<div class="clipboard-copy-txt" id="cell-6">brushing_extension = BrushingExtension()
 brushing_radius = 200000</div>
 </div>
 </div>
@@ -3213,7 +3322,7 @@ brushing_radius = 200000</div>
 <div class="jp-InputPrompt jp-InputArea-prompt">In [6]:</div><div class="jp-CodeMirrorEditor jp-Editor jp-InputArea-editor" data-type="inline">
 <div class="CodeMirror cm-s-jupyter">
 <div class="zeroclipboard-container">
-<clipboard-copy ,="" aria-label="Copy to Clipboard" for="cell-6">
+<clipboard-copy ,="" aria-label="Copy to Clipboard" for="cell-7">
 <div>
 <span class="notice" hidden="">Copied!</span>
 <svg aria-hidden="true" class="clipboard-copy-icon" data-view-component="true" height="20" version="1.1" viewbox="0 0 16 16" width="20">
@@ -3235,7 +3344,7 @@ brushing_radius = 200000</div>
 <span class="n">source_colors_lookup</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">where</span><span class="p">(</span><span class="n">source_gdf</span><span class="p">[</span><span class="s2">"gain"</span><span class="p">]</span> <span class="o">&gt;</span> <span class="mi">0</span><span class="p">,</span> <span class="n">TARGET_LOOKUP</span><span class="p">,</span> <span class="n">SOURCE_LOOKUP</span><span class="p">)</span>
 <span class="n">source_fill_colors</span> <span class="o">=</span> <span class="n">COLORS</span><span class="p">[</span><span class="n">source_colors_lookup</span><span class="p">]</span>
 </pre></div>
-<div class="clipboard-copy-txt" id="cell-6">source_arr = np.array([source["position"] for source in sources])
+<div class="clipboard-copy-txt" id="cell-7">source_arr = np.array([source["position"] for source in sources])
 source_positions = shapely.points(source_arr[:, 0], source_arr[:, 1])
 source_gdf = gpd.GeoDataFrame(
     pd.DataFrame.from_records(sources)[["name", "radius", "gain"]],
@@ -3271,7 +3380,7 @@ source_fill_colors = COLORS[source_colors_lookup]</div>
 <div class="jp-InputPrompt jp-InputArea-prompt">In [7]:</div><div class="jp-CodeMirrorEditor jp-Editor jp-InputArea-editor" data-type="inline">
 <div class="CodeMirror cm-s-jupyter">
 <div class="zeroclipboard-container">
-<clipboard-copy ,="" aria-label="Copy to Clipboard" for="cell-7">
+<clipboard-copy ,="" aria-label="Copy to Clipboard" for="cell-8">
 <div>
 <span class="notice" hidden="">Copied!</span>
 <svg aria-hidden="true" class="clipboard-copy-icon" data-view-component="true" height="20" version="1.1" viewbox="0 0 16 16" width="20">
@@ -3290,7 +3399,7 @@ source_fill_colors = COLORS[source_colors_lookup]</div>
     <span class="n">brushing_radius</span><span class="o">=</span><span class="n">brushing_radius</span><span class="p">,</span>
 <span class="p">)</span>
 </pre></div>
-<div class="clipboard-copy-txt" id="cell-7">source_layer = ScatterplotLayer.from_geopandas(
+<div class="clipboard-copy-txt" id="cell-8">source_layer = ScatterplotLayer.from_geopandas(
     source_gdf,
     get_fill_color=source_fill_colors,
     radius_scale=3000,
@@ -3312,7 +3421,7 @@ source_fill_colors = COLORS[source_colors_lookup]</div>
 <div class="jp-InputPrompt jp-InputArea-prompt">In [8]:</div><div class="jp-CodeMirrorEditor jp-Editor jp-InputArea-editor" data-type="inline">
 <div class="CodeMirror cm-s-jupyter">
 <div class="zeroclipboard-container">
-<clipboard-copy ,="" aria-label="Copy to Clipboard" for="cell-8">
+<clipboard-copy ,="" aria-label="Copy to Clipboard" for="cell-9">
 <div>
 <span class="notice" hidden="">Copied!</span>
 <svg aria-hidden="true" class="clipboard-copy-icon" data-view-component="true" height="20" version="1.1" viewbox="0 0 16 16" width="20">
@@ -3338,7 +3447,7 @@ source_fill_colors = COLORS[source_colors_lookup]</div>
 <span class="p">)</span>
 <span class="n">target_line_colors</span> <span class="o">=</span> <span class="n">COLORS</span><span class="p">[</span><span class="n">target_line_colors_lookup</span><span class="p">]</span>
 </pre></div>
-<div class="clipboard-copy-txt" id="cell-8">targets_arr = np.array([target["position"] for target in targets])
+<div class="clipboard-copy-txt" id="cell-9">targets_arr = np.array([target["position"] for target in targets])
 target_positions = shapely.points(targets_arr[:, 0], targets_arr[:, 1])
 target_gdf = gpd.GeoDataFrame(
     pd.DataFrame.from_records(targets)[["name", "gain", "loss", "net"]],
@@ -3378,7 +3487,7 @@ target_line_colors = COLORS[target_line_colors_lookup]</div>
 <div class="jp-InputPrompt jp-InputArea-prompt">In [9]:</div><div class="jp-CodeMirrorEditor jp-Editor jp-InputArea-editor" data-type="inline">
 <div class="CodeMirror cm-s-jupyter">
 <div class="zeroclipboard-container">
-<clipboard-copy ,="" aria-label="Copy to Clipboard" for="cell-9">
+<clipboard-copy ,="" aria-label="Copy to Clipboard" for="cell-10">
 <div>
 <span class="notice" hidden="">Copied!</span>
 <svg aria-hidden="true" class="clipboard-copy-icon" data-view-component="true" height="20" version="1.1" viewbox="0 0 16 16" width="20">
@@ -3400,7 +3509,7 @@ target_line_colors = COLORS[target_line_colors_lookup]</div>
     <span class="n">brushing_radius</span><span class="o">=</span><span class="n">brushing_radius</span><span class="p">,</span>
 <span class="p">)</span>
 </pre></div>
-<div class="clipboard-copy-txt" id="cell-9">target_ring_layer = ScatterplotLayer.from_geopandas(
+<div class="clipboard-copy-txt" id="cell-10">target_ring_layer = ScatterplotLayer.from_geopandas(
     target_gdf,
     get_line_color=target_line_colors,
     radius_scale=4000,
@@ -3439,7 +3548,7 @@ marked under the "experimental" module.</p>
 <div class="jp-InputPrompt jp-InputArea-prompt">In [10]:</div><div class="jp-CodeMirrorEditor jp-Editor jp-InputArea-editor" data-type="inline">
 <div class="CodeMirror cm-s-jupyter">
 <div class="zeroclipboard-container">
-<clipboard-copy ,="" aria-label="Copy to Clipboard" for="cell-10">
+<clipboard-copy ,="" aria-label="Copy to Clipboard" for="cell-11">
 <div>
 <span class="notice" hidden="">Copied!</span>
 <svg aria-hidden="true" class="clipboard-copy-icon" data-view-component="true" height="20" version="1.1" viewbox="0 0 16 16" width="20">
@@ -3467,7 +3576,7 @@ marked under the "experimental" module.</p>
     <span class="n">brushing_radius</span><span class="o">=</span><span class="n">brushing_radius</span><span class="p">,</span>
 <span class="p">)</span>
 </pre></div>
-<div class="clipboard-copy-txt" id="cell-10">value = np.array([arc["value"] for arc in arcs])
+<div class="clipboard-copy-txt" id="cell-11">value = np.array([arc["value"] for arc in arcs])
 get_source_position = np.array([arc["source"] for arc in arcs])
 get_target_position = np.array([arc["target"] for arc in arcs])
 table = pa.table({"value": value})
@@ -3508,10 +3617,10 @@ arc_layer = ArcLayer(
 <div class="jp-Collapser jp-InputCollapser jp-Cell-inputCollapser">
 </div>
 <div class="jp-InputArea jp-Cell-inputArea">
-<div class="jp-InputPrompt jp-InputArea-prompt">In [11]:</div><div class="jp-CodeMirrorEditor jp-Editor jp-InputArea-editor" data-type="inline">
+<div class="jp-InputPrompt jp-InputArea-prompt">In [12]:</div><div class="jp-CodeMirrorEditor jp-Editor jp-InputArea-editor" data-type="inline">
 <div class="CodeMirror cm-s-jupyter">
 <div class="zeroclipboard-container">
-<clipboard-copy ,="" aria-label="Copy to Clipboard" for="cell-11">
+<clipboard-copy ,="" aria-label="Copy to Clipboard" for="cell-12">
 <div>
 <span class="notice" hidden="">Copied!</span>
 <svg aria-hidden="true" class="clipboard-copy-icon" data-view-component="true" height="20" version="1.1" viewbox="0 0 16 16" width="20">
@@ -3524,7 +3633,7 @@ arc_layer = ArcLayer(
 <div class="highlight-ipynb hl-python"><pre><span></span><span class="n">map_</span> <span class="o">=</span> <span class="n">Map</span><span class="p">([</span><span class="n">source_layer</span><span class="p">,</span> <span class="n">target_ring_layer</span><span class="p">,</span> <span class="n">arc_layer</span><span class="p">],</span> <span class="n">picking_radius</span><span class="o">=</span><span class="mi">10</span><span class="p">)</span>
 <span class="n">map_</span>
 </pre></div>
-<div class="clipboard-copy-txt" id="cell-11">map_ = Map([source_layer, target_ring_layer, arc_layer], picking_radius=10)
+<div class="clipboard-copy-txt" id="cell-12">map_ = Map([source_layer, target_ring_layer, arc_layer], picking_radius=10)
 map_</div>
 </div>
 </div>
@@ -3535,14 +3644,9 @@ map_</div>
 </div>
 <div class="jp-OutputArea jp-Cell-outputArea">
 <div class="jp-OutputArea-child jp-OutputArea-executeResult">
-<div class="jp-OutputPrompt jp-OutputArea-prompt">Out[11]:</div>
-<div class="jupyter-widgets jp-OutputArea-output jp-OutputArea-executeResult" id="b82f0fb1-e955-45e7-b751-ae1b9fa2564f" tabindex="0">
-<script type="text/javascript">
-var element = document.getElementById('b82f0fb1-e955-45e7-b751-ae1b9fa2564f');
-</script>
-<script type="application/vnd.jupyter.widget-view+json">
-{"model_id": "b83afa4869dd4150b7252d877f95cc8a", "version_major": 2, "version_minor": 0}
-</script>
+<div class="jp-OutputPrompt jp-OutputArea-prompt">Out[12]:</div>
+<div class="jp-RenderedText jp-OutputArea-output jp-OutputArea-executeResult" data-mime-type="text/plain" tabindex="0">
+<pre>Map(custom_attribution='', layers=(ScatterplotLayer(brushing_radius=200000.0, extensions=(BrushingExtension(),…</pre>
 </div>
 </div>
 </div>
@@ -3557,7 +3661,7 @@ var element = document.getElementById('b82f0fb1-e955-45e7-b751-ae1b9fa2564f');
 <div class="jp-InputPrompt jp-InputArea-prompt">In [ ]:</div><div class="jp-CodeMirrorEditor jp-Editor jp-InputArea-editor" data-type="inline">
 <div class="CodeMirror cm-s-jupyter">
 <div class="zeroclipboard-container">
-<clipboard-copy ,="" aria-label="Copy to Clipboard" for="cell-12">
+<clipboard-copy ,="" aria-label="Copy to Clipboard" for="cell-13">
 <div>
 <span class="notice" hidden="">Copied!</span>
 <svg aria-hidden="true" class="clipboard-copy-icon" data-view-component="true" height="20" version="1.1" viewbox="0 0 16 16" width="20">
@@ -3569,7 +3673,7 @@ var element = document.getElementById('b82f0fb1-e955-45e7-b751-ae1b9fa2564f');
 </div>
 <div class="highlight-ipynb hl-python"><pre><span></span>
 </pre></div>
-<div class="clipboard-copy-txt" id="cell-12"></div>
+<div class="clipboard-copy-txt" id="cell-13"></div>
 </div>
 </div>
 </div>

@@ -18,7 +18,7 @@
         <link rel="prev" href="../north-america-roads/">
       
       
-        <link rel="next" href="../air-traffic-control/">
+        <link rel="next" href="../overture-geoparquet/">
       
       
       <link rel="icon" href="../../assets/images/favicon.png">
@@ -432,6 +432,8 @@
       
         
       
+        
+      
     
     
     
@@ -608,6 +610,29 @@
   
   
     <li class="md-nav__item">
+      <a href="../overture-geoparquet/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    Visualizing Spatially-Partitioned GeoParquet with Lonboard, Obstore &amp; GeoArrow-Rust
+    
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
       <a href="../air-traffic-control/" class="md-nav__link">
         
   
@@ -764,10 +789,10 @@
       
         
         
-        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_2_11" >
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_2_12" >
         
           
-          <label class="md-nav__link" for="__nav_2_11" id="__nav_2_11_label" tabindex="0">
+          <label class="md-nav__link" for="__nav_2_12" id="__nav_2_12_label" tabindex="0">
             
   
   
@@ -780,8 +805,8 @@
             <span class="md-nav__icon md-icon"></span>
           </label>
         
-        <nav class="md-nav" data-md-level="2" aria-labelledby="__nav_2_11_label" aria-expanded="false">
-          <label class="md-nav__title" for="__nav_2_11">
+        <nav class="md-nav" data-md-level="2" aria-labelledby="__nav_2_12_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_2_12">
             <span class="md-nav__icon md-icon"></span>
             Integrations
           </label>
@@ -908,10 +933,10 @@
       
         
         
-        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_2_12" >
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_2_13" >
         
           
-          <label class="md-nav__link" for="__nav_2_12" id="__nav_2_12_label" tabindex="0">
+          <label class="md-nav__link" for="__nav_2_13" id="__nav_2_13_label" tabindex="0">
             
   
   
@@ -924,8 +949,8 @@
             <span class="md-nav__icon md-icon"></span>
           </label>
         
-        <nav class="md-nav" data-md-level="2" aria-labelledby="__nav_2_12_label" aria-expanded="false">
-          <label class="md-nav__title" for="__nav_2_12">
+        <nav class="md-nav" data-md-level="2" aria-labelledby="__nav_2_13_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_2_13">
             <span class="md-nav__icon md-icon"></span>
             30 Day Map Challenge
           </label>
@@ -2813,6 +2838,52 @@ span.linenos.special { color: #000000; background-color: #ffffc0; padding-left: 
 </style>
 <!-- End of mermaid configuration --><div class="jupyter-wrapper">
 <div class="jp-Notebook" data-jp-theme-light="true" data-jp-theme-name="JupyterLab Light">
+<div class="jp-Cell jp-CodeCell jp-Notebook-cell jp-mod-noOutputs">
+<div class="jp-Cell jp-CodeCell jp-Notebook-cell jp-mod-noOutputs">
+<div class="jp-Cell-inputWrapper" tabindex="0">
+<div class="jp-Collapser jp-InputCollapser jp-Cell-inputCollapser">
+</div>
+<div class="jp-InputArea jp-Cell-inputArea">
+<div class="jp-InputPrompt jp-InputArea-prompt">In [ ]:</div><div class="jp-CodeMirrorEditor jp-Editor jp-InputArea-editor" data-type="inline">
+<div class="CodeMirror cm-s-jupyter">
+<div class="zeroclipboard-container">
+<clipboard-copy ,="" aria-label="Copy to Clipboard" for="cell-1">
+<div>
+<span class="notice" hidden="">Copied!</span>
+<svg aria-hidden="true" class="clipboard-copy-icon" data-view-component="true" height="20" version="1.1" viewbox="0 0 16 16" width="20">
+<path d="M0 6.75C0 5.784.784 5 1.75 5h1.5a.75.75 0 010 1.5h-1.5a.25.25 0 00-.25.25v7.5c0 .138.112.25.25.25h7.5a.25.25 0 00.25-.25v-1.5a.75.75 0 011.5 0v1.5A1.75 1.75 0 019.25 16h-7.5A1.75 1.75 0 010 14.25v-7.5z" fill="currentColor" fill-rule="evenodd"></path>
+<path d="M5 1.75C5 .784 5.784 0 6.75 0h7.5C15.216 0 16 .784 16 1.75v7.5A1.75 1.75 0 0114.25 11h-7.5A1.75 1.75 0 015 9.25v-7.5zm1.75-.25a.25.25 0 00-.25.25v7.5c0 .138.112.25.25.25h7.5a.25.25 0 00.25-.25v-7.5a.25.25 0 00-.25-.25h-7.5z" fill="currentColor" fill-rule="evenodd"></path>
+</svg>
+</div>
+</clipboard-copy>
+</div>
+<div class="highlight-ipynb hl-python"><pre><span></span><span class="c1"># /// script</span>
+<span class="c1"># requires-python = "&gt;=3.12"</span>
+<span class="c1"># dependencies = [</span>
+<span class="c1">#     "lonboard",</span>
+<span class="c1">#     "matplotlib",</span>
+<span class="c1">#     "numpy",</span>
+<span class="c1">#     "overturemaps",</span>
+<span class="c1">#     "palettable",</span>
+<span class="c1"># ]</span>
+<span class="c1"># ///</span>
+</pre></div>
+<div class="clipboard-copy-txt" id="cell-1"># /// script
+# requires-python = "&gt;=3.12"
+# dependencies = [
+#     "lonboard",
+#     "matplotlib",
+#     "numpy",
+#     "overturemaps",
+#     "palettable",
+# ]
+# ///</div>
+</div>
+</div>
+</div>
+</div>
+</div>
+</div>
 <div class="jp-Cell jp-MarkdownCell jp-Notebook-cell">
 <div class="jp-Cell-inputWrapper" tabindex="0">
 <div class="jp-Collapser jp-InputCollapser jp-Cell-inputCollapser">
@@ -2834,9 +2905,10 @@ span.linenos.special { color: #000000; background-color: #ffffc0; padding-left: 
 </div>
 <div class="jp-InputArea jp-Cell-inputArea"><div class="jp-InputPrompt jp-InputArea-prompt">
 </div><div class="jp-RenderedHTMLCommon jp-RenderedMarkdown jp-MarkdownOutput" data-mime-type="text/markdown">
-<h2 id="dependencies">Dependencies<a class="anchor-link" href="#dependencies">¶</a></h2><p>This notebook requires Lonboard (tested with version 0.8) and <code>overturemaps</code> (tested with version 0.4). To install <code>overturemaps</code>, run:</p>
-<pre><code>pip install overturemaps
+<h2 id="dependencies">Dependencies<a class="anchor-link" href="#dependencies">¶</a></h2><p>Install <a href="https://docs.astral.sh/uv"><code>uv</code></a> and then launch this notebook with:</p>
+<pre><code>uvx juv run examples/overture-maps.ipynb
 </code></pre>
+<p>(The <code>uvx</code> command is included when installing <code>uv</code>).</p>
 </div>
 </div>
 </div>
@@ -2860,7 +2932,7 @@ span.linenos.special { color: #000000; background-color: #ffffc0; padding-left: 
 <div class="jp-InputPrompt jp-InputArea-prompt">In [ ]:</div><div class="jp-CodeMirrorEditor jp-Editor jp-InputArea-editor" data-type="inline">
 <div class="CodeMirror cm-s-jupyter">
 <div class="zeroclipboard-container">
-<clipboard-copy ,="" aria-label="Copy to Clipboard" for="cell-1">
+<clipboard-copy ,="" aria-label="Copy to Clipboard" for="cell-2">
 <div>
 <span class="notice" hidden="">Copied!</span>
 <svg aria-hidden="true" class="clipboard-copy-icon" data-view-component="true" height="20" version="1.1" viewbox="0 0 16 16" width="20">
@@ -2878,7 +2950,7 @@ span.linenos.special { color: #000000; background-color: #ffffc0; padding-left: 
 <span class="kn">from</span><span class="w"> </span><span class="nn">lonboard</span><span class="w"> </span><span class="kn">import</span> <span class="n">Map</span><span class="p">,</span> <span class="n">PolygonLayer</span>
 <span class="kn">from</span><span class="w"> </span><span class="nn">lonboard.colormap</span><span class="w"> </span><span class="kn">import</span> <span class="n">apply_continuous_cmap</span>
 </pre></div>
-<div class="clipboard-copy-txt" id="cell-1">import numpy as np
+<div class="clipboard-copy-txt" id="cell-2">import numpy as np
 import overturemaps
 from matplotlib.colors import LogNorm
 from palettable.colorbrewer.sequential import Oranges_9
@@ -2910,7 +2982,7 @@ from lonboard.colormap import apply_continuous_cmap</div>
 <div class="jp-InputPrompt jp-InputArea-prompt">In [ ]:</div><div class="jp-CodeMirrorEditor jp-Editor jp-InputArea-editor" data-type="inline">
 <div class="CodeMirror cm-s-jupyter">
 <div class="zeroclipboard-container">
-<clipboard-copy ,="" aria-label="Copy to Clipboard" for="cell-2">
+<clipboard-copy ,="" aria-label="Copy to Clipboard" for="cell-3">
 <div>
 <span class="notice" hidden="">Copied!</span>
 <svg aria-hidden="true" class="clipboard-copy-icon" data-view-component="true" height="20" version="1.1" viewbox="0 0 16 16" width="20">
@@ -2922,7 +2994,7 @@ from lonboard.colormap import apply_continuous_cmap</div>
 </div>
 <div class="highlight-ipynb hl-python"><pre><span></span><span class="n">bbox</span> <span class="o">=</span> <span class="o">-</span><span class="mf">74.02169</span><span class="p">,</span> <span class="mf">40.696423</span><span class="p">,</span> <span class="o">-</span><span class="mf">73.891338</span><span class="p">,</span> <span class="mf">40.831263</span>
 </pre></div>
-<div class="clipboard-copy-txt" id="cell-2">bbox = -74.02169, 40.696423, -73.891338, 40.831263</div>
+<div class="clipboard-copy-txt" id="cell-3">bbox = -74.02169, 40.696423, -73.891338, 40.831263</div>
 </div>
 </div>
 </div>
@@ -2949,7 +3021,7 @@ from lonboard.colormap import apply_continuous_cmap</div>
 <div class="jp-InputPrompt jp-InputArea-prompt">In [ ]:</div><div class="jp-CodeMirrorEditor jp-Editor jp-InputArea-editor" data-type="inline">
 <div class="CodeMirror cm-s-jupyter">
 <div class="zeroclipboard-container">
-<clipboard-copy ,="" aria-label="Copy to Clipboard" for="cell-3">
+<clipboard-copy ,="" aria-label="Copy to Clipboard" for="cell-4">
 <div>
 <span class="notice" hidden="">Copied!</span>
 <svg aria-hidden="true" class="clipboard-copy-icon" data-view-component="true" height="20" version="1.1" viewbox="0 0 16 16" width="20">
@@ -2961,7 +3033,7 @@ from lonboard.colormap import apply_continuous_cmap</div>
 </div>
 <div class="highlight-ipynb hl-python"><pre><span></span><span class="n">table</span> <span class="o">=</span> <span class="n">overturemaps</span><span class="o">.</span><span class="n">record_batch_reader</span><span class="p">(</span><span class="s2">"building"</span><span class="p">,</span> <span class="n">bbox</span><span class="p">)</span><span class="o">.</span><span class="n">read_all</span><span class="p">()</span>
 </pre></div>
-<div class="clipboard-copy-txt" id="cell-3">table = overturemaps.record_batch_reader("building", bbox).read_all()</div>
+<div class="clipboard-copy-txt" id="cell-4">table = overturemaps.record_batch_reader("building", bbox).read_all()</div>
 </div>
 </div>
 </div>
@@ -2987,7 +3059,7 @@ from lonboard.colormap import apply_continuous_cmap</div>
 <div class="jp-InputPrompt jp-InputArea-prompt">In [ ]:</div><div class="jp-CodeMirrorEditor jp-Editor jp-InputArea-editor" data-type="inline">
 <div class="CodeMirror cm-s-jupyter">
 <div class="zeroclipboard-container">
-<clipboard-copy ,="" aria-label="Copy to Clipboard" for="cell-4">
+<clipboard-copy ,="" aria-label="Copy to Clipboard" for="cell-5">
 <div>
 <span class="notice" hidden="">Copied!</span>
 <svg aria-hidden="true" class="clipboard-copy-icon" data-view-component="true" height="20" version="1.1" viewbox="0 0 16 16" width="20">
@@ -3000,7 +3072,7 @@ from lonboard.colormap import apply_continuous_cmap</div>
 <div class="highlight-ipynb hl-python"><pre><span></span><span class="n">heights</span> <span class="o">=</span> <span class="n">table</span><span class="p">[</span><span class="s2">"height"</span><span class="p">]</span><span class="o">.</span><span class="n">to_numpy</span><span class="p">()</span>
 <span class="n">heights</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">nan_to_num</span><span class="p">(</span><span class="n">heights</span><span class="p">,</span> <span class="n">nan</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span>
 </pre></div>
-<div class="clipboard-copy-txt" id="cell-4">heights = table["height"].to_numpy()
+<div class="clipboard-copy-txt" id="cell-5">heights = table["height"].to_numpy()
 heights = np.nan_to_num(heights, nan=1)</div>
 </div>
 </div>
@@ -3027,7 +3099,7 @@ heights = np.nan_to_num(heights, nan=1)</div>
 <div class="jp-InputPrompt jp-InputArea-prompt">In [ ]:</div><div class="jp-CodeMirrorEditor jp-Editor jp-InputArea-editor" data-type="inline">
 <div class="CodeMirror cm-s-jupyter">
 <div class="zeroclipboard-container">
-<clipboard-copy ,="" aria-label="Copy to Clipboard" for="cell-5">
+<clipboard-copy ,="" aria-label="Copy to Clipboard" for="cell-6">
 <div>
 <span class="notice" hidden="">Copied!</span>
 <svg aria-hidden="true" class="clipboard-copy-icon" data-view-component="true" height="20" version="1.1" viewbox="0 0 16 16" width="20">
@@ -3040,7 +3112,7 @@ heights = np.nan_to_num(heights, nan=1)</div>
 <div class="highlight-ipynb hl-python"><pre><span></span><span class="n">normalizer</span> <span class="o">=</span> <span class="n">LogNorm</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="n">heights</span><span class="o">.</span><span class="n">max</span><span class="p">(),</span> <span class="n">clip</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
 <span class="n">normalized_heights</span> <span class="o">=</span> <span class="n">normalizer</span><span class="p">(</span><span class="n">heights</span><span class="p">)</span>
 </pre></div>
-<div class="clipboard-copy-txt" id="cell-5">normalizer = LogNorm(1, heights.max(), clip=True)
+<div class="clipboard-copy-txt" id="cell-6">normalizer = LogNorm(1, heights.max(), clip=True)
 normalized_heights = normalizer(heights)</div>
 </div>
 </div>
@@ -3067,7 +3139,7 @@ normalized_heights = normalizer(heights)</div>
 <div class="jp-InputPrompt jp-InputArea-prompt">In [ ]:</div><div class="jp-CodeMirrorEditor jp-Editor jp-InputArea-editor" data-type="inline">
 <div class="CodeMirror cm-s-jupyter">
 <div class="zeroclipboard-container">
-<clipboard-copy ,="" aria-label="Copy to Clipboard" for="cell-6">
+<clipboard-copy ,="" aria-label="Copy to Clipboard" for="cell-7">
 <div>
 <span class="notice" hidden="">Copied!</span>
 <svg aria-hidden="true" class="clipboard-copy-icon" data-view-component="true" height="20" version="1.1" viewbox="0 0 16 16" width="20">
@@ -3079,7 +3151,7 @@ normalized_heights = normalizer(heights)</div>
 </div>
 <div class="highlight-ipynb hl-python"><pre><span></span><span class="n">Oranges_9</span><span class="o">.</span><span class="n">mpl_colormap</span>
 </pre></div>
-<div class="clipboard-copy-txt" id="cell-6">Oranges_9.mpl_colormap</div>
+<div class="clipboard-copy-txt" id="cell-7">Oranges_9.mpl_colormap</div>
 </div>
 </div>
 </div>
@@ -3105,7 +3177,7 @@ normalized_heights = normalizer(heights)</div>
 <div class="jp-InputPrompt jp-InputArea-prompt">In [ ]:</div><div class="jp-CodeMirrorEditor jp-Editor jp-InputArea-editor" data-type="inline">
 <div class="CodeMirror cm-s-jupyter">
 <div class="zeroclipboard-container">
-<clipboard-copy ,="" aria-label="Copy to Clipboard" for="cell-7">
+<clipboard-copy ,="" aria-label="Copy to Clipboard" for="cell-8">
 <div>
 <span class="notice" hidden="">Copied!</span>
 <svg aria-hidden="true" class="clipboard-copy-icon" data-view-component="true" height="20" version="1.1" viewbox="0 0 16 16" width="20">
@@ -3117,7 +3189,7 @@ normalized_heights = normalizer(heights)</div>
 </div>
 <div class="highlight-ipynb hl-python"><pre><span></span><span class="n">colors</span> <span class="o">=</span> <span class="n">apply_continuous_cmap</span><span class="p">(</span><span class="n">normalized_heights</span><span class="p">,</span> <span class="n">Oranges_9</span><span class="p">)</span>
 </pre></div>
-<div class="clipboard-copy-txt" id="cell-7">colors = apply_continuous_cmap(normalized_heights, Oranges_9)</div>
+<div class="clipboard-copy-txt" id="cell-8">colors = apply_continuous_cmap(normalized_heights, Oranges_9)</div>
 </div>
 </div>
 </div>
@@ -3143,7 +3215,7 @@ normalized_heights = normalizer(heights)</div>
 <div class="jp-InputPrompt jp-InputArea-prompt">In [ ]:</div><div class="jp-CodeMirrorEditor jp-Editor jp-InputArea-editor" data-type="inline">
 <div class="CodeMirror cm-s-jupyter">
 <div class="zeroclipboard-container">
-<clipboard-copy ,="" aria-label="Copy to Clipboard" for="cell-8">
+<clipboard-copy ,="" aria-label="Copy to Clipboard" for="cell-9">
 <div>
 <span class="notice" hidden="">Copied!</span>
 <svg aria-hidden="true" class="clipboard-copy-icon" data-view-component="true" height="20" version="1.1" viewbox="0 0 16 16" width="20">
@@ -3161,7 +3233,7 @@ normalized_heights = normalizer(heights)</div>
     <span class="n">get_fill_color</span><span class="o">=</span><span class="n">colors</span><span class="p">,</span>
 <span class="p">)</span>
 </pre></div>
-<div class="clipboard-copy-txt" id="cell-8">layer = PolygonLayer(
+<div class="clipboard-copy-txt" id="cell-9">layer = PolygonLayer(
     # Select only a few attribute columns from the table
     table=table.select(["id", "height", "geometry", "names"]),
     extruded=True,
@@ -3193,7 +3265,7 @@ normalized_heights = normalizer(heights)</div>
 <div class="jp-InputPrompt jp-InputArea-prompt">In [ ]:</div><div class="jp-CodeMirrorEditor jp-Editor jp-InputArea-editor" data-type="inline">
 <div class="CodeMirror cm-s-jupyter">
 <div class="zeroclipboard-container">
-<clipboard-copy ,="" aria-label="Copy to Clipboard" for="cell-9">
+<clipboard-copy ,="" aria-label="Copy to Clipboard" for="cell-10">
 <div>
 <span class="notice" hidden="">Copied!</span>
 <svg aria-hidden="true" class="clipboard-copy-icon" data-view-component="true" height="20" version="1.1" viewbox="0 0 16 16" width="20">
@@ -3213,7 +3285,7 @@ normalized_heights = normalizer(heights)</div>
 <span class="n">m</span> <span class="o">=</span> <span class="n">Map</span><span class="p">(</span><span class="n">layer</span><span class="p">,</span> <span class="n">view_state</span><span class="o">=</span><span class="n">view_state</span><span class="p">)</span>
 <span class="n">m</span>
 </pre></div>
-<div class="clipboard-copy-txt" id="cell-9">view_state = {
+<div class="clipboard-copy-txt" id="cell-10">view_state = {
     "longitude": -73.98416810282863,
     "latitude": 40.72651721370669,
     "zoom": 12.726630492730596,
@@ -3236,7 +3308,7 @@ m</div>
 <div class="jp-InputPrompt jp-InputArea-prompt">In [ ]:</div><div class="jp-CodeMirrorEditor jp-Editor jp-InputArea-editor" data-type="inline">
 <div class="CodeMirror cm-s-jupyter">
 <div class="zeroclipboard-container">
-<clipboard-copy ,="" aria-label="Copy to Clipboard" for="cell-10">
+<clipboard-copy ,="" aria-label="Copy to Clipboard" for="cell-11">
 <div>
 <span class="notice" hidden="">Copied!</span>
 <svg aria-hidden="true" class="clipboard-copy-icon" data-view-component="true" height="20" version="1.1" viewbox="0 0 16 16" width="20">
@@ -3248,7 +3320,7 @@ m</div>
 </div>
 <div class="highlight-ipynb hl-python"><pre><span></span>
 </pre></div>
-<div class="clipboard-copy-txt" id="cell-10"></div>
+<div class="clipboard-copy-txt" id="cell-11"></div>
 </div>
 </div>
 </div>

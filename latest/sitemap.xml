@@ -2,234 +2,238 @@
 <urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
     <url>
          <loc>https://developmentseed.org/lonboard/latest/</loc>
-         <lastmod>2025-06-18</lastmod>
+         <lastmod>2025-07-17</lastmod>
     </url>
     <url>
          <loc>https://developmentseed.org/lonboard/latest/CHANGELOG/</loc>
-         <lastmod>2025-06-18</lastmod>
+         <lastmod>2025-07-17</lastmod>
     </url>
     <url>
          <loc>https://developmentseed.org/lonboard/latest/alternatives/</loc>
-         <lastmod>2025-06-18</lastmod>
+         <lastmod>2025-07-17</lastmod>
     </url>
     <url>
          <loc>https://developmentseed.org/lonboard/latest/cli/</loc>
-         <lastmod>2025-06-18</lastmod>
+         <lastmod>2025-07-17</lastmod>
     </url>
     <url>
          <loc>https://developmentseed.org/lonboard/latest/external-resources/</loc>
-         <lastmod>2025-06-18</lastmod>
+         <lastmod>2025-07-17</lastmod>
     </url>
     <url>
          <loc>https://developmentseed.org/lonboard/latest/performance/</loc>
-         <lastmod>2025-06-18</lastmod>
+         <lastmod>2025-07-17</lastmod>
     </url>
     <url>
          <loc>https://developmentseed.org/lonboard/latest/troubleshooting/</loc>
-         <lastmod>2025-06-18</lastmod>
+         <lastmod>2025-07-17</lastmod>
     </url>
     <url>
          <loc>https://developmentseed.org/lonboard/latest/api/basemap/</loc>
-         <lastmod>2025-06-18</lastmod>
+         <lastmod>2025-07-17</lastmod>
     </url>
     <url>
          <loc>https://developmentseed.org/lonboard/latest/api/colormap/</loc>
-         <lastmod>2025-06-18</lastmod>
+         <lastmod>2025-07-17</lastmod>
     </url>
     <url>
          <loc>https://developmentseed.org/lonboard/latest/api/controls/</loc>
-         <lastmod>2025-06-18</lastmod>
+         <lastmod>2025-07-17</lastmod>
     </url>
     <url>
          <loc>https://developmentseed.org/lonboard/latest/api/map/</loc>
-         <lastmod>2025-06-18</lastmod>
+         <lastmod>2025-07-17</lastmod>
     </url>
     <url>
          <loc>https://developmentseed.org/lonboard/latest/api/traits/</loc>
-         <lastmod>2025-06-18</lastmod>
+         <lastmod>2025-07-17</lastmod>
     </url>
     <url>
          <loc>https://developmentseed.org/lonboard/latest/api/viz/</loc>
-         <lastmod>2025-06-18</lastmod>
+         <lastmod>2025-07-17</lastmod>
     </url>
     <url>
          <loc>https://developmentseed.org/lonboard/latest/api/layer-extensions/</loc>
-         <lastmod>2025-06-18</lastmod>
+         <lastmod>2025-07-17</lastmod>
     </url>
     <url>
          <loc>https://developmentseed.org/lonboard/latest/api/layer-extensions/brushing-extension/</loc>
-         <lastmod>2025-06-18</lastmod>
+         <lastmod>2025-07-17</lastmod>
     </url>
     <url>
          <loc>https://developmentseed.org/lonboard/latest/api/layer-extensions/collision-filter-extension/</loc>
-         <lastmod>2025-06-18</lastmod>
+         <lastmod>2025-07-17</lastmod>
     </url>
     <url>
          <loc>https://developmentseed.org/lonboard/latest/api/layer-extensions/data-filter-extension/</loc>
-         <lastmod>2025-06-18</lastmod>
+         <lastmod>2025-07-17</lastmod>
     </url>
     <url>
          <loc>https://developmentseed.org/lonboard/latest/api/layer-extensions/path-style-extension/</loc>
-         <lastmod>2025-06-18</lastmod>
+         <lastmod>2025-07-17</lastmod>
     </url>
     <url>
          <loc>https://developmentseed.org/lonboard/latest/api/layers/arc-layer/</loc>
-         <lastmod>2025-06-18</lastmod>
+         <lastmod>2025-07-17</lastmod>
     </url>
     <url>
          <loc>https://developmentseed.org/lonboard/latest/api/layers/base-layer/</loc>
-         <lastmod>2025-06-18</lastmod>
+         <lastmod>2025-07-17</lastmod>
     </url>
     <url>
          <loc>https://developmentseed.org/lonboard/latest/api/layers/bitmap-layer/</loc>
-         <lastmod>2025-06-18</lastmod>
+         <lastmod>2025-07-17</lastmod>
     </url>
     <url>
          <loc>https://developmentseed.org/lonboard/latest/api/layers/bitmap-tile-layer/</loc>
-         <lastmod>2025-06-18</lastmod>
+         <lastmod>2025-07-17</lastmod>
     </url>
     <url>
          <loc>https://developmentseed.org/lonboard/latest/api/layers/column-layer/</loc>
-         <lastmod>2025-06-18</lastmod>
+         <lastmod>2025-07-17</lastmod>
     </url>
     <url>
          <loc>https://developmentseed.org/lonboard/latest/api/layers/heatmap-layer/</loc>
-         <lastmod>2025-06-18</lastmod>
+         <lastmod>2025-07-17</lastmod>
     </url>
     <url>
          <loc>https://developmentseed.org/lonboard/latest/api/layers/path-layer/</loc>
-         <lastmod>2025-06-18</lastmod>
+         <lastmod>2025-07-17</lastmod>
     </url>
     <url>
          <loc>https://developmentseed.org/lonboard/latest/api/layers/point-cloud-layer/</loc>
-         <lastmod>2025-06-18</lastmod>
+         <lastmod>2025-07-17</lastmod>
     </url>
     <url>
          <loc>https://developmentseed.org/lonboard/latest/api/layers/polygon-layer/</loc>
-         <lastmod>2025-06-18</lastmod>
+         <lastmod>2025-07-17</lastmod>
     </url>
     <url>
          <loc>https://developmentseed.org/lonboard/latest/api/layers/scatterplot-layer/</loc>
-         <lastmod>2025-06-18</lastmod>
+         <lastmod>2025-07-17</lastmod>
     </url>
     <url>
          <loc>https://developmentseed.org/lonboard/latest/api/layers/solid-polygon-layer/</loc>
-         <lastmod>2025-06-18</lastmod>
+         <lastmod>2025-07-17</lastmod>
     </url>
     <url>
          <loc>https://developmentseed.org/lonboard/latest/api/layers/text-layer/</loc>
-         <lastmod>2025-06-18</lastmod>
+         <lastmod>2025-07-17</lastmod>
     </url>
     <url>
          <loc>https://developmentseed.org/lonboard/latest/api/layers/trips-layer/</loc>
-         <lastmod>2025-06-18</lastmod>
+         <lastmod>2025-07-17</lastmod>
     </url>
     <url>
          <loc>https://developmentseed.org/lonboard/latest/ecosystem/</loc>
-         <lastmod>2025-06-18</lastmod>
+         <lastmod>2025-07-17</lastmod>
     </url>
     <url>
          <loc>https://developmentseed.org/lonboard/latest/ecosystem/duckdb/</loc>
-         <lastmod>2025-06-18</lastmod>
+         <lastmod>2025-07-17</lastmod>
     </url>
     <url>
          <loc>https://developmentseed.org/lonboard/latest/ecosystem/geoarrow/</loc>
-         <lastmod>2025-06-18</lastmod>
+         <lastmod>2025-07-17</lastmod>
     </url>
     <url>
          <loc>https://developmentseed.org/lonboard/latest/ecosystem/geopandas/</loc>
-         <lastmod>2025-06-18</lastmod>
+         <lastmod>2025-07-17</lastmod>
     </url>
     <url>
          <loc>https://developmentseed.org/lonboard/latest/ecosystem/jupyter-widgets/</loc>
-         <lastmod>2025-06-18</lastmod>
+         <lastmod>2025-07-17</lastmod>
     </url>
     <url>
          <loc>https://developmentseed.org/lonboard/latest/ecosystem/panel/</loc>
-         <lastmod>2025-06-18</lastmod>
+         <lastmod>2025-07-17</lastmod>
     </url>
     <url>
          <loc>https://developmentseed.org/lonboard/latest/ecosystem/pyodide/</loc>
-         <lastmod>2025-06-18</lastmod>
+         <lastmod>2025-07-17</lastmod>
     </url>
     <url>
          <loc>https://developmentseed.org/lonboard/latest/ecosystem/shiny/</loc>
-         <lastmod>2025-06-18</lastmod>
+         <lastmod>2025-07-17</lastmod>
     </url>
     <url>
          <loc>https://developmentseed.org/lonboard/latest/examples/</loc>
-         <lastmod>2025-06-18</lastmod>
+         <lastmod>2025-07-17</lastmod>
     </url>
     <url>
          <loc>https://developmentseed.org/lonboard/latest/examples/air-traffic-control/</loc>
-         <lastmod>2025-06-18</lastmod>
+         <lastmod>2025-07-17</lastmod>
     </url>
     <url>
          <loc>https://developmentseed.org/lonboard/latest/examples/ais-movingpandas/</loc>
-         <lastmod>2025-06-18</lastmod>
+         <lastmod>2025-07-17</lastmod>
     </url>
     <url>
          <loc>https://developmentseed.org/lonboard/latest/examples/clicked-point/</loc>
-         <lastmod>2025-06-18</lastmod>
+         <lastmod>2025-07-17</lastmod>
     </url>
     <url>
          <loc>https://developmentseed.org/lonboard/latest/examples/column-layer/</loc>
-         <lastmod>2025-06-18</lastmod>
+         <lastmod>2025-07-17</lastmod>
     </url>
     <url>
          <loc>https://developmentseed.org/lonboard/latest/examples/data-filter-extension/</loc>
-         <lastmod>2025-06-18</lastmod>
+         <lastmod>2025-07-17</lastmod>
     </url>
     <url>
          <loc>https://developmentseed.org/lonboard/latest/examples/duckdb/</loc>
-         <lastmod>2025-06-18</lastmod>
+         <lastmod>2025-07-17</lastmod>
     </url>
     <url>
          <loc>https://developmentseed.org/lonboard/latest/examples/global-boundaries/</loc>
-         <lastmod>2025-06-18</lastmod>
+         <lastmod>2025-07-17</lastmod>
     </url>
     <url>
          <loc>https://developmentseed.org/lonboard/latest/examples/internet-speeds/</loc>
-         <lastmod>2025-06-18</lastmod>
+         <lastmod>2025-07-17</lastmod>
     </url>
     <url>
          <loc>https://developmentseed.org/lonboard/latest/examples/linked-maps/</loc>
-         <lastmod>2025-06-18</lastmod>
+         <lastmod>2025-07-17</lastmod>
     </url>
     <url>
          <loc>https://developmentseed.org/lonboard/latest/examples/migration/</loc>
-         <lastmod>2025-06-18</lastmod>
+         <lastmod>2025-07-17</lastmod>
     </url>
     <url>
          <loc>https://developmentseed.org/lonboard/latest/examples/north-america-roads/</loc>
-         <lastmod>2025-06-18</lastmod>
+         <lastmod>2025-07-17</lastmod>
+    </url>
+    <url>
+         <loc>https://developmentseed.org/lonboard/latest/examples/overture-geoparquet/</loc>
+         <lastmod>2025-07-17</lastmod>
     </url>
     <url>
          <loc>https://developmentseed.org/lonboard/latest/examples/overture-maps/</loc>
-         <lastmod>2025-06-18</lastmod>
+         <lastmod>2025-07-17</lastmod>
     </url>
     <url>
          <loc>https://developmentseed.org/lonboard/latest/examples/integrations/color-picker/</loc>
-         <lastmod>2025-06-18</lastmod>
+         <lastmod>2025-07-17</lastmod>
     </url>
     <url>
          <loc>https://developmentseed.org/lonboard/latest/examples/integrations/sidecar/</loc>
-         <lastmod>2025-06-18</lastmod>
+         <lastmod>2025-07-17</lastmod>
     </url>
     <url>
          <loc>https://developmentseed.org/lonboard/latest/examples/map_challenge/1-points/</loc>
-         <lastmod>2025-06-18</lastmod>
+         <lastmod>2025-07-17</lastmod>
     </url>
     <url>
          <loc>https://developmentseed.org/lonboard/latest/examples/map_challenge/6-asia/</loc>
-         <lastmod>2025-06-18</lastmod>
+         <lastmod>2025-07-17</lastmod>
     </url>
     <url>
          <loc>https://developmentseed.org/lonboard/latest/how-it-works/</loc>
-         <lastmod>2025-06-18</lastmod>
+         <lastmod>2025-07-17</lastmod>
     </url>
     <url>
          <loc>https://developmentseed.org/lonboard/latest/how-it-works/internals/</loc>
-         <lastmod>2025-06-18</lastmod>
+         <lastmod>2025-07-17</lastmod>
     </url>
 </urlset>

@@ -432,6 +432,8 @@
       
         
       
+        
+      
     
     
     
@@ -617,6 +619,29 @@
   
   
     <li class="md-nav__item">
+      <a href="../overture-geoparquet/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    Visualizing Spatially-Partitioned GeoParquet with Lonboard, Obstore &amp; GeoArrow-Rust
+    
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
       <a href="../air-traffic-control/" class="md-nav__link">
         
   
@@ -773,10 +798,10 @@
       
         
         
-        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_2_11" >
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_2_12" >
         
           
-          <label class="md-nav__link" for="__nav_2_11" id="__nav_2_11_label" tabindex="0">
+          <label class="md-nav__link" for="__nav_2_12" id="__nav_2_12_label" tabindex="0">
             
   
   
@@ -789,8 +814,8 @@
             <span class="md-nav__icon md-icon"></span>
           </label>
         
-        <nav class="md-nav" data-md-level="2" aria-labelledby="__nav_2_11_label" aria-expanded="false">
-          <label class="md-nav__title" for="__nav_2_11">
+        <nav class="md-nav" data-md-level="2" aria-labelledby="__nav_2_12_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_2_12">
             <span class="md-nav__icon md-icon"></span>
             Integrations
           </label>
@@ -917,10 +942,10 @@
       
         
         
-        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_2_12" >
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_2_13" >
         
           
-          <label class="md-nav__link" for="__nav_2_12" id="__nav_2_12_label" tabindex="0">
+          <label class="md-nav__link" for="__nav_2_13" id="__nav_2_13_label" tabindex="0">
             
   
   
@@ -933,8 +958,8 @@
             <span class="md-nav__icon md-icon"></span>
           </label>
         
-        <nav class="md-nav" data-md-level="2" aria-labelledby="__nav_2_12_label" aria-expanded="false">
-          <label class="md-nav__title" for="__nav_2_12">
+        <nav class="md-nav" data-md-level="2" aria-labelledby="__nav_2_13_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_2_13">
             <span class="md-nav__icon md-icon"></span>
             30 Day Map Challenge
           </label>
@@ -2831,6 +2856,54 @@ span.linenos.special { color: #000000; background-color: #ffffc0; padding-left: 
 </style>
 <!-- End of mermaid configuration --><div class="jupyter-wrapper">
 <div class="jp-Notebook" data-jp-theme-light="true" data-jp-theme-name="JupyterLab Light">
+<div class="jp-Cell jp-CodeCell jp-Notebook-cell jp-mod-noOutputs">
+<div class="jp-Cell jp-CodeCell jp-Notebook-cell jp-mod-noOutputs" id="cell-id=c03322d9">
+<div class="jp-Cell-inputWrapper" tabindex="0">
+<div class="jp-Collapser jp-InputCollapser jp-Cell-inputCollapser">
+</div>
+<div class="jp-InputArea jp-Cell-inputArea">
+<div class="jp-InputPrompt jp-InputArea-prompt">In [ ]:</div><div class="jp-CodeMirrorEditor jp-Editor jp-InputArea-editor" data-type="inline">
+<div class="CodeMirror cm-s-jupyter">
+<div class="zeroclipboard-container">
+<clipboard-copy ,="" aria-label="Copy to Clipboard" for="cell-1">
+<div>
+<span class="notice" hidden="">Copied!</span>
+<svg aria-hidden="true" class="clipboard-copy-icon" data-view-component="true" height="20" version="1.1" viewbox="0 0 16 16" width="20">
+<path d="M0 6.75C0 5.784.784 5 1.75 5h1.5a.75.75 0 010 1.5h-1.5a.25.25 0 00-.25.25v7.5c0 .138.112.25.25.25h7.5a.25.25 0 00.25-.25v-1.5a.75.75 0 011.5 0v1.5A1.75 1.75 0 019.25 16h-7.5A1.75 1.75 0 010 14.25v-7.5z" fill="currentColor" fill-rule="evenodd"></path>
+<path d="M5 1.75C5 .784 5.784 0 6.75 0h7.5C15.216 0 16 .784 16 1.75v7.5A1.75 1.75 0 0114.25 11h-7.5A1.75 1.75 0 015 9.25v-7.5zm1.75-.25a.25.25 0 00-.25.25v7.5c0 .138.112.25.25.25h7.5a.25.25 0 00.25-.25v-7.5a.25.25 0 00-.25-.25h-7.5z" fill="currentColor" fill-rule="evenodd"></path>
+</svg>
+</div>
+</clipboard-copy>
+</div>
+<div class="highlight-ipynb hl-python"><pre><span></span><span class="c1"># /// script</span>
+<span class="c1"># requires-python = "&gt;=3.12"</span>
+<span class="c1"># dependencies = [</span>
+<span class="c1">#     "geopandas&gt;1",</span>
+<span class="c1">#     "lonboard",</span>
+<span class="c1">#     "palettable",</span>
+<span class="c1">#     "pandas",</span>
+<span class="c1">#     "shapely",</span>
+<span class="c1">#     "sidecar",</span>
+<span class="c1"># ]</span>
+<span class="c1"># ///</span>
+</pre></div>
+<div class="clipboard-copy-txt" id="cell-1"># /// script
+# requires-python = "&gt;=3.12"
+# dependencies = [
+#     "geopandas&gt;1",
+#     "lonboard",
+#     "palettable",
+#     "pandas",
+#     "shapely",
+#     "sidecar",
+# ]
+# ///</div>
+</div>
+</div>
+</div>
+</div>
+</div>
+</div>
 <div class="jp-Cell jp-MarkdownCell jp-Notebook-cell" id="cell-id=0f09e1c5">
 <div class="jp-Cell-inputWrapper" tabindex="0">
 <div class="jp-Collapser jp-InputCollapser jp-Cell-inputCollapser">
@@ -2846,14 +2919,16 @@ span.linenos.special { color: #000000; background-color: #ffffc0; padding-left: 
 </div>
 </div>
 </div>
-<div class="jp-Cell jp-MarkdownCell jp-Notebook-cell" id="cell-id=fbfeace7-81ee-48d4-af01-5172618e83ea">
+<div class="jp-Cell jp-MarkdownCell jp-Notebook-cell" id="cell-id=7c898fec">
 <div class="jp-Cell-inputWrapper" tabindex="0">
 <div class="jp-Collapser jp-InputCollapser jp-Cell-inputCollapser">
 </div>
 <div class="jp-InputArea jp-Cell-inputArea"><div class="jp-InputPrompt jp-InputArea-prompt">
 </div><div class="jp-RenderedHTMLCommon jp-RenderedMarkdown jp-MarkdownOutput" data-mime-type="text/markdown">
-<h3 id="dependencies">Dependencies<a class="anchor-link" href="#dependencies">¶</a></h3><pre><code>pip install lonboard "geopandas&gt;=1" palettable sidecar
+<h2 id="dependencies">Dependencies<a class="anchor-link" href="#dependencies">¶</a></h2><p>Install <a href="https://docs.astral.sh/uv"><code>uv</code></a> and then launch this notebook with:</p>
+<pre><code>uvx juv run examples/internet-speeds.ipynb
 </code></pre>
+<p>(The <code>uvx</code> command is included when installing <code>uv</code>).</p>
 </div>
 </div>
 </div>
@@ -2877,7 +2952,7 @@ span.linenos.special { color: #000000; background-color: #ffffc0; padding-left: 
 <div class="jp-InputPrompt jp-InputArea-prompt">In [ ]:</div><div class="jp-CodeMirrorEditor jp-Editor jp-InputArea-editor" data-type="inline">
 <div class="CodeMirror cm-s-jupyter">
 <div class="zeroclipboard-container">
-<clipboard-copy ,="" aria-label="Copy to Clipboard" for="cell-1">
+<clipboard-copy ,="" aria-label="Copy to Clipboard" for="cell-2">
 <div>
 <span class="notice" hidden="">Copied!</span>
 <svg aria-hidden="true" class="clipboard-copy-icon" data-view-component="true" height="20" version="1.1" viewbox="0 0 16 16" width="20">
@@ -2898,7 +2973,7 @@ span.linenos.special { color: #000000; background-color: #ffffc0; padding-left: 
 <span class="kn">from</span><span class="w"> </span><span class="nn">lonboard</span><span class="w"> </span><span class="kn">import</span> <span class="n">Map</span><span class="p">,</span> <span class="n">ScatterplotLayer</span>
 <span class="kn">from</span><span class="w"> </span><span class="nn">lonboard.colormap</span><span class="w"> </span><span class="kn">import</span> <span class="n">apply_continuous_cmap</span>
 </pre></div>
-<div class="clipboard-copy-txt" id="cell-1">from pathlib import Path
+<div class="clipboard-copy-txt" id="cell-2">from pathlib import Path
 
 import geopandas as gpd
 import pandas as pd
@@ -2944,7 +3019,7 @@ from lonboard.colormap import apply_continuous_cmap</div>
 <div class="jp-InputPrompt jp-InputArea-prompt">In [ ]:</div><div class="jp-CodeMirrorEditor jp-Editor jp-InputArea-editor" data-type="inline">
 <div class="CodeMirror cm-s-jupyter">
 <div class="zeroclipboard-container">
-<clipboard-copy ,="" aria-label="Copy to Clipboard" for="cell-2">
+<clipboard-copy ,="" aria-label="Copy to Clipboard" for="cell-3">
 <div>
 <span class="notice" hidden="">Copied!</span>
 <svg aria-hidden="true" class="clipboard-copy-icon" data-view-component="true" height="20" version="1.1" viewbox="0 0 16 16" width="20">
@@ -2956,7 +3031,7 @@ from lonboard.colormap import apply_continuous_cmap</div>
 </div>
 <div class="highlight-ipynb hl-python"><pre><span></span><span class="n">url</span> <span class="o">=</span> <span class="s2">"https://ookla-open-data.s3.us-west-2.amazonaws.com/parquet/performance/type=mobile/year=2019/quarter=1/2019-01-01_performance_mobile_tiles.parquet"</span>
 </pre></div>
-<div class="clipboard-copy-txt" id="cell-2">url = "https://ookla-open-data.s3.us-west-2.amazonaws.com/parquet/performance/type=mobile/year=2019/quarter=1/2019-01-01_performance_mobile_tiles.parquet"</div>
+<div class="clipboard-copy-txt" id="cell-3">url = "https://ookla-open-data.s3.us-west-2.amazonaws.com/parquet/performance/type=mobile/year=2019/quarter=1/2019-01-01_performance_mobile_tiles.parquet"</div>
 </div>
 </div>
 </div>
@@ -2984,7 +3059,7 @@ from lonboard.colormap import apply_continuous_cmap</div>
 <div class="jp-InputPrompt jp-InputArea-prompt">In [ ]:</div><div class="jp-CodeMirrorEditor jp-Editor jp-InputArea-editor" data-type="inline">
 <div class="CodeMirror cm-s-jupyter">
 <div class="zeroclipboard-container">
-<clipboard-copy ,="" aria-label="Copy to Clipboard" for="cell-3">
+<clipboard-copy ,="" aria-label="Copy to Clipboard" for="cell-4">
 <div>
 <span class="notice" hidden="">Copied!</span>
 <svg aria-hidden="true" class="clipboard-copy-icon" data-view-component="true" height="20" version="1.1" viewbox="0 0 16 16" width="20">
@@ -3006,7 +3081,7 @@ from lonboard.colormap import apply_continuous_cmap</div>
     <span class="n">gdf</span> <span class="o">=</span> <span class="n">gpd</span><span class="o">.</span><span class="n">GeoDataFrame</span><span class="p">(</span><span class="n">df</span><span class="p">[[</span><span class="s2">"avg_d_kbps"</span><span class="p">]],</span> <span class="n">geometry</span><span class="o">=</span><span class="n">tile_centroids</span><span class="p">,</span> <span class="n">crs</span><span class="o">=</span><span class="s2">"EPSG:4326"</span><span class="p">)</span>
     <span class="n">gdf</span><span class="o">.</span><span class="n">to_parquet</span><span class="p">(</span><span class="n">local_path</span><span class="p">)</span>
 </pre></div>
-<div class="clipboard-copy-txt" id="cell-3">local_path = Path("internet-speeds.parquet")
+<div class="clipboard-copy-txt" id="cell-4">local_path = Path("internet-speeds.parquet")
 if local_path.exists():
     gdf = gpd.read_parquet(local_path)
 else:
@@ -3042,7 +3117,7 @@ else:
 <div class="jp-InputPrompt jp-InputArea-prompt">In [ ]:</div><div class="jp-CodeMirrorEditor jp-Editor jp-InputArea-editor" data-type="inline">
 <div class="CodeMirror cm-s-jupyter">
 <div class="zeroclipboard-container">
-<clipboard-copy ,="" aria-label="Copy to Clipboard" for="cell-4">
+<clipboard-copy ,="" aria-label="Copy to Clipboard" for="cell-5">
 <div>
 <span class="notice" hidden="">Copied!</span>
 <svg aria-hidden="true" class="clipboard-copy-icon" data-view-component="true" height="20" version="1.1" viewbox="0 0 16 16" width="20">
@@ -3054,7 +3129,7 @@ else:
 </div>
 <div class="highlight-ipynb hl-python"><pre><span></span><span class="n">gdf</span><span class="o">.</span><span class="n">head</span><span class="p">()</span>
 </pre></div>
-<div class="clipboard-copy-txt" id="cell-4">gdf.head()</div>
+<div class="clipboard-copy-txt" id="cell-5">gdf.head()</div>
 </div>
 </div>
 </div>
@@ -3081,7 +3156,7 @@ else:
 <div class="jp-InputPrompt jp-InputArea-prompt">In [ ]:</div><div class="jp-CodeMirrorEditor jp-Editor jp-InputArea-editor" data-type="inline">
 <div class="CodeMirror cm-s-jupyter">
 <div class="zeroclipboard-container">
-<clipboard-copy ,="" aria-label="Copy to Clipboard" for="cell-5">
+<clipboard-copy ,="" aria-label="Copy to Clipboard" for="cell-6">
 <div>
 <span class="notice" hidden="">Copied!</span>
 <svg aria-hidden="true" class="clipboard-copy-icon" data-view-component="true" height="20" version="1.1" viewbox="0 0 16 16" width="20">
@@ -3093,7 +3168,7 @@ else:
 </div>
 <div class="highlight-ipynb hl-python"><pre><span></span><span class="n">gdf</span> <span class="o">=</span> <span class="n">gdf</span><span class="o">.</span><span class="n">cx</span><span class="p">[</span><span class="o">-</span><span class="mf">11.83</span><span class="p">:</span><span class="mf">25.5</span><span class="p">,</span> <span class="mf">34.9</span><span class="p">:</span><span class="mi">59</span><span class="p">]</span>
 </pre></div>
-<div class="clipboard-copy-txt" id="cell-5">gdf = gdf.cx[-11.83:25.5, 34.9:59]</div>
+<div class="clipboard-copy-txt" id="cell-6">gdf = gdf.cx[-11.83:25.5, 34.9:59]</div>
 </div>
 </div>
 </div>
@@ -3119,7 +3194,7 @@ else:
 <div class="jp-InputPrompt jp-InputArea-prompt">In [ ]:</div><div class="jp-CodeMirrorEditor jp-Editor jp-InputArea-editor" data-type="inline">
 <div class="CodeMirror cm-s-jupyter">
 <div class="zeroclipboard-container">
-<clipboard-copy ,="" aria-label="Copy to Clipboard" for="cell-6">
+<clipboard-copy ,="" aria-label="Copy to Clipboard" for="cell-7">
 <div>
 <span class="notice" hidden="">Copied!</span>
 <svg aria-hidden="true" class="clipboard-copy-icon" data-view-component="true" height="20" version="1.1" viewbox="0 0 16 16" width="20">
@@ -3131,7 +3206,7 @@ else:
 </div>
 <div class="highlight-ipynb hl-python"><pre><span></span><span class="n">gdf</span>
 </pre></div>
-<div class="clipboard-copy-txt" id="cell-6">gdf</div>
+<div class="clipboard-copy-txt" id="cell-7">gdf</div>
 </div>
 </div>
 </div>
@@ -3157,7 +3232,7 @@ else:
 <div class="jp-InputPrompt jp-InputArea-prompt">In [ ]:</div><div class="jp-CodeMirrorEditor jp-Editor jp-InputArea-editor" data-type="inline">
 <div class="CodeMirror cm-s-jupyter">
 <div class="zeroclipboard-container">
-<clipboard-copy ,="" aria-label="Copy to Clipboard" for="cell-7">
+<clipboard-copy ,="" aria-label="Copy to Clipboard" for="cell-8">
 <div>
 <span class="notice" hidden="">Copied!</span>
 <svg aria-hidden="true" class="clipboard-copy-icon" data-view-component="true" height="20" version="1.1" viewbox="0 0 16 16" width="20">
@@ -3169,7 +3244,7 @@ else:
 </div>
 <div class="highlight-ipynb hl-python"><pre><span></span><span class="n">sidecar</span> <span class="o">=</span> <span class="n">Sidecar</span><span class="p">()</span>
 </pre></div>
-<div class="clipboard-copy-txt" id="cell-7">sidecar = Sidecar()</div>
+<div class="clipboard-copy-txt" id="cell-8">sidecar = Sidecar()</div>
 </div>
 </div>
 </div>
@@ -3184,7 +3259,7 @@ else:
 <div class="jp-InputPrompt jp-InputArea-prompt">In [ ]:</div><div class="jp-CodeMirrorEditor jp-Editor jp-InputArea-editor" data-type="inline">
 <div class="CodeMirror cm-s-jupyter">
 <div class="zeroclipboard-container">
-<clipboard-copy ,="" aria-label="Copy to Clipboard" for="cell-8">
+<clipboard-copy ,="" aria-label="Copy to Clipboard" for="cell-9">
 <div>
 <span class="notice" hidden="">Copied!</span>
 <svg aria-hidden="true" class="clipboard-copy-icon" data-view-component="true" height="20" version="1.1" viewbox="0 0 16 16" width="20">
@@ -3199,7 +3274,7 @@ else:
 <span class="k">with</span> <span class="n">sidecar</span><span class="p">:</span>
     <span class="n">display</span><span class="p">(</span><span class="n">m</span><span class="p">)</span>
 </pre></div>
-<div class="clipboard-copy-txt" id="cell-8">layer = ScatterplotLayer.from_geopandas(gdf)
+<div class="clipboard-copy-txt" id="cell-9">layer = ScatterplotLayer.from_geopandas(gdf)
 m = Map(layer, _height=800)
 with sidecar:
     display(m)</div>
@@ -3228,7 +3303,7 @@ with sidecar:
 <div class="jp-InputPrompt jp-InputArea-prompt">In [ ]:</div><div class="jp-CodeMirrorEditor jp-Editor jp-InputArea-editor" data-type="inline">
 <div class="CodeMirror cm-s-jupyter">
 <div class="zeroclipboard-container">
-<clipboard-copy ,="" aria-label="Copy to Clipboard" for="cell-9">
+<clipboard-copy ,="" aria-label="Copy to Clipboard" for="cell-10">
 <div>
 <span class="notice" hidden="">Copied!</span>
 <svg aria-hidden="true" class="clipboard-copy-icon" data-view-component="true" height="20" version="1.1" viewbox="0 0 16 16" width="20">
@@ -3240,7 +3315,7 @@ with sidecar:
 </div>
 <div class="highlight-ipynb hl-python"><pre><span></span><span class="n">layer</span><span class="o">.</span><span class="n">get_fill_color</span> <span class="o">=</span> <span class="p">[</span><span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">200</span><span class="p">,</span> <span class="mi">200</span><span class="p">]</span>
 </pre></div>
-<div class="clipboard-copy-txt" id="cell-9">layer.get_fill_color = [0, 0, 200, 200]</div>
+<div class="clipboard-copy-txt" id="cell-10">layer.get_fill_color = [0, 0, 200, 200]</div>
 </div>
 </div>
 </div>
@@ -3277,7 +3352,7 @@ with sidecar:
 <div class="jp-InputPrompt jp-InputArea-prompt">In [ ]:</div><div class="jp-CodeMirrorEditor jp-Editor jp-InputArea-editor" data-type="inline">
 <div class="CodeMirror cm-s-jupyter">
 <div class="zeroclipboard-container">
-<clipboard-copy ,="" aria-label="Copy to Clipboard" for="cell-10">
+<clipboard-copy ,="" aria-label="Copy to Clipboard" for="cell-11">
 <div>
 <span class="notice" hidden="">Copied!</span>
 <svg aria-hidden="true" class="clipboard-copy-icon" data-view-component="true" height="20" version="1.1" viewbox="0 0 16 16" width="20">
@@ -3292,7 +3367,7 @@ with sidecar:
 <span class="n">download_speed</span> <span class="o">=</span> <span class="n">gdf</span><span class="p">[</span><span class="s2">"avg_d_kbps"</span><span class="p">]</span>
 <span class="n">normalized_download_speed</span> <span class="o">=</span> <span class="p">(</span><span class="n">download_speed</span> <span class="o">-</span> <span class="n">min_bound</span><span class="p">)</span> <span class="o">/</span> <span class="p">(</span><span class="n">max_bound</span> <span class="o">-</span> <span class="n">min_bound</span><span class="p">)</span>
 </pre></div>
-<div class="clipboard-copy-txt" id="cell-10">min_bound = 5000
+<div class="clipboard-copy-txt" id="cell-11">min_bound = 5000
 max_bound = 50000
 download_speed = gdf["avg_d_kbps"]
 normalized_download_speed = (download_speed - min_bound) / (max_bound - min_bound)</div>
@@ -3321,7 +3396,7 @@ normalized_download_speed = (download_speed - min_bound) / (max_bound - min_boun
 <div class="jp-InputPrompt jp-InputArea-prompt">In [ ]:</div><div class="jp-CodeMirrorEditor jp-Editor jp-InputArea-editor" data-type="inline">
 <div class="CodeMirror cm-s-jupyter">
 <div class="zeroclipboard-container">
-<clipboard-copy ,="" aria-label="Copy to Clipboard" for="cell-11">
+<clipboard-copy ,="" aria-label="Copy to Clipboard" for="cell-12">
 <div>
 <span class="notice" hidden="">Copied!</span>
 <svg aria-hidden="true" class="clipboard-copy-icon" data-view-component="true" height="20" version="1.1" viewbox="0 0 16 16" width="20">
@@ -3333,7 +3408,7 @@ normalized_download_speed = (download_speed - min_bound) / (max_bound - min_boun
 </div>
 <div class="highlight-ipynb hl-python"><pre><span></span><span class="n">normalized_download_speed</span>
 </pre></div>
-<div class="clipboard-copy-txt" id="cell-11">normalized_download_speed</div>
+<div class="clipboard-copy-txt" id="cell-12">normalized_download_speed</div>
 </div>
 </div>
 </div>
@@ -3359,7 +3434,7 @@ normalized_download_speed = (download_speed - min_bound) / (max_bound - min_boun
 <div class="jp-InputPrompt jp-InputArea-prompt">In [ ]:</div><div class="jp-CodeMirrorEditor jp-Editor jp-InputArea-editor" data-type="inline">
 <div class="CodeMirror cm-s-jupyter">
 <div class="zeroclipboard-container">
-<clipboard-copy ,="" aria-label="Copy to Clipboard" for="cell-12">
+<clipboard-copy ,="" aria-label="Copy to Clipboard" for="cell-13">
 <div>
 <span class="notice" hidden="">Copied!</span>
 <svg aria-hidden="true" class="clipboard-copy-icon" data-view-component="true" height="20" version="1.1" viewbox="0 0 16 16" width="20">
@@ -3371,7 +3446,7 @@ normalized_download_speed = (download_speed - min_bound) / (max_bound - min_boun
 </div>
 <div class="highlight-ipynb hl-python"><pre><span></span><span class="n">BrBG_10</span><span class="o">.</span><span class="n">mpl_colormap</span>
 </pre></div>
-<div class="clipboard-copy-txt" id="cell-12">BrBG_10.mpl_colormap</div>
+<div class="clipboard-copy-txt" id="cell-13">BrBG_10.mpl_colormap</div>
 </div>
 </div>
 </div>
@@ -3397,7 +3472,7 @@ normalized_download_speed = (download_speed - min_bound) / (max_bound - min_boun
 <div class="jp-InputPrompt jp-InputArea-prompt">In [ ]:</div><div class="jp-CodeMirrorEditor jp-Editor jp-InputArea-editor" data-type="inline">
 <div class="CodeMirror cm-s-jupyter">
 <div class="zeroclipboard-container">
-<clipboard-copy ,="" aria-label="Copy to Clipboard" for="cell-13">
+<clipboard-copy ,="" aria-label="Copy to Clipboard" for="cell-14">
 <div>
 <span class="notice" hidden="">Copied!</span>
 <svg aria-hidden="true" class="clipboard-copy-icon" data-view-component="true" height="20" version="1.1" viewbox="0 0 16 16" width="20">
@@ -3413,7 +3488,7 @@ normalized_download_speed = (download_speed - min_bound) / (max_bound - min_boun
     <span class="n">alpha</span><span class="o">=</span><span class="mf">0.7</span><span class="p">,</span>
 <span class="p">)</span>
 </pre></div>
-<div class="clipboard-copy-txt" id="cell-13">layer.get_fill_color = apply_continuous_cmap(
+<div class="clipboard-copy-txt" id="cell-14">layer.get_fill_color = apply_continuous_cmap(
     normalized_download_speed,
     BrBG_10,
     alpha=0.7,
@@ -3455,7 +3530,7 @@ normalized_download_speed = (download_speed - min_bound) / (max_bound - min_boun
 <div class="jp-InputPrompt jp-InputArea-prompt">In [ ]:</div><div class="jp-CodeMirrorEditor jp-Editor jp-InputArea-editor" data-type="inline">
 <div class="CodeMirror cm-s-jupyter">
 <div class="zeroclipboard-container">
-<clipboard-copy ,="" aria-label="Copy to Clipboard" for="cell-14">
+<clipboard-copy ,="" aria-label="Copy to Clipboard" for="cell-15">
 <div>
 <span class="notice" hidden="">Copied!</span>
 <svg aria-hidden="true" class="clipboard-copy-icon" data-view-component="true" height="20" version="1.1" viewbox="0 0 16 16" width="20">
@@ -3469,7 +3544,7 @@ normalized_download_speed = (download_speed - min_bound) / (max_bound - min_boun
 <span class="n">layer</span><span class="o">.</span><span class="n">radius_units</span> <span class="o">=</span> <span class="s2">"meters"</span>
 <span class="n">layer</span><span class="o">.</span><span class="n">radius_min_pixels</span> <span class="o">=</span> <span class="mf">0.5</span>
 </pre></div>
-<div class="clipboard-copy-txt" id="cell-14">layer.get_radius = normalized_download_speed * 200
+<div class="clipboard-copy-txt" id="cell-15">layer.get_radius = normalized_download_speed * 200
 layer.radius_units = "meters"
 layer.radius_min_pixels = 0.5</div>
 </div>
