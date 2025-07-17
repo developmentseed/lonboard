@@ -76,6 +76,7 @@ dev = [
     "fiona<1.10",
     "geoarrow-pyarrow>=0.2.0",
     "geoarrow-rust-core>=0.4.0",
+    "geoarrow-rust-io>=0.4.1",
     "geodatasets>=2024.8.0",
     "jupyterlab>=4.3.3",
     "matplotlib>=3.7.5",

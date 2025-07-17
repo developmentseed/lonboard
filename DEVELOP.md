@@ -23,7 +23,7 @@ uv run python -m ipykernel install --user --name "lonboard"
 JupyterLab is an included dev dependency, so to start JupyterLab you can run
 
 ```
-ANYWIDGET_HMR=1 uv run jupyter lab
+ANYWIDGET_HMR=1 uv run --group watchfiles jupyter lab
 ```
 
 Note that `ANYWIDGET_HMR=1` is necessary to turn on "hot-reloading", so that any
