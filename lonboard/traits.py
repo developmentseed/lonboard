@@ -1196,4 +1196,3 @@ class HeightTrait(FixedErrorTraitType):
 
         self.error(obj, value)
         assert False
-
