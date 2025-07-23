@@ -215,7 +215,7 @@ function App() {
   );
 
   return (
-    <div className="lonboard" style={{ height: mapHeight }}>
+    <div className="lonboard" style={{ minHeight: mapHeight, height: "100%" }}>
       <div
         id={`map-${mapId}`}
         className="flex"
