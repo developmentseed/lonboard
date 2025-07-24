@@ -365,7 +365,8 @@ def _make_layer_trait_widgets(layer: BaseLayer) -> tuple[list, list, list]:
                 number_widgets.append(int_w)
     return (color_widgets, bool_widgets, number_widgets)
 
-def make_toc(lonboard_map:Any)->VBox:
+
+def make_toc(lonboard_map: Any) -> VBox:
     """Make a simple table of contents (TOC) based on a Lonboard Map.
 
     The TOC will contain a checkbox for each layer, which controls layer visibility in the Lonboard map.
@@ -374,13 +375,15 @@ def make_toc(lonboard_map:Any)->VBox:
     toc = VBox(toc_items)
 
     ## Observe the map's layers trait, so additions/removals of layers will result in the TOC recreating itself to reflect the map's current state
-    def handle_layer_change(_:traitlets.utils.bunch.Bunch)->None:
+    def handle_layer_change(_: traitlets.utils.bunch.Bunch) -> None:
         toc_items = [_make_toc_item(layer) for layer in lonboard_map.layers]
         toc.children = toc_items
+
     lonboard_map.observe(handle_layer_change, "layers", "change")
     return toc
 
-def make_toc_with_settings(lonboard_map:Any)->VBox:
+
+def make_toc_with_settings(lonboard_map: Any) -> VBox:
     """Make a table of contents (TOC) based on a Lonboard Map with layer settings.
 
     The TOC will contain a checkbox for each layer, which controls layer visibility in the Lonboard map.
@@ -391,8 +394,11 @@ def make_toc_with_settings(lonboard_map:Any)->VBox:
     toc = VBox(toc_items)
 
     ## Observe the map's layers trait, so additions/removals of layers will result in the TOC recreating itself to reflect the map's current state
-    def handle_layer_change(_:traitlets.utils.bunch.Bunch)->None:
-        toc_items = [_make_toc_item_with_settings(layer) for layer in lonboard_map.layers]
+    def handle_layer_change(_: traitlets.utils.bunch.Bunch) -> None:
+        toc_items = [
+            _make_toc_item_with_settings(layer) for layer in lonboard_map.layers
+        ]
         toc.children = toc_items
+
     lonboard_map.observe(handle_layer_change, "layers", "change")
     return toc
