@@ -247,7 +247,7 @@ class BaseLayer(BaseWidget):
 
     highlight_color = VariableLengthTuple(
         t.Int(),
-        default_value=None,
+        default_value=[0, 0, 128, 128],
         minlen=3,
         maxlen=4,
     )
@@ -279,6 +279,13 @@ class BaseLayer(BaseWidget):
     from JavaScript. Refer
     [here](https://ipywidgets.readthedocs.io/en/stable/examples/Widget%20Events.html#signatures)
     for an example.
+    """
+
+    title = t.CUnicode("Layer", allow_none=False).tag(sync=True)
+    """
+    The title of the layer.  The title of the layer is visible in the table of
+    contents produced by the lonboard.controls.make_toc() and
+    lonboard.controls.make_toc_with_settings() functions.
     """
 
 
