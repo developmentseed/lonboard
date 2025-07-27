@@ -281,13 +281,6 @@ class BaseLayer(BaseWidget):
     for an example.
     """
 
-    title = t.CUnicode("Layer", allow_none=False).tag(sync=True)
-    """
-    The title of the layer.  The title of the layer is visible in the table of
-    contents produced by the lonboard.controls.make_toc() and
-    lonboard.controls.make_toc_with_settings() functions.
-    """
-
 
 def default_geoarrow_viewport(
     table: Table,
@@ -588,6 +581,12 @@ class BitmapLayer(BaseLayer):
         # image should represent.
         return WeightedCentroid(x=center_x, y=center_y, num_items=100)
 
+    title = t.CUnicode("BitmapLayer", allow_none=False).tag(sync=True)
+    """
+    The title of the layer.  The title of the layer is visible in the layer control
+    produced by map.layer_control().
+    """
+
 
 class BitmapTileLayer(BaseLayer):
     """The BitmapTileLayer renders image tiles (e.g. PNG, JPEG, or WebP) in the web
@@ -783,6 +782,12 @@ class BitmapTileLayer(BaseLayer):
 
     - Type: `List[float]`, optional
     - Default: `[255, 255, 255]`
+    """
+
+    title = t.CUnicode("BitmapTileLayer", allow_none=False).tag(sync=True)
+    """
+    The title of the layer.  The title of the layer is visible in the layer control
+    produced by map.layer_control().
     """
 
 
@@ -1030,6 +1035,12 @@ class ColumnLayer(BaseArrowLayer):
         - If an array is provided, each value in the array will be used as the outline
           width for the column at the same row index.
     - Default: `1`.
+    """
+
+    title = t.CUnicode("ColumnLayer", allow_none=False).tag(sync=True)
+    """
+    The title of the layer.  The title of the layer is visible in the layer control
+    produced by map.layer_control().
     """
 
 
@@ -1286,6 +1297,12 @@ class PolygonLayer(BaseArrowLayer):
     - Default: `1000`.
     """
 
+    title = t.CUnicode("PolygonLayer", allow_none=False).tag(sync=True)
+    """
+    The title of the layer.  The title of the layer is visible in the layer control
+    produced by map.layer_control().
+    """
+
 
 class ScatterplotLayer(BaseArrowLayer):
     """The `ScatterplotLayer` renders circles at given coordinates.
@@ -1524,6 +1541,12 @@ class ScatterplotLayer(BaseArrowLayer):
     - Default: `1`.
     """
 
+    title = t.CUnicode("ScatterplotLayer", allow_none=False).tag(sync=True)
+    """
+    The title of the layer.  The title of the layer is visible in the layer control
+    produced by map.layer_control().
+    """
+
 
 class PathLayer(BaseArrowLayer):
     """The `PathLayer` renders lists of coordinate points as extruded polylines with
@@ -1706,6 +1729,12 @@ class PathLayer(BaseArrowLayer):
     - Default: `1`.
     """
 
+    title = t.CUnicode("PathLayer", allow_none=False).tag(sync=True)
+    """
+    The title of the layer.  The title of the layer is visible in the layer control
+    produced by map.layer_control().
+    """
+
 
 class PointCloudLayer(BaseArrowLayer):
     """The `PointCloudLayer` renders a point cloud with 3D positions, normals and colors.
@@ -1823,6 +1852,11 @@ class PointCloudLayer(BaseArrowLayer):
     - Default: `1`.
     """
 
+    title = t.CUnicode("PointCloudLayer", allow_none=False).tag(sync=True)
+    """
+    The title of the layer.  The title of the layer is visible in the layer control
+    produced by map.layer_control().
+    """
 
 class SolidPolygonLayer(BaseArrowLayer):
     """The `SolidPolygonLayer` renders filled and/or extruded polygons.
@@ -1999,6 +2033,11 @@ class SolidPolygonLayer(BaseArrowLayer):
     - Default: `[0, 0, 0, 255]`.
     """
 
+    title = t.CUnicode("SolidPolygonLayer", allow_none=False).tag(sync=True)
+    """
+    The title of the layer.  The title of the layer is visible in the layer control
+    produced by map.layer_control().
+    """
 
 class HeatmapLayer(BaseArrowLayer):
     """The `HeatmapLayer` visualizes the spatial distribution of data.
@@ -2173,4 +2212,10 @@ class HeatmapLayer(BaseArrowLayer):
         - If an array is provided, each value in the array will be used as the weight
           for the object at the same row index.
     - Default: `1`.
+    """
+
+    title = t.CUnicode("HeatmapLayer", allow_none=False).tag(sync=True)
+    """
+    The title of the layer.  The title of the layer is visible in the layer control
+    produced by map.layer_control().
     """
