@@ -9,12 +9,17 @@ import traitlets
 import traitlets as t
 from ipywidgets import CallbackDispatcher
 from ipywidgets.embed import dependency_state, embed_minimal_html
+from ipywidgets.widgets.widget_box import VBox
 
 from lonboard._base import BaseAnyWidget
 from lonboard._environment import DEFAULT_HEIGHT
 from lonboard._layer import BaseLayer
 from lonboard._viewport import compute_view
 from lonboard.basemap import CartoBasemap
+from lonboard.controls import (
+    _make_layer_control_item,
+    _make_layer_control_item_with_settings,
+)
 from lonboard.traits import (
     DEFAULT_INITIAL_VIEW_STATE,
     BasemapUrl,
@@ -617,3 +622,39 @@ class Map(BaseAnyWidget):
     @traitlets.default("view_state")
     def _default_initial_view_state(self) -> dict[str, Any]:
         return compute_view(self.layers)  # type: ignore
+
+    def layer_control(self, *, include_settings: bool = False) -> VBox:
+        """Make layer control box for the layers in the Map.
+
+        Args:
+            include_settings: if `False` The controler will only contain a checkbox for each layer, which controls layer visibility in the Lonboard map.
+            If `True` The controller will also have a settings button, which when clicked will expose properties for the layer which can be changed.
+            If a layer's property is None when the layer is added to the control, a widget for controling that property will not be created.
+
+        !!! note
+
+            For layer properties that are set as an array of values to control the display of each feature separately (example, using a color map to vary the color of the features based on the data) the layer control will display "Custom" instead of allowing the user to change the property.  This may change in a future version of Lonboard.
+
+        !!! note
+
+            The layer control uses the [ipywidgets color picker](https://ipywidgets.readthedocs.io/en/latest/examples/Widget%20List.html#color-picker) to set colors.  This widget does not respect alpha values, so if you are using an RGBA value to set the color and the alpha of the layer, and then you use the color picker, it will set the alpha value 255.
+
+        Returns:
+            ipywidgets VBox of the layer control.
+
+        """
+        if include_settings is False:
+            item_creation_function = _make_layer_control_item
+        else:
+            item_creation_function = _make_layer_control_item_with_settings
+
+        control_items = [item_creation_function(layer) for layer in self.layers]
+        contol = VBox(control_items)
+
+        ## Observe the map's layers trait, so additions/removals of layers will result in the control recreating itself to reflect the map's current state
+        def handle_layer_change(_: traitlets.utils.bunch.Bunch) -> None:
+            control_items = [item_creation_function(layer) for layer in self.layers]
+            contol.children = control_items
+
+        self.observe(handle_layer_change, "layers", "change")
+        return contol

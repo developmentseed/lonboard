@@ -1,6 +1,7 @@
-from collections.abc import Sequence
+from __future__ import annotations
+
 from functools import partial
-from typing import Any
+from typing import TYPE_CHECKING, Any
 
 import ipywidgets
 import traitlets
@@ -10,12 +11,15 @@ from ipywidgets.widgets.trait_types import TypedTuple
 # Import from source to allow mkdocstrings to link to base class
 from ipywidgets.widgets.widget_box import HBox, VBox
 
-from lonboard._layer import BaseLayer
 from lonboard.traits import (
     ColorAccessor,
     FloatAccessor,
 )
 
+if TYPE_CHECKING:
+    from collections.abc import Sequence
+
+    from lonboard._layer import BaseLayer
 
 class MultiRangeSlider(VBox):
     """A widget for multiple ranged sliders.
@@ -97,16 +101,23 @@ class MultiRangeSlider(VBox):
         super().__init__(children, value=initial_values, **kwargs)
 
 
-def _rgb2hex(r: int, g: int, b: int) -> str:
-    """Convert an RGB color code values to hex."""
-    return f"#{r:02x}{g:02x}{b:02x}"
+def _rgb2hex(r: int, g: int, b: int, a: int | None = None) -> str:
+    """Convert an RGB(A) color code values to hex."""
+    hex_color = f"#{r:02x}{g:02x}{b:02x}"
+    if a is not None:
+        hex_color += f"{a:02x}"
+    return hex_color
 
 
 def _hex2rgb(hex_color: str) -> list[int]:
-    """Convert a hex color code to RGB."""
+    """Convert a hex color code to RGB(A)."""
     hex_color = hex_color.lstrip("#")
     rgb_color = []
-    for i in (0, 2, 4):
+    if len(hex_color) == 6:
+        hex_range = (0, 2, 4)
+    if len(hex_color) == 8:
+        hex_range = (0, 2, 4, 6)
+    for i in hex_range:
         rgb_color.append(int(hex_color[i : i + 2], 16))
     return rgb_color
 
@@ -148,21 +159,21 @@ def _make_visibility_w(layer: BaseLayer) -> ipywidgets.widget:
     return visibility_w
 
 
-def _make_toc_item(layer: BaseLayer) -> VBox:
-    """Return a VBox to be used by a table of contents based on the input layer.
+def _make_layer_control_item(layer: BaseLayer) -> VBox:
+    """Return a VBox to be used by a layer control based on the input layer.
 
     The VBox will only contain a toggle for the layer's visibility.
     """
     visibility_w = _make_visibility_w(layer)
 
     # with_layer_controls is False return the visibility widget within a VBox
-    # within a HBox to maintain consistency with the TOC item that would be returned
+    # within a HBox to maintain consistency with the layer control item that would be returned
     # if with_layer_controls were True
     return VBox([HBox([visibility_w])])
 
 
-def _make_toc_item_with_settings(layer: BaseLayer) -> VBox:
-    """Return a VBox to be used by a table of contents based on the input layer.
+def _make_layer_control_item_with_settings(layer: BaseLayer) -> VBox:
+    """Return a VBox to be used by a layer control based on the input layer.
 
     The VBox will contain a toggle for the layer's
     visibility and a button that when clicked will display widgets linked to the layers
@@ -214,10 +225,17 @@ def _make_color_picker_widget(
     trait_name: str,
 ) -> ipywidgets.widget:
     trait_description = _trait_name_to_description(trait_name)
-    if getattr(layer, trait_name) is not None:
-        hex_color = _rgb2hex(*getattr(layer, trait_name))
-    else:
+    color_trait_value = getattr(layer, trait_name)
+    if isinstance(color_trait_value, (list, tuple)) and len(color_trait_value) in [
+        3,
+        4,
+    ]:
+        # list or tuples of 3/4 are RGB(a) values
+        hex_color = _rgb2hex(*color_trait_value)
+    elif color_trait_value is None:
         hex_color = "#000000"
+    else:
+        return ipywidgets.Label(value=f"{trait_description}: Custom")
     color_picker_w = ipywidgets.ColorPicker(
         description=trait_description,
         layout=prop_layout,
@@ -249,6 +267,9 @@ def _make_float_widget(
     trait: traitlets.TraitType,
 ) -> ipywidgets.widget:
     trait_description = _trait_name_to_description(trait_name)
+    if isinstance(getattr(layer, trait_name), float) is False:
+        # not a single value do not make a control widget
+        return ipywidgets.Label(value=f"{trait_description}: Custom")
     min_val = None
     if hasattr(trait, "min"):
         min_val = trait.min
@@ -272,7 +293,7 @@ def _make_float_widget(
             layout=prop_layout,
         )
     else:
-        ## min/max are None, use normal flaot, not bounded.
+        ## min/max are None, use normal float, not bounded.
         float_w = ipywidgets.FloatText(
             value=True,
             description=trait_description,
@@ -290,6 +311,9 @@ def _make_int_widget(
     trait: traitlets.TraitType,
 ) -> ipywidgets.widget:
     trait_description = _trait_name_to_description(trait_name)
+    if isinstance(getattr(layer, trait_name), int) is False:
+        # not a single value, do not make a control widget
+        return ipywidgets.Label(value=f"{trait_description}: Custom")
     min_val = None
     if hasattr(trait, "min"):
         min_val = trait.min
@@ -364,41 +388,3 @@ def _make_layer_trait_widgets(layer: BaseLayer) -> tuple[list, list, list]:
                 int_w = _make_int_widget(layer, trait_name, trait)
                 number_widgets.append(int_w)
     return (color_widgets, bool_widgets, number_widgets)
-
-
-def make_toc(lonboard_map: Any) -> VBox:
-    """Make a simple table of contents (TOC) based on a Lonboard Map.
-
-    The TOC will contain a checkbox for each layer, which controls layer visibility in the Lonboard map.
-    """
-    toc_items = [_make_toc_item(layer) for layer in lonboard_map.layers]
-    toc = VBox(toc_items)
-
-    ## Observe the map's layers trait, so additions/removals of layers will result in the TOC recreating itself to reflect the map's current state
-    def handle_layer_change(_: traitlets.utils.bunch.Bunch) -> None:
-        toc_items = [_make_toc_item(layer) for layer in lonboard_map.layers]
-        toc.children = toc_items
-
-    lonboard_map.observe(handle_layer_change, "layers", "change")
-    return toc
-
-
-def make_toc_with_settings(lonboard_map: Any) -> VBox:
-    """Make a table of contents (TOC) based on a Lonboard Map with layer settings.
-
-    The TOC will contain a checkbox for each layer, which controls layer visibility in the Lonboard map.
-    Each layer in the TOC will also have a settings button, which when clicked will expose properties for the layer which can be changed.
-    If a layer's property is None when the TOC is created,  a widget controling that property will not be created.
-    """
-    toc_items = [_make_toc_item_with_settings(layer) for layer in lonboard_map.layers]
-    toc = VBox(toc_items)
-
-    ## Observe the map's layers trait, so additions/removals of layers will result in the TOC recreating itself to reflect the map's current state
-    def handle_layer_change(_: traitlets.utils.bunch.Bunch) -> None:
-        toc_items = [
-            _make_toc_item_with_settings(layer) for layer in lonboard_map.layers
-        ]
-        toc.children = toc_items
-
-    lonboard_map.observe(handle_layer_change, "layers", "change")
-    return toc
