@@ -1858,6 +1858,7 @@ class PointCloudLayer(BaseArrowLayer):
     produced by map.layer_control().
     """
 
+
 class SolidPolygonLayer(BaseArrowLayer):
     """The `SolidPolygonLayer` renders filled and/or extruded polygons.
 
@@ -2038,6 +2039,7 @@ class SolidPolygonLayer(BaseArrowLayer):
     The title of the layer.  The title of the layer is visible in the layer control
     produced by map.layer_control().
     """
+
 
 class HeatmapLayer(BaseArrowLayer):
     """The `HeatmapLayer` visualizes the spatial distribution of data.
