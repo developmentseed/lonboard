@@ -21,6 +21,7 @@ if TYPE_CHECKING:
 
     from lonboard._layer import BaseLayer
 
+
 class MultiRangeSlider(VBox):
     """A widget for multiple ranged sliders.
 
