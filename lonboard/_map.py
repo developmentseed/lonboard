@@ -627,8 +627,8 @@ class Map(BaseAnyWidget):
         """Make layer control box for the layers in the Map.
 
         Args:
-            include_settings: if `False` The controler will only contain a checkbox for each layer, which controls layer visibility in the Lonboard map.
-            If `True` The controller will also have a settings button, which when clicked will expose properties for the layer which can be changed.
+            include_settings: If False The controler will only contain a checkbox for each layer, which controls layer visibility in the Lonboard map.
+            If True The controller will also have a settings button, which when clicked will expose properties for the layer which can be changed.
             If a layer's property is None when the layer is added to the control, a widget for controling that property will not be created.
 
         !!! note
