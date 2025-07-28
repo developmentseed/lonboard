@@ -28,5 +28,11 @@ div.lonboard {
   @tailwind base;
 }
 
+[data-overlay-container] {
+  height: 100%;
+  width: 100%;
+  margin-top: -5px;
+}
+
 @tailwind components;
 @tailwind utilities;
