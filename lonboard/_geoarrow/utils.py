@@ -1,9 +1,14 @@
 from __future__ import annotations
 
+from typing import TYPE_CHECKING
+
 from lonboard._constants import EXTENSION_NAME
 
+if TYPE_CHECKING:
+    from arro3.core import Field
 
-def is_primitive_geoarrow(extension_type_name: bytes | None) -> bool:
+
+def is_primitive_geoarrow(field: Field) -> bool:
     """Return True if this GeoArrow column is in a "primitive" coordinate representation.
 
     "Primitive" means both that it is "native" (i.e. not WKB or WKT) and that it
@@ -12,7 +17,7 @@ def is_primitive_geoarrow(extension_type_name: bytes | None) -> bool:
     This will return false for WKB and WKT-serialized arrays. This will also return
     False for Geometry and GeometryCollection type arrays.
     """
-    return extension_type_name in {
+    return field.metadata.get(b"ARROW:extension:name") in {
         EXTENSION_NAME.POINT,
         EXTENSION_NAME.LINESTRING,
         EXTENSION_NAME.POLYGON,
