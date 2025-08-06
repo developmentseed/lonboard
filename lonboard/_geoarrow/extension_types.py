@@ -195,9 +195,10 @@ def offsets_to_arrow(
     # a recent version (2.1? 2.1.1?) switched to producing `int32` arrays where
     # possible. In the case that we receive `int64` arrays, we downcast them to int32 if
     # possible
-    if all(offset_arr.dtype == np.int32 for offset_arr in offsets) or any(
-        offset_arr[-1] >= np.iinfo(np.int32).max for offset_arr in offsets
-    ):
+    if all(offset_arr.dtype == np.int32 for offset_arr in offsets):
+        return [Array(offset_arr) for offset_arr in offsets], False
+
+    if any(offset_arr[-1] >= np.iinfo(np.int32).max for offset_arr in offsets):
         return [Array(offset_arr) for offset_arr in offsets], True
 
     return [Array(offset_arr.astype(np.int32)) for offset_arr in offsets], False
