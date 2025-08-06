@@ -2,13 +2,16 @@ import json
 from tempfile import NamedTemporaryFile
 
 import geodatasets
+import geopandas as gpd
 import pyarrow as pa
 import pyarrow.parquet as pq
 import pytest
+import shapely
 from arro3.core import Table
+from geoarrow.rust.core import GeoArray, geometry
 from pyproj import CRS
 
-from lonboard import SolidPolygonLayer
+from lonboard import ScatterplotLayer, SolidPolygonLayer, viz
 from lonboard._constants import OGC_84
 from lonboard._geoarrow.geopandas_interop import geopandas_to_geoarrow
 from lonboard._geoarrow.ops.reproject import reproject_table
@@ -91,3 +94,16 @@ def test_geoparquet_metadata():
         table = pq.read_table(f)
 
     _layer = SolidPolygonLayer(table=table)
+
+
+def test_read_geometry_type():
+    points = shapely.points([1, 2, 3], [4, 5, 6])
+    arr = GeoArray.from_arrow(gpd.GeoSeries(points).to_arrow("wkb"))
+    geometry_arr = arr.cast(geometry())
+
+    # Pass to viz
+    out = viz(geometry_arr)
+    assert isinstance(out.layers[0], ScatterplotLayer)
+
+    # Pass to layer directly
+    _layer = ScatterplotLayer(geometry_arr)
