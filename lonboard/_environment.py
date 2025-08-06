@@ -53,10 +53,4 @@ def detect_environment() -> Environment:  # noqa: PLR0911
 ENVIRONMENT = detect_environment()
 
 
-def default_height() -> int | None:
-    if ENVIRONMENT in [Environment.Vscode, Environment.Colab]:
-        return "500px"
-    return "24rem"
-
-
-DEFAULT_HEIGHT = default_height()
+DEFAULT_HEIGHT = "500px"
