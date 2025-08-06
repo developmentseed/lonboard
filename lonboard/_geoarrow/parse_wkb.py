@@ -3,12 +3,13 @@
 import json
 
 import numpy as np
-from arro3.core import Table
+from arro3.core import Field, Table
+from geoarrow.rust.core import GeoChunkedArray, from_wkb, get_type_id
 
 from lonboard._constants import EXTENSION_NAME, OGC_84
 from lonboard._geoarrow.crs import get_field_crs
 from lonboard._geoarrow.extension_types import construct_geometry_array
-from lonboard._geoarrow.utils import is_native_geoarrow
+from lonboard._geoarrow.utils import is_primitive_geoarrow
 from lonboard._utils import get_geometry_column_index
 
 
@@ -33,18 +34,33 @@ def parse_serialized_table(table: Table) -> list[Table]:
 
     field = table.field(field_idx)
     column = table.column(field_idx)
+    crs = get_field_crs(field)
 
     extension_type_name = field.metadata.get(b"ARROW:extension:name")
 
     # For native GeoArrow input, return table as-is
-    if is_native_geoarrow(extension_type_name):
+    # We need to downcast wkb/wkt/geometry
+    if is_primitive_geoarrow(extension_type_name):
         return [table]
+
+    type_ids = get_type_id(column).read_all()
+    unique_type_ids = np.unique(np.asarray(type_ids))
+    if any(type_id >= 20 for type_id in unique_type_ids):
+        raise ValueError(
+            "Lonboard does not currently support M dimensional geometries.",
+        )
+
+    # If there's a single type id, then we know we can downcast to that specific type.
+    # In this case the input geometry is either WKB, WKT, or Geometry.
+    if len(unique_type_ids) == 1:
+        return [single_type_id_downcast(table)]
 
     import shapely
     from shapely import GeometryType
 
+    # Get type id, split by type id
+
     # Handle WKB/WKT input
-    crs = get_field_crs(field)
     if extension_type_name in {EXTENSION_NAME.WKB, EXTENSION_NAME.OGC_WKB}:
         shapely_arr = shapely.from_wkb(column)
     elif extension_type_name == EXTENSION_NAME.WKT:
@@ -106,6 +122,34 @@ def parse_serialized_table(table: Table) -> list[Table]:
         parsed_tables.append(Table.from_batches([single_type_geometry_record_batch]))
 
     return parsed_tables
+
+
+def single_type_id_downcast(table: Table) -> Table:
+    """Downcast table with single geometry type.
+
+    Downcast a table whose geometry column is known to contain (serialized) geometries
+    of only a single type... to a table whose geometry column has a primitive GeoArrow
+    type.
+    """
+    field_idx = get_geometry_column_index(table.schema)
+    assert field_idx is not None, "Expected a geometry column in the table."
+    orig_field = table.schema.field(field_idx)
+
+    chunked_geo_arr = GeoChunkedArray.from_arrow(table.column(field_idx))
+    downcasted_array = chunked_geo_arr.downcast(coord_type="interleaved")
+    downcasted_field = Field.from_arrow(downcasted_array.type)
+    extension_type_name = downcasted_field.metadata.get(
+        b"ARROW:extension:name",
+    )
+    assert is_primitive_geoarrow(extension_type_name), (
+        "Inside of single_type_id_downcast, expected to be able to downcast to a single primitive GeoArrow type",
+    )
+
+    return table.set_column(
+        field_idx,
+        downcasted_field.with_name(orig_field.name),
+        downcasted_array,
+    )
 
 
 def parse_geoparquet_table(table: Table) -> Table:

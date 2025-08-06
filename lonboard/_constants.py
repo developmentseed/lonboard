@@ -100,6 +100,8 @@ class EXTENSION_NAME(bytes, Enum):  # noqa: N801
     MULTILINESTRING = b"geoarrow.multilinestring"
     MULTIPOLYGON = b"geoarrow.multipolygon"
     BOX = b"geoarrow.box"
+    GEOMETRY = b"geoarrow.geometry"
+    GEOMETRYCOLLECTION = b"geoarrow.geometrycollection"
     WKB = b"geoarrow.wkb"
     WKT = b"geoarrow.wkt"
     OGC_WKB = b"ogc.wkb"
