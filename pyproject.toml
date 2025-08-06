@@ -5,7 +5,7 @@ description = "Fast, interactive geospatial data visualization in Jupyter."
 authors = [{ name = "Kyle Barron", email = "kyle@developmentseed.org" }]
 license = "MIT"
 readme = "README.md"
-requires-python = ">=3.9"
+requires-python = ">=3.10"
 dependencies = [
     "anywidget~=0.9.0",
     # Version in Colab as of October 2024
@@ -62,8 +62,6 @@ docs = [
     "mkdocs-material[imaging]>=9.5.49",
     "mkdocs>=1.6.1",
     "mkdocstrings[python]>=0.26.1",
-    # # This version only on 3.9+. Ok because it's a dev dependency
-    # mkdocs-jupyter = { version = "^0.24.5", python = "^3.9" }
     "mkdocs-jupyter>=0.24.8",
     "mike>=2.1.3",
     "griffe-inherited-docstrings>=1.0.1",
@@ -182,11 +180,4 @@ ignore = [
 [tool.ruff.lint.extend-per-file-ignores]
 "__init__.py" = [
     "F401", # Allow unused imports in __init__.py files
-]
-
-[tool.uv]
-constraint-dependencies = [
-    # ensure lockfile grabs wheels for pyproj for each Python version
-    "pyproj==3.6; python_version == '3.9'",
-    "pyproj>=3.7; python_version >= '3.10'",
 ]

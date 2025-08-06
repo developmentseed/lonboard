@@ -7,13 +7,7 @@ from __future__ import annotations
 import json
 import warnings
 from textwrap import dedent
-from typing import (
-    TYPE_CHECKING,
-    Any,
-    Protocol,
-    Union,
-    cast,
-)
+from typing import TYPE_CHECKING, Any, Protocol, TypeAlias, cast
 
 import numpy as np
 from arro3.core import Array, ChunkedArray, Schema, Table, struct_field
@@ -54,18 +48,18 @@ if TYPE_CHECKING:
         @property
         def __geo_interface__(self) -> dict: ...
 
-    VizDataInput = Union[
-        gpd.GeoDataFrame,
-        gpd.GeoSeries,
-        pa.Table,
-        NDArray[np.object_],
-        shapely.geometry.base.BaseGeometry,
-        ArrowArrayExportable,
-        ArrowStreamExportable,
-        GeoInterfaceProtocol,
-        dict[str, Any],
-        duckdb.DuckDBPyRelation,
-    ]
+    VizDataInput: TypeAlias = (
+        gpd.GeoDataFrame
+        | gpd.GeoSeries
+        | pa.Table
+        | NDArray[np.object_]
+        | shapely.geometry.base.BaseGeometry
+        | ArrowArrayExportable
+        | ArrowStreamExportable
+        | GeoInterfaceProtocol
+        | dict[str, Any]
+        | duckdb.DuckDBPyRelation
+    )
     """A type definition for allowed data inputs to the `viz` function."""
 
 

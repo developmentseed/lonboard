@@ -2,7 +2,7 @@ from __future__ import annotations
 
 from io import StringIO
 from pathlib import Path
-from typing import IO, TYPE_CHECKING, Any, Callable, TextIO, overload
+from typing import IO, TYPE_CHECKING, Any, TextIO, overload
 
 import ipywidgets
 import traitlets
@@ -24,7 +24,7 @@ from lonboard.traits import (
 
 if TYPE_CHECKING:
     import sys
-    from collections.abc import Sequence
+    from collections.abc import Callable, Sequence
 
     from IPython.display import HTML  # type: ignore
 
