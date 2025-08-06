@@ -184,7 +184,11 @@ def serialize_timestamp_accessor(
     inner_values_iter = list_flatten(timestamps)
 
     offsetted_chunks = []
-    for offsets, inner_values in zip(list_offsets_iter, inner_values_iter):
+    for offsets, inner_values in zip(
+        list_offsets_iter,
+        inner_values_iter,
+        strict=True,
+    ):
         offsetted_values = ac.add(inner_values, start_offset_adjustment)
         f32_values = offsetted_values.cast(DataType.int64()).cast(DataType.float32())
         offsetted_chunks.append(list_array(offsets, f32_values))

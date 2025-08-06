@@ -3,7 +3,7 @@
 from __future__ import annotations
 
 from collections.abc import Mapping, Sequence
-from typing import TYPE_CHECKING, Any, Union
+from typing import TYPE_CHECKING, Any, TypeAlias
 
 import numpy as np
 from arro3.compute import dictionary_encode
@@ -31,7 +31,9 @@ __all__ = (
     "apply_continuous_cmap",
 )
 
-RGBColor = Union[tuple[int, int, int], tuple[int, int, int, int], Sequence[int], str]
+RGBColor: TypeAlias = (
+    tuple[int, int, int] | tuple[int, int, int, int] | Sequence[int] | str
+)
 """A type definition for an RGB or RGBA color value
 
 All values must range between 0 and 255 (inclusive). If only three values are provided,

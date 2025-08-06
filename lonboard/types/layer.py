@@ -5,7 +5,7 @@
 from __future__ import annotations
 
 import sys
-from typing import TYPE_CHECKING, Literal, Union
+from typing import TYPE_CHECKING, Literal, TypeAlias, Union
 
 import numpy as np
 from arro3.core.types import ArrowArrayExportable, ArrowStreamExportable
@@ -25,7 +25,7 @@ if TYPE_CHECKING:
     from lonboard._base import BaseExtension
 
 
-IntFloat = Union[int, float]
+IntFloat: TypeAlias = int | float
 Units = Literal["meters", "common", "pixels"]
 
 ColorAccessorInput = Union[
