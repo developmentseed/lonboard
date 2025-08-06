@@ -107,3 +107,17 @@ def test_read_geometry_type():
 
     # Pass to layer directly
     _layer = ScatterplotLayer(geometry_arr)
+
+
+def test_read_geometry_type_from_table():
+    points = shapely.points([1, 2, 3], [4, 5, 6])
+    arr = GeoArray.from_arrow(gpd.GeoSeries(points).to_arrow("wkb"))
+    geometry_arr = arr.cast(geometry())
+    table = Table.from_arrays([geometry_arr], names=["geometry"])
+
+    # Pass to viz
+    out = viz(table)
+    assert isinstance(out.layers[0], ScatterplotLayer)
+
+    # Pass to layer directly
+    _layer = ScatterplotLayer(table)
