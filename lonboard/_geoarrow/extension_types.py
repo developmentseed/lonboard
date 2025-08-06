@@ -183,7 +183,7 @@ def multipolygon_storage_type(
 
 
 def offsets_to_arrow(
-    offsets: tuple[NDArray[np.int64], ...],
+    offsets: tuple[NDArray[np.int32], ...] | tuple[NDArray[np.int64], ...],
 ) -> tuple[Sequence[Array], bool]:
     """Return a tuple of Arrow arrays from offsets.
 
@@ -191,8 +191,13 @@ def offsets_to_arrow(
         Arrays; whether they're large.
 
     """
-    # Shapely produces int64 offset arrays. We downcast those to int32 if possible
-    if any(offset_arr[-1] >= np.iinfo(np.int32).max for offset_arr in offsets):
+    # Shapely historically produced int64 offset arrays in `to_ragged_array`, but as of
+    # a recent version (2.1? 2.1.1?) switched to producing `int32` arrays where
+    # possible. In the case that we receive `int64` arrays, we downcast them to int32 if
+    # possible
+    if all(offset_arr.dtype == np.int32 for offset_arr in offsets) or any(
+        offset_arr[-1] >= np.iinfo(np.int32).max for offset_arr in offsets
+    ):
         return [Array(offset_arr) for offset_arr in offsets], True
 
     return [Array(offset_arr.astype(np.int32)) for offset_arr in offsets], False
