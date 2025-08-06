@@ -8,7 +8,7 @@ import json
 import warnings
 from concurrent.futures import ThreadPoolExecutor
 from functools import lru_cache, partial
-from typing import Callable
+from typing import TYPE_CHECKING
 from warnings import warn
 
 import numpy as np
@@ -31,6 +31,9 @@ from lonboard._geoarrow.extension_types import CoordinateDimension
 from lonboard._utils import get_geometry_column_index
 
 TransformerFromCRS = lru_cache(Transformer.from_crs)
+
+if TYPE_CHECKING:
+    from collections.abc import Callable
 
 
 def no_crs_warning() -> None:

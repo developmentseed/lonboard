@@ -10,7 +10,7 @@ from __future__ import annotations
 
 import sys
 import warnings
-from typing import TYPE_CHECKING, Any, NoReturn, Optional, TypeVar
+from typing import TYPE_CHECKING, Any, NoReturn, TypeVar
 from typing import cast as type_cast
 from urllib.parse import urlparse
 
@@ -188,12 +188,12 @@ class ArrowTableTrait(FixedErrorTraitType):
 
         allowed_geometry_types = self.metadata.get("allowed_geometry_types")
         allowed_geometry_types = type_cast(
-            "Optional[set[bytes]]",
+            "set[bytes] | None",
             allowed_geometry_types,
         )
 
         allowed_dimensions = self.metadata.get("allowed_dimensions")
-        allowed_dimensions = type_cast("Optional[set[int]]", allowed_dimensions)
+        allowed_dimensions = type_cast("set[int] | None", allowed_dimensions)
 
         geom_col_idx = get_geometry_column_index(value.schema)
 
