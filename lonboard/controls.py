@@ -104,8 +104,7 @@ class MultiRangeSlider(VBox):
 
 def _rgb2hex(r: int, g: int, b: int) -> str:
     """Convert an RGB color code values to hex."""
-    hex_color = f"#{r:02x}{g:02x}{b:02x}"
-    return hex_color
+    return f"#{r:02x}{g:02x}{b:02x}"
 
 
 def _hex2rgb(hex_color: str) -> list[int]:
