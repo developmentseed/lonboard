@@ -10,6 +10,22 @@ from lonboard._constants import EXTENSION_NAME, OGC_84
 from lonboard._geoarrow.utils import is_primitive_geoarrow
 from lonboard._utils import get_geometry_column_index
 
+# Here we intentionally check geometries in a specific order.
+# Starting from polygons, then linestrings, then points,
+# so that the order of generated layers is polygon, then path then scatterplot.
+# This ensures that points are rendered on top and polygons on the bottom.
+#
+# We can merge Point/LineString/Polygon and their Multi* counterparts, but we don't
+# currently merge across dimension
+TYPE_ID_ORDERING = [
+    (16, 13),  # MultiPolygon Z, Polygon Z
+    (6, 3),  # MultiPolygon, Polygon
+    (15, 12),  # MultiLineString Z, LineString Z
+    (5, 2),  # MultiLineString, LineString
+    (14, 11),  # MultiPoint Z, Point Z
+    (4, 1),  # MultiPoint, Point
+]
+
 
 def parse_serialized_table(table: Table) -> list[Table]:
     """Parse a table with a serialized WKB/WKT column into GeoArrow-native geometries.
@@ -39,7 +55,7 @@ def parse_serialized_table(table: Table) -> list[Table]:
         return [table]
 
     type_ids = get_type_id(column).read_all()
-    unique_type_ids = np.unique(np.asarray(type_ids))
+    unique_type_ids = {int(type_id) for type_id in np.asarray(type_ids)}
     if any(type_id >= 20 for type_id in unique_type_ids):
         raise ValueError(
             "Lonboard does not currently support M dimensional geometries.",
@@ -59,20 +75,19 @@ def parse_serialized_table(table: Table) -> list[Table]:
     parsed_tables: list[Table] = []
     concatted_batch = table.combine_chunks().to_batches()[0]
 
-    # Here we intentionally check geometries in a specific order.
-    # Starting from polygons, then linestrings, then points,
-    # so that the order of generated layers is polygon, then path then scatterplot.
-    # This ensures that points are rendered on top and polygons on the bottom.
-    #
-    # NOTE: The refactor away from shapely was lazy and didn't exactly preserve this
-    # ordering. We currently sort in reverse order of type id, but we could be more
-    # specific about Polygons, then Linestrings, then Points.
-    unique_type_ids.sort()
-    for type_id in unique_type_ids[::-1]:
-        indices = np.where(type_ids_np == type_id)[0]
-        assert len(indices) > 0, f"Expected at least one geometry of type_id {type_id}."
-        selected = concatted_batch.take(indices)
-        parsed_tables.append(single_type_id_downcast(Table.from_batches([selected])))
+    for type_id_pair in TYPE_ID_ORDERING:
+        if unique_type_ids.intersection(type_id_pair):
+            indices = np.where(
+                np.logical_or(
+                    type_ids_np == type_id_pair[0],
+                    type_ids_np == type_id_pair[1],
+                ),
+            )[0]
+            assert len(indices) > 0, "Expected to find some geometries of this type."
+            selected = concatted_batch.take(indices)
+            parsed_tables.append(
+                single_type_id_downcast(Table.from_batches([selected])),
+            )
 
     return parsed_tables
 

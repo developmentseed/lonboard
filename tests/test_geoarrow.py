@@ -7,7 +7,7 @@ import pyarrow as pa
 import pyarrow.parquet as pq
 import pytest
 import shapely
-from arro3.core import Table
+from arro3.core import ChunkedArray, Table
 from geoarrow.rust.core import GeoArray, geometry
 from pyproj import CRS
 
@@ -107,6 +107,28 @@ def test_read_geometry_type():
 
     # Pass to layer directly
     _layer = ScatterplotLayer(geometry_arr)
+
+
+def test_mixed_point_multipoint_types_layer_constructor():
+    points = shapely.points([1, 2, 3], [4, 5, 6])
+    geometry_arr1 = GeoArray.from_arrow(gpd.GeoSeries(points).to_arrow("wkb")).cast(
+        geometry(),
+    )
+
+    multipoints = shapely.multipoints([[1, 2], [3, 4], [5, 6]])
+    geometry_arr2 = GeoArray.from_arrow(
+        gpd.GeoSeries(multipoints).to_arrow("wkb"),
+    ).cast(geometry())
+
+    ca = ChunkedArray([geometry_arr1, geometry_arr2])
+
+    # Pass to viz
+    out = viz(ca)
+    assert isinstance(out.layers[0], ScatterplotLayer)
+    assert len(out.layers) == 1
+
+    # Pass to layer directly
+    _layer = ScatterplotLayer(ca)
 
 
 def test_read_geometry_type_from_table():
