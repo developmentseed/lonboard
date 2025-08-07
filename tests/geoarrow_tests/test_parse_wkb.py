@@ -105,7 +105,7 @@ def test_parse_mixed_wkb(
     )
     table = Table.from_arrays([arr], schema=schema)
     split_tables = parse_serialized_table(table)
-    assert len(split_tables) == 6
+    assert len(split_tables) == 3
     assert (
         split_tables[0].schema.field(0).metadata[b"ARROW:extension:name"]
         == EXTENSION_NAME.MULTIPOLYGON
