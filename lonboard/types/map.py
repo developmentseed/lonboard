@@ -15,7 +15,7 @@ if TYPE_CHECKING:
 class MapKwargs(TypedDict, total=False):
     """Kwargs to pass into map constructor."""
 
-    _height: int
+    height: int | str
     basemap_style: str | CartoBasemap
     parameters: dict[str, Any]
     picking_radius: int
