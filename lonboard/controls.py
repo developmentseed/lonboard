@@ -102,23 +102,17 @@ class MultiRangeSlider(VBox):
         super().__init__(children, value=initial_values, **kwargs)
 
 
-def _rgb2hex(r: int, g: int, b: int, a: int | None = None) -> str:
-    """Convert an RGB(A) color code values to hex."""
+def _rgb2hex(r: int, g: int, b: int) -> str:
+    """Convert an RGB color code values to hex."""
     hex_color = f"#{r:02x}{g:02x}{b:02x}"
-    if a is not None:
-        hex_color += f"{a:02x}"
     return hex_color
 
 
 def _hex2rgb(hex_color: str) -> list[int]:
-    """Convert a hex color code to RGB(A)."""
+    """Convert a hex color code to RGB."""
     hex_color = hex_color.lstrip("#")
     rgb_color = []
-    if len(hex_color) == 6:
-        hex_range = (0, 2, 4)
-    if len(hex_color) == 8:
-        hex_range = (0, 2, 4, 6)
-    for i in hex_range:
+    for i in (0, 2, 4):
         rgb_color.append(int(hex_color[i : i + 2], 16))
     return rgb_color
 
@@ -144,6 +138,32 @@ def _link_rgb_and_hex_traits(
         rgb_object.set_trait(rgb_trait_name, new_color_rgb)
 
     hex_object.observe(handle_hex_color_change, hex_trait_name, "change")
+
+
+def _link_rgba_and_alpha_traits(
+    rgb_object: Any,
+    rgb_trait_name: str,
+    alpha_object: Any,
+    alpha_trait_name: str,
+) -> None:
+    """Make links between two objects/traits that hold RBGA and an alpha int."""
+
+    def handle_alpha_color_change(change: traitlets.utils.bunch.Bunch) -> None:
+        new_alpha = 255 if len(change.get("new")) == 3 else change.get("new")[3]
+        alpha_object.set_trait(alpha_trait_name, new_alpha)
+
+    rgb_object.observe(handle_alpha_color_change, rgb_trait_name, "change")
+
+    def handle_alpha_change(change: traitlets.utils.bunch.Bunch) -> None:
+        new_alpha = change.get("new")
+        rgb_value = getattr(rgb_object, rgb_trait_name).copy()
+        if len(rgb_value) == 3:
+            rgb_value.append(new_alpha)
+        else:
+            rgb_value[3] = new_alpha
+        rgb_object.set_trait(rgb_trait_name, rgb_value)
+
+    alpha_object.observe(handle_alpha_change, alpha_trait_name, "change")
 
 
 def _make_visibility_w(layer: BaseLayer) -> ipywidgets.widget:
@@ -224,15 +244,18 @@ prop_layout = ipywidgets.Layout(width="224px")
 def _make_color_picker_widget(
     layer: BaseLayer,
     trait_name: str,
-) -> ipywidgets.widget:
+) -> VBox:
     trait_description = _trait_name_to_description(trait_name)
     color_trait_value = getattr(layer, trait_name)
+    alpha_val = None
     if isinstance(color_trait_value, (list, tuple)) and len(color_trait_value) in [
         3,
         4,
     ]:
         # list or tuples of 3/4 are RGB(a) values
-        hex_color = _rgb2hex(*color_trait_value)
+        hex_color = _rgb2hex(*color_trait_value[0:3])
+        if len(color_trait_value) == 4:
+            alpha_val = color_trait_value[3]
     elif color_trait_value is None:
         hex_color = "#000000"
     else:
@@ -243,7 +266,19 @@ def _make_color_picker_widget(
         value=hex_color,
     )
     _link_rgb_and_hex_traits(layer, trait_name, color_picker_w, "value")
-    return color_picker_w
+    if alpha_val:
+        alpha_w = ipywidgets.IntSlider(
+            value=alpha_val,
+            min=0,
+            max=255,
+            description=trait_description.replace("Color", "Alpha"),
+            readout=False,
+            layout=ipywidgets.Layout(width="224px"),
+        )
+        _link_rgba_and_alpha_traits(layer, trait_name, alpha_w, "value")
+        return VBox([color_picker_w, alpha_w])
+
+    return VBox([color_picker_w])
 
 
 def _make_bool_widget(
