@@ -11,6 +11,7 @@ from ipywidgets.widgets.trait_types import TypedTuple
 # Import from source to allow mkdocstrings to link to base class
 from ipywidgets.widgets.widget_box import HBox, VBox
 
+from lonboard._vendor.matplotlib.colors import _to_rgba_no_colorcycle
 from lonboard.traits import (
     ColorAccessor,
     FloatAccessor,
@@ -109,11 +110,7 @@ def _rgb2hex(r: int, g: int, b: int) -> str:
 
 def _hex2rgb(hex_color: str) -> list[int]:
     """Convert a hex color code to RGB."""
-    hex_color = hex_color.lstrip("#")
-    rgb_color = []
-    for i in (0, 2, 4):
-        rgb_color.append(int(hex_color[i : i + 2], 16))
-    return rgb_color
+    return [int(val*255) for val in _to_rgba_no_colorcycle(hex_color)]
 
 
 def _link_rgb_and_hex_traits(
