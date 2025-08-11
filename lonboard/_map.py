@@ -2,7 +2,7 @@ from __future__ import annotations
 
 from io import StringIO
 from pathlib import Path
-from typing import IO, TYPE_CHECKING, Any, Callable, TextIO, overload
+from typing import IO, TYPE_CHECKING, Any, TextIO, overload
 
 import ipywidgets
 import traitlets
@@ -12,7 +12,6 @@ from ipywidgets.embed import dependency_state, embed_minimal_html
 from ipywidgets.widgets.widget_box import VBox
 
 from lonboard._base import BaseAnyWidget
-from lonboard._environment import DEFAULT_HEIGHT
 from lonboard._layer import BaseLayer
 from lonboard._viewport import compute_view
 from lonboard.basemap import CartoBasemap
@@ -23,13 +22,14 @@ from lonboard.controls import (
 from lonboard.traits import (
     DEFAULT_INITIAL_VIEW_STATE,
     BasemapUrl,
+    HeightTrait,
     VariableLengthTuple,
     ViewStateTrait,
 )
 
 if TYPE_CHECKING:
     import sys
-    from collections.abc import Sequence
+    from collections.abc import Callable, Sequence
 
     from IPython.display import HTML  # type: ignore
 
@@ -53,7 +53,7 @@ _HTML_TEMPLATE = """<!DOCTYPE html>
 </head>
 <style>
     html {{ height: 100%; }}
-    body {{ height: 100%; }}
+    body {{ height: 100%; overflow: hidden;}}
     .widget-subarea {{ height: 100%; }}
     .jupyter-widgets-disconnected {{ height: 100%; }}
 </style>
@@ -125,6 +125,8 @@ class Map(BaseAnyWidget):
         super().__init__(layers=layers, **kwargs)
         self._click_handlers = CallbackDispatcher()
         self.on_msg(_handle_anywidget_dispatch)
+        self.layout.height = "100%"
+        self.layout.width = "100%"
 
     def on_click(self, callback: Callable, *, remove: bool = False) -> None:
         """Register a callback to execute when the map is clicked.
@@ -182,8 +184,8 @@ class Map(BaseAnyWidget):
     Indicates if a click handler has been registered.
     """
 
-    _height = t.Int(default_value=DEFAULT_HEIGHT, allow_none=True).tag(sync=True)
-    """Height of the map in pixels.
+    height = HeightTrait().tag(sync=True)
+    """Height of the map in pixels, or valid CSS height property.
 
     This API is not yet stabilized and may change in the future.
     """
@@ -570,16 +572,23 @@ class Map(BaseAnyWidget):
         """
 
         def inner(fp: str | Path | TextIO | IO[str]) -> None:
-            embed_minimal_html(
-                fp,
-                views=[self],
-                title=title or "Lonboard export",
-                template=_HTML_TEMPLATE,
-                drop_defaults=False,
-                # Necessary to pass the state of _this_ specific map. Otherwise, the
-                # state of all known widgets will be included, ballooning the file size.
-                state=dependency_state((self), drop_defaults=False),
-            )
+            original_height = self.height
+            try:
+                with self.hold_trait_notifications():
+                    self.height = "100%"
+                    embed_minimal_html(
+                        fp,
+                        views=[self],
+                        title=title or "Lonboard export",
+                        template=_HTML_TEMPLATE,
+                        drop_defaults=False,
+                        # Necessary to pass the state of _this_ specific map. Otherwise, the
+                        # state of all known widgets will be included, ballooning the file size.
+                        state=dependency_state((self), drop_defaults=False),
+                    )
+            finally:
+                # If the map had a height before the HTML was generated, reset it.
+                self.height = original_height
 
         if filename is None:
             with StringIO() as sio:

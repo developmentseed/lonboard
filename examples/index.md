@@ -35,8 +35,9 @@ These examples are maintained by external contributors.
 
 <div class="grid cards" markdown>
 
-- [American Community Survey exploration ![](https://s13.gifyu.com/images/SCGH2.gif)](https://github.com/jaanli/lonboard/blob/1af815ea586121dbbe0d8cae70f7814a642ad165/examples/american-community-survey.ipynb) using [`ScatterplotLayer`](../api/layers/scatterplot-layer) and [`DataFilterExtension`](../api/layer-extensions/data-filter-extension) by [@jaanli](https://github.com/jaanli).
 - [Using Lonboard to visualize graph flows ![](../assets/longraph.jpg)](https://knaaptime.com/longraph/) using [`ArcLayer`](../api/layers/arc-layer), [`PolygonLayer`](../api/layers/polygon-layer), and [`BrushingExtension`](../api/layer-extensions/brushing-extension) by [@knaaptime](https://github.com/knaaptime).
-
+- [American Community Survey exploration](https://github.com/jaanli/lonboard/blob/1af815ea586121dbbe0d8cae70f7814a642ad165/examples/american-community-survey.ipynb) using [`ScatterplotLayer`](../api/layers/scatterplot-layer) and [`DataFilterExtension`](../api/layer-extensions/data-filter-extension) by [@jaanli](https://github.com/jaanli).
 
 </div>
+
+Want to add your own example? Create an issue or pull request on the [Lonboard repository](https://github.com/developmentseed/lonboard).

@@ -2,13 +2,16 @@ import json
 from tempfile import NamedTemporaryFile
 
 import geodatasets
+import geopandas as gpd
 import pyarrow as pa
 import pyarrow.parquet as pq
 import pytest
-from arro3.core import Table
+import shapely
+from arro3.core import ChunkedArray, Table
+from geoarrow.rust.core import GeoArray, geometry
 from pyproj import CRS
 
-from lonboard import SolidPolygonLayer
+from lonboard import ScatterplotLayer, SolidPolygonLayer, viz
 from lonboard._constants import OGC_84
 from lonboard._geoarrow.geopandas_interop import geopandas_to_geoarrow
 from lonboard._geoarrow.ops.reproject import reproject_table
@@ -91,3 +94,52 @@ def test_geoparquet_metadata():
         table = pq.read_table(f)
 
     _layer = SolidPolygonLayer(table=table)
+
+
+def test_read_geometry_type():
+    points = shapely.points([1, 2, 3], [4, 5, 6])
+    arr = GeoArray.from_arrow(gpd.GeoSeries(points).to_arrow("wkb"))
+    geometry_arr = arr.cast(geometry())
+
+    # Pass to viz
+    out = viz(geometry_arr)
+    assert isinstance(out.layers[0], ScatterplotLayer)
+
+    # Pass to layer directly
+    _layer = ScatterplotLayer(geometry_arr)
+
+
+def test_mixed_point_multipoint_types_layer_constructor():
+    points = shapely.points([1, 2, 3], [4, 5, 6])
+    geometry_arr1 = GeoArray.from_arrow(gpd.GeoSeries(points).to_arrow("wkb")).cast(
+        geometry(),
+    )
+
+    multipoints = shapely.multipoints([[1, 2], [3, 4], [5, 6]])
+    geometry_arr2 = GeoArray.from_arrow(
+        gpd.GeoSeries(multipoints).to_arrow("wkb"),
+    ).cast(geometry())
+
+    ca = ChunkedArray([geometry_arr1, geometry_arr2])
+
+    # Pass to viz
+    out = viz(ca)
+    assert isinstance(out.layers[0], ScatterplotLayer)
+    assert len(out.layers) == 1
+
+    # Pass to layer directly
+    _layer = ScatterplotLayer(ca)
+
+
+def test_read_geometry_type_from_table():
+    points = shapely.points([1, 2, 3], [4, 5, 6])
+    arr = GeoArray.from_arrow(gpd.GeoSeries(points).to_arrow("wkb"))
+    geometry_arr = arr.cast(geometry())
+    table = Table.from_arrays([geometry_arr], names=["geometry"])
+
+    # Pass to viz
+    out = viz(table)
+    assert isinstance(out.layers[0], ScatterplotLayer)
+
+    # Pass to layer directly
+    _layer = ScatterplotLayer(table)
