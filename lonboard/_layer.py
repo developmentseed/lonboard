@@ -93,7 +93,10 @@ class BaseLayer(BaseWidget):
         **kwargs: Any,
     ) -> None:
         if self.title is None:
-            self.title = self._layer_type.title() + " Layer"
+            if hasattr(self, "_layer_type"):
+                self.title = self._layer_type.title() + " Layer"
+            else:
+                self.title = "Layer"
         # We allow layer extensions to dynamically inject properties onto the layer
         # widgets where the layer is defined. We wish to allow extensions and their
         # properties to be passed in the layer constructor. _However_, if
