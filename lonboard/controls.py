@@ -110,7 +110,7 @@ def _rgb2hex(r: int, g: int, b: int) -> str:
 
 def _hex2rgb(hex_color: str) -> list[int]:
     """Convert a hex color code to RGB."""
-    return [int(val*255) for val in _to_rgba_no_colorcycle(hex_color)]
+    return [int(val * 255) for val in _to_rgba_no_colorcycle(hex_color)]
 
 
 def _link_rgb_and_hex_traits(
@@ -136,33 +136,7 @@ def _link_rgb_and_hex_traits(
     hex_object.observe(handle_hex_color_change, hex_trait_name, "change")
 
 
-def _link_rgba_and_alpha_traits(
-    rgb_object: Any,
-    rgb_trait_name: str,
-    alpha_object: Any,
-    alpha_trait_name: str,
-) -> None:
-    """Make links between two objects/traits that hold RBGA and an alpha int."""
-
-    def handle_alpha_color_change(change: traitlets.utils.bunch.Bunch) -> None:
-        new_alpha = 255 if len(change.get("new")) == 3 else change.get("new")[3]
-        alpha_object.set_trait(alpha_trait_name, new_alpha)
-
-    rgb_object.observe(handle_alpha_color_change, rgb_trait_name, "change")
-
-    def handle_alpha_change(change: traitlets.utils.bunch.Bunch) -> None:
-        new_alpha = change.get("new")
-        rgb_value = getattr(rgb_object, rgb_trait_name).copy()
-        if len(rgb_value) == 3:
-            rgb_value.append(new_alpha)
-        else:
-            rgb_value[3] = new_alpha
-        rgb_object.set_trait(rgb_trait_name, rgb_value)
-
-    alpha_object.observe(handle_alpha_change, alpha_trait_name, "change")
-
-
-def _make_visibility_w(layer: BaseLayer) -> ipywidgets.widget:
+def _make_visibility_w(layer: BaseLayer) -> ipywidgets.HBox:
     """Make a widget to control layer visibility."""
     visibility_w = ipywidgets.Checkbox(
         value=True,
@@ -170,10 +144,13 @@ def _make_visibility_w(layer: BaseLayer) -> ipywidgets.widget:
         disabled=False,
         indent=False,
     )
-    visibility_w.layout = ipywidgets.Layout(width="196px")
-    ipywidgets.dlink((layer, "title"), (visibility_w, "description"))
+    visibility_w.layout = ipywidgets.Layout(width="16px")
+    layer_name = ipywidgets.Text("Boundaries")
+    layer_name.layout = ipywidgets.Layout(width="160px")
+
+    ipywidgets.dlink((layer, "title"), (layer_name, "value"))
     ipywidgets.link((layer, "visible"), (visibility_w, "value"))
-    return visibility_w
+    return ipywidgets.HBox([visibility_w, layer_name])
 
 
 def _make_layer_control_item(layer: BaseLayer) -> VBox:
@@ -240,18 +217,15 @@ prop_layout = ipywidgets.Layout(width="224px")
 def _make_color_picker_widget(
     layer: BaseLayer,
     trait_name: str,
-) -> VBox:
+) -> ipywidgets.widget:
     trait_description = _trait_name_to_description(trait_name)
     color_trait_value = getattr(layer, trait_name)
-    alpha_val = None
     if isinstance(color_trait_value, (list, tuple)) and len(color_trait_value) in [
         3,
         4,
     ]:
         # list or tuples of 3/4 are RGB(a) values
         hex_color = _rgb2hex(*color_trait_value[0:3])
-        if len(color_trait_value) == 4:
-            alpha_val = color_trait_value[3]
     elif color_trait_value is None:
         hex_color = "#000000"
     else:
@@ -262,19 +236,7 @@ def _make_color_picker_widget(
         value=hex_color,
     )
     _link_rgb_and_hex_traits(layer, trait_name, color_picker_w, "value")
-    if alpha_val:
-        alpha_w = ipywidgets.IntSlider(
-            value=alpha_val,
-            min=0,
-            max=255,
-            description=trait_description.replace("Color", "Alpha"),
-            readout=False,
-            layout=ipywidgets.Layout(width="224px"),
-        )
-        _link_rgba_and_alpha_traits(layer, trait_name, alpha_w, "value")
-        return VBox([color_picker_w, alpha_w])
-
-    return VBox([color_picker_w])
+    return color_picker_w
 
 
 def _make_bool_widget(
@@ -396,13 +358,16 @@ def _make_layer_trait_widgets(layer: BaseLayer) -> tuple[list, list, list]:
         if trait_name in ["visible", "selected_index", "title"]:
             continue
 
+        try:
+            val = getattr(layer, trait_name)
+        except traitlets.TraitError:
+            # if accessing the trait causes an error do not make a widget
+            continue
+
         if isinstance(trait, ColorAccessor):
             color_picker_w = _make_color_picker_widget(layer, trait_name)
             color_widgets.append(color_picker_w)
         else:
-            if hasattr(layer, trait_name):
-                val = getattr(layer, trait_name)
-
             if val is None:
                 # do not create a widget for non color traits that are None
                 # becase we dont have a way to set them back to None
