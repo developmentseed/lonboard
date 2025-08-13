@@ -97,7 +97,7 @@ function App() {
   const model = useModel();
 
   const [mapStyle] = useModelState<string>("basemap_style");
-  const [mapHeight] = useModelState<number>("_height");
+  const [mapHeight] = useModelState<string>("height");
   const [showTooltip] = useModelState<boolean>("show_tooltip");
   const [showSidePanel] = useModelState<boolean>("show_side_panel");
   const [pickingRadius] = useModelState<number>("picking_radius");
@@ -215,11 +215,11 @@ function App() {
   );
 
   return (
-    <div className="lonboard">
+    <div className="lonboard" style={{ minHeight: "100%", height: mapHeight }}>
       <div
         id={`map-${mapId}`}
         className="flex"
-        style={{ height: mapHeight ? `${mapHeight}px` : "24rem" }}
+        style={{ width: "100%", height: "100%" }}
       >
         <Toolbar />
 

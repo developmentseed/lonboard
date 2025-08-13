@@ -10,7 +10,7 @@ from __future__ import annotations
 
 import sys
 import warnings
-from typing import TYPE_CHECKING, Any, NoReturn, Optional, TypeVar
+from typing import TYPE_CHECKING, Any, NoReturn, TypeVar
 from typing import cast as type_cast
 from urllib.parse import urlparse
 
@@ -28,6 +28,7 @@ from traitlets import TraitError, Undefined
 from traitlets.utils.descriptions import class_of, describe
 
 from lonboard._constants import EXTENSION_NAME
+from lonboard._environment import DEFAULT_HEIGHT
 from lonboard._geoarrow.box_to_polygon import parse_box_encoded_table
 from lonboard._serialization import (
     ACCESSOR_SERIALIZATION,
@@ -187,12 +188,12 @@ class ArrowTableTrait(FixedErrorTraitType):
 
         allowed_geometry_types = self.metadata.get("allowed_geometry_types")
         allowed_geometry_types = type_cast(
-            "Optional[set[bytes]]",
+            "set[bytes] | None",
             allowed_geometry_types,
         )
 
         allowed_dimensions = self.metadata.get("allowed_dimensions")
-        allowed_dimensions = type_cast("Optional[set[int]]", allowed_dimensions)
+        allowed_dimensions = type_cast("set[int] | None", allowed_dimensions)
 
         geom_col_idx = get_geometry_column_index(value.schema)
 
@@ -1169,3 +1170,29 @@ class VariableLengthTuple(traitlets.Container):
                 validated.append(v)
 
         return tuple(validated)
+
+
+class HeightTrait(FixedErrorTraitType):
+    """Trait to validate map height input."""
+
+    allow_none = True
+    default_value = DEFAULT_HEIGHT
+
+    def __init__(
+        self: TraitType,
+        *args: Any,
+        **kwargs: Any,
+    ) -> None:
+        super().__init__(*args, **kwargs)
+
+        self.tag(sync=True)
+
+    def validate(self, obj: Any, value: Any) -> str:
+        if isinstance(value, int):
+            return f"{value}px"
+
+        if isinstance(value, str):
+            return value
+
+        self.error(obj, value)
+        assert False

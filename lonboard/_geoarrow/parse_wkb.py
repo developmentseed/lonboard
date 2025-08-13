@@ -3,13 +3,28 @@
 import json
 
 import numpy as np
-from arro3.core import Table
+from arro3.core import Field, Table
+from geoarrow.rust.core import GeoChunkedArray, get_type_id
 
 from lonboard._constants import EXTENSION_NAME, OGC_84
-from lonboard._geoarrow.crs import get_field_crs
-from lonboard._geoarrow.extension_types import construct_geometry_array
-from lonboard._geoarrow.utils import is_native_geoarrow
+from lonboard._geoarrow.utils import is_primitive_geoarrow
 from lonboard._utils import get_geometry_column_index
+
+# Here we intentionally check geometries in a specific order.
+# Starting from polygons, then linestrings, then points,
+# so that the order of generated layers is polygon, then path then scatterplot.
+# This ensures that points are rendered on top and polygons on the bottom.
+#
+# We can merge Point/LineString/Polygon and their Multi* counterparts, but we don't
+# currently merge across dimension
+TYPE_ID_ORDERING = [
+    (16, 13),  # MultiPolygon Z, Polygon Z
+    (6, 3),  # MultiPolygon, Polygon
+    (15, 12),  # MultiLineString Z, LineString Z
+    (5, 2),  # MultiLineString, LineString
+    (14, 11),  # MultiPoint Z, Point Z
+    (4, 1),  # MultiPoint, Point
+]
 
 
 def parse_serialized_table(table: Table) -> list[Table]:
@@ -34,78 +49,72 @@ def parse_serialized_table(table: Table) -> list[Table]:
     field = table.field(field_idx)
     column = table.column(field_idx)
 
-    extension_type_name = field.metadata.get(b"ARROW:extension:name")
-
     # For native GeoArrow input, return table as-is
-    if is_native_geoarrow(extension_type_name):
+    # We need to downcast wkb/wkt/geometry
+    if is_primitive_geoarrow(field):
         return [table]
 
-    import shapely
-    from shapely import GeometryType
+    type_ids = get_type_id(column).read_all()
+    unique_type_ids = {int(type_id) for type_id in np.asarray(type_ids)}
+    if any(type_id >= 20 for type_id in unique_type_ids):
+        raise ValueError(
+            "Lonboard does not currently support M dimensional geometries.",
+        )
+    if any(type_id % 10 == 7 for type_id in unique_type_ids):
+        raise ValueError(
+            "Lonboard does not currently support GeometryCollections.",
+        )
 
-    # Handle WKB/WKT input
-    crs = get_field_crs(field)
-    if extension_type_name in {EXTENSION_NAME.WKB, EXTENSION_NAME.OGC_WKB}:
-        shapely_arr = shapely.from_wkb(column)
-    elif extension_type_name == EXTENSION_NAME.WKT:
-        shapely_arr = shapely.from_wkt(column)
-    else:
-        raise ValueError(f"Unexpected GeoArrow extension name {extension_type_name!r}")
+    # If there's a single type id, then we know we can downcast to that specific type.
+    # In this case the input geometry is either WKB, WKT, or Geometry.
+    if len(unique_type_ids) == 1:
+        return [single_type_id_downcast(table)]
 
-    type_ids = np.array(shapely.get_type_id(shapely_arr))
-    unique_type_ids = set(np.unique(type_ids))
+    type_ids_np = np.asarray(type_ids)
 
-    if GeometryType.GEOMETRYCOLLECTION in unique_type_ids:
-        raise ValueError("GeometryCollections not currently supported")
-
-    if GeometryType.LINEARRING in unique_type_ids:
-        raise ValueError("LinearRings not currently supported")
-
-    point_indices = np.where(
-        (type_ids == GeometryType.POINT) | (type_ids == GeometryType.MULTIPOINT),
-    )[0]
-
-    linestring_indices = np.where(
-        (type_ids == GeometryType.LINESTRING)
-        | (type_ids == GeometryType.MULTILINESTRING),
-    )[0]
-
-    polygon_indices = np.where(
-        (type_ids == GeometryType.POLYGON) | (type_ids == GeometryType.MULTIPOLYGON),
-    )[0]
-
-    # Here we intentionally check geometries in a specific order.
-    # Starting from polygons, then linestrings, then points,
-    # so that the order of generated layers is polygon, then path then scatterplot.
-    # This ensures that points are rendered on top and polygons on the bottom.
     parsed_tables: list[Table] = []
-    for single_type_geometry_indices in (
-        polygon_indices,
-        linestring_indices,
-        point_indices,
-    ):
-        if len(single_type_geometry_indices) == 0:
-            continue
+    concatted_batch = table.combine_chunks().to_batches()[0]
 
-        single_type_geometry_field, single_type_geometry_arr = construct_geometry_array(
-            shapely_arr[single_type_geometry_indices],
-            crs=crs,
-        )
-
-        concatted_table = table.combine_chunks()
-        batches = concatted_table.to_batches()
-        assert len(batches) == 1
-
-        assert single_type_geometry_indices.dtype == np.int64
-
-        single_type_geometry_record_batch = (
-            batches[0]
-            .take(single_type_geometry_indices)
-            .set_column(field_idx, single_type_geometry_field, single_type_geometry_arr)
-        )
-        parsed_tables.append(Table.from_batches([single_type_geometry_record_batch]))
+    for type_id_pair in TYPE_ID_ORDERING:
+        if unique_type_ids.intersection(type_id_pair):
+            indices = np.where(
+                np.logical_or(
+                    type_ids_np == type_id_pair[0],
+                    type_ids_np == type_id_pair[1],
+                ),
+            )[0]
+            assert len(indices) > 0, "Expected to find some geometries of this type."
+            selected = concatted_batch.take(indices)
+            parsed_tables.append(
+                single_type_id_downcast(Table.from_batches([selected])),
+            )
 
     return parsed_tables
+
+
+def single_type_id_downcast(table: Table) -> Table:
+    """Downcast table with single geometry type.
+
+    Downcast a table whose geometry column is known to contain (serialized) geometries
+    of only a single type... to a table whose geometry column has a primitive GeoArrow
+    type.
+    """
+    field_idx = get_geometry_column_index(table.schema)
+    assert field_idx is not None, "Expected a geometry column in the table."
+    orig_field = table.schema.field(field_idx)
+
+    chunked_geo_arr = GeoChunkedArray.from_arrow(table.column(field_idx))
+    downcasted_array = chunked_geo_arr.downcast(coord_type="interleaved")
+    downcasted_field = Field.from_arrow(downcasted_array.type)
+    assert is_primitive_geoarrow(downcasted_field), (
+        "Inside of single_type_id_downcast, expected to be able to downcast to a single primitive GeoArrow type",
+    )
+
+    return table.set_column(
+        field_idx,
+        downcasted_field.with_name(orig_field.name),
+        downcasted_array,
+    )
 
 
 def parse_geoparquet_table(table: Table) -> Table:
