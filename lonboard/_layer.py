@@ -367,12 +367,10 @@ class BaseArrowLayer(BaseLayer):
             table_o3 = imported_stream
         else:
             assert isinstance(imported_stream, ChunkedArray)
-            field = imported_stream.field.with_name("geometry")
-            schema = Schema([field])
-            table = Table.from_arrays([imported_stream], schema=schema)
-            table = add_positional_row_index(table)
+            schema = Schema([imported_stream.field.with_name("geometry")])
+            table_o3 = Table.from_arrays([imported_stream], schema=schema)
+            table_o3 = add_positional_row_index(table_o3)
 
-        table_o3 = Table.from_arrow(table)
         parsed_tables = parse_serialized_table(table_o3)
         assert len(parsed_tables) == 1, (
             "Mixed geometry type input not supported here. Use the top "
