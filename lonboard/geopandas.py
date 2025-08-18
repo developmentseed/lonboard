@@ -54,7 +54,6 @@ class LonboardAccessor:
         self,
         *,
         column: str | None = None,
-        *,
         cmap: str | None = None,
         scheme: str | None = None,
         k: int | None = 6,
