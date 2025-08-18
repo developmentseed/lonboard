@@ -7,12 +7,13 @@ import numpy as np
 import pandas as pd
 from numpy import uint8
 
-from lonboard import Map, viz
+from lonboard import Map, basemap, viz
 from lonboard.basemap import CartoBasemap
 from lonboard.colormap import apply_categorical_cmap, apply_continuous_cmap
 
 if TYPE_CHECKING:
     from numpy.typing import NDArray
+
     from ._viz import (
         MapKwargs,
         PathLayerKwargs,
