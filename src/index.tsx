@@ -3,8 +3,10 @@ import { useEffect, useCallback, useState } from "react";
 import { createRender, useModelState, useModel } from "@anywidget/react";
 import type { Initialize, Render } from "@anywidget/types";
 import Map from "react-map-gl/maplibre";
-import DeckGL from "@deck.gl/react";
+import { CompassWidget, FullscreenWidget } from "@deck.gl/react";
+import DeckGL, { useWidget } from "@deck.gl/react";
 import { MapViewState, PickingInfo, type Layer } from "@deck.gl/core";
+// import { FullscreenWidget } from "@deck.gl/widgets";
 import { BaseLayerModel, initializeLayer } from "./model/index.js";
 import type { WidgetModel } from "@jupyter-widgets/base";
 import { initParquetWasm } from "./parquet.js";
@@ -141,6 +143,11 @@ function App() {
   // Fake state just to get react to re-render when a model callback is called
   // eslint-disable-next-line @typescript-eslint/no-unused-vars
   const [stateCounter, setStateCounter] = useState<Date>(new Date());
+
+  // const CompassWidget = (props) => {
+  //   const widget = useWidget(UniversalCompassWidget, props);
+  //   return null;
+  // };
 
   useEffect(() => {
     const loadAndUpdateLayers = async () => {
@@ -280,6 +287,8 @@ function App() {
               mapStyle={mapStyle || DEFAULT_MAP_STYLE}
               customAttribution={customAttribution}
             ></Map>
+            <CompassWidget id={`compass-${mapId}`} placement="top-left" />
+            <FullscreenWidget id={`fullscreen-${mapId}`} placement="top-left" />
           </DeckGL>
         </div>
       </div>
