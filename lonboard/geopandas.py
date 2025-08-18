@@ -42,7 +42,8 @@ BASEMAP_PROVIDERS = {
 class LonboardAccessor:
     """Geopandas Extension class to provide the `explore` method."""
 
-    def __init__(self, pandas_obj) -> None:  # noqa: ANN001, D107
+    def __init__(self, pandas_obj: gpd.GeoDataFrame) -> None:
+        """Initialize geopandas extension."""
         self._validate(pandas_obj)
         self._obj = pandas_obj
 
@@ -51,7 +52,7 @@ class LonboardAccessor:
         if not isinstance(obj, gpd.GeoDataFrame):
             raise TypeError("must be a geodataframe")
 
-    def explore(  # noqa: PLR0913
+    def explore(  # noqa: C901, PLR0912, PLR0913, PLR0915
         self,
         *,
         column: str | None = None,
@@ -172,7 +173,7 @@ class LonboardAccessor:
 
             if column not in gdf.columns:
                 raise ValueError(
-                    f"the designated column {column} is not in the dataframe"
+                    f"the designated column {column} is not in the dataframe",
                 )
             if gdf[column].dtype in ["O", "category"]:
                 categorical = True
@@ -248,7 +249,7 @@ class LonboardAccessor:
 
 
 def _get_categorical_cmap(
-    categories: np.ndarray, cmap: str, nan_color: str, alpha: float
+    categories: np.ndarray, cmap: str, nan_color: str, alpha: float,
 ) -> np.ndarray[uint8]:
     try:
         from matplotlib import colormaps
@@ -299,17 +300,6 @@ def _query_name(name: str) -> basemap:
     >>> xyz._query_name("CartoDB.Positron")
 
     """
-    providers = {
-        "CartoDB Positron": basemap.CartoBasemap.Positron,
-        "CartoDB Positron No Label": basemap.CartoBasemap.PositronNoLabels,
-        "CartoDB Darkmatter": basemap.CartoBasemap.DarkMatter,
-        "CartoDB Darkmatter No Label": basemap.CartoBasemap.DarkMatterNoLabels,
-        "CartoDB Voyager": basemap.CartoBasemap.Voyager,
-        "CartoDB Voyager No Label": basemap.CartoBasemap.VoyagerNoLabels,
-    }
-    xyz_flat_lower = {
-        k.translate(QUERY_NAME_TRANSLATION).lower(): v for k, v in providers.items()
-    }
     name_clean = name.translate(QUERY_NAME_TRANSLATION).lower()
     if name_clean in BASEMAP_PROVIDERS:
         return BASEMAP_PROVIDERS[name_clean]
