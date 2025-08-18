@@ -47,6 +47,7 @@ class LonboardAccessor:
     def explore(  # noqa: PLR0913
         self,
         column: str | None = None,
+        *,
         cmap: str | None = None,
         scheme: str | None = None,
         k: int | None = 6,
