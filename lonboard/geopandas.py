@@ -48,7 +48,7 @@ class LonboardAccessor:
         self._obj = pandas_obj
 
     @staticmethod
-    def _validate(obj) -> None:  # noqa: ANN001
+    def _validate(obj: gpd.GeoDataFrame) -> None:
         if not isinstance(obj, gpd.GeoDataFrame):
             raise TypeError("must be a geodataframe")
 
