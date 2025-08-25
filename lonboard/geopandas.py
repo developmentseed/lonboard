@@ -249,7 +249,10 @@ class LonboardAccessor:
 
 
 def _get_categorical_cmap(
-    categories: np.ndarray, cmap: str, nan_color: str, alpha: float,
+    categories: np.ndarray,
+    cmap: str,
+    nan_color: str,
+    alpha: float,
 ) -> np.ndarray[uint8]:
     try:
         from matplotlib import colormaps
