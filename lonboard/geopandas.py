@@ -266,7 +266,7 @@ def _get_categorical_cmap(
     n_cats = len(unique_cats)
     colors = colormaps[cmap].resampled(n_cats)(list(range(n_cats)), alpha, bytes=True)
     colors = np.vstack([colors, nan_color])
-    temp_cmap = dict(zip(range(n_cats + 1), colors))
+    temp_cmap = dict(zip(range(n_cats + 1), colors, strict=True))
     return apply_categorical_cmap(cat_codes, temp_cmap)
 
 
