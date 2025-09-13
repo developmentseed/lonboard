@@ -180,6 +180,7 @@ plugins:
 
           inventories:
             - https://arrow.apache.org/docs/objects.inv
+            - https://cartopy.readthedocs.io/stable/objects.inv
             - https://contextily.readthedocs.io/en/stable/objects.inv
             - https://docs.python.org/3/objects.inv
             - https://duckdb.org/docs/stable/clients/python/reference/objects.inv
@@ -205,7 +206,6 @@ plugins:
             - https://rasterio.readthedocs.io/en/stable/objects.inv
             - https://residentmario.github.io/geoplot/objects.inv
             - https://rtree.readthedocs.io/en/stable/objects.inv
-            - https://scitools.org.uk/cartopy/docs/latest/objects.inv
             - https://shapely.readthedocs.io/en/stable/objects.inv
             - https://traitlets.readthedocs.io/en/stable/objects.inv
             - https://xyzservices.readthedocs.io/en/stable/objects.inv

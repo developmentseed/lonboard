@@ -3,12 +3,13 @@ from tempfile import NamedTemporaryFile
 
 import geodatasets
 import geopandas as gpd
+import numpy as np
 import pyarrow as pa
 import pyarrow.parquet as pq
 import pytest
 import shapely
 from arro3.core import ChunkedArray, Table
-from geoarrow.rust.core import GeoArray, geometry
+from geoarrow.rust.core import GeoArray, geometry, points
 from pyproj import CRS
 
 from lonboard import ScatterplotLayer, SolidPolygonLayer, viz
@@ -143,3 +144,12 @@ def test_read_geometry_type_from_table():
 
     # Pass to layer directly
     _layer = ScatterplotLayer(table)
+
+
+def test_geoarrow_geometry_with_crs():
+    coords = np.array([[1, 4], [2, 5], [3, 6]], dtype=np.float64)
+
+    crs = "EPSG:4326"
+    geometry_array = points(coords, crs=crs).cast(geometry(crs=crs))
+    m = viz(geometry_array)
+    assert isinstance(m.layers[0], ScatterplotLayer)
