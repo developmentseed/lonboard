@@ -19,7 +19,7 @@ dependencies = [
     # The same version pin as geopandas
     "pyproj>=3.3",
     "typing-extensions>=4.6.0; python_version < '3.12'",
-    "geoarrow-rust-core>=0.5.1",
+    "geoarrow-rust-core>=0.5.2",
 ]
 keywords = [
     "GIS",
