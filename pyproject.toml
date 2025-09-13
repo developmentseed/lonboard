@@ -140,7 +140,6 @@ ignore = [
     "E501",    # Line too long
     "EM",      # Exception must not use a string literal, assign to variable first
     "FIX002",  # Line contains TODO, consider resolving the issue
-    "PD901",   # Avoid using the generic variable name `df` for DataFrames
     "PERF401", # Use a list comprehension to create a transformed list
     "PGH003",  # Use specific rule codes when ignoring type issues
     "PGH004",  # Use specific rule codes when using `ruff: noqa`
