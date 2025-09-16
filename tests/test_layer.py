@@ -109,14 +109,14 @@ def test_layer_from_geoarrow_pyarrow():
 @pytest.mark.skipif(not compat.HAS_SHAPELY, reason="shapely not available")
 def test_layer_wkb_geoarrow():
     path = geodatasets.get_path("naturalearth.land")
-    meta, table = read_arrow(path)
+    _meta, table = read_arrow(path)
     _layer = SolidPolygonLayer(table=table)
 
 
 @pytest.mark.skipif(not compat.HAS_SHAPELY, reason="shapely not available")
 def test_layer_wkb_geoarrow_wrong_geom_type():
     path = geodatasets.get_path("naturalearth.land")
-    meta, table = read_arrow(path)
+    _meta, table = read_arrow(path)
     # Use regex as set will have unknown ordering between multipoint and point
     with pytest.raises(
         TraitError,
@@ -196,7 +196,7 @@ def test_layer_arrow_rechunking_geodataframe():
 @pytest.mark.skipif(not compat.HAS_SHAPELY, reason="shapely not available")
 def test_layer_arrow_rechunking_arrow_input():
     path = geodatasets.get_path("naturalearth.land")
-    meta, table = read_arrow(path)
+    _meta, table = read_arrow(path)
 
     elevation = np.ones(len(table))
 

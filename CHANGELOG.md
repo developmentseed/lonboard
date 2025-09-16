@@ -1,5 +1,34 @@
 # Changelog
 
+## [0.12.0] - 2025-09-13
+
+### New Features :sparkles:
+
+- feat: Add new example notebook on accessing spatially-partitioned Overture GeoParquet datasets by @kylebarron in https://github.com/developmentseed/lonboard/pull/832
+- feat: Allow passing GeoArrow arrays and chunked arrays directly to layer constructors by @kylebarron in https://github.com/developmentseed/lonboard/pull/828
+- feat: Support parsing `geoarrow.geometry` input; read WKB/WKT without shapely dep by @kylebarron in https://github.com/developmentseed/lonboard/pull/846
+- feat: Use `100%` as default CSS height by @ATL2001 in https://github.com/developmentseed/lonboard/pull/835
+- feat: Migrate notebook examples to dependency management using `juv` by @kylebarron in https://github.com/developmentseed/lonboard/pull/821
+
+### Breaking changes :hammer:
+
+- chore!: Require Python 3.10 or higher by @kylebarron in https://github.com/developmentseed/lonboard/pull/843
+
+### Bug fixes :bug:
+
+- fix(arc-layer): Fix migration example by @kylebarron in https://github.com/developmentseed/lonboard/pull/830
+- fix: Bump geoarrow-rust-core to fix handling of geoarrow geometry by @kylebarron in https://github.com/developmentseed/lonboard/pull/864
+
+### Other changes
+
+- perf: Avoid numpy memory copy when shapely-produced offsets are already `int32` by @kylebarron in https://github.com/developmentseed/lonboard/pull/845
+- chore: Suggest shallow clone of repo in DEVELOP.md by @kylebarron in https://github.com/developmentseed/lonboard/pull/825
+- chore: Fix mypy lint errors by @kylebarron in https://github.com/developmentseed/lonboard/pull/826
+- ci: Add CI test for Python 3.13 by @kylebarron in https://github.com/developmentseed/lonboard/pull/844
+- chore: Cleaner handling of chunked array input into BaseArrowLayer.**init** by @kylebarron in https://github.com/developmentseed/lonboard/pull/855
+
+**Full Changelog**: https://github.com/developmentseed/lonboard/compare/v0.11.1...v0.12.0
+
 ## [0.11.1] - 2025-06-18
 
 ### Bug fixes :bug:
