@@ -153,3 +153,20 @@ def test_geoarrow_geometry_with_crs():
     geometry_array = points(coords, crs=crs).cast(geometry(crs=crs))
     m = viz(geometry_array)
     assert isinstance(m.layers[0], ScatterplotLayer)
+
+
+def test_geoarrow_string_view_column():
+    # Note: this test is really for the _JavaScript_ side to ensure the Wasm code can
+    # load a Parquet file with a string view column. We don't have a headless setup in
+    # CI, but you can run this test manually and ensure it renders.
+    coords = np.array([[1, 4], [2, 5], [3, 6]], dtype=np.float64)
+    geometry_array = points(coords)
+
+    string_col = pa.array(["a", "b", "c"], type=pa.string_view())
+    table = Table.from_arrays(
+        [geometry_array, string_col],
+        names=["geometry", "string_view"],
+    )
+
+    m = viz(table)
+    assert isinstance(m.layers[0], ScatterplotLayer)
