@@ -12,6 +12,7 @@ from arro3.core import (
 )
 
 from lonboard._constants import EXTENSION_NAME
+from lonboard._geoarrow.extension_types import CoordinateDimension, coord_storage_type
 from lonboard._geoarrow.ops.reproject import (
     _map_coords_nest_0,
     _map_coords_nest_1,
@@ -24,7 +25,7 @@ from lonboard._utils import get_geometry_column_index
 def make_geometry_interleaved(
     table: Table,
 ) -> Table:
-    """Convert geometry columns in table to interleaved coordinate layout."""
+    """Convert geometry column in table from struct to interleaved coordinate layout."""
     geom_col_idx = get_geometry_column_index(table.schema)
     # No geometry column in table
     if geom_col_idx is None:
@@ -38,28 +39,29 @@ def make_geometry_interleaved(
     if geom_field.metadata.get(b"ARROW:extension:name") == EXTENSION_NAME.BOX:
         return table
 
-    new_field, new_column = transpose_column(field=geom_field, column=geom_column)
+    new_field, new_column = convert_struct_column_to_interleaved(
+        field=geom_field,
+        column=geom_column,
+    )
     return table.set_column(geom_col_idx, new_field, new_column)
 
 
-def transpose_column(
+def convert_struct_column_to_interleaved(
     *,
     field: Field,
     column: ChunkedArray,
 ) -> tuple[Field, ChunkedArray]:
+    """Convert a GeoArrow column from struct to interleaved coordinate layout."""
     extension_type_name = field.metadata[b"ARROW:extension:name"]
 
-    new_chunked_array = _transpose_column(
-        column,
-        extension_type_name=extension_type_name,  # type: ignore
-    )
+    new_chunked_array = _convert_column(column, extension_type_name=extension_type_name)
     return field.with_type(new_chunked_array.type), new_chunked_array
 
 
-def _transpose_column(
+def _convert_column(
     column: ChunkedArray,
     *,
-    extension_type_name: EXTENSION_NAME,
+    extension_type_name: bytes,
 ) -> ChunkedArray:
     if extension_type_name == EXTENSION_NAME.POINT:
         func = _transpose_chunk_nest_0
@@ -74,9 +76,13 @@ def _transpose_column(
     elif extension_type_name == EXTENSION_NAME.MULTIPOLYGON:
         func = _transpose_chunk_nest_3
     else:
-        raise ValueError(f"Unexpected extension type name {extension_type_name}")
+        raise ValueError(f"Unexpected extension type name {extension_type_name!r}")
 
-    return ChunkedArray([func(chunk) for chunk in column.chunks])
+    arrays = [func(chunk) for chunk in column.chunks]
+    return ChunkedArray(
+        arrays,
+        type=arrays[0].field.with_metadata(column.field.metadata),
+    )
 
 
 def _transpose_coords(arr: Array) -> Array:
@@ -87,14 +93,22 @@ def _transpose_coords(arr: Array) -> Array:
         x = struct_field(arr, [0]).to_numpy()
         y = struct_field(arr, [1]).to_numpy()
         coords = np.column_stack([x, y]).ravel("C")
-        return fixed_size_list_array(coords, 2)
+        return fixed_size_list_array(
+            coords,
+            2,
+            type=coord_storage_type(interleaved=True, dims=CoordinateDimension.XY),
+        )
 
     if arr.type.num_fields == 3:
         x = struct_field(arr, [0]).to_numpy()
         y = struct_field(arr, [1]).to_numpy()
         z = struct_field(arr, [2]).to_numpy()
         coords = np.column_stack([x, y, z]).ravel("C")
-        return fixed_size_list_array(coords, 3)
+        return fixed_size_list_array(
+            coords,
+            3,
+            type=coord_storage_type(interleaved=True, dims=CoordinateDimension.XYZ),
+        )
 
     raise ValueError(f"Expected struct with 2 or 3 fields, got {arr.type.num_fields}")
 

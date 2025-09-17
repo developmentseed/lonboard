@@ -59,6 +59,13 @@ NormalAccessorInput = Union[
     ArrowArrayExportable,
     ArrowStreamExportable,
 ]
+PointAccessorInput = Union[
+    NDArray[np.float64],
+    "pa.FixedSizeListArray",
+    "pa.ChunkedArray",
+    ArrowArrayExportable,
+    ArrowStreamExportable,
+]
 TextAccessorInput = Union[
     str,
     NDArray[np.str_],
@@ -77,6 +84,20 @@ class BaseLayerKwargs(TypedDict, total=False):
     visible: bool
     opacity: IntFloat
     auto_highlight: bool
+
+
+class ArcLayerKwargs(BaseLayerKwargs, total=False):
+    great_circle: bool
+    num_segments: int
+    width_units: Units
+    width_scale: IntFloat
+    width_min_pixels: IntFloat
+    width_max_pixels: IntFloat
+    get_source_color: ColorAccessorInput
+    get_target_color: ColorAccessorInput
+    get_width: FloatAccessorInput
+    get_height: FloatAccessorInput
+    get_tilt: FloatAccessorInput
 
 
 class BitmapLayerKwargs(BaseLayerKwargs, total=False):
