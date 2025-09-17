@@ -49,7 +49,7 @@ class GeoInterfaceHolder:
 @pytest.mark.skipif(not compat.HAS_SHAPELY, reason="shapely not available")
 def test_viz_wkb_pyarrow():
     path = geodatasets.get_path("naturalearth.land")
-    meta, table = read_arrow(path)
+    _meta, table = read_arrow(path)
     map_ = viz(table)
     assert isinstance(map_.layers[0], PolygonLayer)
 
@@ -67,7 +67,7 @@ def test_viz_wkt_pyarrow():
     shapely = pytest.importorskip("shapely")
 
     path = geodatasets.get_path("naturalearth.land")
-    meta, table = read_arrow(path)
+    _meta, table = read_arrow(path)
 
     # Parse WKB to WKT
     geo_col_idx = table.schema.get_field_index("wkb_geometry")

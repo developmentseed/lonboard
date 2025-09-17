@@ -3,12 +3,13 @@ from tempfile import NamedTemporaryFile
 
 import geodatasets
 import geopandas as gpd
+import numpy as np
 import pyarrow as pa
 import pyarrow.parquet as pq
 import pytest
 import shapely
 from arro3.core import ChunkedArray, Table
-from geoarrow.rust.core import GeoArray, geometry
+from geoarrow.rust.core import GeoArray, geometry, points
 from pyproj import CRS
 
 from lonboard import ScatterplotLayer, SolidPolygonLayer, viz
@@ -143,3 +144,29 @@ def test_read_geometry_type_from_table():
 
     # Pass to layer directly
     _layer = ScatterplotLayer(table)
+
+
+def test_geoarrow_geometry_with_crs():
+    coords = np.array([[1, 4], [2, 5], [3, 6]], dtype=np.float64)
+
+    crs = "EPSG:4326"
+    geometry_array = points(coords, crs=crs).cast(geometry(crs=crs))
+    m = viz(geometry_array)
+    assert isinstance(m.layers[0], ScatterplotLayer)
+
+
+def test_geoarrow_string_view_column():
+    # Note: this test is really for the _JavaScript_ side to ensure the Wasm code can
+    # load a Parquet file with a string view column. We don't have a headless setup in
+    # CI, but you can run this test manually and ensure it renders.
+    coords = np.array([[1, 4], [2, 5], [3, 6]], dtype=np.float64)
+    geometry_array = points(coords)
+
+    string_col = pa.array(["a", "b", "c"], type=pa.string_view())
+    table = Table.from_arrays(
+        [geometry_array, string_col],
+        names=["geometry", "string_view"],
+    )
+
+    m = viz(table)
+    assert isinstance(m.layers[0], ScatterplotLayer)
