@@ -145,7 +145,10 @@ def viz(
     - `dict` holding GeoJSON-like data.
     - pyarrow `Table` with a geometry column marked with a
         [GeoArrow](https://geoarrow.org/) extension type.
-    - pyarrow `Array` marked with a [GeoArrow extension type defined by geoarrow-pyarrow](https://geoarrow.org/geoarrow-python/main/pyarrow.html#geoarrow.pyarrow.GeometryExtensionType).
+    - pyarrow `Array` or `ChunkedArray` marked with a [GeoArrow extension type defined by geoarrow-pyarrow](https://geoarrow.org/geoarrow-python/main/pyarrow.html#geoarrow.pyarrow.GeometryExtensionType).
+    - Arrow-compatible Array, ChunkedArray, Table, or RecordBatch objects that have associated GeoArrow metadata. An object is "Arrow-compatible" if it implements the [Arrow PyCapsule Interface](https://arrow.apache.org/docs/format/CDataInterface/PyCapsuleInterface.html) and has either an `__arrow_c_array__` or `__arrow_c_stream__` method. The provided Arrow data must be or have a geometry column marked with a GeoArrow extension type.
+
+        Some examples of these sources include pyogrio's [`open_arrow`][pyogrio.open_arrow], DuckDB Spatial, [GeoArrow-Rust's Python bindings](https://geoarrow.org/geoarrow-rs/python/latest/), [GeoDataFusion database connections](https://github.com/datafusion-contrib/datafusion-geo), and, soon, [GeoPolars DataFrames](https://github.com/geopolars/geopolars).
 
     Alternatively, you can pass a `list` or `tuple` of any of the above inputs.
 
