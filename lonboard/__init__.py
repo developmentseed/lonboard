@@ -17,3 +17,25 @@ from ._layer import (
 from ._map import Map
 from ._version import __version__
 from ._viz import viz
+
+__all__ = [
+    "BaseArrowLayer",
+    "BaseLayer",
+    "BitmapLayer",
+    "BitmapTileLayer",
+    "ColumnLayer",
+    "HeatmapLayer",
+    "Map",
+    "PathLayer",
+    "PointCloudLayer",
+    "PolygonLayer",
+    "ScatterplotLayer",
+    "SolidPolygonLayer",
+    "__version__",
+    "colormap",
+    "controls",
+    "experimental",
+    "layer_extension",
+    "traits",
+    "viz",
+]
