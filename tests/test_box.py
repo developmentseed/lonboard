@@ -55,13 +55,13 @@ def test_viz_box_polygon_layer():
         table.field("geometry").metadata_str["ARROW:extension:name"] == "geoarrow.box"
     )
 
-    layer = PolygonLayer(table=table)
+    layer = PolygonLayer(table)
     assert (
         layer.table.field("geometry").metadata_str["ARROW:extension:name"]
         == "geoarrow.polygon"
     )
 
-    layer2 = SolidPolygonLayer(table=table)
+    layer2 = SolidPolygonLayer(table)
     assert (
         layer2.table.field("geometry").metadata_str["ARROW:extension:name"]
         == "geoarrow.polygon"

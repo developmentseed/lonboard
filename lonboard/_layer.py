@@ -1052,16 +1052,16 @@ class PolygonLayer(BaseArrowLayer):
     m = Map(layer)
     ```
 
-    From [geoarrow-rust](https://geoarrow.github.io/geoarrow-rs/python/latest):
+    From an Arrow-compatible source like [pyogrio][pyogrio] or [geoarrow-rust](https://geoarrow.github.io/geoarrow-rs/python/latest):
 
     ```py
-    from geoarrow.rust.io import read_parquet
+    from geoarrow.rust.io import read_flatgeobuf
     from lonboard import Map, PolygonLayer
 
-    # Example: A GeoParquet file with Polygon or MultiPolygon geometries
-    table = read_parquet("path/to/file.parquet")
+    # Example: A FlatGeobuf file with Polygon or MultiPolygon geometries
+    table = read_flatgeobuf("path/to/file.fgb")
     layer = PolygonLayer(
-        table=table,
+        table,
         get_fill_color=[255, 0, 0],
         get_line_color=[0, 100, 100, 150],
     )
@@ -1298,16 +1298,16 @@ class ScatterplotLayer(BaseArrowLayer):
     m = Map(layer)
     ```
 
-    From [geoarrow-rust](https://geoarrow.github.io/geoarrow-rs/python/latest):
+    From an Arrow-compatible source like [pyogrio][pyogrio] or [geoarrow-rust](https://geoarrow.github.io/geoarrow-rs/python/latest):
 
     ```py
-    from geoarrow.rust.io import read_parquet
+    from geoarrow.rust.io import read_flatgeobuf
     from lonboard import Map, ScatterplotLayer
 
-    # Example: A GeoParquet file with Point or MultiPoint geometries
-    table = read_parquet("path/to/file.parquet")
+    # Example: A FlatGeobuf file with Point or MultiPoint geometries
+    table = read_flatgeobuf("path/to/file.fgb")
     layer = ScatterplotLayer(
-        table=table,
+        table,
         get_fill_color=[255, 0, 0],
     )
     m = Map(layer)
@@ -1538,16 +1538,16 @@ class PathLayer(BaseArrowLayer):
     m = Map(layer)
     ```
 
-    From [geoarrow-rust](https://geoarrow.github.io/geoarrow-rs/python/latest):
+    From an Arrow-compatible source like [pyogrio][pyogrio] or [geoarrow-rust](https://geoarrow.github.io/geoarrow-rs/python/latest):
 
     ```py
-    from geoarrow.rust.io import read_parquet
+    from geoarrow.rust.io import read_flatgeobuf
     from lonboard import Map, PathLayer
 
-    # Example: A GeoParquet file with LineString or MultiLineString geometries
-    table = read_parquet("path/to/file.parquet")
+    # Example: A FlatGeobuf file with LineString or MultiLineString geometries
+    table = read_flatgeobuf("path/to/file.fgb")
     layer = PathLayer(
-        table=table,
+        table,
         get_color=[255, 0, 0],
         width_min_pixels=2,
     )
@@ -1842,16 +1842,16 @@ class SolidPolygonLayer(BaseArrowLayer):
     m = Map(layer)
     ```
 
-    From [geoarrow-rust](https://geoarrow.github.io/geoarrow-rs/python/latest):
+    From an Arrow-compatible source like [pyogrio][pyogrio] or [geoarrow-rust](https://geoarrow.github.io/geoarrow-rs/python/latest):
 
     ```py
-    from geoarrow.rust.io import read_parquet
+    from geoarrow.rust.io import read_flatgeobuf
     from lonboard import Map, SolidPolygonLayer
 
-    # Example: A GeoParquet file with Polygon or MultiPolygon geometries
-    table = read_parquet("path/to/file.parquet")
+    # Example: A FlatGeobuf file with Polygon or MultiPolygon geometries
+    table = read_flatgeobuf("path/to/file.fgb")
     layer = SolidPolygonLayer(
-        table=table,
+        table,
         get_fill_color=[255, 0, 0],
     )
     m = Map(layer)
@@ -2008,16 +2008,16 @@ class HeatmapLayer(BaseArrowLayer):
     m = Map(layer)
     ```
 
-    From [geoarrow-rust](https://geoarrow.github.io/geoarrow-rs/python/latest):
+    From an Arrow-compatible source like [pyogrio][pyogrio] or [geoarrow-rust](https://geoarrow.github.io/geoarrow-rs/python/latest):
 
     ```py
-    from geoarrow.rust.io import read_parquet
+    from geoarrow.rust.io import read_flatgeobuf
     from lonboard import Map, HeatmapLayer
 
-    # Example: A GeoParquet file with Point geometries
-    table = read_parquet("path/to/file.parquet")
+    # Example: A FlatGeobuf file with Point geometries
+    table = read_flatgeobuf("path/to/file.fgb")
     layer = HeatmapLayer(
-        table=table,
+        table,
         get_fill_color=[255, 0, 0],
     )
     m = Map(layer)

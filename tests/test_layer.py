@@ -103,14 +103,14 @@ def test_layer_from_geoarrow_pyarrow():
     points = ga.with_coord_type(ga.as_geoarrow(points), ga.CoordType.INTERLEAVED)
     table = pa.table({"geometry": points})
 
-    _layer = ScatterplotLayer(table=table)
+    _layer = ScatterplotLayer(table)
 
 
 @pytest.mark.skipif(not compat.HAS_SHAPELY, reason="shapely not available")
 def test_layer_wkb_geoarrow():
     path = geodatasets.get_path("naturalearth.land")
     _meta, table = read_arrow(path)
-    _layer = SolidPolygonLayer(table=table)
+    _layer = SolidPolygonLayer(table)
 
 
 @pytest.mark.skipif(not compat.HAS_SHAPELY, reason="shapely not available")
@@ -122,7 +122,7 @@ def test_layer_wkb_geoarrow_wrong_geom_type():
         TraitError,
         match=r"Expected one of geoarrow\..*point, geoarrow\..*point geometry types",
     ):
-        _layer = ScatterplotLayer(table=table)
+        _layer = ScatterplotLayer(table)
 
 
 def test_warning_no_crs_shapely():
@@ -201,7 +201,7 @@ def test_layer_arrow_rechunking_arrow_input():
     elevation = np.ones(len(table))
 
     layer = SolidPolygonLayer(
-        table=table,
+        table,
         _rows_per_chunk=10,
         get_elevation=elevation,
     )

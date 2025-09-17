@@ -58,7 +58,7 @@ def test_geoarrow_table_reprojection():
         crs_dict,
     ), "round trip crs should match gdf crs"
 
-    layer = SolidPolygonLayer(table=table)
+    layer = SolidPolygonLayer(table)
 
     layer_geom_col_idx = get_geometry_column_index(layer.table.schema)
     layer_geom_field = layer.table.schema.field(layer_geom_col_idx)
@@ -94,7 +94,7 @@ def test_geoparquet_metadata():
         gdf.to_parquet(f)
         table = pq.read_table(f)
 
-    _layer = SolidPolygonLayer(table=table)
+    _layer = SolidPolygonLayer(table)
 
 
 def test_read_geometry_type():

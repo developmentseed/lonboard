@@ -152,8 +152,8 @@ class ArcLayer(BaseArrowLayer):
 
     def __init__(
         self,
-        *,
         table: ArrowStreamExportable,
+        *,
         get_source_position: PointAccessorInput,
         get_target_position: PointAccessorInput,
         _rows_per_chunk: int | None = None,
@@ -572,8 +572,8 @@ class TripsLayer(BaseArrowLayer):
 
     def __init__(
         self,
-        *,
         table: ArrowStreamExportable,
+        *,
         get_timestamps: ArrowStreamExportable,
         _rows_per_chunk: int | None = None,
         **kwargs: Unpack[TripsLayerKwargs],
