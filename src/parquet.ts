@@ -3,7 +3,7 @@ import * as arrow from "apache-arrow";
 
 // NOTE: this version must be synced exactly with the parquet-wasm version in
 // use.
-const PARQUET_WASM_VERSION = "0.7.0-beta.2";
+const PARQUET_WASM_VERSION = "0.7.0";
 const PARQUET_WASM_CDN_URL = `https://cdn.jsdelivr.net/npm/parquet-wasm@${PARQUET_WASM_VERSION}/esm/parquet_wasm_bg.wasm`;
 let WASM_READY: boolean = false;
 
