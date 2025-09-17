@@ -5,3 +5,9 @@ unexpected behavior when using them.
 """
 
 from ._layer import ArcLayer, TextLayer, TripsLayer
+
+__all__ = [
+    "ArcLayer",
+    "TextLayer",
+    "TripsLayer",
+]
