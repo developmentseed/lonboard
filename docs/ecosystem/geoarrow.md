@@ -6,17 +6,26 @@ There's a burgeoning ecosystem of Python libraries that use GeoArrow directly. C
 
 ## geoarrow-rust
 
-[geoarrow-rust](https://geoarrow.org/geoarrow-rs/python/latest/) is a Python library implementing the GeoArrow specification with efficient spatial operations. This library has "rust" in the name because it is implemented based on the [GeoArrow Rust implementation](https://geoarrow.org/geoarrow-rs/).
+[geoarrow-rust](https://geoarrow.org/geoarrow-rs/python/latest/) is a Python library implementing the GeoArrow specification. This library has "rust" in the name because it is implemented based on the [GeoArrow Rust implementation](https://geoarrow.org/geoarrow-rs/).
 
 ```py
-from geoarrow.rust.io import read_geojson
-from lonboard import Map, PathLayer
+from geoarrow.rust.io import read_flatgeobuf
+from lonboard import viz, Map, PathLayer
 
-path = "/path/to/file.geojson"
-geo_table = read_geojson(path)
+arrow_table = read_flatgeobuf("/path/to/file.fgb")
 
-# Assuming the GeoJSON contains LineString or MultiLineString data
-layer = PathLayer(table=geo_table)
+# Dead-simple visualization
+viz(arrow_table)
+
+# Or, customize the visualization by constructing the layer directly
+# This assumes the FlatGeobuf contains LineString or MultiLineString data
+layer = PathLayer(
+    geo_table,
+    get_width=20,
+    get_color=[0, 0, 255],
+    width_units="meters",
+    width_min_pixels=1,
+)
 m = Map(layer)
 m
 ```

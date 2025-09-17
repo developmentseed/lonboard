@@ -17,7 +17,7 @@ def test_arc_layer_geoarrow_interleaved():
     table = Table.from_arrays([string_col], names=["string"])
 
     layer = ArcLayer(
-        table=table,
+        table,
         get_source_position=start_array,
         get_target_position=end_array,
     )
@@ -35,7 +35,7 @@ def test_arc_layer_geoarrow_separated():
     table = Table.from_arrays([string_col], names=["string"])
 
     layer = ArcLayer(
-        table=table,
+        table,
         get_source_position=start_array,
         get_target_position=end_array,
     )
