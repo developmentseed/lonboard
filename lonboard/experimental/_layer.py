@@ -25,6 +25,7 @@ from lonboard.traits import (
     PointAccessor,
     TextAccessor,
 )
+from lonboard.types.layer import ArcLayerKwargs, PointAccessorInput
 
 if TYPE_CHECKING:
     import sys
@@ -59,9 +60,6 @@ class ArcLayer(BaseArrowLayer):
     This is the fastest way to plot data from an existing GeoArrow source, such as
     [geoarrow-rust](https://geoarrow.github.io/geoarrow-rs/python/latest) or
     [geoarrow-pyarrow](https://geoarrow.github.io/geoarrow-python/main/index.html).
-
-    If you have a GeoPandas `GeoDataFrame`, use
-    [`from_geopandas`][lonboard.ScatterplotLayer.from_geopandas] instead.
     """
 
     great_circle = t.Bool(None, allow_none=True).tag(sync=True)
@@ -151,6 +149,31 @@ class ArcLayer(BaseArrowLayer):
           the path at the same row index.
     - Default: `0`.
     """
+
+    def __init__(
+        self,
+        *,
+        table: ArrowStreamExportable,
+        get_source_position: PointAccessorInput,
+        get_target_position: PointAccessorInput,
+        _rows_per_chunk: int | None = None,
+        **kwargs: Unpack[ArcLayerKwargs],
+    ) -> None:
+        """Construct an ArcLayer from existing Arrow data.
+
+        Keyword Args:
+            table: An Arrow table from any Arrow-compatible library. This does not need to have a geometry column as geometries are passed separately in `get_source_position` and `get_target_position`.
+            get_source_position: Source position of each object.
+            get_target_position: Target position of each object.
+
+        """
+        super().__init__(
+            table=table,
+            _rows_per_chunk=_rows_per_chunk,
+            get_source_position=get_source_position,  # type: ignore
+            get_target_position=get_target_position,  # type: ignore
+            **kwargs,
+        )
 
 
 class TextLayer(BaseArrowLayer):
