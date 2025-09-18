@@ -166,9 +166,22 @@ def _(table):
 
 @app.cell
 def _():
+    from matplotlib.colors import Normalize, PowerNorm
+    return (Normalize,)
 
 
-    return
+@app.cell
+def _(Normalize, pa_table):
+    # amount_normalizer = LogNorm(1, 250, clip=True)
+    # amount_normalizer = PowerNorm(0.5, 1, 50, clip=True)
+    amount_normalizer = Normalize(1, 50, clip=True)
+    normalized_total_amount = amount_normalizer(pa_table["total_amount"])
+    amount_color = apply_continuous_cmap(
+        normalized_total_amount,
+        BrBG_10,
+        alpha=0.7,
+    )
+    return amount_color, normalized_total_amount
 
 
 @app.cell
@@ -177,26 +190,29 @@ def _():
 
 
 @app.cell
-def _(amount_color, non_geo_table, pa_table, table):
+def _(amount_color, normalized_total_amount, pa_table, table):
     pickup_layer = ScatterplotLayer(
-        table=pa,
-    
+        table=pa_table.drop_columns(["dropoff"]),
+        get_fill_color=amount_color,
+        get_radius=normalized_total_amount * 90,
+        radius_units="meters",
+        radius_min_pixels=0.1,
+        auto_highlight=True,
+        extensions=[BrushingExtension()],
     )
-
     arc_layer = ArcLayer(
-        table=non_geo_table,
+        table=pa_table.drop_columns(["dropoff", "pickup"]),
         get_source_position=table["pickup"],
         get_target_position=table["dropoff"],
         get_source_color=amount_color,
         get_target_color=amount_color,
         # get_source_color=[166, 3, 3],
         # get_target_color=[35, 181, 184],
-        get_width=pa_table["total_amount"].to_numpy(),
+        get_width=pa_table["trip_distance"].to_numpy(),
         width_units="meters",
-        width_min_pixels=0.5,
+        width_min_pixels=0.2,
         opacity=0.1,
         auto_highlight=True,
-        pickable=False,
         extensions=[BrushingExtension()],
     )
     return arc_layer, pickup_layer
