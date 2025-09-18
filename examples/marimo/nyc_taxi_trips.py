@@ -10,9 +10,6 @@
 #     "requests==2.32.5",
 #     "tqdm==4.67.1",
 # ]
-#
-# [tool.uv.sources]
-# lonboard = { path = "../../" }
 # ///
 
 import marimo

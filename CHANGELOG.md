@@ -1,5 +1,23 @@
 # Changelog
 
+## [0.12.1] - 2025-09-18
+
+### New Features :sparkles:
+
+- feat: New example with marimo and GeoDatafusion by @kylebarron in https://github.com/developmentseed/lonboard/pull/881
+
+### Bug fixes :bug:
+
+- fix: Fix rendering Arrow input with string view/binary view column by @kylebarron in https://github.com/developmentseed/lonboard/pull/872
+- fix: Add `__all__` declarations to modules to fix pylance warnings by @kylebarron in https://github.com/developmentseed/lonboard/pull/876
+- feat: Support struct GeoArrow input for ArcLayer positions by @kylebarron in https://github.com/developmentseed/lonboard/pull/877
+
+### Documentation :book:
+
+- docs: Fix examples with GeoArrow Rust by @kylebarron in https://github.com/developmentseed/lonboard/pull/878
+
+**Full Changelog**: https://github.com/developmentseed/lonboard/compare/v0.12.0...v0.12.1
+
 ## [0.12.0] - 2025-09-13
 
 ### New Features :sparkles:
