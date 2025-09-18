@@ -2,7 +2,6 @@
 # requires-python = ">=3.12"
 # dependencies = [
 #     "datafusion",
-#     "geoarrow-types==0.3.0",
 #     "geodatafusion",
 #     "lonboard",
 #     "matplotlib",
@@ -25,14 +24,13 @@ with app.setup:
     from pathlib import Path
 
     import marimo as mo
-    import pyarrow as pa
     import requests
     from arro3.core import Table
     from datafusion import SessionContext
     from geodatafusion import register_all
-    from palettable.colorbrewer.diverging import BrBG_10, PRGn_10
+    from matplotlib.colors import Normalize
+    from palettable.colorbrewer.diverging import BrBG_10
     from tqdm.notebook import tqdm
-    from matplotlib.colors import LogNorm
 
     from lonboard import Map, ScatterplotLayer
     from lonboard.colormap import apply_continuous_cmap
@@ -48,16 +46,11 @@ def _():
 
     This is a basic example to use the [DataFusion Python API](https://datafusion.apache.org/python/) with the [GeoDataFusion extension](https://github.com/datafusion-contrib/datafusion-geo) to filter and visualize Parquet data.
 
-    This example uses data from the [NYC Taxi & Limousine Commission (TLC) Trip Records](https://www.nyc.gov/site/tlc/about/tlc-trip-record-data.page). We'll first download a file from January 2010 to disk if it's not already downloaded. (We use data from January 2010 because some later files don't have raw longitude-latitude pickup and dropoff locations).
+    This example uses data from the [NYC Taxi & Limousine Commission (TLC) Trip Records](https://www.nyc.gov/site/tlc/about/tlc-trip-record-data.page).
+
+    We'll first download a file from January 2010 to disk if it's not already downloaded. (We use data from January 2010 because some later files don't have raw longitude-latitude pickup and dropoff locations).
     """
     )
-    return
-
-
-@app.cell
-def _():
-    from geoarrow.types.type_pyarrow import register_extension_types
-    register_extension_types()
     return
 
 
@@ -156,34 +149,44 @@ def _(ctx, get_bbox):
 
 @app.cell
 def _():
+    mo.md(r"""Now that we have our query, we can work to visualize this data on the map. We'll materialize this to an Arrow [`Table`](https://kylebarron.dev/arro3/latest/api/core/table/) so that we can apply transformations on the columns in Python. You could probably also do these transformations in SQL, but my Python skills are better than my SQL skills.""")
+    return
+
+
+@app.cell
+def _(df):
+    table = Table.from_arrow(df)
+    return (table,)
+
+
+@app.cell
+def _():
+    mo.md(r"""Now let's create colors for each row of the data. We'll use the [brown-blue-green](https://jiffyclub.github.io/palettable/colorbrewer/diverging/#brbg_10) colormap from `palettable`:""")
+    return
+
+
+@app.cell
+def _():
     BrBG_10.mpl_colormap
     return
 
 
 @app.cell
 def _():
-    # table = Table.from_arrow(df)
+    mo.md(
+        r"""
+    Next we need to normalize values from their source range to a range of 0-1 so that we can apply the colormap.
+
+    We'll use the Matplotlib [`Normalize`](https://matplotlib.org/stable/api/_as_gen/matplotlib.colors.Normalize.html) helper, which applies linear normalization from a source range to `0-1`. Then Lonboard's [`apply_continuous_cmap`](https://developmentseed.org/lonboard/latest/api/colormap/#lonboard.colormap.apply_continuous_cmap) helps to apply those values onto the provided colormap.
+    """
+    )
     return
 
 
 @app.cell
-def _(df):
-    pa_table = pa.table(df)
-    return (pa_table,)
-
-
-@app.cell
-def _():
-    from matplotlib.colors import Normalize, PowerNorm
-    return (Normalize,)
-
-
-@app.cell
-def _(Normalize, pa_table):
-    # amount_normalizer = LogNorm(1, 250, clip=True)
-    # amount_normalizer = PowerNorm(0.5, 1, 50, clip=True)
+def _(table):
     amount_normalizer = Normalize(1, 50, clip=True)
-    normalized_total_amount = amount_normalizer(pa_table["total_amount"])
+    normalized_total_amount = amount_normalizer(table["total_amount"])
     amount_color = apply_continuous_cmap(
         normalized_total_amount,
         BrBG_10,
@@ -194,13 +197,15 @@ def _(Normalize, pa_table):
 
 @app.cell
 def _():
+    mo.md(r"""Now we're ready to construct our Lonboard layers for the map:""")
     return
 
 
 @app.cell
-def _(amount_color, normalized_total_amount, pa_table):
+def _(amount_color, normalized_total_amount, table):
     pickup_layer = ScatterplotLayer(
-        table=pa_table.drop_columns(["dropoff"]),
+        # There are two geometry columns in the input table, so we remove one of them
+        table=table.select([name for name in table.column_names if name != "dropoff"]),
         get_fill_color=amount_color,
         get_radius=normalized_total_amount * 90,
         radius_units="meters",
@@ -209,12 +214,13 @@ def _(amount_color, normalized_total_amount, pa_table):
         extensions=[BrushingExtension()],
     )
     arc_layer = ArcLayer(
-        table=pa_table.drop_columns(["dropoff", "pickup"]),
-        get_source_position=pa_table["pickup"],
-        get_target_position=pa_table["dropoff"],
+        # We remove both geometry columns as they are passed separately below
+        table=table.select([name for name in table.column_names if name not in ["dropoff", "pickup"]]),
+        get_source_position=table["pickup"],
+        get_target_position=table["dropoff"],
         get_source_color=amount_color,
         get_target_color=amount_color,
-        get_width=pa_table["trip_distance"],
+        get_width=table["trip_distance"],
         width_units="meters",
         width_min_pixels=0.2,
         opacity=0.1,
@@ -226,7 +232,15 @@ def _(amount_color, normalized_total_amount, pa_table):
 
 @app.cell
 def _():
-    mo.md(r"""Toggle the button below to additionally apply the Lonboard [`BrushingExtension`](https://developmentseed.org/lonboard/latest/api/layer-extensions/brushing-extension/). Note that the `BrushingExtension` is applied **in the native frontend visualization**. So this is a filter that applies **on top** of whatever bounding box filter is applied to the native DataFusion query.""")
+    mo.md(
+        r"""
+    Now we can plot our map! The colors of the arcs and points correspond to the total fare, while the width of the arc corresponds to the total distance of the trip.
+
+    If you select a bounding box on the map (using the box icon on the top right) then that **bounding box will propagate back to the original SQL query**, limiting the amount of data loaded from the original Parquet file.
+
+    Try toggling the buttons below to interact with the map.Toggle the button below to additionally apply the Lonboard [`BrushingExtension`](https://developmentseed.org/lonboard/latest/api/layer-extensions/brushing-extension/). Note that the `BrushingExtension` is applied **in the native frontend visualization**. So this is a filter that applies **on top** of whatever bounding box filter is applied to the native DataFusion query.
+    """
+    )
     return
 
 
@@ -281,11 +295,6 @@ def _(
     pickup_layer.visible = pickup_layer_enabled.value
     pickup_layer.brushing_enabled = brushing_toggle.value
     pickup_layer.brushing_radius = brushing_radius.value
-    return
-
-
-@app.cell
-def _():
     return
 
 
