@@ -159,7 +159,7 @@ plugins:
       canonical_version: "latest"
   - mkdocs-jupyter:
       include_source: true
-      ignore: ["**/.ipynb_checkpoints/*.ipynb"]
+      ignore: ["*.py", "**/.ipynb_checkpoints/*.ipynb"]
       enabled: !ENV [CI, false]
   - mkdocstrings:
       enable_inventory: true
