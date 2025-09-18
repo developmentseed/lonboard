@@ -37,6 +37,10 @@ def _(mo):
     ```
     uv run marimo edit nyc_taxi_trips.py --sandbox
     ```
+
+    <video controls autoplay loop>
+        <source src="https://github.com/user-attachments/assets/77f6a2b3-80c9-4524-8be2-79152746da1d" type="video/mp4">
+    </video>
     """
     )
     return
