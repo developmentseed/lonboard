@@ -2,6 +2,7 @@
 # requires-python = ">=3.12"
 # dependencies = [
 #     "datafusion",
+#     "geoarrow-types==0.3.0",
 #     "geodatafusion",
 #     "lonboard",
 #     "matplotlib",
@@ -50,6 +51,13 @@ def _():
     This example uses data from the [NYC Taxi & Limousine Commission (TLC) Trip Records](https://www.nyc.gov/site/tlc/about/tlc-trip-record-data.page). We'll first download a file from January 2010 to disk if it's not already downloaded. (We use data from January 2010 because some later files don't have raw longitude-latitude pickup and dropoff locations).
     """
     )
+    return
+
+
+@app.cell
+def _():
+    from geoarrow.types.type_pyarrow import register_extension_types
+    register_extension_types()
     return
 
 
@@ -153,14 +161,14 @@ def _():
 
 
 @app.cell
-def _(df):
-    table = Table.from_arrow(df)
-    return (table,)
+def _():
+    # table = Table.from_arrow(df)
+    return
 
 
 @app.cell
-def _(table):
-    pa_table = pa.table(table)
+def _(df):
+    pa_table = pa.table(df)
     return (pa_table,)
 
 
@@ -190,7 +198,7 @@ def _():
 
 
 @app.cell
-def _(amount_color, normalized_total_amount, pa_table, table):
+def _(amount_color, normalized_total_amount, pa_table):
     pickup_layer = ScatterplotLayer(
         table=pa_table.drop_columns(["dropoff"]),
         get_fill_color=amount_color,
@@ -202,13 +210,11 @@ def _(amount_color, normalized_total_amount, pa_table, table):
     )
     arc_layer = ArcLayer(
         table=pa_table.drop_columns(["dropoff", "pickup"]),
-        get_source_position=table["pickup"],
-        get_target_position=table["dropoff"],
+        get_source_position=pa_table["pickup"],
+        get_target_position=pa_table["dropoff"],
         get_source_color=amount_color,
         get_target_color=amount_color,
-        # get_source_color=[166, 3, 3],
-        # get_target_color=[35, 181, 184],
-        get_width=pa_table["trip_distance"].to_numpy(),
+        get_width=pa_table["trip_distance"],
         width_units="meters",
         width_min_pixels=0.2,
         opacity=0.1,
