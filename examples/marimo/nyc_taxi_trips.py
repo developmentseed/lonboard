@@ -20,7 +20,30 @@ import marimo
 __generated_with = "0.15.3"
 app = marimo.App(width="medium")
 
-with app.setup:
+
+@app.cell
+def _(mo):
+    mo.md(
+        r"""
+    # NYC Taxi Trips in [`Marimo`][Marimo] with [`GeoDataFusion`][datafusion-geo]
+
+    [Marimo]: https://docs.marimo.io/
+    [datafusion-geo]: https://github.com/datafusion-contrib/datafusion-geo
+
+    This is a basic example to use the [DataFusion Python API](https://datafusion.apache.org/python/) with the [GeoDataFusion extension][datafusion-geo] to filter and visualize Parquet data.
+
+    This example is best viewed in a local instance of Marimo. [Download this file](https://github.com/developmentseed/lonboard/blob/main/examples/marimo/nyc_taxi_trips.py) then start a local Marimo session with:
+
+    ```
+    uv run marimo edit nyc_taxi_trips.py --sandbox
+    ```
+    """
+    )
+    return
+
+
+@app.cell
+def _():
     from pathlib import Path
 
     import marimo as mo
@@ -36,16 +59,28 @@ with app.setup:
     from lonboard.colormap import apply_continuous_cmap
     from lonboard.experimental import ArcLayer
     from lonboard.layer_extension import BrushingExtension
+    return (
+        ArcLayer,
+        BrBG_10,
+        BrushingExtension,
+        Map,
+        Normalize,
+        Path,
+        ScatterplotLayer,
+        SessionContext,
+        Table,
+        apply_continuous_cmap,
+        mo,
+        register_all,
+        requests,
+        tqdm,
+    )
 
 
 @app.cell
-def _():
+def _(mo):
     mo.md(
         r"""
-    ## `GeoDataFusion` Example
-
-    This is a basic example to use the [DataFusion Python API](https://datafusion.apache.org/python/) with the [GeoDataFusion extension](https://github.com/datafusion-contrib/datafusion-geo) to filter and visualize Parquet data.
-
     This example uses data from the [NYC Taxi & Limousine Commission (TLC) Trip Records](https://www.nyc.gov/site/tlc/about/tlc-trip-record-data.page).
 
     We'll first download a file from January 2010 to disk if it's not already downloaded. (We use data from January 2010 because some later files don't have raw longitude-latitude pickup and dropoff locations).
@@ -55,7 +90,7 @@ def _():
 
 
 @app.cell
-def _():
+def _(Path, requests, tqdm):
     def download_file_with_progress(url: str, filename: Path):
         """Downloads a file from a given URL and displays a progress bar."""
         response = requests.get(url, stream=True)
@@ -82,15 +117,13 @@ def _():
 
 
 @app.cell
-def _():
-    mo.md(
-        r"""Now we'll create the DataFusion `SessionContext`—the primary API for interacting with a Datafusion session—and register our spatial extension onto it."""
-    )
+def _(mo):
+    mo.md(r"""Now we'll create the DataFusion `SessionContext`—the primary API for interacting with a Datafusion session—and register our spatial extension onto it.""")
     return
 
 
 @app.cell
-def _(output_path):
+def _(SessionContext, output_path, register_all):
     ctx = SessionContext()
     register_all(ctx)
     ctx.register_parquet("trips", output_path)
@@ -98,7 +131,7 @@ def _(output_path):
 
 
 @app.cell
-def _():
+def _(mo):
     mo.md(
         r"""
     Next we'll initialize a bounding box to be used in a spatial intersection query in DataFusion.
@@ -110,16 +143,14 @@ def _():
 
 
 @app.cell
-def _():
+def _(mo):
     get_bbox, set_bbox = mo.state([-74.258843, 40.476578, -73.700233, 40.91763])
     return get_bbox, set_bbox
 
 
 @app.cell
-def _():
-    mo.md(
-        r"""Now we'll write and run our SQL command that we use to fetch data. This creates GeoArrow point columns named `pickup` and `dropoff`, then selects rows where the pickup is inside the above bounding box."""
-    )
+def _(mo):
+    mo.md(r"""Now we'll write and run our SQL command that we use to fetch data. This creates GeoArrow point columns named `pickup` and `dropoff`, then selects rows where the pickup is inside the above bounding box.""")
     return
 
 
@@ -151,35 +182,31 @@ def _(ctx, get_bbox):
 
 
 @app.cell
-def _():
-    mo.md(
-        r"""Now that we have our query, we can work to visualize this data on the map. We'll materialize this to an Arrow [`Table`](https://kylebarron.dev/arro3/latest/api/core/table/) so that we can apply transformations on the columns in Python. You could probably also do these transformations in SQL, but my Python skills are better than my SQL skills."""
-    )
+def _(mo):
+    mo.md(r"""Now that we have our query, we can work to visualize this data on the map. We'll materialize this to an Arrow [`Table`](https://kylebarron.dev/arro3/latest/api/core/table/) so that we can apply transformations on the columns in Python. You could probably also do these transformations in SQL, but my Python skills are better than my SQL skills.""")
     return
 
 
 @app.cell
-def _(df):
+def _(Table, df):
     table = Table.from_arrow(df)
     return (table,)
 
 
 @app.cell
-def _():
-    mo.md(
-        r"""Now let's create colors for each row of the data. We'll use the [brown-blue-green](https://jiffyclub.github.io/palettable/colorbrewer/diverging/#brbg_10) colormap from `palettable`:"""
-    )
+def _(mo):
+    mo.md(r"""Now let's create colors for each row of the data. We'll use the [brown-blue-green](https://jiffyclub.github.io/palettable/colorbrewer/diverging/#brbg_10) colormap from `palettable`:""")
     return
 
 
 @app.cell
-def _():
+def _(BrBG_10):
     BrBG_10.mpl_colormap
     return
 
 
 @app.cell
-def _():
+def _(mo):
     mo.md(
         r"""
     Next we need to normalize values from their source range to a range of 0-1 so that we can apply the colormap.
@@ -191,7 +218,7 @@ def _():
 
 
 @app.cell
-def _(table):
+def _(BrBG_10, Normalize, apply_continuous_cmap, table):
     amount_normalizer = Normalize(1, 50, clip=True)
     normalized_total_amount = amount_normalizer(table["total_amount"])
     amount_color = apply_continuous_cmap(
@@ -203,13 +230,20 @@ def _(table):
 
 
 @app.cell
-def _():
+def _(mo):
     mo.md(r"""Now we're ready to construct our Lonboard layers for the map:""")
     return
 
 
 @app.cell
-def _(amount_color, normalized_total_amount, table):
+def _(
+    ArcLayer,
+    BrushingExtension,
+    ScatterplotLayer,
+    amount_color,
+    normalized_total_amount,
+    table,
+):
     pickup_layer = ScatterplotLayer(
         # There are two geometry columns in the input table, so we remove one of them
         table=table.select([name for name in table.column_names if name != "dropoff"]),
@@ -240,7 +274,7 @@ def _(amount_color, normalized_total_amount, table):
 
 
 @app.cell
-def _():
+def _(mo):
     mo.md(
         r"""
     Now we can plot our map! The colors of the arcs and points correspond to the total fare, while the width of the arc corresponds to the total distance of the trip.
@@ -254,7 +288,7 @@ def _():
 
 
 @app.cell
-def _(arc_layer, pickup_layer, set_bbox):
+def _(Map, arc_layer, mo, pickup_layer, set_bbox):
     arc_layer_enabled = mo.ui.switch(True, label="Render trips")
     pickup_layer_enabled = mo.ui.switch(True, label="Render pickups")
     brushing_toggle = mo.ui.switch(
