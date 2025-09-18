@@ -3,7 +3,7 @@
 # dependencies = [
 #     "datafusion",
 #     "geodatafusion",
-#     "lonboard",
+#     "lonboard>=0.12.1",
 #     "matplotlib",
 #     "palettable",
 #     "pyarrow",
@@ -12,7 +12,7 @@
 # ]
 #
 # [tool.uv.sources]
-# lonboard = { path = "../" }
+# lonboard = { path = "../../" }
 # ///
 
 import marimo
@@ -73,7 +73,6 @@ def _():
                         f.write(chunk)
                         pbar.update(len(chunk))
 
-
     file_url = "https://d37ci6vzurychx.cloudfront.net/trip-data/yellow_tripdata_2010-01.parquet"
     output_path = Path("yellow_tripdata_2010-01.parquet")
 
@@ -84,7 +83,9 @@ def _():
 
 @app.cell
 def _():
-    mo.md(r"""Now we'll create the DataFusion `SessionContext`—the primary API for interacting with a Datafusion session—and register our spatial extension onto it.""")
+    mo.md(
+        r"""Now we'll create the DataFusion `SessionContext`—the primary API for interacting with a Datafusion session—and register our spatial extension onto it."""
+    )
     return
 
 
@@ -100,7 +101,7 @@ def _(output_path):
 def _():
     mo.md(
         r"""
-    Next we'll initialize a bounding box to be used in a spatial intersection query in DataFusion. 
+    Next we'll initialize a bounding box to be used in a spatial intersection query in DataFusion.
 
     This bounding box can be overridden by drawing a bounding box on the map instance (click on the box in the top right of the map to start drawing a bounding box selection).
     """
@@ -110,13 +111,15 @@ def _():
 
 @app.cell
 def _():
-    get_bbox, set_bbox = mo.state([-74.258843,40.476578,-73.700233,40.91763])
+    get_bbox, set_bbox = mo.state([-74.258843, 40.476578, -73.700233, 40.91763])
     return get_bbox, set_bbox
 
 
 @app.cell
 def _():
-    mo.md(r"""Now we'll write and run our SQL command that we use to fetch data. This creates GeoArrow point columns named `pickup` and `dropoff`, then selects rows where the pickup is inside the above bounding box.""")
+    mo.md(
+        r"""Now we'll write and run our SQL command that we use to fetch data. This creates GeoArrow point columns named `pickup` and `dropoff`, then selects rows where the pickup is inside the above bounding box."""
+    )
     return
 
 
@@ -149,7 +152,9 @@ def _(ctx, get_bbox):
 
 @app.cell
 def _():
-    mo.md(r"""Now that we have our query, we can work to visualize this data on the map. We'll materialize this to an Arrow [`Table`](https://kylebarron.dev/arro3/latest/api/core/table/) so that we can apply transformations on the columns in Python. You could probably also do these transformations in SQL, but my Python skills are better than my SQL skills.""")
+    mo.md(
+        r"""Now that we have our query, we can work to visualize this data on the map. We'll materialize this to an Arrow [`Table`](https://kylebarron.dev/arro3/latest/api/core/table/) so that we can apply transformations on the columns in Python. You could probably also do these transformations in SQL, but my Python skills are better than my SQL skills."""
+    )
     return
 
 
@@ -161,7 +166,9 @@ def _(df):
 
 @app.cell
 def _():
-    mo.md(r"""Now let's create colors for each row of the data. We'll use the [brown-blue-green](https://jiffyclub.github.io/palettable/colorbrewer/diverging/#brbg_10) colormap from `palettable`:""")
+    mo.md(
+        r"""Now let's create colors for each row of the data. We'll use the [brown-blue-green](https://jiffyclub.github.io/palettable/colorbrewer/diverging/#brbg_10) colormap from `palettable`:"""
+    )
     return
 
 
@@ -215,7 +222,9 @@ def _(amount_color, normalized_total_amount, table):
     )
     arc_layer = ArcLayer(
         # We remove both geometry columns as they are passed separately below
-        table=table.select([name for name in table.column_names if name not in ["dropoff", "pickup"]]),
+        table=table.select(
+            [name for name in table.column_names if name not in ["dropoff", "pickup"]]
+        ),
         get_source_position=table["pickup"],
         get_target_position=table["dropoff"],
         get_source_color=amount_color,
@@ -248,9 +257,15 @@ def _():
 def _(arc_layer, pickup_layer, set_bbox):
     arc_layer_enabled = mo.ui.switch(True, label="Render trips")
     pickup_layer_enabled = mo.ui.switch(True, label="Render pickups")
-    brushing_toggle = mo.ui.switch(label="Enable [**`BrushingExtension`**](https://developmentseed.org/lonboard/latest/api/layer-extensions/brushing-extension/) (with this enabled, hover over the map)")
-    arc_opacity = mo.ui.slider(start=0, stop=1, step=0.01, label="Arc opacity", value=0.1)
-    brushing_radius = mo.ui.slider(start=100, stop=1000, label="Brushing radius (in meters)", value=300)
+    brushing_toggle = mo.ui.switch(
+        label="Enable [**`BrushingExtension`**](https://developmentseed.org/lonboard/latest/api/layer-extensions/brushing-extension/) (with this enabled, hover over the map)"
+    )
+    arc_opacity = mo.ui.slider(
+        start=0, stop=1, step=0.01, label="Arc opacity", value=0.1
+    )
+    brushing_radius = mo.ui.slider(
+        start=100, stop=1000, label="Brushing radius (in meters)", value=300
+    )
 
     view_state = {
         "longitude": -73.92655187786016,

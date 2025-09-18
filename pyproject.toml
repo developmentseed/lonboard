@@ -126,6 +126,9 @@ module = [
 ]
 ignore_missing_imports = true
 
+[tool.ruff]
+extend-exclude = ["examples/marimo"]
+
 [tool.ruff.lint]
 select = ["ALL"]
 ignore = [
