@@ -1,0 +1,271 @@
+# /// script
+# requires-python = ">=3.12"
+# dependencies = [
+#     "datafusion",
+#     "geodatafusion",
+#     "lonboard",
+#     "matplotlib",
+#     "palettable",
+#     "pyarrow",
+#     "requests==2.32.5",
+#     "tqdm==4.67.1",
+# ]
+#
+# [tool.uv.sources]
+# lonboard = { path = "../" }
+# ///
+
+import marimo
+
+__generated_with = "0.15.3"
+app = marimo.App(width="medium")
+
+with app.setup:
+    from pathlib import Path
+
+    import marimo as mo
+    import pyarrow as pa
+    import requests
+    from arro3.core import Table
+    from datafusion import SessionContext
+    from geodatafusion import register_all
+    from palettable.colorbrewer.diverging import BrBG_10, PRGn_10
+    from tqdm.notebook import tqdm
+    from matplotlib.colors import LogNorm
+
+    from lonboard import Map, ScatterplotLayer
+    from lonboard.colormap import apply_continuous_cmap
+    from lonboard.experimental import ArcLayer
+    from lonboard.layer_extension import BrushingExtension
+
+
+@app.cell
+def _():
+    mo.md(
+        r"""
+    ## `GeoDataFusion` Example
+
+    This is a basic example to use the [DataFusion Python API](https://datafusion.apache.org/python/) with the [GeoDataFusion extension](https://github.com/datafusion-contrib/datafusion-geo) to filter and visualize Parquet data.
+
+    This example uses data from the [NYC Taxi & Limousine Commission (TLC) Trip Records](https://www.nyc.gov/site/tlc/about/tlc-trip-record-data.page). We'll first download a file from January 2010 to disk if it's not already downloaded. (We use data from January 2010 because some later files don't have raw longitude-latitude pickup and dropoff locations).
+    """
+    )
+    return
+
+
+@app.cell
+def _():
+    def download_file_with_progress(url: str, filename: Path):
+        """Downloads a file from a given URL and displays a progress bar."""
+        response = requests.get(url, stream=True)
+        total_size = int(response.headers.get("content-length", 0))
+
+        with tqdm(
+            total=total_size,
+            unit="B",
+            unit_scale=True,
+            desc=str(filename),
+        ) as pbar:
+            with open(filename, "wb") as f:
+                for chunk in response.iter_content(chunk_size=1024):
+                    if chunk:
+                        f.write(chunk)
+                        pbar.update(len(chunk))
+
+
+    file_url = "https://d37ci6vzurychx.cloudfront.net/trip-data/yellow_tripdata_2010-01.parquet"
+    output_path = Path("yellow_tripdata_2010-01.parquet")
+
+    if not output_path.exists():
+        download_file_with_progress(file_url, output_path)
+    return (output_path,)
+
+
+@app.cell
+def _():
+    mo.md(r"""Now we'll create the DataFusion `SessionContext`—the primary API for interacting with a Datafusion session—and register our spatial extension onto it.""")
+    return
+
+
+@app.cell
+def _(output_path):
+    ctx = SessionContext()
+    register_all(ctx)
+    ctx.register_parquet("trips", output_path)
+    return (ctx,)
+
+
+@app.cell
+def _():
+    mo.md(
+        r"""
+    Next we'll initialize a bounding box to be used in a spatial intersection query in DataFusion. 
+
+    This bounding box can be overridden by drawing a bounding box on the map instance (click on the box in the top right of the map to start drawing a bounding box selection).
+    """
+    )
+    return
+
+
+@app.cell
+def _():
+    get_bbox, set_bbox = mo.state([-74.258843,40.476578,-73.700233,40.91763])
+    return get_bbox, set_bbox
+
+
+@app.cell
+def _():
+    mo.md(r"""Now we'll write and run our SQL command that we use to fetch data. This creates GeoArrow point columns named `pickup` and `dropoff`, then selects rows where the pickup is inside the above bounding box.""")
+    return
+
+
+@app.cell
+def _(ctx, get_bbox):
+    bbox = get_bbox()
+    sql = """
+        WITH trips_geo AS (
+            SELECT
+                *,
+                ST_Point(pickup_longitude, pickup_latitude, 4326) as pickup,
+                ST_Point(dropoff_longitude, dropoff_latitude, 4326) as dropoff
+            FROM trips
+        )
+        SELECT *
+        FROM trips_geo
+        WHERE ST_Intersects(
+                pickup,
+                ST_MakeBox2D(
+                    ST_Point({minx}, {miny}),
+                    ST_Point({maxx}, {maxy})
+                )
+            )
+        LIMIT 100000;
+        """.format(minx=bbox[0], miny=bbox[1], maxx=bbox[2], maxy=bbox[3])
+    df = ctx.sql(sql)
+    df
+    return (df,)
+
+
+@app.cell
+def _():
+    BrBG_10.mpl_colormap
+    return
+
+
+@app.cell
+def _(df):
+    table = Table.from_arrow(df)
+    return (table,)
+
+
+@app.cell
+def _(table):
+    pa_table = pa.table(table)
+    return (pa_table,)
+
+
+@app.cell
+def _():
+
+
+    return
+
+
+@app.cell
+def _():
+    return
+
+
+@app.cell
+def _(amount_color, non_geo_table, pa_table, table):
+    pickup_layer = ScatterplotLayer(
+        table=pa,
+    
+    )
+
+    arc_layer = ArcLayer(
+        table=non_geo_table,
+        get_source_position=table["pickup"],
+        get_target_position=table["dropoff"],
+        get_source_color=amount_color,
+        get_target_color=amount_color,
+        # get_source_color=[166, 3, 3],
+        # get_target_color=[35, 181, 184],
+        get_width=pa_table["total_amount"].to_numpy(),
+        width_units="meters",
+        width_min_pixels=0.5,
+        opacity=0.1,
+        auto_highlight=True,
+        pickable=False,
+        extensions=[BrushingExtension()],
+    )
+    return arc_layer, pickup_layer
+
+
+@app.cell
+def _():
+    mo.md(r"""Toggle the button below to additionally apply the Lonboard [`BrushingExtension`](https://developmentseed.org/lonboard/latest/api/layer-extensions/brushing-extension/). Note that the `BrushingExtension` is applied **in the native frontend visualization**. So this is a filter that applies **on top** of whatever bounding box filter is applied to the native DataFusion query.""")
+    return
+
+
+@app.cell
+def _(arc_layer, pickup_layer, set_bbox):
+    arc_layer_enabled = mo.ui.switch(True, label="Render trips")
+    pickup_layer_enabled = mo.ui.switch(True, label="Render pickups")
+    brushing_toggle = mo.ui.switch(label="Enable [**`BrushingExtension`**](https://developmentseed.org/lonboard/latest/api/layer-extensions/brushing-extension/) (with this enabled, hover over the map)")
+    arc_opacity = mo.ui.slider(start=0, stop=1, step=0.01, label="Arc opacity", value=0.1)
+    brushing_radius = mo.ui.slider(start=100, stop=1000, label="Brushing radius (in meters)", value=300)
+
+    view_state = {
+        "longitude": -73.92655187786016,
+        "latitude": 40.70598365478098,
+        "zoom": 10,
+        "pitch": 44.70821693807123,
+        "bearing": 60.62264150943396,
+    }
+    m = Map([arc_layer, pickup_layer], view_state=view_state)
+
+    # Register a callback so that we update the stored bbox when we select a new bbox from the map
+    m.observe(lambda change: set_bbox(change["new"]), names="selected_bounds")
+
+    toggles = mo.hstack([arc_layer_enabled, pickup_layer_enabled, brushing_toggle])
+    sliders = mo.hstack([arc_opacity, brushing_radius], justify="start")
+    mo.vstack([m, toggles, sliders])
+    return (
+        arc_layer_enabled,
+        arc_opacity,
+        brushing_radius,
+        brushing_toggle,
+        pickup_layer_enabled,
+    )
+
+
+@app.cell
+def _(
+    arc_layer,
+    arc_layer_enabled,
+    arc_opacity,
+    brushing_radius,
+    brushing_toggle,
+    pickup_layer,
+    pickup_layer_enabled,
+):
+    # Note: this is defined in a cell other than where we create the layers so that it doesn't re-render
+    # the layers from scratch whenever we change these layer properties
+    arc_layer.visible = arc_layer_enabled.value
+    arc_layer.brushing_enabled = brushing_toggle.value
+    arc_layer.brushing_radius = brushing_radius.value
+    arc_layer.opacity = arc_opacity.value
+    pickup_layer.visible = pickup_layer_enabled.value
+    pickup_layer.brushing_enabled = brushing_toggle.value
+    pickup_layer.brushing_radius = brushing_radius.value
+    return
+
+
+@app.cell
+def _():
+    return
+
+
+if __name__ == "__main__":
+    app.run()
