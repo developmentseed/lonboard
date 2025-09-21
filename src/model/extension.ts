@@ -146,11 +146,18 @@ export class DataFilterExtension extends BaseExtensionModel {
   }
 
   extensionInstance(): _DataFilterExtension | null {
-    if (isDefined(this.filterSize)) {
+    if (isDefined(this.filterSize) && isDefined(this.categorySize)) {
+      const props = {
+        ...(isDefined(this.filterSize) ? { filterSize: this.filterSize } : {}),
+        ...(isDefined(this.categorySize)
+          ? { categorySize: this.categorySize }
+          : {}),
+      };
+      return new _DataFilterExtension(props);
+    } else if (isDefined(this.filterSize)) {
       const props = {
         ...(isDefined(this.filterSize) ? { filterSize: this.filterSize } : {}),
       };
-      // console.log("ext props", props);
       return new _DataFilterExtension(props);
     } else if (isDefined(this.categorySize)) {
       const props = {
@@ -158,7 +165,6 @@ export class DataFilterExtension extends BaseExtensionModel {
           ? { categorySize: this.categorySize }
           : {}),
       };
-      // console.log("ext props", props);
       return new _DataFilterExtension(props);
     } else {
       return null;
