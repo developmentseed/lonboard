@@ -48,6 +48,7 @@ nav:
       - examples/data-filter-extension.ipynb
       - examples/column-layer.ipynb
       - examples/linked-maps.ipynb
+      - NYC Taxi Trips: examples/marimo/nyc_taxi_trips.md
       - Integrations:
           - examples/duckdb.ipynb
           - ColorPicker: examples/integrations/color-picker.ipynb
@@ -158,7 +159,7 @@ plugins:
       canonical_version: "latest"
   - mkdocs-jupyter:
       include_source: true
-      ignore: ["**/.ipynb_checkpoints/*.ipynb"]
+      ignore: ["*.py", "**/.ipynb_checkpoints/*.ipynb"]
       enabled: !ENV [CI, false]
   - mkdocstrings:
       enable_inventory: true

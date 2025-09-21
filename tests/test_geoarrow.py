@@ -58,7 +58,7 @@ def test_geoarrow_table_reprojection():
         crs_dict,
     ), "round trip crs should match gdf crs"
 
-    layer = SolidPolygonLayer(table=table)
+    layer = SolidPolygonLayer(table)
 
     layer_geom_col_idx = get_geometry_column_index(layer.table.schema)
     layer_geom_field = layer.table.schema.field(layer_geom_col_idx)
@@ -94,7 +94,7 @@ def test_geoparquet_metadata():
         gdf.to_parquet(f)
         table = pq.read_table(f)
 
-    _layer = SolidPolygonLayer(table=table)
+    _layer = SolidPolygonLayer(table)
 
 
 def test_read_geometry_type():
@@ -152,4 +152,21 @@ def test_geoarrow_geometry_with_crs():
     crs = "EPSG:4326"
     geometry_array = points(coords, crs=crs).cast(geometry(crs=crs))
     m = viz(geometry_array)
+    assert isinstance(m.layers[0], ScatterplotLayer)
+
+
+def test_geoarrow_string_view_column():
+    # Note: this test is really for the _JavaScript_ side to ensure the Wasm code can
+    # load a Parquet file with a string view column. We don't have a headless setup in
+    # CI, but you can run this test manually and ensure it renders.
+    coords = np.array([[1, 4], [2, 5], [3, 6]], dtype=np.float64)
+    geometry_array = points(coords)
+
+    string_col = pa.array(["a", "b", "c"], type=pa.string_view())
+    table = Table.from_arrays(
+        [geometry_array, string_col],
+        names=["geometry", "string_view"],
+    )
+
+    m = viz(table)
     assert isinstance(m.layers[0], ScatterplotLayer)

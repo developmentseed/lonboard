@@ -21,6 +21,11 @@
 
 <div class="grid cards" markdown>
 
+-  [Marimo
+        <video controls autoplay loop>
+            <source src="https://github.com/user-attachments/assets/77f6a2b3-80c9-4524-8be2-79152746da1d" type="video/mp4">
+        </video>
+    ](../examples/marimo/nyc_taxi_trips/) using [`ArcLayer`](../api/layers/arc-layer) & [GeoDataFusion](https://github.com/datafusion-contrib/datafusion-geo)
 -  [DuckDB Spatial ![](../assets/duckdb-heatmap.jpg)](../examples/duckdb) using [`HeatmapLayer`](../api/layers/heatmap-layer)
 -  [Color picker integration ![](../assets/color-picker.jpg)](../examples/integrations/color-picker) using [`SolidPolygonLayer`](../api/layers/solid-polygon-layer)
 -  [JupyterLab Sidecar integration ![](../assets/jupyter-sidecar.jpg)](../examples/integrations/sidecar/) using [`ScatterplotLayer`](../api/layers/scatterplot-layer) and [`JupyterLab Sidecar`](https://github.com/jupyter-widgets/jupyterlab-sidecar)

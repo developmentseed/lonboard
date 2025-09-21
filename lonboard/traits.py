@@ -30,6 +30,7 @@ from traitlets.utils.descriptions import class_of, describe
 from lonboard._constants import EXTENSION_NAME
 from lonboard._environment import DEFAULT_HEIGHT
 from lonboard._geoarrow.box_to_polygon import parse_box_encoded_table
+from lonboard._geoarrow.ops.coord_layout import convert_struct_column_to_interleaved
 from lonboard._serialization import (
     ACCESSOR_SERIALIZATION,
     TABLE_SERIALIZATION,
@@ -531,17 +532,19 @@ class PointAccessor(FixedErrorTraitType):
 
     Various input is allowed:
 
-    - A numpy `ndarray` with two dimensions and data type [`np.uint8`][numpy.uint8]. The
-      size of the second dimension must be `2` or `3`, and will correspond to either XY
-      or XYZ positions.
-    - A pyarrow [`FixedSizeListArray`][pyarrow.FixedSizeListArray] or
-      [`ChunkedArray`][pyarrow.ChunkedArray] containing `FixedSizeListArray`s. The inner
-      size of the fixed size list must be `2` or `3` and its child must be of floating
-      point type.
+    - A numpy `ndarray` with two dimensions and data type [`np.float64`][numpy.float64].
+      The size of the second dimension must be `2` or `3`, and will correspond to either
+      XY or XYZ positions.
+    - A pyarrow [`FixedSizeListArray`][pyarrow.FixedSizeListArray],
+      [`StructArray`][pyarrow.StructArray] or [`ChunkedArray`][pyarrow.ChunkedArray]
+      containing `FixedSizeListArray`s or `StructArray`s. The inner size of the fixed
+      size list must be `2` or `3` and its child must be of floating point type.
+    - Any Arrow fixed size list or struct array from a library that implements the [Arrow PyCapsule
+      Interface](https://arrow.apache.org/docs/format/CDataInterface/PyCapsuleInterface.html).
     """
 
     default_value = (0, 0, 0)
-    info_text = "a numpy ndarray or arrow FixedSizeList representing a point array"
+    info_text = "a numpy ndarray, arrow FixedSizeList, or arrow Struct representing a point array"
 
     def __init__(
         self: TraitType,
@@ -582,6 +585,7 @@ class PointAccessor(FixedErrorTraitType):
             self.error(obj, value)
 
         assert isinstance(value, ChunkedArray)
+        _, value = convert_struct_column_to_interleaved(field=value.field, column=value)
 
         if not DataType.is_fixed_size_list(value.type):
             self.error(obj, value, info="Point arrow array to be a FixedSizeList")
