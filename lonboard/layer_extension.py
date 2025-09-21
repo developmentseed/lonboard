@@ -355,7 +355,8 @@ class DataFilterExtension(BaseExtension):
         "filter_transform_color": t.Bool(default_value=True).tag(sync=True),
         "get_filter_value": FilterValueAccessor(default_value=None, allow_none=True),
         "get_filter_category": FilterCategoryAccessor(
-            default_value=None, allow_none=True,
+            default_value=None,
+            allow_none=True,
         ),
     }
 
