@@ -63,7 +63,7 @@ export function DeckGLRenderer(props: RendererProps) {
         canvas: "deck-canvas",
         width: "100%",
         height: "100%",
-        initialViewState: 
+        initialViewState:
           ["longitude", "latitude", "zoom"].every((key) =>
             Object.keys(initialViewState).includes(key),
           )
