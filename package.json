@@ -8,7 +8,6 @@
     "@deck.gl/extensions": "^9.1.14",
     "@deck.gl/layers": "^9.1.14",
     "@deck.gl/react": "^9.1.14",
-    "@deck.gl/mapbox": "^9.1.14",
     "@geoarrow/deck.gl-layers": "^0.3.1",
     "@babel/runtime": "^7.28.4",
     "@nextui-org/react": "^2.4.8",
