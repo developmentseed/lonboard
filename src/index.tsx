@@ -2,8 +2,12 @@ import * as React from "react";
 import { useEffect, useCallback, useState } from "react";
 import { createRender, useModelState, useModel } from "@anywidget/react";
 import type { Initialize, Render } from "@anywidget/types";
-import Map from "react-map-gl/maplibre";
-import DeckGL from "@deck.gl/react";
+import Map, {
+  useControl,
+  FullscreenControl,
+  NavigationControl,
+  ScaleControl,
+} from "react-map-gl/maplibre";
 import { MapViewState, PickingInfo, type Layer } from "@deck.gl/core";
 import { BaseLayerModel, initializeLayer } from "./model/index.js";
 import type { WidgetModel } from "@jupyter-widgets/base";
@@ -13,6 +17,10 @@ import { v4 as uuidv4 } from "uuid";
 import { Message } from "./types.js";
 import { flyTo } from "./actions/fly-to.js";
 import { useViewStateDebounced } from "./state";
+import {
+  MapboxOverlay as DeckOverlay,
+  MapboxOverlayProps,
+} from "@deck.gl/mapbox";
 
 import { MachineContext, MachineProvider } from "./xstate";
 import * as selectors from "./xstate/selectors";
@@ -37,6 +45,13 @@ const DEFAULT_INITIAL_VIEW_STATE = {
 
 const DEFAULT_MAP_STYLE =
   "https://basemaps.cartocdn.com/gl/positron-nolabels-gl-style/style.json";
+
+function DeckGLOverlay(props: MapboxOverlayProps) {
+  const overlay = useControl(() => new DeckOverlay(props));
+
+  overlay.setProps(props);
+  return null;
+}
 
 async function getChildModelState(
   childModels: WidgetModel[],
@@ -237,8 +252,9 @@ function App() {
           />
         )}
         <div className="bg-red-800 h-full w-full relative">
-          <DeckGL
-            style={{ width: "100%", height: "100%" }}
+          <Map
+            reuseMaps
+            id={`map-${mapId}`}
             initialViewState={
               ["longitude", "latitude", "zoom"].every((key) =>
                 Object.keys(initialViewState).includes(key),
@@ -246,48 +262,55 @@ function App() {
                 ? initialViewState
                 : DEFAULT_INITIAL_VIEW_STATE
             }
-            controller={true}
-            layers={
-              bboxSelectPolygonLayer
-                ? layers.concat(bboxSelectPolygonLayer)
-                : layers
-            }
-            getTooltip={(showTooltip && getTooltip) || undefined}
-            getCursor={() => (isDrawingBBoxSelection ? "crosshair" : "grab")}
-            pickingRadius={pickingRadius}
-            onClick={onMapClickHandler}
-            onHover={onMapHoverHandler}
-            useDevicePixels={
-              isDefined(useDevicePixels) ? useDevicePixels : true
-            }
-            // https://deck.gl/docs/api-reference/core/deck#_typedarraymanagerprops
-            _typedArrayManagerProps={{
-              overAlloc: 1,
-              poolSize: 0,
+            mapStyle={mapStyle || DEFAULT_MAP_STYLE}
+            attributionControl={{
+              customAttribution,
             }}
-            onViewStateChange={(event) => {
-              const { viewState } = event;
-
-              // This condition is necessary to confirm that the viewState is
-              // of type MapViewState.
-              if ("latitude" in viewState) {
-                const { longitude, latitude, zoom, pitch, bearing } = viewState;
-                setViewState({
-                  longitude,
-                  latitude,
-                  zoom,
-                  pitch,
-                  bearing,
-                });
-              }
-            }}
-            parameters={parameters || {}}
           >
-            <Map
-              mapStyle={mapStyle || DEFAULT_MAP_STYLE}
-              customAttribution={customAttribution}
-            ></Map>
-          </DeckGL>
+            <FullscreenControl position="top-left" />
+            <NavigationControl position="top-left" />
+            <ScaleControl position="bottom-left" />
+            <DeckGLOverlay
+              // interleaved
+              style={{ width: "100%", height: "100%" }}
+              layers={
+                bboxSelectPolygonLayer
+                  ? layers.concat(bboxSelectPolygonLayer)
+                  : layers
+              }
+              getTooltip={(showTooltip && getTooltip) || undefined}
+              getCursor={() => (isDrawingBBoxSelection ? "crosshair" : "grab")}
+              pickingRadius={pickingRadius}
+              onClick={onMapClickHandler}
+              onHover={onMapHoverHandler}
+              useDevicePixels={
+                isDefined(useDevicePixels) ? useDevicePixels : true
+              }
+              // https://deck.gl/docs/api-reference/core/deck#_typedarraymanagerprops
+              _typedArrayManagerProps={{
+                overAlloc: 1,
+                poolSize: 0,
+              }}
+              onViewStateChange={(event) => {
+                const { viewState } = event;
+
+                // This condition is necessary to confirm that the viewState is
+                // of type MapViewState.
+                if ("latitude" in viewState) {
+                  const { longitude, latitude, zoom, pitch, bearing } =
+                    viewState;
+                  setViewState({
+                    longitude,
+                    latitude,
+                    zoom,
+                    pitch,
+                    bearing,
+                  });
+                }
+              }}
+              parameters={parameters || {}}
+            />
+          </Map>
         </div>
       </div>
     </div>
