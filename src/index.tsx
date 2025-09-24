@@ -2,7 +2,12 @@ import * as React from "react";
 import { useEffect, useCallback, useState } from "react";
 import { createRender, useModelState, useModel } from "@anywidget/react";
 import type { Initialize, Render } from "@anywidget/types";
-import Map, { useControl } from "react-map-gl/maplibre";
+import Map, {
+  useControl,
+  FullscreenControl,
+  NavigationControl,
+  ScaleControl,
+} from "react-map-gl/maplibre";
 import { MapViewState, PickingInfo, type Layer } from "@deck.gl/core";
 import { BaseLayerModel, initializeLayer } from "./model/index.js";
 import type { WidgetModel } from "@jupyter-widgets/base";
@@ -249,7 +254,6 @@ function App() {
         <div className="bg-red-800 h-full w-full relative">
           <Map
             reuseMaps
-            // projection="globe"
             id={`map-${mapId}`}
             initialViewState={
               ["longitude", "latitude", "zoom"].every((key) =>
@@ -258,19 +262,14 @@ function App() {
                 ? initialViewState
                 : DEFAULT_INITIAL_VIEW_STATE
             }
-            // boxZoom={false}
-            // dragRotate={false}
-            // maxPitch={0}
             mapStyle={mapStyle || DEFAULT_MAP_STYLE}
-            attributionControl={{ customAttribution }}
-            onContextMenu={(e) => {
-              console.log("hi");
-
-              e.originalEvent.stopPropagation();
-              // e.stopPropagation();
-              e.preventDefault();
+            attributionControl={{
+              customAttribution,
             }}
           >
+            <FullscreenControl position="top-left" />
+            <NavigationControl position="top-left" />
+            <ScaleControl position="bottom-left" />
             <DeckGLOverlay
               // interleaved
               style={{ width: "100%", height: "100%" }}
