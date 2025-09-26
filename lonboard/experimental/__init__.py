@@ -4,10 +4,11 @@ These layers have not been as well tested as other layers. You may encounter cra
 unexpected behavior when using them.
 """
 
-from ._layer import ArcLayer, TextLayer, TripsLayer
+from ._layer import ArcLayer, SimpleMeshLayer, TextLayer, TripsLayer
 
 __all__ = [
     "ArcLayer",
+    "SimpleMeshLayer",
     "TextLayer",
     "TripsLayer",
 ]
