@@ -15,7 +15,7 @@ import traitlets as t
 from arro3.core import DataType, Scalar
 
 from lonboard._constants import EXTENSION_NAME, MIN_INTEGER_FLOAT32
-from lonboard._layer import BaseArrowLayer
+from lonboard._layer import BaseArrowLayer, BaseLayer
 from lonboard._utils import timestamp_max_physical_value, timestamp_start_offset
 from lonboard.experimental.traits import TimestampAccessor
 from lonboard.traits import (
@@ -174,6 +174,19 @@ class ArcLayer(BaseArrowLayer):
             get_target_position=get_target_position,  # type: ignore
             **kwargs,
         )
+
+
+class SimpleMeshLayer(BaseLayer):
+    """SimpleMeshLayer."""
+
+    def __init__(self, **kwargs) -> None:
+        super().__init__(**kwargs)  # type: ignore
+
+    _layer_type = t.Unicode("simple-mesh").tag(sync=True)
+
+    positions = PointAccessor(None, allow_none=True)
+    normals = PointAccessor(None, allow_none=True)
+    tex_coords = PointAccessor(None, allow_none=True)
 
 
 class TextLayer(BaseArrowLayer):
