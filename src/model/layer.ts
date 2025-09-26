@@ -1,3 +1,4 @@
+import { SimpleMeshLayer, SimpleMeshLayerProps } from "@deck.gl/mesh-layers";
 import {
   GeoArrowArcLayer,
   GeoArrowColumnLayer,
@@ -772,6 +773,81 @@ export class SolidPolygonModel extends BaseArrowLayerModel {
   }
 }
 
+type MeshPositions = {
+  value: Float32Array;
+  size: number;
+};
+
+type MeshNormals = {
+  value: Float32Array;
+  size: number;
+};
+
+type MeshTexCoords = {
+  value: Float32Array;
+  size: number;
+};
+
+const DUMMY_DATA: number[] = [1];
+
+export class SimpleMeshModel extends BaseLayerModel {
+  static layerType = "simple-mesh";
+
+  protected positions!: MeshPositions;
+  protected normals!: MeshNormals;
+  protected texCoords!: MeshTexCoords;
+
+  protected sizeScale: SimpleMeshLayerProps["sizeScale"];
+  protected wireframe: SimpleMeshLayerProps["wireframe"];
+  // protected material: SimpleMeshLayerProps["material"];
+  // protected getPosition: SimpleMeshLayerProps["getPosition"] | null;
+  // protected getColor: SimpleMeshLayerProps["getColor"] | null;
+  // protected getOrientation: SimpleMeshLayerProps["getOrientation"] | null;
+  // protected getScale: SimpleMeshLayerProps["getScale"] | null;
+  // protected getTranslation: SimpleMeshLayerProps["getTranslation"] | null;
+
+  constructor(model: WidgetModel, updateStateCallback: () => void) {
+    super(model, updateStateCallback);
+
+    this.initVectorizedAccessor("positions", "positions");
+    this.initVectorizedAccessor("normals", "normals");
+    this.initVectorizedAccessor("tex_coords", "texCoords");
+
+    this.initRegularAttribute("size_scale", "sizeScale");
+    this.initRegularAttribute("wireframe", "wireframe");
+  }
+
+  layerProps(): Omit<SimpleMeshLayerProps, "id"> {
+    return {
+      data: DUMMY_DATA,
+      mesh: {
+        positions: this.positions,
+        normals: this.normals,
+        texCoords: this.texCoords,
+      },
+      ...(isDefined(this.sizeScale) && { sizeScale: this.sizeScale }),
+      ...(isDefined(this.wireframe) && { wireframe: this.wireframe }),
+      // ...(isDefined(this.material) && { material: this.material }),
+      // ...(isDefined(this.getPosition) && { getPosition: this.getPosition }),
+      // ...(isDefined(this.getColor) && { getColor: this.getColor }),
+      // ...(isDefined(this.getOrientation) && {
+      //   getOrientation: this.getOrientation,
+      // }),
+      // ...(isDefined(this.getScale) && { getScale: this.getScale }),
+      // ...(isDefined(this.getTranslation) && {
+      //   getTranslation: this.getTranslation,
+      // }),
+    };
+  }
+
+  render(): SimpleMeshLayer {
+    return new SimpleMeshLayer({
+      ...this.baseLayerProps(),
+      ...this.layerProps(),
+    });
+  }
+}
+
 export class TextModel extends BaseArrowLayerModel {
   static layerType = "text";
 
@@ -1023,6 +1099,10 @@ export async function initializeLayer(
 
     case SolidPolygonModel.layerType:
       layerModel = new SolidPolygonModel(model, updateStateCallback);
+      break;
+
+    case SimpleMeshModel.layerType:
+      layerModel = new SimpleMeshModel(model, updateStateCallback);
       break;
 
     case TextModel.layerType:
