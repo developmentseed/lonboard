@@ -215,7 +215,14 @@ function App() {
   );
 
   return (
-    <div className="lonboard" style={{ minHeight: "100%", height: mapHeight }}>
+    <div
+      className="lonboard"
+      style={{ minHeight: "100%", height: mapHeight }}
+      // This attribute suppresses the context menu on right click in JupyterLab
+      // https://jupyterlab.readthedocs.io/en/latest/extension/extension_points.html#context-menu
+      // https://jupyter.zulipchat.com/#narrow/channel/471314-geojupyter/topic/Possible.20to.20disable.20JupyterLab.20popup.20on.20right.20click.3F/near/541082696
+      data-jp-suppress-context-menu
+    >
       <div
         id={`map-${mapId}`}
         className="flex"
