@@ -14,7 +14,7 @@
     "@xstate/react": "^6.0.0",
     "apache-arrow": "^21.0.0",
     "esbuild-sass-plugin": "^3.3.1",
-    "framer-motion": "^12.23.19",
+    "framer-motion": "^12.23.22",
     "lodash.debounce": "^4.0.8",
     "lodash.throttle": "^4.1.1",
     "maplibre-gl": "^5.0.0",
@@ -35,8 +35,8 @@
     "@types/lodash": "^4.17.13",
     "@types/lodash.debounce": "^4.0.9",
     "@types/lodash.throttle": "^4.1.9",
-    "@types/react": "^19.1.1",
-    "@types/uuid": "^10.0.0",
+    "@types/react": "^19.1.15",
+    "@types/uuid": "^11.0.0",
     "autoprefixer": "^10.4.20",
     "dotenv": "^17.2.2",
     "esbuild": "^0.25.10",
@@ -49,10 +49,10 @@
     "postcss-modules": "^6.0.1",
     "postcss-preset-env": "^10.1.1",
     "prettier": "^3.4.1",
-    "tailwindcss": "^3.4.15",
+    "tailwindcss": "^4.1.13",
     "typescript": "^5.7.2",
     "typescript-eslint": "^8.16.0",
-    "vitest": "^2.1.6"
+    "vitest": "^3.2.4"
   },
   "overrides": {
     "@types/react-dom": "^19.1.9"
