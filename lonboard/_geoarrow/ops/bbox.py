@@ -3,6 +3,7 @@
 from __future__ import annotations
 
 import math
+from concurrent.futures import ThreadPoolExecutor
 from dataclasses import dataclass
 
 import numpy as np
@@ -63,8 +64,13 @@ def _coords_bbox(arr: Array) -> Bbox:
 
 def _total_bounds_nest_0(column: ChunkedArray) -> Bbox:
     bbox = Bbox()
-    for coords in column.chunks:
-        bbox.update(_coords_bbox(coords))
+
+    # Use a thread pool to run _coords_bbox in parallel
+    with ThreadPoolExecutor() as executor:
+        bboxes = list(executor.map(_coords_bbox, column.chunks))
+
+    for other in bboxes:
+        bbox.update(other)
 
     return bbox
 
