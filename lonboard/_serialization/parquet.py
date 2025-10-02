@@ -1,8 +1,7 @@
 from __future__ import annotations
 
-import math
 from io import BytesIO
-from typing import TYPE_CHECKING, Any, overload
+from typing import TYPE_CHECKING, overload
 
 import arro3.compute as ac
 from arro3.core import (
@@ -23,7 +22,6 @@ from lonboard._utils import timestamp_start_offset
 if TYPE_CHECKING:
     from lonboard._layer import BaseArrowLayer
     from lonboard.experimental._layer import TripsLayer
-    from lonboard.models import ViewState
 
 
 DEFAULT_PARQUET_COMPRESSION = "ZSTD"
@@ -154,13 +152,6 @@ def validate_accessor_length_matches_table(
 ) -> None:
     if len(accessor) != len(table):
         raise TraitError("accessor must have same length as table")
-
-
-def serialize_view_state(data: ViewState | None, obj: Any) -> None | dict[str, Any]:  # noqa: ARG001
-    if data is None:
-        return None
-
-    return data._asdict()
 
 
 def serialize_timestamp_accessor(

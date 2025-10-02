@@ -31,11 +31,8 @@ from lonboard._constants import EXTENSION_NAME
 from lonboard._environment import DEFAULT_HEIGHT
 from lonboard._geoarrow.box_to_polygon import parse_box_encoded_table
 from lonboard._geoarrow.ops.coord_layout import convert_struct_column_to_interleaved
-from lonboard._serialization import (
-    ACCESSOR_SERIALIZATION,
-    TABLE_SERIALIZATION,
-    serialize_view_state,
-)
+from lonboard._serialization import ACCESSOR_SERIALIZATION, TABLE_SERIALIZATION
+from lonboard._serialization.view_state import serialize_view_state
 from lonboard._utils import get_geometry_column_index
 from lonboard._vendor.matplotlib.colors import _to_rgba_no_colorcycle
 from lonboard.models import ViewState
