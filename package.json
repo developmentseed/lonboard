@@ -4,12 +4,12 @@
   },
   "dependencies": {
     "@anywidget/react": "^0.2.0",
+    "@babel/runtime": "^7.28.4",
     "@deck.gl/core": "^9.1.14",
     "@deck.gl/extensions": "^9.1.14",
     "@deck.gl/layers": "^9.1.14",
     "@deck.gl/react": "^9.1.14",
     "@geoarrow/deck.gl-layers": "^0.3.1",
-    "@babel/runtime": "^7.28.4",
     "@nextui-org/react": "^2.4.8",
     "@xstate/react": "^6.0.0",
     "apache-arrow": "^21.0.0",
@@ -31,6 +31,7 @@
     "@anywidget/types": "^0.2.0",
     "@eslint/js": "^9.36.0",
     "@jupyter-widgets/base": "^6.0.10",
+    "@playwright/test": "^1.55.1",
     "@statelyai/inspect": "^0.4.0",
     "@types/lodash": "^4.17.13",
     "@types/lodash.debounce": "^4.0.9",
@@ -63,7 +64,9 @@
     "prettier:check": "prettier './src/**/*.{ts,tsx,css}' --check",
     "prettier": "prettier './src/**/*.{ts,tsx,css}' --write",
     "lint": "eslint src",
-    "test": "vitest run"
+    "test": "vitest run",
+    "test:e2e": "playwright test",
+    "test:e2e:ui": "playwright test --ui"
   },
   "volta": {
     "node": "18.18.2",
