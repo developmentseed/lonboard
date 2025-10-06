@@ -66,7 +66,8 @@
     "lint": "eslint src",
     "test": "vitest run",
     "test:e2e": "playwright test",
-    "test:e2e:ui": "playwright test --ui"
+    "test:e2e:ui": "playwright test --ui",
+    "jupyter:test": "uv run --group dev jupyter lab --no-browser --port=8889 --notebook-dir=tests/e2e/fixtures --IdentityProvider.token=''"
   },
   "volta": {
     "node": "18.18.2",

@@ -1,30 +1,30 @@
 # End-to-End Tests
 
-Playwright-based end-to-end tests for Lonboard widgets in JupyterLab.
+Playwright tests for Lonboard widgets in JupyterLab.
 
 ## Running Tests
 
 ```bash
-# Run all e2e tests
-npm run test:e2e
-
-# Run with UI mode
-npm run test:e2e:ui
+npm run test:e2e        # Run all tests
+npm run test:e2e:ui     # Run with UI mode
+npm run jupyter:test    # Start test JupyterLab manually (port 8889)
 ```
 
 ## Architecture
 
-- **JupyterLab**: Runs on port 8889 (isolated from dev instances on 8888)
-- **Working Directory**: `tests/e2e/fixtures/` (only test notebooks visible)
-- **Clean State**: JupyterLab server restarts for each test run (`reuseExistingServer: false`)
-  - Fresh kernel state on every run
-  - No session persistence between test runs
-  - No interference with development sessions
+- Tests run on port 8889 (isolated from dev on 8888)
+- Fresh JupyterLab server per test run
+- Fixtures in `tests/e2e/fixtures/`
 
-## Test Fixtures
+## DeckGL Canvas Interactions
 
-Test notebooks are stored in `tests/e2e/fixtures/` and committed to the repository. They provide scaffolding to replicate correct user workflows.
+Playwright mouse events don't trigger DeckGL handlers. Use helpers from `helpers/deck-interaction.ts`:
 
-### simple-map.ipynb
+```typescript
+import { deckClick, deckHover } from "./helpers/deck-interaction";
 
-Basic test notebook with 4 points in a grid displaying a simple scatterplot map.
+await deckClick(page, x, y);  // Calls deck.props.onClick()
+await deckHover(page, x, y);  // Calls deck.props.onHover()
+```
+
+See `bbox-select.spec.ts` for example usage.

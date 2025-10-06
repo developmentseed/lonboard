@@ -94,6 +94,13 @@ function App() {
 
   const [justClicked, setJustClicked] = useState<boolean>(false);
 
+  const deckRef = React.useRef<any>(null);
+  useEffect(() => {
+    if (deckRef.current && typeof window !== "undefined") {
+      (window as any).__deck = deckRef.current.deck;
+    }
+  }, [deckRef.current]);
+
   const model = useModel();
 
   const [mapStyle] = useModelState<string>("basemap_style");
@@ -238,6 +245,7 @@ function App() {
         )}
         <div className="bg-red-800 h-full w-full relative">
           <DeckGL
+            ref={deckRef}
             style={{ width: "100%", height: "100%" }}
             initialViewState={
               ["longitude", "latitude", "zoom"].every((key) =>
