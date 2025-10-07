@@ -60,7 +60,6 @@ nav:
   - API Reference:
       - api/viz.md
       - api/map.md
-      - api/models.md
       - Layers:
           - api/layers/bitmap-layer.md
           - api/layers/bitmap-tile-layer.md

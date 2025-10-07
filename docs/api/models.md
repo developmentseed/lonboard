@@ -1,3 +1,0 @@
-# Models
-
-::: lonboard.models.ViewState
