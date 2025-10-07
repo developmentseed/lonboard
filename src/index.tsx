@@ -6,7 +6,7 @@ import Map from "react-map-gl/maplibre";
 import DeckGL from "@deck.gl/react";
 import { MapViewState, PickingInfo, type Layer } from "@deck.gl/core";
 import { BaseLayerModel, initializeLayer } from "./model/index.js";
-import type { WidgetModel } from "@jupyter-widgets/base";
+import type { WidgetModel, IWidgetManager } from "@jupyter-widgets/base";
 import { initParquetWasm } from "./parquet.js";
 import { isDefined, loadChildModels } from "./util.js";
 import { v4 as uuidv4 } from "uuid";
@@ -24,6 +24,8 @@ import Toolbar from "./toolbar.js";
 import throttle from "lodash.throttle";
 import SidePanel from "./sidepanel/index";
 import { getTooltip } from "./tooltip/index.js";
+import { GlobeWidget } from "./globe-map.js";
+import { DeckGLRef, ViewOrViews } from "@deck.gl/react/dist/deckgl.js";
 
 await initParquetWasm();
 
@@ -94,10 +96,11 @@ function App() {
 
   const [justClicked, setJustClicked] = useState<boolean>(false);
 
-  const deckRef = React.useRef<any>(null);
+  const deckRef = React.useRef<unknown | null>(null);
   useEffect(() => {
     if (deckRef.current && typeof window !== "undefined") {
-      (window as any).__deck = deckRef.current.deck;
+      (window as unknown as Record<string, unknown>).__deck =
+        deckRef.current.deck;
     }
   }, [deckRef.current]);
 
@@ -153,7 +156,7 @@ function App() {
     const loadAndUpdateLayers = async () => {
       try {
         const childModels = await loadChildModels(
-          model.widget_manager,
+          model.widget_manager as unknown as IWidgetManager,
           childLayerIds,
         );
 
@@ -245,7 +248,7 @@ function App() {
         )}
         <div className="bg-red-800 h-full w-full relative">
           <DeckGL
-            ref={deckRef}
+            ref={deckRef as React.RefObject<DeckGLRef<ViewOrViews>>}
             style={{ width: "100%", height: "100%" }}
             initialViewState={
               ["longitude", "latitude", "zoom"].every((key) =>
@@ -293,7 +296,7 @@ function App() {
           >
             <Map
               mapStyle={mapStyle || DEFAULT_MAP_STYLE}
-              customAttribution={customAttribution}
+              attributionControl={{ customAttribution }}
             ></Map>
           </DeckGL>
         </div>
@@ -302,13 +305,29 @@ function App() {
   );
 }
 
-const WrappedApp = () => (
-  <NextUIProvider>
-    <MachineProvider>
-      <App />
-    </MachineProvider>
-  </NextUIProvider>
-);
+const WrappedApp = () => {
+  const [projection] = useModelState<string>("projection");
+
+  // Route to globe implementation if projection is "globe"
+  if (projection === "globe") {
+    return (
+      <NextUIProvider>
+        <MachineProvider>
+          <GlobeWidget />
+        </MachineProvider>
+      </NextUIProvider>
+    );
+  }
+
+  // Default: render the standard flat map
+  return (
+    <NextUIProvider>
+      <MachineProvider>
+        <App />
+      </MachineProvider>
+    </NextUIProvider>
+  );
+};
 
 const module: { render: Render; initialize?: Initialize } = {
   render: createRender(WrappedApp),

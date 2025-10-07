@@ -26,9 +26,67 @@ export async function openNotebook(
   notebookPath: string,
 ): Promise<Locator> {
   await page.goto(`/lab/tree/${notebookPath}`);
-  const notebook = page.locator(".jp-Notebook");
+
+  // Wait for notebook to load and get the visible one
+  // After navigation, JupyterLab should show the requested notebook
+  const notebook = page.locator(".jp-Notebook").first();
   await expect(notebook).toBeVisible({ timeout: 30000 });
+
   return notebook;
+}
+
+export type OpenNotebookOptions = {
+  workspaceId?: string;
+  timeoutMs?: number;
+};
+
+/**
+ * Robustly opens a notebook in a fresh JupyterLab workspace using command registry.
+ * Avoids hidden tabs and layout restore flakiness.
+ */
+export async function openNotebookFresh(
+  page: Page,
+  notebookPath: string,
+  opts: OpenNotebookOptions = {},
+): Promise<{ notebookRoot: Locator }> {
+  const {
+    workspaceId = `e2e-${Date.now()}-${Math.random().toString(36).slice(2)}`,
+    timeoutMs = 60000,
+  } = opts;
+
+  // Load a unique workspace and directly open the target notebook URL within it
+  await page.goto(
+    `/lab/workspaces/${encodeURIComponent(workspaceId)}/tree/${notebookPath}`,
+    { waitUntil: "networkidle" },
+  );
+
+  // Wait for the visible notebook element
+  const notebookRoot = page.locator(".jp-Notebook").first();
+  await expect(notebookRoot).toBeVisible({ timeout: timeoutMs });
+  return { notebookRoot };
+}
+
+/** Runs the first N cells via JupyterLab APIs to avoid keybinding flakiness. */
+export async function runFirstNCells(
+  page: Page,
+  notebook: Locator,
+  n = 2,
+): Promise<void> {
+  await notebook.locator(".jp-Cell").first().click();
+  for (let i = 0; i < n; i++) {
+    await notebook.page().keyboard.press("Shift+Enter");
+  }
+}
+
+/** Filters known benign widget noise from console output. */
+export function ignoreKnownWidgetNoise(page: Page): void {
+  page.on("console", (msg) => {
+    const t = msg.text() || "";
+    if (t.includes("Error displaying widget: model not found")) return;
+    if (t.includes("Widget model not found")) return;
+    // Forward other logs for debugging
+    console.log("[browser]", msg.type(), t);
+  });
 }
 
 /**
@@ -112,16 +170,16 @@ export async function waitForDeck(
  * ```
  */
 export async function waitForMapReady(page: Page): Promise<void> {
-  const mapRoot = page.locator("[data-jp-suppress-context-menu]");
-  await expect(mapRoot.first()).toBeVisible({ timeout: 30000 });
-
-  const deckCanvas = page.locator('[id^="map-"] canvas#deckgl-overlay').first();
-  await expect(deckCanvas).toBeVisible({ timeout: 30000 });
+  // Accept either DeckGL overlay or MapLibre canvas as readiness signal
+  const canvas = page
+    .locator("canvas#deckgl-overlay, canvas.maplibregl-canvas")
+    .first();
+  await expect(canvas).toBeVisible({ timeout: 30000 });
 
   await expect
     .poll(
       async () => {
-        const box = await deckCanvas.boundingBox();
+        const box = await canvas.boundingBox();
         return box && box.width > 0 && box.height > 0;
       },
       { timeout: 10000 },

@@ -268,6 +268,32 @@ class Map(BaseAnyWidget):
         ```
     """
 
+    projection = t.Unicode("mercator").tag(sync=True)
+    """
+    Map projection type.
+
+    - Type: `str`
+    - Options: `"mercator"` (default) or `"globe"`
+    - Default: `"mercator"`
+
+    The globe projection displays the map on a 3D globe, providing a more realistic
+    representation of the Earth. This feature requires MapLibre GL JS 5.0+.
+
+    **Example:**
+
+        ```py
+        m = Map(
+            layers,
+            projection="globe"
+        )
+        ```
+
+    !!! note
+        Globe projection may behave differently than Mercator projection at certain
+        zoom levels. Some rendering features may have different performance
+        characteristics in globe mode.
+    """
+
     # TODO: We'd prefer a "Strict union of bool and float" but that doesn't
     # work here because `Union[bool, float]` would coerce `1` to `True`, which we don't
     # want, and `Union[float, bool]` would coerce `True` to `1`, which we also don't

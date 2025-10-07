@@ -5,10 +5,11 @@
   "dependencies": {
     "@anywidget/react": "^0.2.0",
     "@babel/runtime": "^7.28.4",
-    "@deck.gl/core": "^9.1.14",
-    "@deck.gl/extensions": "^9.1.14",
-    "@deck.gl/layers": "^9.1.14",
-    "@deck.gl/react": "^9.1.14",
+    "@deck.gl/core": "^9.1.15",
+    "@deck.gl/extensions": "^9.1.15",
+    "@deck.gl/layers": "^9.1.15",
+    "@deck.gl/mapbox": "^9.1.15",
+    "@deck.gl/react": "^9.1.15",
     "@geoarrow/deck.gl-layers": "^0.3.1",
     "@nextui-org/react": "^2.4.8",
     "@xstate/react": "^6.0.0",
@@ -65,6 +66,7 @@
     "prettier": "prettier './src/**/*.{ts,tsx,css}' --write",
     "lint": "eslint src",
     "test": "vitest run",
+    "pretest:e2e": "npm run build",
     "test:e2e": "playwright test",
     "test:e2e:ui": "playwright test --ui",
     "jupyter:test": "uv run --group dev jupyter lab --no-browser --port=8889 --notebook-dir=tests/e2e/fixtures --IdentityProvider.token=''"

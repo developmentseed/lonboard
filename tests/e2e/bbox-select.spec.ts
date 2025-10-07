@@ -1,9 +1,8 @@
 import { test, expect, Page } from "@playwright/test";
 import { deckPointerEvent } from "./helpers/deckgl";
 import {
-  openNotebook,
-  runCells,
-  waitForMapReady,
+  openNotebookFresh,
+  runFirstNCells,
   executeCellAndWaitForOutput,
 } from "./helpers/notebook";
 import { validateBounds } from "./helpers/assertions";
@@ -31,9 +30,10 @@ async function drawBbox(
 
 test.describe("BBox selection", () => {
   test("draws bbox and syncs selected_bounds to Python", async ({ page }) => {
-    const notebook = await openNotebook(page, "simple-map.ipynb");
-    await runCells(notebook, 0, 2);
-    await waitForMapReady(page);
+    const { notebookRoot } = await openNotebookFresh(page, "simple-map.ipynb", {
+      workspaceId: `bbox-${Date.now()}`,
+    });
+    await runFirstNCells(page, notebookRoot, 2);
     await page.waitForTimeout(2000);
 
     // Start bbox selection mode
@@ -55,7 +55,7 @@ test.describe("BBox selection", () => {
     await expect(clearButton).toBeVisible({ timeout: 2000 });
 
     // Execute cell to check selected bounds
-    const output = await executeCellAndWaitForOutput(notebook, 2);
+    const output = await executeCellAndWaitForOutput(notebookRoot, 2);
 
     // Verify bounds are valid geographic coordinates
     const outputText = await output.textContent();
