@@ -18,13 +18,16 @@ npm run jupyter:test    # Start test JupyterLab manually (port 8889)
 
 ## DeckGL Canvas Interactions
 
-Playwright mouse events don't trigger DeckGL handlers. Use helpers from `helpers/deck-interaction.ts`:
+Playwright mouse events don't trigger DeckGL handlers. Use helpers from `helpers/deckgl/`:
 
 ```typescript
-import { deckClick, deckHover } from "./helpers/deck-interaction";
+import { deckPointerEvent } from "./helpers/deckgl";
 
-await deckClick(page, x, y);  // Calls deck.props.onClick()
-await deckHover(page, x, y);  // Calls deck.props.onHover()
+// Use canvas-relative coordinates (pixels from canvas top-left corner)
+await deckPointerEvent(page, "click", 200, 300);
+await deckPointerEvent(page, "hover", 400, 500);
 ```
 
-See `bbox-select.spec.ts` for example usage.
+The helpers automatically convert pixel coordinates to geographic coordinates and invoke DeckGL event handlers. See JSDoc comments in `helpers/deckgl/interactions.ts` for implementation details.
+
+Example: `bbox-select.spec.ts`
