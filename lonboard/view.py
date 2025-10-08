@@ -10,25 +10,33 @@ class BaseView(BaseWidget):
 
     """
 
-    x = t.Union([t.Int(), t.Unicode()], default_value=None).tag(sync=True)
+    x = t.Union([t.Int(), t.Unicode()], allow_none=True, default_value=None).tag(
+        sync=True,
+    )
     """The x position of the view.
 
     A relative (e.g. `'50%'`) or absolute position. Default `0`.
     """
 
-    y = t.Union([t.Int(), t.Unicode()], default_value=None).tag(sync=True)
+    y = t.Union([t.Int(), t.Unicode()], allow_none=True, default_value=None).tag(
+        sync=True,
+    )
     """The y position of the view.
 
     A relative (e.g. `'50%'`) or absolute position. Default `0`.
     """
 
-    width = t.Union([t.Int(), t.Unicode()], default_value=None).tag(sync=True)
+    width = t.Union([t.Int(), t.Unicode()], allow_none=True, default_value=None).tag(
+        sync=True,
+    )
     """The width of the view.
 
     A relative (e.g. `'50%'`) or absolute extent. Default `'100%'`.
     """
 
-    height = t.Union([t.Int(), t.Unicode()], default_value=None).tag(sync=True)
+    height = t.Union([t.Int(), t.Unicode()], allow_none=True, default_value=None).tag(
+        sync=True,
+    )
     """The height of the view.
 
     A relative (e.g. `'50%'`) or absolute extent. Default `'100%'`.
@@ -43,7 +51,13 @@ class FirstPersonView(BaseView):
 
     _view_type = t.Unicode("first-person-view").tag(sync=True)
 
-    projection_matrix = t.List(t.Float(), default_value=None, minlen=16, maxlen=16).tag(
+    projection_matrix = t.List(
+        t.Float(),
+        allow_none=True,
+        default_value=None,
+        minlen=16,
+        maxlen=16,
+    ).tag(
         sync=True,
     )
     """Projection matrix.
@@ -51,25 +65,25 @@ class FirstPersonView(BaseView):
     If `projectionMatrix` is not supplied, the `View` class will build a projection matrix from the following parameters:
     """
 
-    fovy = t.Float(default_value=None).tag(sync=True)
+    fovy = t.Float(allow_none=True, default_value=None).tag(sync=True)
     """Field of view covered by camera, in the perspective case. In degrees.
 
     Default `50`.
     """
 
-    near = t.Float(default_value=None).tag(sync=True)
+    near = t.Float(allow_none=True, default_value=None).tag(sync=True)
     """Distance of near clipping plane.
 
     Default `0.1`.
     """
 
-    far = t.Float(default_value=None).tag(sync=True)
+    far = t.Float(allow_none=True, default_value=None).tag(sync=True)
     """Distance of far clipping plane.
 
     Default `1000`.
     """
 
-    focal_distance = t.Float(default_value=None).tag(sync=True)
+    focal_distance = t.Float(allow_none=True, default_value=None).tag(sync=True)
     """Modifier of viewport scale.
 
     Corresponds to the number of pixels per meter. Default `1`.
@@ -84,19 +98,19 @@ class GlobeView(BaseView):
 
     _view_type = t.Unicode("globe-view").tag(sync=True)
 
-    resolution = t.Float(default_value=None).tag(sync=True)
+    resolution = t.Float(allow_none=True, default_value=None).tag(sync=True)
     """The resolution at which to turn flat features into 3D meshes, in degrees.
 
     Smaller numbers will generate more detailed mesh. Default `10`.
     """
 
-    near_z_multiplier = t.Float(default_value=None).tag(sync=True)
+    near_z_multiplier = t.Float(allow_none=True, default_value=None).tag(sync=True)
     """Scaler for the near plane, 1 unit equals to the height of the viewport.
 
     Default to `0.1`. Overwrites the `near` parameter.
     """
 
-    far_z_multiplier = t.Float(default_value=None).tag(sync=True)
+    far_z_multiplier = t.Float(allow_none=True, default_value=None).tag(sync=True)
     """Scaler for the far plane, 1 unit equals to the distance from the camera to the top edge of the screen.
 
     Default to `2`. Overwrites the `far` parameter.
@@ -111,24 +125,30 @@ class MapView(BaseView):
 
     _view_type = t.Unicode("map-view").tag(sync=True)
 
-    repeat = t.Bool(default_value=None).tag(sync=True)
+    repeat = t.Bool(allow_none=True, default_value=None).tag(sync=True)
     """
     Whether to render multiple copies of the map at low zoom levels. Default `false`.
     """
 
-    near_z_multiplier = t.Float(default_value=None).tag(sync=True)
+    near_z_multiplier = t.Float(allow_none=True, default_value=None).tag(sync=True)
     """Scaler for the near plane, 1 unit equals to the height of the viewport.
 
     Default to `0.1`. Overwrites the `near` parameter.
     """
 
-    far_z_multiplier = t.Float(default_value=None).tag(sync=True)
+    far_z_multiplier = t.Float(allow_none=True, default_value=None).tag(sync=True)
     """Scaler for the far plane, 1 unit equals to the distance from the camera to the top edge of the screen.
 
     Default to `1.01`. Overwrites the `far` parameter.
     """
 
-    projection_matrix = t.List(t.Float(), default_value=None, minlen=16, maxlen=16).tag(
+    projection_matrix = t.List(
+        t.Float(),
+        allow_none=True,
+        default_value=None,
+        minlen=16,
+        maxlen=16,
+    ).tag(
         sync=True,
     )
     """Projection matrix.
@@ -136,19 +156,19 @@ class MapView(BaseView):
     If `projectionMatrix` is not supplied, the `View` class will build a projection matrix from the following parameters:
     """
 
-    fovy = t.Float(default_value=None).tag(sync=True)
+    fovy = t.Float(allow_none=True, default_value=None).tag(sync=True)
     """Field of view covered by camera, in the perspective case. In degrees.
 
     If not supplied, will be calculated from `altitude`.
     """
 
-    altitude = t.Float(default_value=None).tag(sync=True)
+    altitude = t.Float(allow_none=True, default_value=None).tag(sync=True)
     """Distance of the camera relative to viewport height.
 
     Default `1.5`.
     """
 
-    orthographic = t.Bool(default_value=None).tag(sync=True)
+    orthographic = t.Bool(allow_none=True, default_value=None).tag(sync=True)
     """Whether to create an orthographic or perspective projection matrix.
 
     Default is `false` (perspective projection).
@@ -163,10 +183,16 @@ class OrbitView(BaseView):
 
     _view_type = t.Unicode("orbit-view").tag(sync=True)
 
-    orbit_axis = t.Unicode(default_value=None).tag(sync=True)
+    orbit_axis = t.Unicode(allow_none=True, default_value=None).tag(sync=True)
     """Axis with 360 degrees rotating freedom, either `'Y'` or `'Z'`, default to `'Z'`."""
 
-    projection_matrix = t.List(t.Float(), default_value=None, minlen=16, maxlen=16).tag(
+    projection_matrix = t.List(
+        t.Float(),
+        allow_none=True,
+        default_value=None,
+        minlen=16,
+        maxlen=16,
+    ).tag(
         sync=True,
     )
     """Projection matrix.
@@ -174,25 +200,25 @@ class OrbitView(BaseView):
     If `projectionMatrix` is not supplied, the `View` class will build a projection matrix from the following parameters:
     """
 
-    fovy = t.Float(default_value=None).tag(sync=True)
+    fovy = t.Float(allow_none=True, default_value=None).tag(sync=True)
     """Field of view covered by camera, in the perspective case. In degrees.
 
     Default `50`.
     """
 
-    near = t.Float(default_value=None).tag(sync=True)
+    near = t.Float(allow_none=True, default_value=None).tag(sync=True)
     """Distance of near clipping plane.
 
     Default `0.1`.
     """
 
-    far = t.Float(default_value=None).tag(sync=True)
+    far = t.Float(allow_none=True, default_value=None).tag(sync=True)
     """Distance of far clipping plane.
 
     Default `1000`.
     """
 
-    orthographic = t.Bool(default_value=None).tag(sync=True)
+    orthographic = t.Bool(allow_none=True, default_value=None).tag(sync=True)
     """Whether to create an orthographic or perspective projection matrix.
 
     Default is `false` (perspective projection).
@@ -207,20 +233,20 @@ class OrthographicView(BaseView):
 
     _view_type = t.Unicode("orthographic-view").tag(sync=True)
 
-    flip_y = t.Bool(default_value=None).tag(sync=True)
+    flip_y = t.Bool(allow_none=True, default_value=None).tag(sync=True)
     """
     Whether to use top-left coordinates (`true`) or bottom-left coordinates (`false`).
 
     Default `true`.
     """
 
-    near = t.Float(default_value=None).tag(sync=True)
+    near = t.Float(allow_none=True, default_value=None).tag(sync=True)
     """Distance of near clipping plane.
 
     Default `0.1`.
     """
 
-    far = t.Float(default_value=None).tag(sync=True)
+    far = t.Float(allow_none=True, default_value=None).tag(sync=True)
     """Distance of far clipping plane.
 
     Default `1000`.
