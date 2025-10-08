@@ -12,10 +12,9 @@ from lonboard._base import BaseAnyWidget
 from lonboard._html_export import map_to_html
 from lonboard._layer import BaseLayer
 from lonboard._viewport import compute_view
-from lonboard.basemap import CartoBasemap
+from lonboard.basemap import MaplibreBasemap
 from lonboard.traits import (
     DEFAULT_INITIAL_VIEW_STATE,
-    BasemapUrl,
     HeightTrait,
     VariableLengthTuple,
     ViewStateTrait,
@@ -212,15 +211,15 @@ class Map(BaseAnyWidget):
     - Default: `5`
     """
 
-    basemap_style = BasemapUrl(CartoBasemap.PositronNoLabels)
-    """
-    A URL to a MapLibre-compatible basemap style.
+    basemap = t.Instance(MaplibreBasemap, allow_none=True).tag(
+        sync=True,
+        **ipywidgets.widget_serialization,
+    )
+    """A basemap instance.
 
-    Various styles are provided in [`lonboard.basemap`](https://developmentseed.org/lonboard/latest/api/basemap/).
+    See [`lonboard.basemap.MaplibreBasemap`] for more information.
 
-    - Type: `str`, holding a URL hosting a basemap style.
-    - Default
-      [`lonboard.basemap.CartoBasemap.PositronNoLabels`][lonboard.basemap.CartoBasemap.PositronNoLabels]
+    Pass `None` to disable rendering a basemap.
     """
 
     custom_attribution = t.Union(
