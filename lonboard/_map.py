@@ -132,29 +132,6 @@ class Map(BaseAnyWidget):
     _esm = bundler_output_dir / "index.js"
     _css = bundler_output_dir / "index.css"
 
-    view_state = ViewStateTrait()
-    """
-    The view state of the map.
-
-    - Type: [`ViewState`][lonboard.models.ViewState]
-    - Default: Automatically inferred from the data passed to the map.
-
-    You can initialize the map to a specific view state using this property:
-
-    ```py
-    Map(
-        layers,
-        view_state={"longitude": -74.0060, "latitude": 40.7128, "zoom": 7}
-    )
-    ```
-
-    !!! note
-
-        The properties of the view state are immutable. Use
-        [`set_view_state`][lonboard.Map.set_view_state] to modify a map's view state
-        once it's been initially rendered.
-
-    """
     _has_click_handlers = t.Bool(default_value=False, allow_none=False).tag(sync=True)
     """
     Indicates if a click handler has been registered.
@@ -180,6 +157,32 @@ class Map(BaseAnyWidget):
     """A single View instance, or an array of View instances.
 
     Views represent the "camera(s)" (essentially viewport dimensions and projection matrices) that you look at your data with. deck.gl offers multiple view types for both geospatial and non-geospatial use cases. Read the [Views and Projections](https://deck.gl/docs/developer-guide/views) guide for the concept and examples.
+    """
+
+    # TODO: change this view state to allow non-map view states if we have non-map views
+    # Also allow a list/tuple of view states for multiple views
+    view_state = ViewStateTrait()
+    """
+    The view state of the map.
+
+    - Type: [`ViewState`][lonboard.models.ViewState]
+    - Default: Automatically inferred from the data passed to the map.
+
+    You can initialize the map to a specific view state using this property:
+
+    ```py
+    Map(
+        layers,
+        view_state={"longitude": -74.0060, "latitude": 40.7128, "zoom": 7}
+    )
+    ```
+
+    !!! note
+
+        The properties of the view state are immutable. Use
+        [`set_view_state`][lonboard.Map.set_view_state] to modify a map's view state
+        once it's been initially rendered.
+
     """
 
     show_tooltip = t.Bool(default_value=False).tag(sync=True)
