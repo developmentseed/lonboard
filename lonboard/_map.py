@@ -21,6 +21,7 @@ from lonboard.traits import (
     VariableLengthTuple,
     ViewStateTrait,
 )
+from lonboard.view import BaseView
 
 if TYPE_CHECKING:
     import sys
@@ -190,6 +191,15 @@ class Map(BaseAnyWidget):
         **ipywidgets.widget_serialization,
     )
     """One or more `Layer` objects to display on this map.
+    """
+
+    views = VariableLengthTuple(t.Instance(BaseView)).tag(
+        sync=True,
+        **ipywidgets.widget_serialization,
+    )
+    """A single View instance, or an array of View instances.
+
+    Views represent the "camera(s)" (essentially viewport dimensions and projection matrices) that you look at your data with. deck.gl offers multiple view types for both geospatial and non-geospatial use cases. Read the [Views and Projections](https://deck.gl/docs/developer-guide/views) guide for the concept and examples.
     """
 
     show_tooltip = t.Bool(default_value=False).tag(sync=True)
