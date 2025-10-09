@@ -34,3 +34,5 @@ node_modules
 # Playwright test artifacts
 test-results/
 playwright-report/
+tests/e2e/fixtures/.ipynb_checkpoints
+
