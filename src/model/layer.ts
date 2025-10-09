@@ -31,12 +31,15 @@ import { TileLayer, TileLayerProps } from "@deck.gl/geo-layers";
 import { isDefined } from "../util.js";
 import {
   PointVector,
-  ColorVector,
-  FloatVector,
-  NormalVector,
-  StringVector,
-  PixelOffsetVector,
+  ColorAccessorInput,
+  FloatAccessorInput,
+  StringAccessorInput,
+  PixelOffsetAccessorInput,
   TimestampVector,
+  accessColorData,
+  NormalVector,
+  accessFloatData,
+  StringVector,
 } from "./types.js";
 
 /**
@@ -86,11 +89,11 @@ export class ArcModel extends BaseArrowLayerModel {
 
   protected getSourcePosition!: PointVector;
   protected getTargetPosition!: PointVector;
-  protected getSourceColor?: ColorVector | null;
-  protected getTargetColor?: ColorVector | null;
-  protected getWidth?: FloatVector | null;
-  protected getHeight?: FloatVector | null;
-  protected getTilt?: FloatVector | null;
+  protected getSourceColor?: ColorAccessorInput | null;
+  protected getTargetColor?: ColorAccessorInput | null;
+  protected getWidth?: FloatAccessorInput | null;
+  protected getHeight?: FloatAccessorInput | null;
+  protected getTilt?: FloatAccessorInput | null;
 
   constructor(model: WidgetModel, updateStateCallback: () => void) {
     super(model, updateStateCallback);
@@ -129,19 +132,19 @@ export class ArcModel extends BaseArrowLayerModel {
         widthMaxPixels: this.widthMaxPixels,
       }),
       ...(isDefined(this.getSourceColor) && {
-        getSourceColor: this.getSourceColor.data[batchIndex],
+        getSourceColor: accessColorData(this.getSourceColor, batchIndex),
       }),
       ...(isDefined(this.getTargetColor) && {
-        getTargetColor: this.getTargetColor.data[batchIndex],
+        getTargetColor: accessColorData(this.getTargetColor, batchIndex),
       }),
       ...(isDefined(this.getWidth) && {
-        getWidth: this.getWidth.data[batchIndex],
+        getWidth: accessFloatData(this.getWidth, batchIndex),
       }),
       ...(isDefined(this.getHeight) && {
-        getHeight: this.getHeight.data[batchIndex],
+        getHeight: accessFloatData(this.getHeight, batchIndex),
       }),
       ...(isDefined(this.getTilt) && {
-        getTilt: this.getTilt.data[batchIndex],
+        getTilt: accessFloatData(this.getTilt, batchIndex),
       }),
     };
   }
@@ -320,10 +323,10 @@ export class ColumnModel extends BaseArrowLayerModel {
   // protected material: GeoArrowColumnLayerProps["material"] | null;
 
   protected getPosition?: PointVector | null;
-  protected getFillColor?: ColorVector | null;
-  protected getLineColor?: ColorVector | null;
-  protected getElevation?: FloatVector | null;
-  protected getLineWidth?: FloatVector | null;
+  protected getFillColor?: ColorAccessorInput | null;
+  protected getLineColor?: ColorAccessorInput | null;
+  protected getElevation?: FloatAccessorInput | null;
+  protected getLineWidth?: FloatAccessorInput | null;
 
   constructor(model: WidgetModel, updateStateCallback: () => void) {
     super(model, updateStateCallback);
@@ -393,16 +396,16 @@ export class ColumnModel extends BaseArrowLayerModel {
         getPosition: this.getPosition.data[batchIndex],
       }),
       ...(isDefined(this.getFillColor) && {
-        getFillColor: this.getFillColor.data[batchIndex],
+        getFillColor: accessColorData(this.getFillColor, batchIndex),
       }),
       ...(isDefined(this.getLineColor) && {
-        getLineColor: this.getLineColor.data[batchIndex],
+        getLineColor: accessColorData(this.getLineColor, batchIndex),
       }),
       ...(isDefined(this.getElevation) && {
-        getElevation: this.getElevation.data[batchIndex],
+        getElevation: accessFloatData(this.getElevation, batchIndex),
       }),
       ...(isDefined(this.getLineWidth) && {
-        getLineWidth: this.getLineWidth.data[batchIndex],
+        getLineWidth: accessFloatData(this.getLineWidth, batchIndex),
       }),
     };
   }
@@ -438,7 +441,7 @@ export class HeatmapModel extends BaseArrowLayerModel {
     | null;
 
   protected getPosition?: PointVector | null;
-  protected getWeight?: FloatVector | null;
+  protected getWeight?: FloatAccessorInput | null;
 
   constructor(model: WidgetModel, updateStateCallback: () => void) {
     super(model, updateStateCallback);
@@ -476,7 +479,7 @@ export class HeatmapModel extends BaseArrowLayerModel {
         getPosition: this.getPosition.data[batchIndex],
       }),
       ...(isDefined(this.getWeight) && {
-        getWeight: this.getWeight.data[batchIndex],
+        getWeight: accessFloatData(this.getWeight, batchIndex),
       }),
     };
   }
@@ -507,8 +510,8 @@ export class PathModel extends BaseArrowLayerModel {
   protected miterLimit: GeoArrowPathLayerProps["miterLimit"] | null;
   protected billboard: GeoArrowPathLayerProps["billboard"] | null;
 
-  protected getColor?: ColorVector | null;
-  protected getWidth?: FloatVector | null;
+  protected getColor?: ColorAccessorInput | null;
+  protected getWidth?: FloatAccessorInput | null;
 
   constructor(model: WidgetModel, updateStateCallback: () => void) {
     super(model, updateStateCallback);
@@ -543,10 +546,10 @@ export class PathModel extends BaseArrowLayerModel {
       ...(isDefined(this.miterLimit) && { miterLimit: this.miterLimit }),
       ...(isDefined(this.billboard) && { billboard: this.billboard }),
       ...(isDefined(this.getColor) && {
-        getColor: this.getColor.data[batchIndex],
+        getColor: accessColorData(this.getColor, batchIndex),
       }),
       ...(isDefined(this.getWidth) && {
-        getWidth: this.getWidth.data[batchIndex],
+        getWidth: accessFloatData(this.getWidth, batchIndex),
       }),
     };
   }
@@ -572,7 +575,7 @@ export class PointCloudModel extends BaseArrowLayerModel {
   protected pointSize: GeoArrowPointCloudLayerProps["pointSize"] | null;
   // protected material: GeoArrowPointCloudLayerProps["material"] | null;
 
-  protected getColor?: ColorVector | null;
+  protected getColor?: ColorAccessorInput | null;
   protected getNormal?: NormalVector | null;
 
   constructor(model: WidgetModel, updateStateCallback: () => void) {
@@ -592,7 +595,7 @@ export class PointCloudModel extends BaseArrowLayerModel {
       ...(isDefined(this.sizeUnits) && { sizeUnits: this.sizeUnits }),
       ...(isDefined(this.pointSize) && { pointSize: this.pointSize }),
       ...(isDefined(this.getColor) && {
-        getColor: this.getColor.data[batchIndex],
+        getColor: accessColorData(this.getColor, batchIndex),
       }),
       ...(isDefined(this.getNormal) && {
         getNormal: this.getNormal.data[batchIndex],
@@ -635,10 +638,10 @@ export class PolygonModel extends BaseArrowLayerModel {
     | null;
   protected lineMiterLimit: GeoArrowPolygonLayerProps["lineMiterLimit"] | null;
 
-  protected getFillColor?: ColorVector | null;
-  protected getLineColor?: ColorVector | null;
-  protected getLineWidth?: FloatVector | null;
-  protected getElevation?: FloatVector | null;
+  protected getFillColor?: ColorAccessorInput | null;
+  protected getLineColor?: ColorAccessorInput | null;
+  protected getLineWidth?: FloatAccessorInput | null;
+  protected getElevation?: FloatAccessorInput | null;
 
   constructor(model: WidgetModel, updateStateCallback: () => void) {
     super(model, updateStateCallback);
@@ -691,16 +694,16 @@ export class PolygonModel extends BaseArrowLayerModel {
         lineMiterLimit: this.lineMiterLimit,
       }),
       ...(isDefined(this.getFillColor) && {
-        getFillColor: this.getFillColor.data[batchIndex],
+        getFillColor: accessColorData(this.getFillColor, batchIndex),
       }),
       ...(isDefined(this.getLineColor) && {
-        getLineColor: this.getLineColor.data[batchIndex],
+        getLineColor: accessColorData(this.getLineColor, batchIndex),
       }),
       ...(isDefined(this.getLineWidth) && {
-        getLineWidth: this.getLineWidth.data[batchIndex],
+        getLineWidth: accessFloatData(this.getLineWidth, batchIndex),
       }),
       ...(isDefined(this.getElevation) && {
-        getElevation: this.getElevation.data[batchIndex],
+        getElevation: accessFloatData(this.getElevation, batchIndex),
       }),
     };
   }
@@ -747,10 +750,10 @@ export class ScatterplotModel extends BaseArrowLayerModel {
   protected billboard: GeoArrowScatterplotLayerProps["billboard"] | null;
   protected antialiasing: GeoArrowScatterplotLayerProps["antialiasing"] | null;
 
-  protected getRadius?: FloatVector | null;
-  protected getFillColor?: ColorVector | null;
-  protected getLineColor?: ColorVector | null;
-  protected getLineWidth?: FloatVector | null;
+  protected getRadius?: FloatAccessorInput | null;
+  protected getFillColor?: ColorAccessorInput | null;
+  protected getLineColor?: ColorAccessorInput | null;
+  protected getLineWidth?: FloatAccessorInput | null;
 
   constructor(model: WidgetModel, updateStateCallback: () => void) {
     super(model, updateStateCallback);
@@ -775,7 +778,8 @@ export class ScatterplotModel extends BaseArrowLayerModel {
   }
 
   layerProps(batchIndex: number): GeoArrowScatterplotLayerProps {
-    return {
+    console.log(this);
+    const props = {
       id: `${this.model.model_id}-${batchIndex}`,
       data: this.table.batches[batchIndex],
       ...(isDefined(this.radiusUnits) && { radiusUnits: this.radiusUnits }),
@@ -803,18 +807,20 @@ export class ScatterplotModel extends BaseArrowLayerModel {
       ...(isDefined(this.billboard) && { billboard: this.billboard }),
       ...(isDefined(this.antialiasing) && { antialiasing: this.antialiasing }),
       ...(isDefined(this.getRadius) && {
-        getRadius: this.getRadius.data[batchIndex],
+        getRadius: accessFloatData(this.getRadius, batchIndex),
       }),
       ...(isDefined(this.getFillColor) && {
-        getFillColor: this.getFillColor.data[batchIndex],
+        getFillColor: accessColorData(this.getFillColor, batchIndex),
       }),
       ...(isDefined(this.getLineColor) && {
-        getLineColor: this.getLineColor.data[batchIndex],
+        getLineColor: accessColorData(this.getLineColor, batchIndex),
       }),
       ...(isDefined(this.getLineWidth) && {
-        getLineWidth: this.getLineWidth.data[batchIndex],
+        getLineWidth: accessFloatData(this.getLineWidth, batchIndex),
       }),
     };
+    console.log(props);
+    return props;
   }
 
   render(): GeoArrowScatterplotLayer[] {
@@ -841,9 +847,9 @@ export class SolidPolygonModel extends BaseArrowLayerModel {
     | GeoArrowSolidPolygonLayerProps["elevationScale"]
     | null;
 
-  protected getElevation?: FloatVector | null;
-  protected getFillColor?: ColorVector | null;
-  protected getLineColor?: ColorVector | null;
+  protected getElevation?: FloatAccessorInput | null;
+  protected getFillColor?: ColorAccessorInput | null;
+  protected getLineColor?: ColorAccessorInput | null;
 
   constructor(model: WidgetModel, updateStateCallback: () => void) {
     super(model, updateStateCallback);
@@ -869,13 +875,13 @@ export class SolidPolygonModel extends BaseArrowLayerModel {
         elevationScale: this.elevationScale,
       }),
       ...(isDefined(this.getElevation) && {
-        getElevation: this.getElevation.data[batchIndex],
+        getElevation: accessFloatData(this.getElevation, batchIndex),
       }),
       ...(isDefined(this.getFillColor) && {
-        getFillColor: this.getFillColor.data[batchIndex],
+        getFillColor: accessColorData(this.getFillColor, batchIndex),
       }),
       ...(isDefined(this.getLineColor) && {
-        getLineColor: this.getLineColor.data[batchIndex],
+        getLineColor: accessColorData(this.getLineColor, batchIndex),
       }),
     };
   }
@@ -903,9 +909,9 @@ export class TextModel extends BaseArrowLayerModel {
   protected sizeMinPixels: GeoArrowTextLayerProps["sizeMinPixels"] | null;
   protected sizeMaxPixels: GeoArrowTextLayerProps["sizeMaxPixels"] | null;
   // protected background: GeoArrowTextLayerProps["background"] | null;
-  protected getBackgroundColor?: ColorVector | null;
-  protected getBorderColor?: ColorVector | null;
-  protected getBorderWidth?: FloatVector | null;
+  protected getBackgroundColor?: ColorAccessorInput | null;
+  protected getBorderColor?: ColorAccessorInput | null;
+  protected getBorderWidth?: FloatAccessorInput | null;
 
   protected backgroundPadding:
     | GeoArrowTextLayerProps["backgroundPadding"]
@@ -922,17 +928,22 @@ export class TextModel extends BaseArrowLayerModel {
 
   protected getText!: StringVector;
   protected getPosition?: PointVector | null;
-  protected getColor?: ColorVector | null;
-  protected getSize?: FloatVector | null;
-  protected getAngle?: FloatVector | null;
-  protected getTextAnchor?: StringVector | "start" | "middle" | "end" | null;
+  protected getColor?: ColorAccessorInput | null;
+  protected getSize?: FloatAccessorInput | null;
+  protected getAngle?: FloatAccessorInput | null;
+  protected getTextAnchor?:
+    | StringAccessorInput
+    | "start"
+    | "middle"
+    | "end"
+    | null;
   protected getAlignmentBaseline?:
-    | StringVector
+    | StringAccessorInput
     | "top"
     | "center"
     | "bottom"
     | null;
-  protected getPixelOffset?: PixelOffsetVector | [number, number] | null;
+  protected getPixelOffset?: PixelOffsetAccessorInput | [number, number] | null;
 
   constructor(model: WidgetModel, updateStateCallback: () => void) {
     super(model, updateStateCallback);
@@ -1000,36 +1011,39 @@ export class TextModel extends BaseArrowLayerModel {
       ...(isDefined(this.maxWidth) && { maxWidth: this.maxWidth }),
 
       ...(isDefined(this.getBackgroundColor) && {
-        getBackgroundColor: this.getBackgroundColor.data[batchIndex],
+        getBackgroundColor: accessColorData(
+          this.getBackgroundColor,
+          batchIndex,
+        ),
       }),
       ...(isDefined(this.getBorderColor) && {
-        getBorderColor: this.getBorderColor.data[batchIndex],
+        getBorderColor: accessColorData(this.getBorderColor, batchIndex),
       }),
       ...(isDefined(this.getBorderWidth) && {
-        getBorderWidth: this.getBorderWidth.data[batchIndex],
+        getBorderWidth: accessFloatData(this.getBorderWidth, batchIndex),
       }),
       ...(isDefined(this.getPosition) && {
         getPosition: this.getPosition.data[batchIndex],
       }),
       ...(isDefined(this.getColor) && {
-        getColor: this.getColor.data[batchIndex],
+        getColor: accessColorData(this.getColor, batchIndex),
       }),
       ...(isDefined(this.getSize) && {
-        getSize: this.getSize.data[batchIndex],
+        getSize: accessFloatData(this.getSize, batchIndex),
       }),
       ...(isDefined(this.getAngle) && {
-        getAngle: this.getAngle.data[batchIndex],
+        getAngle: accessFloatData(this.getAngle, batchIndex),
       }),
       ...(isDefined(this.getTextAnchor) && {
         getTextAnchor:
           typeof this.getTextAnchor === "string"
-            ? this.getTextAnchor
+            ? (this.getTextAnchor as "start" | "middle" | "end")
             : this.getTextAnchor.data[batchIndex],
       }),
       ...(isDefined(this.getAlignmentBaseline) && {
         getAlignmentBaseline:
           typeof this.getAlignmentBaseline === "string"
-            ? this.getAlignmentBaseline
+            ? (this.getAlignmentBaseline as "top" | "center" | "bottom")
             : this.getAlignmentBaseline.data[batchIndex],
       }),
       ...(isDefined(this.getPixelOffset) && {
@@ -1069,8 +1083,8 @@ export class TripsModel extends BaseArrowLayerModel {
   protected trailLength: GeoArrowTripsLayerProps["trailLength"] | null;
   protected currentTime: GeoArrowTripsLayerProps["currentTime"] | null;
 
-  protected getColor?: ColorVector | null;
-  protected getWidth?: FloatVector | null;
+  protected getColor?: ColorAccessorInput | null;
+  protected getWidth?: FloatAccessorInput | null;
   protected getTimestamps!: TimestampVector;
 
   constructor(model: WidgetModel, updateStateCallback: () => void) {
@@ -1115,10 +1129,10 @@ export class TripsModel extends BaseArrowLayerModel {
       ...(isDefined(this.trailLength) && { trailLength: this.trailLength }),
       ...(isDefined(this.currentTime) && { currentTime: this.currentTime }),
       ...(isDefined(this.getColor) && {
-        getColor: this.getColor.data[batchIndex],
+        getColor: accessColorData(this.getColor, batchIndex),
       }),
       ...(isDefined(this.getWidth) && {
-        getWidth: this.getWidth.data[batchIndex],
+        getWidth: accessFloatData(this.getWidth, batchIndex),
       }),
     };
   }
