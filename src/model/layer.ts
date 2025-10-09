@@ -778,8 +778,7 @@ export class ScatterplotModel extends BaseArrowLayerModel {
   }
 
   layerProps(batchIndex: number): GeoArrowScatterplotLayerProps {
-    console.log(this);
-    const props = {
+    return {
       id: `${this.model.model_id}-${batchIndex}`,
       data: this.table.batches[batchIndex],
       ...(isDefined(this.radiusUnits) && { radiusUnits: this.radiusUnits }),
@@ -819,8 +818,6 @@ export class ScatterplotModel extends BaseArrowLayerModel {
         getLineWidth: accessFloatData(this.getLineWidth, batchIndex),
       }),
     };
-    console.log(props);
-    return props;
   }
 
   render(): GeoArrowScatterplotLayer[] {
