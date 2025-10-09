@@ -35,4 +35,3 @@ node_modules
 test-results/
 playwright-report/
 tests/e2e/fixtures/.ipynb_checkpoints
-
