@@ -1,5 +1,5 @@
 import * as React from "react";
-import { useEffect, useCallback, useState } from "react";
+import { useEffect, useCallback, useState, useRef } from "react";
 import { createRender, useModelState, useModel } from "@anywidget/react";
 import type { Initialize, Render } from "@anywidget/types";
 import Map from "react-map-gl/maplibre";
@@ -24,6 +24,7 @@ import Toolbar from "./toolbar.js";
 import throttle from "lodash.throttle";
 import SidePanel from "./sidepanel/index";
 import { getTooltip } from "./tooltip/index.js";
+import { DeckGLRef } from "@deck.gl/react";
 
 await initParquetWasm();
 
@@ -93,6 +94,14 @@ function App() {
   );
 
   const [justClicked, setJustClicked] = useState<boolean>(false);
+
+  const deckRef = useRef<DeckGLRef | null>(null);
+  useEffect(() => {
+    if (deckRef.current && typeof window !== "undefined") {
+      (window as unknown as Record<string, unknown>).__deck =
+        deckRef.current.deck;
+    }
+  }, [deckRef.current]);
 
   const model = useModel();
 
@@ -238,6 +247,7 @@ function App() {
         )}
         <div className="bg-red-800 h-full w-full relative">
           <DeckGL
+            ref={deckRef}
             style={{ width: "100%", height: "100%" }}
             initialViewState={
               ["longitude", "latitude", "zoom"].every((key) =>
