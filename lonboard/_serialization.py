@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import math
+from concurrent.futures import ThreadPoolExecutor
 from io import BytesIO
 from typing import TYPE_CHECKING, Any, overload
 
@@ -87,13 +88,15 @@ def write_parquet_batch(record_batch: RecordBatch) -> bytes:
 
 
 def serialize_table_to_parquet(table: Table, *, max_chunksize: int) -> list[bytes]:
-    buffers: list[bytes] = []
     assert max_chunksize > 0
 
-    for record_batch in table.rechunk(max_chunksize=max_chunksize).to_batches():
-        buffers.append(write_parquet_batch(record_batch))
-
-    return buffers
+    with ThreadPoolExecutor() as executor:
+        return list(
+            executor.map(
+                write_parquet_batch,
+                table.rechunk(max_chunksize=max_chunksize).to_batches(),
+            ),
+        )
 
 
 def serialize_pyarrow_column(
