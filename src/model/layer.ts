@@ -9,9 +9,11 @@ import {
   GeoArrowScatterplotLayer,
   GeoArrowSolidPolygonLayer,
   _GeoArrowTextLayer as GeoArrowTextLayer,
+  _GeoArrowH3HexagonLayer as GeoArrowH3HexagonLayer,
   GeoArrowTripsLayer,
 } from "@geoarrow/deck.gl-layers";
 import type {
+  _GeoArrowH3HexagonLayerProps as GeoArrowH3HexagonLayerProps,
   GeoArrowArcLayerProps,
   GeoArrowColumnLayerProps,
   GeoArrowHeatmapLayerProps,
@@ -415,6 +417,78 @@ export class ColumnModel extends BaseArrowLayerModel {
     for (let batchIdx = 0; batchIdx < this.table.batches.length; batchIdx++) {
       layers.push(
         new GeoArrowColumnLayer({
+          ...this.baseLayerProps(),
+          ...this.layerProps(batchIdx),
+        }),
+      );
+    }
+    return layers;
+  }
+}
+
+export class H3HexagonModel extends BaseArrowLayerModel {
+  static layerType = "h3-hexagon";
+
+  protected highPrecision?: GeoArrowH3HexagonLayerProps["highPrecision"] | null;
+  protected coverage?: GeoArrowH3HexagonLayerProps["coverage"] | null;
+  protected centerHexagon?: GeoArrowH3HexagonLayerProps["centerHexagon"] | null;
+  protected extruded?: GeoArrowH3HexagonLayerProps["extruded"] | null;
+
+  protected getHexagon!: StringVector;
+  protected getFillColor?: ColorAccessorInput | null;
+  protected getLineColor?: ColorAccessorInput | null;
+  protected getLineWidth?: FloatAccessorInput | null;
+  protected getElevation?: FloatAccessorInput | null;
+
+  constructor(model: WidgetModel, updateStateCallback: () => void) {
+    super(model, updateStateCallback);
+
+    this.initRegularAttribute("high_precision", "highPrecision");
+    this.initRegularAttribute("coverage", "coverage");
+    this.initRegularAttribute("center_hexagon", "centerHexagon");
+    this.initRegularAttribute("extruded", "extruded");
+
+    this.initVectorizedAccessor("get_hexagon", "getHexagon");
+    this.initVectorizedAccessor("get_fill_color", "getFillColor");
+    this.initVectorizedAccessor("get_line_color", "getLineColor");
+    this.initVectorizedAccessor("get_line_width", "getLineWidth");
+    this.initVectorizedAccessor("get_elevation", "getElevation");
+  }
+
+  layerProps(batchIndex: number): GeoArrowH3HexagonLayerProps {
+    return {
+      id: `${this.model.model_id}-${batchIndex}`,
+      data: this.table.batches[batchIndex],
+      // Required argument
+      getHexagon: this.getHexagon.data[batchIndex],
+      ...(isDefined(this.highPrecision) && {
+        highPrecision: this.highPrecision,
+      }),
+      ...(isDefined(this.coverage) && { coverage: this.coverage }),
+      ...(isDefined(this.centerHexagon) && {
+        centerHexagon: this.centerHexagon,
+      }),
+      ...(isDefined(this.extruded) && { extruded: this.extruded }),
+      ...(isDefined(this.getFillColor) && {
+        getFillColor: accessColorData(this.getFillColor, batchIndex),
+      }),
+      ...(isDefined(this.getLineColor) && {
+        getLineColor: accessColorData(this.getLineColor, batchIndex),
+      }),
+      ...(isDefined(this.getLineWidth) && {
+        getLineWidth: accessFloatData(this.getLineWidth, batchIndex),
+      }),
+      ...(isDefined(this.getElevation) && {
+        getElevation: accessFloatData(this.getElevation, batchIndex),
+      }),
+    };
+  }
+
+  render(): GeoArrowH3HexagonLayer[] {
+    const layers: GeoArrowH3HexagonLayer[] = [];
+    for (let batchIdx = 0; batchIdx < this.table.batches.length; batchIdx++) {
+      layers.push(
+        new GeoArrowH3HexagonLayer({
           ...this.baseLayerProps(),
           ...this.layerProps(batchIdx),
         }),
@@ -1169,6 +1243,10 @@ export async function initializeLayer(
 
     case ColumnModel.layerType:
       layerModel = new ColumnModel(model, updateStateCallback);
+      break;
+
+    case H3HexagonModel.layerType:
+      layerModel = new H3HexagonModel(model, updateStateCallback);
       break;
 
     case HeatmapModel.layerType:
