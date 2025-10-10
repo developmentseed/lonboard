@@ -71,7 +71,6 @@ def test_unexpected_unused_first():
         validate_h3_indices(h3_indices)
 
 
-# FAILING
 def test_unexpected_unused_middle():
     h3_indices = np.array([0x8C2BAE33D336BFF], dtype=np.uint64)
     assert not h3.is_valid_cell(h3_indices[0])

@@ -125,7 +125,7 @@ def validate_h3_indices(h3_indices: NDArray[np.uint64]) -> None:
     # represented by `0b111`), i.e. every bit set to 0 after a NOT.
     unused_count = MAX_RESOLUTION - resolution
     unused_bitsize = unused_count * DIRECTION_BITSIZE
-    unused_mask = (1 << unused_bitsize) - 1
+    unused_mask = (1 << unused_bitsize.astype(np.uint64)) - 1
     invalid_unused_direction_pattern = (~h3_indices) & unused_mask != 0
     bad_indices = np.where(invalid_unused_direction_pattern)[0]
     if len(bad_indices) > 0:
@@ -135,7 +135,7 @@ def validate_h3_indices(h3_indices: NDArray[np.uint64]) -> None:
         )
 
     # Check that we have `resolution` valid cells (no unused ones).
-    dirs_mask = (1 << (resolution * DIRECTION_BITSIZE)) - 1
+    dirs_mask = (1 << (resolution * DIRECTION_BITSIZE).astype(np.uint64)) - 1
     dirs = (h3_indices >> unused_bitsize) & dirs_mask
     invalid_unused_direction = has_unused_direction(dirs)
     bad_indices = np.where(invalid_unused_direction)[0]
