@@ -3,6 +3,7 @@
 https://github.com/HydroniumLabs/h3o/blob/6918ea071cf2d65a20cbb103f32d984a01161819/tests/h3/is_valid_cell.rs
 """
 
+import h3.api.numpy_int as h3
 import numpy as np
 import pytest
 
@@ -37,44 +38,50 @@ def test_valid_indices():
 
 def test_invalid_high_bit_set():
     h3_indices = np.array([0x88C2BAE305336BFF], dtype=np.uint64)
+    assert not h3.is_valid_cell(h3_indices[0])
     with pytest.raises(ValueError, match="Tainted reserved bits in indices"):
         validate_h3_indices(h3_indices)
 
 
 def test_invalid_mode():
     h3_indices = np.array([0x28C2BAE305336BFF], dtype=np.uint64)
+    assert not h3.is_valid_cell(h3_indices[0])
     with pytest.raises(ValueError, match="Invalid index mode in indices"):
         validate_h3_indices(h3_indices)
 
 
 def test_tainted_reserved_bits():
     h3_indices = np.array([0xAC2BAE305336BFF], dtype=np.uint64)
+    assert not h3.is_valid_cell(h3_indices[0])
     with pytest.raises(ValueError, match="Tainted reserved bits in indices"):
         validate_h3_indices(h3_indices)
 
 
 def test_invalid_base_cell():
     h3_indices = np.array([0x80FFFFFFFFFFFFF], dtype=np.uint64)
+    assert not h3.is_valid_cell(h3_indices[0])
     with pytest.raises(ValueError, match="Invalid base cell in indices"):
         validate_h3_indices(h3_indices)
 
 
-# FAILING
 def test_unexpected_unused_first():
-    h3_indices = np.array([0x8C2BEE305336BFF], dtype=np.uint64)
-    with pytest.raises(ValueError, match="Unexpected unused direction in indices"):
+    h3_indices = np.array([0x8C2BEE305336BFFF], dtype=np.uint64)
+    assert not h3.is_valid_cell(h3_indices[0])
+    with pytest.raises(ValueError, match="Tainted reserved bits in indices"):
         validate_h3_indices(h3_indices)
 
 
 # FAILING
 def test_unexpected_unused_middle():
     h3_indices = np.array([0x8C2BAE33D336BFF], dtype=np.uint64)
+    assert not h3.is_valid_cell(h3_indices[0])
     with pytest.raises(ValueError, match="Unexpected unused direction in indices"):
         validate_h3_indices(h3_indices)
 
 
 def test_unexpected_unused_last():
     h3_indices = np.array([0x8C2BAE305336FFF], dtype=np.uint64)
+    assert not h3.is_valid_cell(h3_indices[0])
     with pytest.raises(ValueError, match="Unexpected unused direction in indices"):
         validate_h3_indices(h3_indices)
 
@@ -82,18 +89,21 @@ def test_unexpected_unused_last():
 # FAILING
 def test_missing_unused_first():
     h3_indices = np.array([0x8C0FAE305336AFF], dtype=np.uint64)
+    assert not h3.is_valid_cell(h3_indices[0])
     with pytest.raises(ValueError, match="Invalid unused direction pattern in indices"):
         validate_h3_indices(h3_indices)
 
 
 def test_missing_unused_middle():
     h3_indices = np.array([0x8C0FAE305336FEF], dtype=np.uint64)
+    assert not h3.is_valid_cell(h3_indices[0])
     with pytest.raises(ValueError, match="Invalid unused direction pattern in indices"):
         validate_h3_indices(h3_indices)
 
 
 def test_missing_unused_last():
     h3_indices = np.array([0x81757FFFFFFFFFE], dtype=np.uint64)
+    assert not h3.is_valid_cell(h3_indices[0])
     with pytest.raises(ValueError, match="Invalid unused direction pattern in indices"):
         validate_h3_indices(h3_indices)
 
@@ -101,6 +111,7 @@ def test_missing_unused_last():
 # FAILING
 def test_deleted_subsequence_hexagon1():
     h3_indices = np.array([0x81887FFFFFFFFFF], dtype=np.uint64)
+    assert not h3.is_valid_cell(h3_indices[0])
     with pytest.raises(ValueError, match="Unexpected unused direction in indices"):
         validate_h3_indices(h3_indices)
 
@@ -108,6 +119,7 @@ def test_deleted_subsequence_hexagon1():
 # FAILING
 def test_deleted_subsequence_pentagon1():
     h3_indices = np.array([0x81087FFFFFFFFFF], dtype=np.uint64)
+    assert not h3.is_valid_cell(h3_indices[0])
     with pytest.raises(ValueError, match="Unexpected unused direction in indices"):
         validate_h3_indices(h3_indices)
 
@@ -115,6 +127,7 @@ def test_deleted_subsequence_pentagon1():
 # FAILING
 def test_deleted_subsequence_hexagon2():
     h3_indices = np.array([0x8804000011FFFFF], dtype=np.uint64)
+    assert not h3.is_valid_cell(h3_indices[0])
     with pytest.raises(ValueError, match="Unexpected unused direction in indices"):
         validate_h3_indices(h3_indices)
 
@@ -122,5 +135,6 @@ def test_deleted_subsequence_hexagon2():
 # FAILING
 def test_deleted_subsequence_pentagon2():
     h3_indices = np.array([0x8808000011FFFFF], dtype=np.uint64)
+    assert not h3.is_valid_cell(h3_indices[0])
     with pytest.raises(ValueError, match="Unexpected unused direction in indices"):
         validate_h3_indices(h3_indices)
