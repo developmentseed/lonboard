@@ -1,6 +1,5 @@
 from __future__ import annotations
 
-from io import StringIO
 from pathlib import Path
 from typing import IO, TYPE_CHECKING, Any, TextIO, overload
 
@@ -8,19 +7,19 @@ import ipywidgets
 import traitlets
 import traitlets as t
 from ipywidgets import CallbackDispatcher
-from ipywidgets.embed import dependency_state, embed_minimal_html
 
 from lonboard._base import BaseAnyWidget
+from lonboard._html_export import map_to_html
 from lonboard._layer import BaseLayer
 from lonboard._viewport import compute_view
-from lonboard.basemap import CartoBasemap
+from lonboard.basemap import MaplibreBasemap
 from lonboard.traits import (
     DEFAULT_INITIAL_VIEW_STATE,
-    BasemapUrl,
     HeightTrait,
     VariableLengthTuple,
     ViewStateTrait,
 )
+from lonboard.view import BaseView
 
 if TYPE_CHECKING:
     import sys
@@ -38,25 +37,6 @@ if TYPE_CHECKING:
 
 # bundler yields lonboard/static/{index.js,styles.css}
 bundler_output_dir = Path(__file__).parent / "static"
-
-# HTML template to override exported map as 100% height
-_HTML_TEMPLATE = """<!DOCTYPE html>
-<html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <title>{title}</title>
-</head>
-<style>
-    html {{ height: 100%; }}
-    body {{ height: 100%; overflow: hidden;}}
-    .widget-subarea {{ height: 100%; }}
-    .jupyter-widgets-disconnected {{ height: 100%; }}
-</style>
-<body>
-{snippet}
-</body>
-</html>
-"""
 
 
 class Map(BaseAnyWidget):
@@ -151,6 +131,35 @@ class Map(BaseAnyWidget):
     _esm = bundler_output_dir / "index.js"
     _css = bundler_output_dir / "index.css"
 
+    _has_click_handlers = t.Bool(default_value=False, allow_none=False).tag(sync=True)
+    """
+    Indicates if a click handler has been registered.
+    """
+
+    height = HeightTrait().tag(sync=True)
+    """Height of the map in pixels, or valid CSS height property.
+
+    This API is not yet stabilized and may change in the future.
+    """
+
+    layers = VariableLengthTuple(t.Instance(BaseLayer)).tag(
+        sync=True,
+        **ipywidgets.widget_serialization,
+    )
+    """One or more `Layer` objects to display on this map.
+    """
+
+    views = VariableLengthTuple(t.Instance(BaseView)).tag(
+        sync=True,
+        **ipywidgets.widget_serialization,
+    )
+    """A single View instance, or an array of View instances.
+
+    Views represent the "camera(s)" (essentially viewport dimensions and projection matrices) that you look at your data with. deck.gl offers multiple view types for both geospatial and non-geospatial use cases. Read the [Views and Projections](https://deck.gl/docs/developer-guide/views) guide for the concept and examples.
+    """
+
+    # TODO: change this view state to allow non-map view states if we have non-map views
+    # Also allow a list/tuple of view states for multiple views
     view_state = ViewStateTrait()
     """
     The view state of the map.
@@ -173,23 +182,6 @@ class Map(BaseAnyWidget):
         [`set_view_state`][lonboard.Map.set_view_state] to modify a map's view state
         once it's been initially rendered.
 
-    """
-    _has_click_handlers = t.Bool(default_value=False, allow_none=False).tag(sync=True)
-    """
-    Indicates if a click handler has been registered.
-    """
-
-    height = HeightTrait().tag(sync=True)
-    """Height of the map in pixels, or valid CSS height property.
-
-    This API is not yet stabilized and may change in the future.
-    """
-
-    layers = VariableLengthTuple(t.Instance(BaseLayer)).tag(
-        sync=True,
-        **ipywidgets.widget_serialization,
-    )
-    """One or more `Layer` objects to display on this map.
     """
 
     show_tooltip = t.Bool(default_value=False).tag(sync=True)
@@ -219,15 +211,15 @@ class Map(BaseAnyWidget):
     - Default: `5`
     """
 
-    basemap_style = BasemapUrl(CartoBasemap.PositronNoLabels)
-    """
-    A URL to a MapLibre-compatible basemap style.
+    basemap = t.Instance(MaplibreBasemap, allow_none=True).tag(
+        sync=True,
+        **ipywidgets.widget_serialization,
+    )
+    """A basemap instance.
 
-    Various styles are provided in [`lonboard.basemap`](https://developmentseed.org/lonboard/latest/api/basemap/).
+    See [`lonboard.basemap.MaplibreBasemap`] for more information.
 
-    - Type: `str`, holding a URL hosting a basemap style.
-    - Default
-      [`lonboard.basemap.CartoBasemap.PositronNoLabels`][lonboard.basemap.CartoBasemap.PositronNoLabels]
+    Pass `None` to disable rendering a basemap.
     """
 
     custom_attribution = t.Union(
@@ -565,34 +557,7 @@ class Map(BaseAnyWidget):
             If `filename` is not passed, returns the HTML content as a `str`.
 
         """
-
-        def inner(fp: str | Path | TextIO | IO[str]) -> None:
-            original_height = self.height
-            try:
-                with self.hold_trait_notifications():
-                    self.height = "100%"
-                    embed_minimal_html(
-                        fp,
-                        views=[self],
-                        title=title or "Lonboard export",
-                        template=_HTML_TEMPLATE,
-                        drop_defaults=False,
-                        # Necessary to pass the state of _this_ specific map. Otherwise, the
-                        # state of all known widgets will be included, ballooning the file size.
-                        state=dependency_state((self), drop_defaults=False),
-                    )
-            finally:
-                # If the map had a height before the HTML was generated, reset it.
-                self.height = original_height
-
-        if filename is None:
-            with StringIO() as sio:
-                inner(sio)
-                return sio.getvalue()
-
-        else:
-            inner(filename)
-            return None
+        return map_to_html(self, filename=filename, title=title)
 
     def as_html(self) -> HTML:
         """Render the current map as a static HTML file in IPython.
