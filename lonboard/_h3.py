@@ -146,7 +146,7 @@ def validate_h3_indices(h3_indices: NDArray[np.uint64]) -> None:
         )
 
     # Check for pentagons with deleted subsequence.
-    has_pentagon_base = is_pentagon(base) & resolution != 0
+    has_pentagon_base = np.logical_and(is_pentagon(base), resolution != 0)
     pentagon_base_indices = np.where(has_pentagon_base)[0]
     if len(pentagon_base_indices) > 0:
         pentagons = h3_indices[pentagon_base_indices]
@@ -172,11 +172,11 @@ def validate_h3_indices(h3_indices: NDArray[np.uint64]) -> None:
 
         # Add 1 and check if multiple of 3
         is_multiple_of_3 = ((leading_zeros + 1) % 3) == 0
-        bad_indices = pentagons[is_multiple_of_3]
+        bad_indices = np.where(is_multiple_of_3)[0]
         if len(bad_indices) > 0:
             raise ValueError(
                 f"Pentagonal cell index with a deleted subsequence: {bad_indices.tolist()}",
-                f"with values {h3_indices[bad_indices].tolist()}",
+                f"with values {pentagons[bad_indices].tolist()}",
             )
 
 

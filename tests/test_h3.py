@@ -33,6 +33,8 @@ VALID_INDICES = np.array(
 
 
 def test_valid_indices():
+    for cell in VALID_INDICES:
+        assert h3.is_valid_cell(cell)
     validate_h3_indices(VALID_INDICES)
 
 
@@ -85,7 +87,6 @@ def test_unexpected_unused_last():
         validate_h3_indices(h3_indices)
 
 
-# FAILING
 def test_missing_unused_first():
     h3_indices = np.array([0x8C0FAE305336AFF], dtype=np.uint64)
     assert not h3.is_valid_cell(h3_indices[0])
@@ -107,33 +108,33 @@ def test_missing_unused_last():
         validate_h3_indices(h3_indices)
 
 
-# FAILING
 def test_deleted_subsequence_hexagon1():
     h3_indices = np.array([0x81887FFFFFFFFFF], dtype=np.uint64)
-    assert not h3.is_valid_cell(h3_indices[0])
-    with pytest.raises(ValueError, match="Unexpected unused direction in indices"):
-        validate_h3_indices(h3_indices)
+    assert h3.is_valid_cell(h3_indices[0])
+    validate_h3_indices(h3_indices)
 
 
-# FAILING
 def test_deleted_subsequence_pentagon1():
     h3_indices = np.array([0x81087FFFFFFFFFF], dtype=np.uint64)
     assert not h3.is_valid_cell(h3_indices[0])
-    with pytest.raises(ValueError, match="Unexpected unused direction in indices"):
+    with pytest.raises(
+        ValueError,
+        match="Pentagonal cell index with a deleted subsequence",
+    ):
         validate_h3_indices(h3_indices)
 
 
-# FAILING
 def test_deleted_subsequence_hexagon2():
     h3_indices = np.array([0x8804000011FFFFF], dtype=np.uint64)
-    assert not h3.is_valid_cell(h3_indices[0])
-    with pytest.raises(ValueError, match="Unexpected unused direction in indices"):
-        validate_h3_indices(h3_indices)
+    assert h3.is_valid_cell(h3_indices[0])
+    validate_h3_indices(h3_indices)
 
 
-# FAILING
 def test_deleted_subsequence_pentagon2():
     h3_indices = np.array([0x8808000011FFFFF], dtype=np.uint64)
     assert not h3.is_valid_cell(h3_indices[0])
-    with pytest.raises(ValueError, match="Unexpected unused direction in indices"):
+    with pytest.raises(
+        ValueError,
+        match="Pentagonal cell index with a deleted subsequence",
+    ):
         validate_h3_indices(h3_indices)
