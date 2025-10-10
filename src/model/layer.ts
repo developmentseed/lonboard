@@ -434,7 +434,7 @@ export class H3HexagonModel extends BaseArrowLayerModel {
   protected centerHexagon?: GeoArrowH3HexagonLayerProps["centerHexagon"] | null;
   protected extruded?: GeoArrowH3HexagonLayerProps["extruded"] | null;
 
-  protected getHexagon!: StringVector;
+  protected getHexagon!: arrow.Vector<arrow.Uint64>;
   protected getFillColor?: ColorAccessorInput | null;
   protected getLineColor?: ColorAccessorInput | null;
   protected getLineWidth?: FloatAccessorInput | null;
