@@ -189,7 +189,12 @@ function App() {
 
   const layers: Layer[] = [];
   for (const subModel of Object.values(subModelState)) {
-    layers.push(subModel.render());
+    const newLayers = subModel.render();
+    if (Array.isArray(newLayers)) {
+      layers.push(...newLayers);
+    } else {
+      layers.push(newLayers);
+    }
   }
 
   const onMapClickHandler = useCallback((info: PickingInfo) => {

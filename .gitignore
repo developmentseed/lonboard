@@ -1,3 +1,4 @@
+*.mov
 .mypy_cache
 *.html
 *.zip

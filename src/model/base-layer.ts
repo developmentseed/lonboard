@@ -67,11 +67,10 @@ export abstract class BaseLayerModel extends BaseModel {
     this.model.save_changes();
   }
 
-  baseLayerProps(): LayerProps {
+  baseLayerProps(): Omit<LayerProps, "id"> {
     return {
       extensions: this.extensionInstances(),
       ...this.extensionProps(),
-      id: this.model.model_id,
       pickable: this.pickable,
       visible: this.visible,
       opacity: this.opacity,
@@ -85,13 +84,23 @@ export abstract class BaseLayerModel extends BaseModel {
 
   /**
    * Layer properties for this layer
+   *
+   * Arrow-based layers will pass in a `batchIndex` because a single layer model
+   * will render multiple layers, one for each internal record batch of the
+   * table.
+   *
+   * If the layer is not Arrow-based, `batchIndex` will be undefined.
    */
-  abstract layerProps(): Omit<LayerProps, "id">;
+  abstract layerProps(batchIndex?: number): LayerProps;
 
   /**
-   * Generate a deck.gl layer from this model description.
+   * Generate an array of deck.gl layers from this model description, one for
+   * each internal record batch of the table.
+   *
+   * Most Arrow-based layers will implement this to return multiple layers.
+   * Non-Arrow-based layers will typically return a single layer.
    */
-  abstract render(): Layer;
+  abstract render(): Layer | Layer[];
 
   // NOTE: this is flaky, especially when changing extensions
   // This is the main place where extensions should still be considered
