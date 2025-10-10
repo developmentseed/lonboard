@@ -12,8 +12,6 @@ Ported from Rust code in h3o:
 https://github.com/HydroniumLabs/h3o/blob/07dcb85d9cb539f685ec63050ef0954b1d9f3864/src/index/cell.rs#L1897-L1962
 """
 
-# ruff: noqa: ERA001
-
 from __future__ import annotations
 
 from typing import TYPE_CHECKING
@@ -22,6 +20,8 @@ import numpy as np
 
 if TYPE_CHECKING:
     from numpy.typing import NDArray
+
+__all__ = ["validate_h3_indices"]
 
 MODE_OFFSET = 59
 """Offset (in bits) of the mode in an H3 index."""
@@ -92,7 +92,7 @@ def validate_h3_indices(h3_indices: NDArray[np.uint64]) -> None:
     Raises ValueError if any index is invalid.
     """
     invalid_reserved_bits = h3_indices >> 56 & 0b1000_0111 != 0
-    bad_indices = h3_indices[invalid_reserved_bits]
+    bad_indices = np.where(invalid_reserved_bits)[0]
     if len(bad_indices) > 0:
         raise ValueError(
             f"Tainted reserved bits in indices: {bad_indices.tolist()}\n"
@@ -100,7 +100,7 @@ def validate_h3_indices(h3_indices: NDArray[np.uint64]) -> None:
         )
 
     invalid_mode = get_mode(h3_indices) != INDEX_MODE_CELL
-    bad_indices = h3_indices[invalid_mode]
+    bad_indices = np.where(invalid_mode)[0]
     if len(bad_indices) > 0:
         raise ValueError(
             f"Invalid index mode in indices: {bad_indices.tolist()}",
@@ -109,7 +109,7 @@ def validate_h3_indices(h3_indices: NDArray[np.uint64]) -> None:
 
     base = get_base_cell(h3_indices)
     invalid_base_cell = base > MAX_BASE_CELL
-    bad_indices = h3_indices[invalid_base_cell]
+    bad_indices = np.where(invalid_base_cell)[0]
     if len(bad_indices) > 0:
         raise ValueError(
             f"Invalid base cell in indices: {bad_indices.tolist()}",
@@ -127,7 +127,7 @@ def validate_h3_indices(h3_indices: NDArray[np.uint64]) -> None:
     unused_bitsize = unused_count * DIRECTION_BITSIZE
     unused_mask = (1 << unused_bitsize) - 1
     invalid_unused_direction_pattern = (~h3_indices) & unused_mask != 0
-    bad_indices = h3_indices[invalid_unused_direction_pattern]
+    bad_indices = np.where(invalid_unused_direction_pattern)[0]
     if len(bad_indices) > 0:
         raise ValueError(
             f"Invalid unused direction pattern in indices: {bad_indices.tolist()}",
@@ -138,7 +138,7 @@ def validate_h3_indices(h3_indices: NDArray[np.uint64]) -> None:
     dirs_mask = (1 << (resolution * DIRECTION_BITSIZE)) - 1
     dirs = (h3_indices >> unused_bitsize) & dirs_mask
     invalid_unused_direction = has_unused_direction(dirs)
-    bad_indices = h3_indices[invalid_unused_direction]
+    bad_indices = np.where(invalid_unused_direction)[0]
     if len(bad_indices) > 0:
         raise ValueError(
             f"Unexpected unused direction in indices: {bad_indices.tolist()}",
@@ -147,7 +147,7 @@ def validate_h3_indices(h3_indices: NDArray[np.uint64]) -> None:
 
     # Check for pentagons with deleted subsequence.
     has_pentagon_base = is_pentagon(base) & resolution != 0
-    pentagon_base_indices = h3_indices[has_pentagon_base]
+    pentagon_base_indices = np.where(has_pentagon_base)[0]
     if len(pentagon_base_indices) > 0:
         pentagons = h3_indices[pentagon_base_indices]
         pentagon_resolutions = resolution[pentagon_base_indices]
@@ -165,7 +165,7 @@ def validate_h3_indices(h3_indices: NDArray[np.uint64]) -> None:
         shifted = pentagon_dirs << pentagon_offset
 
         # Compute leading zeros for each element (assuming 64-bit unsigned integers)
-        # leading_zeros = 64 - shifted.bit_length()
+        # where `leading_zeros = 64 - shifted.bit_length()`
         # numpy doesn't have bit_length, so use log2 and handle zeros
         bitlen = np.where(shifted == 0, 0, np.floor(np.log2(shifted)).astype(int) + 1)
         leading_zeros = 64 - bitlen
