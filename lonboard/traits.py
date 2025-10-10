@@ -823,6 +823,178 @@ class FilterValueAccessor(FixedErrorTraitType):
         return value.rechunk(max_chunksize=obj._rows_per_chunk)
 
 
+class FilterCategoryAccessor(FixedErrorTraitType):
+    """Validate input for `get_filter_category`.
+
+    A trait to validate input for the `get_filter_category` accessor added by the
+    [`DataFilterExtension`][lonboard.layer_extension.DataFilterExtension], which can
+    have between 1 and 4 values per row.
+
+
+    Various input is allowed:
+
+    - An `int` or `float`. This will be used as the value for all objects. The
+      `category_size` of the
+      [`DataFilterExtension`][lonboard.layer_extension.DataFilterExtension] instance
+      must be 1.
+    - A one-dimensional numpy `ndarray` with a numeric data type. Each value in the array will
+      be used as the value for the object at the same row index. The `category_size` of
+      the [`DataFilterExtension`][lonboard.layer_extension.DataFilterExtension] instance
+      must be 1.
+    - A two-dimensional numpy `ndarray` with a numeric data type. Each value in the array will
+      be used as the value for the object at the same row index. The `category_size` of
+      the [`DataFilterExtension`][lonboard.layer_extension.DataFilterExtension] instance
+      must match the size of the second dimension of the array.
+    - A pandas `Series` with a numeric data type. Each value in the array will be used as
+      the value for the object at the same row index. The `category_size` of the
+      [`DataFilterExtension`][lonboard.layer_extension.DataFilterExtension] instance
+      must be 1.
+    - A pyarrow [`FloatArray`][pyarrow.FloatArray], [`DoubleArray`][pyarrow.DoubleArray]
+      or [`ChunkedArray`][pyarrow.ChunkedArray] containing either a `FloatArray` or
+      `DoubleArray`. Each value in the array will be used as the value for the object at
+      the same row index. The `category_size` of the
+      [`DataFilterExtension`][lonboard.layer_extension.DataFilterExtension] instance
+      must be 1.
+
+      Alternatively, you can pass any corresponding Arrow data structure from a library
+      that implements the [Arrow PyCapsule
+      Interface](https://arrow.apache.org/docs/format/CDataInterface/PyCapsuleInterface.html).
+    - A pyarrow [`FixedSizeListArray`][pyarrow.FixedSizeListArray] or
+      [`ChunkedArray`][pyarrow.ChunkedArray] containing `FixedSizeListArray`s. The `category_size` of
+      the [`DataFilterExtension`][lonboard.layer_extension.DataFilterExtension] instance
+      must match the list size.
+
+      Alternatively, you can pass any corresponding Arrow data structure from a library
+      that implements the [Arrow PyCapsule
+      Interface](https://arrow.apache.org/docs/format/CDataInterface/PyCapsuleInterface.html).
+    """
+
+    default_value = None
+    info_text = "a value or numpy ndarray or Arrow array representing an array of data"
+
+    def __init__(
+        self: TraitType,
+        *args: Any,
+        **kwargs: Any,
+    ) -> None:
+        super().__init__(*args, **kwargs)
+        self.tag(sync=True, **ACCESSOR_SERIALIZATION)
+
+    def _pandas_to_numpy(
+        self,
+        obj: BaseArrowLayer,
+        value: Any,
+        category_size: int,
+    ) -> np.ndarray:
+        # Assert that category_size == 1 for a pandas series.
+        # Pandas series can technically contain Python list objects inside them, but
+        # for simplicity we disallow that.
+        if category_size != 1:
+            self.error(obj, value, info="category_size==1 with pandas Series")
+
+        # Cast pandas Series to numpy ndarray
+        return np.asarray(value)
+
+    def _numpy_to_arrow(
+        self,
+        obj: BaseArrowLayer,
+        value: Any,
+        category_size: int,
+    ) -> ChunkedArray:
+        if len(value.shape) == 1:
+            if category_size != 1:
+                self.error(obj, value, info="category_size==1 with 1-D numpy array")
+            array = fixed_size_list_array(value, category_size)
+            return ChunkedArray(array)
+
+        if len(value.shape) != 2:
+            self.error(obj, value, info="1-D or 2-D numpy array")
+
+        if value.shape[1] != category_size:
+            self.error(
+                obj,
+                value,
+                info=(
+                    f"category_size ({category_size}) to match 2nd dimension of numpy array"
+                ),
+            )
+        array = fixed_size_list_array(value, category_size)
+        return ChunkedArray([array])
+
+    def validate(
+        self,
+        obj: BaseArrowLayer,
+        value: Any,
+    ) -> str | float | tuple | list | ChunkedArray:
+        # Find the data filter extension in the attributes of the parent object so we
+        # can validate against the filter size.
+        data_filter_extension = [
+            ext
+            for ext in obj.extensions
+            if ext._extension_type == "data-filter"  # type: ignore
+        ]
+        assert len(data_filter_extension) == 1
+        category_size = data_filter_extension[0].category_size  # type: ignore
+
+        if isinstance(value, (int, float, str)):
+            if category_size != 1:
+                self.error(obj, value, info="category_size==1 with scalar value")
+            return value
+
+        if isinstance(value, (tuple, list)):
+            if category_size != len(value):
+                self.error(
+                    obj,
+                    value,
+                    info=f"category_size ({category_size}) to match length of tuple/list",
+                )
+            return value
+
+        # pandas Series
+        if (
+            value.__class__.__module__.startswith("pandas")
+            and value.__class__.__name__ == "Series"
+        ):
+            value = self._pandas_to_numpy(obj, value, category_size)
+
+        if isinstance(value, np.ndarray):
+            value = self._numpy_to_arrow(obj, value, category_size)
+        elif hasattr(value, "__arrow_c_array__"):
+            value = ChunkedArray([Array.from_arrow(value)])
+        elif hasattr(value, "__arrow_c_stream__"):
+            value = ChunkedArray.from_arrow(value)
+        else:
+            self.error(obj, value)
+
+        assert isinstance(value, ChunkedArray)
+
+        # Allowed inputs are either a FixedSizeListArray or array.
+        if not DataType.is_fixed_size_list(value.type):
+            if category_size != 1:
+                self.error(
+                    obj,
+                    value,
+                    info="category_size==1 with non-FixedSizeList type arrow array",
+                )
+
+            return value
+
+        # We have a FixedSizeListArray
+        if category_size != value.type.list_size:
+            self.error(
+                obj,
+                value,
+                info=(
+                    f"category_size ({category_size}) to match list size of "
+                    "FixedSizeList arrow array"
+                ),
+            )
+
+        value_type = value.type.value_type
+        assert value_type is not None
+        return value.rechunk(max_chunksize=obj._rows_per_chunk)
+
+
 class NormalAccessor(FixedErrorTraitType):
     """A representation of a deck.gl "normal" accessor.
 
