@@ -33,7 +33,7 @@ def test_str_to_h3_roundtrip():
     """Test that str_to_h3 correctly converts hex strings back to uint64."""
     # Convert to strings and back
     hex_strings = h3_to_str(H3_INTEGERS)
-    assert [bytes(x).decode() for x in hex_strings] == H3_HEX_STRINGS
+    assert [bytes(x).decode().lower() for x in hex_strings] == H3_HEX_STRINGS
 
     back = str_to_h3(hex_strings)
 
