@@ -7,52 +7,44 @@ import numpy as np
 if TYPE_CHECKING:
     from numpy.typing import NDArray
 
-# ruff: noqa: ERA001
-
 
 def str_to_h3(hex_arr: NDArray[np.str_]) -> NDArray[np.uint64]:
-    return np.array([int(h, 16) for h in hex_arr])
+    """Convert an array of hexadecimal strings to H3 indices (uint64).
 
+    This is a pure NumPy vectorized implementation that processes hex strings
+    character by character without Python loops.
 
-# # Convert ASCII bytes to numeric nibble values
-# vals = np.frombuffer(hex_arr, dtype=np.uint8).reshape(len(hex_arr), -1)
+    Args:
+        hex_arr: Array of hexadecimal strings (15 characters each)
 
-# # Convert ASCII hex chars to 0-15
-# nibbles = (vals - ord("0")).astype(np.int8)
-# nibbles[nibbles > 9] -= 39  # 'a' - '0' = 49, adjust so 'a'→10, 'f'→15
+    Returns:
+        Array of H3 indices as uint64 integers
 
-# # Accumulate nibbles into integer
-# # Each hex digit represents 4 bits
-# ints = nibbles[:, 0] << 60
-# for i in range(1, 16):
-#     ints |= nibbles[:, i].astype(np.uint64) << (60 - 4 * i)
+    """
+    if len(hex_arr) == 0:
+        return np.array([], dtype=np.uint64)
 
-# pass
+    # Convert to S15 fixed-width byte strings if needed
+    # View as 2D array of individual bytes (shape: n x 15)
+    hex_bytes = np.asarray(hex_arr, dtype="S15").view("S1").reshape(len(hex_arr), -1)
 
+    # Convert ASCII bytes to numeric values
+    # Get the ASCII code of each character
+    ascii_vals = hex_bytes.view(np.uint8)
 
-# print(ints)
-# # [10, 255, 3735928559]
+    # Convert hex ASCII to numeric values (0-15)
+    # '0'-'9' (48-57) -> 0-9
+    # 'A'-'F' (65-70) -> 10-15
+    # 'a'-'f' (97-102) -> 10-15
+    vals = ascii_vals - ord("0")  # Shift '0' to 0
+    vals = np.where(vals > 9, vals - 7, vals)  # 'A'=65-48=17 -> 17-7=10
+    vals = np.where(vals > 15, vals - 32, vals)  # 'a'=97-48=49 -> 49-7=42 -> 42-32=10
 
+    # Create powers of 16 for each position (most significant first)
+    # For 15 hex digits: [16^14, 16^13, ..., 16^1, 16^0]
+    n_digits = hex_bytes.shape[1]
+    powers = 16 ** np.arange(n_digits - 1, -1, -1, dtype=np.uint64)
 
-# pass
-# # Example 2D S1 array of hex chars (shape: n x 15)
-# arr_s1 = np.array([list(b"00000000000000A"), list(b"0000000000000FF")], dtype="S1")
-
-# n_rows, n_cols = arr_s1.shape
-# assert n_cols == 15, "Each hex string must be exactly 15 characters"
-
-# # Step 1: convert ASCII bytes to numeric values 0-15
-# arr_int = arr_s1.view("uint8")  # get ASCII code
-# # '0'-'9' -> 0-9, 'A'-'F' -> 10-15
-# arr_val = arr_int.copy()
-# arr_val = np.where(arr_val >= ord("0"), arr_val - ord("0"), arr_val)
-# arr_val = np.where(arr_val >= 10, arr_val - 7, arr_val)  # adjust 'A'-'F'
-
-# # Step 2: create powers of 16 for each position
-# powers = 16 ** np.arange(n_cols - 1, -1, -1, dtype=np.uint64)
-
-# # Step 3: compute dot product along each row
-# uint64_arr = np.dot(arr_val, powers)
-
-# print(uint64_arr)
-# # Output: [10 255]
+    # Compute dot product to get final uint64 values
+    # Each row: sum(digit_i * 16^(n-1-i))
+    return np.dot(vals.astype(np.uint64), powers)
