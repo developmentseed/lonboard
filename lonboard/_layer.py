@@ -38,8 +38,8 @@ from lonboard.traits import (
     ArrowTableTrait,
     ColorAccessor,
     FloatAccessor,
+    H3Accessor,
     NormalAccessor,
-    TextAccessor,
     VariableLengthTuple,
 )
 
@@ -48,6 +48,7 @@ if TYPE_CHECKING:
     from collections.abc import Sequence
 
     import geopandas as gpd
+    import pandas as pd
     from arro3.core.types import ArrowStreamExportable
 
     from lonboard.types.layer import (
@@ -55,6 +56,8 @@ if TYPE_CHECKING:
         BitmapLayerKwargs,
         BitmapTileLayerKwargs,
         ColumnLayerKwargs,
+        H3AccessorInput,
+        H3HexagonLayerKwargs,
         HeatmapLayerKwargs,
         PathLayerKwargs,
         PointCloudLayerKwargs,
@@ -2030,10 +2033,18 @@ class H3HexagonLayer(BaseArrowLayer):
         self,
         table: ArrowStreamExportable,
         *,
-        get_hexagon=None,
+        get_hexagon: H3AccessorInput,
         _rows_per_chunk: int | None = None,
         **kwargs: Unpack[H3HexagonLayerKwargs],
     ) -> None:
+        """_summary_
+
+        Args:
+            table: _description_
+            get_hexagon: _description_
+            _rows_per_chunk: _description_. Defaults to None.
+
+        """
         super().__init__(
             table=table,
             get_hexagon=get_hexagon,
@@ -2042,29 +2053,51 @@ class H3HexagonLayer(BaseArrowLayer):
         )
 
     @classmethod
-    def from_geopandas(
+    def from_pandas(
         cls,
-        gdf: gpd.GeoDataFrame,
+        df: pd.DataFrame,
         *,
-        get_hexagon=None,
+        get_hexagon: H3AccessorInput,
         auto_downcast: bool = True,
         **kwargs: Unpack[H3HexagonLayerKwargs],
     ) -> Self:
-        return super().from_geopandas(
-            gdf=gdf,
-            get_hexagon=get_hexagon,
-            auto_downcast=auto_downcast,
-            **kwargs,
-        )
+        """_summary_
+
+        Args:
+            df: _description_
+            get_hexagon: _description_
+            auto_downcast: _description_. Defaults to True.
+
+        Raises:
+            ImportError: _description_
+
+        Returns:
+            _description_
+
+        """
+        try:
+            import pyarrow as pa
+        except ImportError as e:
+            raise ImportError(
+                "pyarrow required for converting GeoPandas to arrow.\n"
+                "Run `pip install pyarrow`.",
+            ) from e
+
+        if auto_downcast:
+            # Note: we don't deep copy because we don't need to clone geometries
+            df = _auto_downcast(df.copy())  # type: ignore
+
+        table = pa.Table.from_pandas(df)
+        return cls(table, get_hexagon=get_hexagon, **kwargs)
 
     _layer_type = t.Unicode("h3-hexagon").tag(sync=True)
 
     table = ArrowTableTrait(geometry_required=False)
 
-    # TODO: create custom H3 accessor that validates hexagons and converts them to
-    # uint64
-    get_hexagon = TextAccessor()
-    """Label text accessor"""
+    get_hexagon = H3Accessor()
+    """
+    todo
+    """
 
     stroked = t.Bool(None, allow_none=True).tag(sync=True)
     """Whether to draw an outline around the polygon (solid fill).

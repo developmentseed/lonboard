@@ -49,6 +49,19 @@ FloatAccessorInput = Union[
     ArrowArrayExportable,
     ArrowStreamExportable,
 ]
+H3AccessorInput = Union[
+    NDArray[np.object_],
+    NDArray[np.str_],
+    NDArray[np.uint64],
+    "pd.Series",
+    "pa.StringArray",
+    "pa.LargeStringArray",
+    "pa.StringViewArray",
+    "pa.UInt64Array",
+    "pa.ChunkedArray",
+    ArrowArrayExportable,
+    ArrowStreamExportable,
+]
 NormalAccessorInput = Union[
     list[int],
     tuple[int, int, int],
@@ -154,6 +167,24 @@ class ColumnLayerKwargs(BaseLayerKwargs, total=False):
     get_line_color: ColorAccessorInput
     get_elevation: FloatAccessorInput
     get_line_width: FloatAccessorInput
+
+
+class H3HexagonLayerKwargs(BaseLayerKwargs, total=False):
+    stroked: bool
+    filled: bool
+    extruded: bool
+    wireframe: bool
+    elevation_scale: IntFloat
+    line_width_units: Units
+    line_width_scale: IntFloat
+    line_width_min_pixels: IntFloat
+    line_width_max_pixels: IntFloat
+    line_joint_rounded: bool
+    line_miter_limit: IntFloat
+    get_fill_color: ColorAccessorInput
+    get_line_color: ColorAccessorInput
+    get_line_width: FloatAccessorInput
+    get_elevation: FloatAccessorInput
 
 
 class PathLayerKwargs(BaseLayerKwargs, total=False):
