@@ -513,7 +513,7 @@ class H3Accessor(FixedErrorTraitType):
 
             value = np.asarray(value, dtype="S15")
 
-        if not np.issubdtype(value.dtype, np.str_):
+        if not np.issubdtype(value.dtype, np.dtype("S15")):
             self.error(obj, value, info="numpy array not object, str, or uint64 dtype")
 
         h3_uint8_array = str_to_h3(value)
