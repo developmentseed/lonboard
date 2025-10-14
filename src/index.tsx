@@ -1,30 +1,31 @@
-import * as React from "react";
-import { useEffect, useCallback, useState, useRef } from "react";
-import { createRender, useModelState, useModel } from "@anywidget/react";
+import { createRender, useModel, useModelState } from "@anywidget/react";
 import type { Initialize, Render } from "@anywidget/types";
-import Map from "react-map-gl/maplibre";
-import DeckGL from "@deck.gl/react";
 import { MapViewState, PickingInfo, type Layer } from "@deck.gl/core";
-import { BaseLayerModel, initializeLayer } from "./model/index.js";
-import type { WidgetModel } from "@jupyter-widgets/base";
-import { initParquetWasm } from "./parquet.js";
-import { isDefined, loadChildModels } from "./util.js";
+import { DeckGLRef } from "@deck.gl/react";
+import type { IWidgetManager, WidgetModel } from "@jupyter-widgets/base";
+import { NextUIProvider } from "@nextui-org/react";
+import throttle from "lodash.throttle";
+import * as React from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 import { v4 as uuidv4 } from "uuid";
-import { Message } from "./types.js";
-import { flyTo } from "./actions/fly-to.js";
-import { useViewStateDebounced } from "./state";
 
+import { flyTo } from "./actions/fly-to.js";
+import { BaseLayerModel, initializeLayer } from "./model/index.js";
+import { initParquetWasm } from "./parquet.js";
+import DeckFirstRenderer from "./renderers/deck-first.js";
+import OverlayRenderer from "./renderers/overlay.js";
+import { MapRendererProps } from "./renderers/types.js";
+import SidePanel from "./sidepanel/index";
+import { useViewStateDebounced } from "./state";
+import Toolbar from "./toolbar.js";
+import { getTooltip } from "./tooltip/index.js";
+import { Message } from "./types.js";
+import { isDefined, loadChildModels } from "./util.js";
 import { MachineContext, MachineProvider } from "./xstate";
 import * as selectors from "./xstate/selectors";
 
-import "./globals.css";
 import "maplibre-gl/dist/maplibre-gl.css";
-import { NextUIProvider } from "@nextui-org/react";
-import Toolbar from "./toolbar.js";
-import throttle from "lodash.throttle";
-import SidePanel from "./sidepanel/index";
-import { getTooltip } from "./tooltip/index.js";
-import { DeckGLRef } from "@deck.gl/react";
+import "./globals.css";
 
 await initParquetWasm();
 
@@ -116,6 +117,7 @@ function App() {
   );
   const [parameters] = useModelState<object>("parameters");
   const [customAttribution] = useModelState<string>("custom_attribution");
+  const [renderMode] = useModelState<string>("render_mode");
 
   // initialViewState is the value of view_state on the Python side. This is
   // called `initial` here because it gets passed in to deck's
@@ -156,7 +158,7 @@ function App() {
     const loadAndUpdateLayers = async () => {
       try {
         const childModels = await loadChildModels(
-          model.widget_manager,
+          model.widget_manager as IWidgetManager,
           childLayerIds,
         );
 
@@ -229,6 +231,45 @@ function App() {
     [isOnMapHoverEventEnabled, justClicked],
   );
 
+  const mapRenderProps: MapRendererProps = {
+    mapStyle: mapStyle || DEFAULT_MAP_STYLE,
+    customAttribution,
+    deckRef,
+    initialViewState: ["longitude", "latitude", "zoom"].every((key) =>
+      Object.keys(initialViewState).includes(key),
+    )
+      ? initialViewState
+      : DEFAULT_INITIAL_VIEW_STATE,
+    layers: bboxSelectPolygonLayer
+      ? layers.concat(bboxSelectPolygonLayer)
+      : layers,
+    getTooltip: (showTooltip && getTooltip) || undefined,
+    getCursor: () => (isDrawingBBoxSelection ? "crosshair" : "grab"),
+    pickingRadius: pickingRadius,
+    onClick: onMapClickHandler,
+    onHover: onMapHoverHandler,
+    // @ts-expect-error useDevicePixels should allow number
+    // https://github.com/visgl/deck.gl/pull/9826
+    useDevicePixels: isDefined(useDevicePixels) ? useDevicePixels : true,
+    onViewStateChange: (event) => {
+      const { viewState } = event;
+
+      // This condition is necessary to confirm that the viewState is
+      // of type MapViewState.
+      if ("latitude" in viewState) {
+        const { longitude, latitude, zoom, pitch, bearing } = viewState;
+        setViewState({
+          longitude,
+          latitude,
+          zoom,
+          pitch,
+          bearing,
+        });
+      }
+    },
+    parameters: parameters || {},
+  };
+
   return (
     <div
       className="lonboard"
@@ -252,58 +293,11 @@ function App() {
           />
         )}
         <div className="bg-red-800 h-full w-full relative">
-          <DeckGL
-            ref={deckRef}
-            style={{ width: "100%", height: "100%" }}
-            initialViewState={
-              ["longitude", "latitude", "zoom"].every((key) =>
-                Object.keys(initialViewState).includes(key),
-              )
-                ? initialViewState
-                : DEFAULT_INITIAL_VIEW_STATE
-            }
-            controller={true}
-            layers={
-              bboxSelectPolygonLayer
-                ? layers.concat(bboxSelectPolygonLayer)
-                : layers
-            }
-            getTooltip={(showTooltip && getTooltip) || undefined}
-            getCursor={() => (isDrawingBBoxSelection ? "crosshair" : "grab")}
-            pickingRadius={pickingRadius}
-            onClick={onMapClickHandler}
-            onHover={onMapHoverHandler}
-            useDevicePixels={
-              isDefined(useDevicePixels) ? useDevicePixels : true
-            }
-            // https://deck.gl/docs/api-reference/core/deck#_typedarraymanagerprops
-            _typedArrayManagerProps={{
-              overAlloc: 1,
-              poolSize: 0,
-            }}
-            onViewStateChange={(event) => {
-              const { viewState } = event;
-
-              // This condition is necessary to confirm that the viewState is
-              // of type MapViewState.
-              if ("latitude" in viewState) {
-                const { longitude, latitude, zoom, pitch, bearing } = viewState;
-                setViewState({
-                  longitude,
-                  latitude,
-                  zoom,
-                  pitch,
-                  bearing,
-                });
-              }
-            }}
-            parameters={parameters || {}}
-          >
-            <Map
-              mapStyle={mapStyle || DEFAULT_MAP_STYLE}
-              customAttribution={customAttribution}
-            ></Map>
-          </DeckGL>
+          {renderMode === "overlay" ? (
+            <OverlayRenderer {...mapRenderProps} />
+          ) : (
+            <DeckFirstRenderer {...mapRenderProps} />
+          )}
         </div>
       </div>
     </div>

@@ -1,3 +1,5 @@
+import { TileLayer, TileLayerProps } from "@deck.gl/geo-layers";
+import { BitmapLayer, BitmapLayerProps } from "@deck.gl/layers";
 import {
   GeoArrowArcLayer,
   GeoArrowColumnLayer,
@@ -26,10 +28,9 @@ import type {
 } from "@geoarrow/deck.gl-layers";
 import type { WidgetModel } from "@jupyter-widgets/base";
 import * as arrow from "apache-arrow";
+
 import { parseParquetBuffers } from "../parquet.js";
 import { BaseLayerModel } from "./base-layer.js";
-import { BitmapLayer, BitmapLayerProps } from "@deck.gl/layers";
-import { TileLayer, TileLayerProps } from "@deck.gl/geo-layers";
 import { isDefined } from "../util.js";
 import {
   PointVector,
