@@ -1,0 +1,77 @@
+import type { IWidgetManager, WidgetModel } from "@jupyter-widgets/base";
+import type { BaseModel } from "./base";
+
+/**
+ * Load and initialize the child models of this model.
+ *
+ * @param widget_manager The widget manager used to load the models.
+ * @param childLayerIds The model IDs of the child models to load.
+ * @param previousSubModelState Any previously loaded child models. Models that are still present will be reused. Any reactivity on _those models_ will be handled separately.
+ * @param initializer A function that takes a WidgetModel and returns an initialized model of type T.
+ * @param setStateCounter
+ *
+ * @return A promise that resolves to a mapping from model ID to initialized model.
+ */
+export async function initializeChildModels<T extends BaseModel>(
+  widget_manager: IWidgetManager,
+  childLayerIds: string[],
+  previousSubModelState: Record<string, T>,
+  initializer: (
+    model: WidgetModel,
+    updateStateCallback: () => void,
+  ) => Promise<T>,
+  setStateCounter: React.Dispatch<React.SetStateAction<Date>>,
+): Promise<Record<string, T>> {
+  const childModels = await loadModels(widget_manager, childLayerIds);
+
+  const updateStateCallback = () => setStateCounter(new Date());
+
+  const newSubModelState: Record<string, T> = {};
+
+  for (
+    let childModelIdx = 0;
+    childModelIdx < childLayerIds.length;
+    childModelIdx++
+  ) {
+    const childLayerId = childLayerIds[childModelIdx];
+    const childModel = childModels[childModelIdx];
+
+    // If the layer existed previously, copy its model without constructing
+    // a new one
+    if (childLayerId in previousSubModelState) {
+      // pop from old state
+      newSubModelState[childLayerId] = previousSubModelState[childLayerId];
+      delete previousSubModelState[childLayerId];
+    }
+
+    const childLayer = await initializer(childModel, updateStateCallback);
+    newSubModelState[childLayerId] = childLayer;
+  }
+
+  // finalize models that were deleted
+  for (const previousChildModel of Object.values(previousSubModelState)) {
+    previousChildModel.finalize();
+  }
+
+  return newSubModelState;
+}
+
+/**
+ * Load and resolve other widget models.
+ *
+ * Loading of models is asynchronous; we load all models in parallel.
+ */
+async function loadModels(
+  widget_manager: IWidgetManager,
+  childModelIds: string[],
+): Promise<WidgetModel[]> {
+  const promises: Promise<WidgetModel>[] = [];
+  for (const childModelId of childModelIds) {
+    // childModelId is of the form "IPY_MODEL_<identifier>"
+    // https://github.com/jupyter-widgets/ipywidgets/blob/8.1.7/packages/schema/jupyterwidgetmodels.v8.md
+    const modelId = childModelId.slice("IPY_MODEL_".length);
+    const modelPromise = widget_manager.get_model(modelId);
+    promises.push(modelPromise);
+  }
+  return await Promise.all(promises);
+}
