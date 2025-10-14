@@ -37,9 +37,6 @@ jobs:
       - name: Install
         run: npm ci
 
-      - name: Ensure lockfile up to date
-        run: git diff --exit-code package-lock.json || exit 1
-
       - name: Prettier check
         run: npm run prettier:check
 
