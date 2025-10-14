@@ -1,6 +1,13 @@
 import type { IWidgetManager, WidgetModel } from "@jupyter-widgets/base";
 import type { BaseModel } from "./base";
 
+// childModelId is of the form "IPY_MODEL_<identifier>"
+// https://github.com/jupyter-widgets/ipywidgets/blob/8.1.7/packages/schema/jupyterwidgetmodels.v8.md
+const IPY_MODEL_ = "IPY_MODEL_";
+
+// We need to slice off the "IPY_MODEL_" prefix to get the actual model ID
+const IPY_MODEL_LENGTH = IPY_MODEL_.length;
+
 /**
  * Load and initialize the child models of this model.
  *
@@ -58,13 +65,10 @@ async function loadModels(
   widget_manager: IWidgetManager,
   childModelIds: string[],
 ): Promise<WidgetModel[]> {
-  const promises: Promise<WidgetModel>[] = [];
-  for (const childModelId of childModelIds) {
-    // childModelId is of the form "IPY_MODEL_<identifier>"
-    // https://github.com/jupyter-widgets/ipywidgets/blob/8.1.7/packages/schema/jupyterwidgetmodels.v8.md
-    const modelId = childModelId.slice("IPY_MODEL_".length);
-    const modelPromise = widget_manager.get_model(modelId);
-    promises.push(modelPromise);
-  }
+  const promises = childModelIds.map((childModelId) => {
+    // We need to slice off the "IPY_MODEL_" prefix to get the actual model ID
+    const modelId = childModelId.slice(IPY_MODEL_LENGTH);
+    return widget_manager.get_model(modelId);
+  });
   return await Promise.all(promises);
 }
