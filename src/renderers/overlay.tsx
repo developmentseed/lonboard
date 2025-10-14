@@ -25,13 +25,8 @@ function DeckGLOverlay(props: MapboxOverlayProps) {
  */
 const OverlayRenderer: React.FC<MapRendererProps> = (mapProps) => {
   // Remove maplibre-specific props before passing to DeckGL
-  const {
-    mapStyle,
-    customAttribution,
-    initialViewState,
-    // deckRef,
-    ...deckProps
-  } = mapProps;
+  const { mapStyle, customAttribution, initialViewState, ...deckProps } =
+    mapProps;
   return (
     <Map
       reuseMaps
@@ -41,7 +36,6 @@ const OverlayRenderer: React.FC<MapRendererProps> = (mapProps) => {
       style={{ width: "100%", height: "100%" }}
     >
       <DeckGLOverlay
-        // ref={deckRef}
         // https://deck.gl/docs/api-reference/core/deck#_typedarraymanagerprops
         _typedArrayManagerProps={{
           overAlloc: 1,
