@@ -32,13 +32,13 @@ export async function initializeChildModels<T extends BaseModel>(
     // If the layer existed previously, copy its model without constructing
     // a new one
     if (childModelId in previousSubModelState) {
-      // pop from old state
+      // reuse existing model and remove from old state
       newSubModelState[childModelId] = previousSubModelState[childModelId];
       delete previousSubModelState[childModelId];
+    } else {
+      // TODO: should we be using Promise.all here?
+      newSubModelState[childModelId] = await initializer(childModel);
     }
-
-    // TODO: should we be using Promise.all here?
-    newSubModelState[childModelId] = await initializer(childModel);
   }
 
   // finalize models that were deleted
