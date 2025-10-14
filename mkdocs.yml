@@ -41,7 +41,7 @@ nav:
       - examples/internet-speeds.ipynb
       - examples/north-america-roads.ipynb
       - examples/overture-maps.ipynb
-      - "Spatially-Partitioned GeoParquet": examples/overture-geoparquet.ipynb
+      - examples/overture-geoparquet.ipynb
       - examples/air-traffic-control.ipynb
       - examples/global-boundaries.ipynb
       - examples/migration.ipynb
