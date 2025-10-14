@@ -1,3 +1,4 @@
+*.mov
 .mypy_cache
 *.html
 *.zip
@@ -30,3 +31,8 @@ node_modules
 .env
 .env.local
 .env.*.local
+
+# Playwright test artifacts
+test-results/
+playwright-report/
+tests/e2e/fixtures/.ipynb_checkpoints

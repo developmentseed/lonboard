@@ -1,5 +1,5 @@
 import * as React from "react";
-import { useEffect, useCallback, useState } from "react";
+import { useEffect, useCallback, useState, useRef } from "react";
 import { createRender, useModelState, useModel } from "@anywidget/react";
 import type { Initialize, Render } from "@anywidget/types";
 import Map from "react-map-gl/maplibre";
@@ -24,6 +24,7 @@ import Toolbar from "./toolbar.js";
 import throttle from "lodash.throttle";
 import SidePanel from "./sidepanel/index";
 import { getTooltip } from "./tooltip/index.js";
+import { DeckGLRef } from "@deck.gl/react";
 
 await initParquetWasm();
 
@@ -93,6 +94,15 @@ function App() {
   );
 
   const [justClicked, setJustClicked] = useState<boolean>(false);
+
+  // Expose DeckGL instance on window for Playwright e2e tests
+  const deckRef = useRef<DeckGLRef | null>(null);
+  useEffect(() => {
+    if (deckRef.current && typeof window !== "undefined") {
+      (window as unknown as Record<string, unknown>).__deck =
+        deckRef.current.deck;
+    }
+  }, [deckRef.current]);
 
   const model = useModel();
 
@@ -179,7 +189,12 @@ function App() {
 
   const layers: Layer[] = [];
   for (const subModel of Object.values(subModelState)) {
-    layers.push(subModel.render());
+    const newLayers = subModel.render();
+    if (Array.isArray(newLayers)) {
+      layers.push(...newLayers);
+    } else {
+      layers.push(newLayers);
+    }
   }
 
   const onMapClickHandler = useCallback((info: PickingInfo) => {
@@ -215,7 +230,14 @@ function App() {
   );
 
   return (
-    <div className="lonboard" style={{ minHeight: "100%", height: mapHeight }}>
+    <div
+      className="lonboard"
+      style={{ minHeight: "100%", height: mapHeight }}
+      // This attribute suppresses the context menu on right click in JupyterLab
+      // https://jupyterlab.readthedocs.io/en/latest/extension/extension_points.html#context-menu
+      // https://jupyter.zulipchat.com/#narrow/channel/471314-geojupyter/topic/Possible.20to.20disable.20JupyterLab.20popup.20on.20right.20click.3F/near/541082696
+      data-jp-suppress-context-menu
+    >
       <div
         id={`map-${mapId}`}
         className="flex"
@@ -231,6 +253,7 @@ function App() {
         )}
         <div className="bg-red-800 h-full w-full relative">
           <DeckGL
+            ref={deckRef}
             style={{ width: "100%", height: "100%" }}
             initialViewState={
               ["longitude", "latitude", "zoom"].every((key) =>
