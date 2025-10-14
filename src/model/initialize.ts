@@ -1,4 +1,5 @@
 import type { IWidgetManager, WidgetModel } from "@jupyter-widgets/base";
+
 import type { BaseModel } from "./base";
 
 // childModelId is of the form "IPY_MODEL_<identifier>"
