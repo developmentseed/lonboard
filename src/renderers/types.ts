@@ -5,16 +5,16 @@ import type { RefObject } from "react";
 type ViewOrViews = View | View[] | null;
 export type MapRendererProps<ViewsT extends ViewOrViews = null> = Pick<
   DeckProps<ViewsT>,
-  | "layers"
-  | "getTooltip"
   | "getCursor"
-  | "pickingRadius"
-  | "useDevicePixels"
-  | "parameters"
+  | "getTooltip"
   | "initialViewState"
+  | "layers"
   | "onClick"
   | "onHover"
   | "onViewStateChange"
+  | "parameters"
+  | "pickingRadius"
+  | "useDevicePixels"
 > & {
   mapStyle: string;
   customAttribution: string;
