@@ -1,5 +1,5 @@
-import _initParquetWasm, { readParquet } from "parquet-wasm";
 import * as arrow from "apache-arrow";
+import _initParquetWasm, { readParquet } from "parquet-wasm";
 
 // NOTE: this version must be synced exactly with the parquet-wasm version in
 // use.
