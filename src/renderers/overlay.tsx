@@ -23,20 +23,15 @@ function DeckGLOverlay(props: MapboxOverlayProps) {
  * MapboxOverlay. This approach gives the base map more control and can
  * enable features like interleaved rendering between map and deck layers.
  */
-const Overlay: React.FC<MapRendererProps> = ({
-  mapStyle,
-  customAttribution,
-  initialViewState,
-  layers,
-  getTooltip,
-  isDrawingBBoxSelection,
-  pickingRadius,
-  useDevicePixels,
-  parameters,
-  onMapClick,
-  onMapHover,
-  onViewStateChange,
-}) => {
+const OverlayRenderer: React.FC<MapRendererProps> = (mapProps) => {
+  // Remove maplibre-specific props before passing to DeckGL
+  const {
+    mapStyle,
+    customAttribution,
+    initialViewState,
+    // deckRef,
+    ...deckProps
+  } = mapProps;
   return (
     <Map
       reuseMaps
@@ -46,25 +41,16 @@ const Overlay: React.FC<MapRendererProps> = ({
       style={{ width: "100%", height: "100%" }}
     >
       <DeckGLOverlay
-        layers={layers}
-        getTooltip={getTooltip}
-        getCursor={() => (isDrawingBBoxSelection ? "crosshair" : "grab")}
-        pickingRadius={pickingRadius}
-        onClick={onMapClick}
-        onHover={onMapHover}
-        // @ts-expect-error useDevicePixels should allow number
-        // https://github.com/visgl/deck.gl/pull/9826
-        useDevicePixels={useDevicePixels}
+        // ref={deckRef}
         // https://deck.gl/docs/api-reference/core/deck#_typedarraymanagerprops
         _typedArrayManagerProps={{
           overAlloc: 1,
           poolSize: 0,
         }}
-        onViewStateChange={onViewStateChange}
-        parameters={parameters}
+        {...deckProps}
       />
     </Map>
   );
 };
 
-export default Overlay;
+export default OverlayRenderer;

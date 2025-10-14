@@ -11,47 +11,24 @@ import type { MapRendererProps } from "./types";
  * This is the traditional approach where deck.gl has full control over
  * the rendering pipeline.
  */
-const DeckFirst: React.FC<MapRendererProps> = ({
-  mapStyle,
-  customAttribution,
-  initialViewState,
-  layers,
-  deckRef,
-  getTooltip,
-  isDrawingBBoxSelection,
-  pickingRadius,
-  useDevicePixels,
-  parameters,
-  onMapClick,
-  onMapHover,
-  onViewStateChange,
-}) => {
+const DeckFirstRenderer: React.FC<MapRendererProps> = (mapProps) => {
+  // Remove maplibre-specific props before passing to DeckGL
+  const { mapStyle, customAttribution, deckRef, ...deckProps } = mapProps;
   return (
     <DeckGL
       ref={deckRef}
       style={{ width: "100%", height: "100%" }}
-      initialViewState={initialViewState}
       controller={true}
-      layers={layers}
-      getTooltip={getTooltip}
-      getCursor={() => (isDrawingBBoxSelection ? "crosshair" : "grab")}
-      pickingRadius={pickingRadius}
-      onClick={onMapClick}
-      onHover={onMapHover}
-      // @ts-expect-error useDevicePixels should allow number
-      // https://github.com/visgl/deck.gl/pull/9826
-      useDevicePixels={useDevicePixels}
       // https://deck.gl/docs/api-reference/core/deck#_typedarraymanagerprops
       _typedArrayManagerProps={{
         overAlloc: 1,
         poolSize: 0,
       }}
-      onViewStateChange={onViewStateChange}
-      parameters={parameters}
+      {...deckProps}
     >
       <Map mapStyle={mapStyle} customAttribution={customAttribution}></Map>
     </DeckGL>
   );
 };
 
-export default DeckFirst;
+export default DeckFirstRenderer;
