@@ -4,7 +4,6 @@ import React from "react";
 
 import { XMarkIcon } from "../icons";
 
-
 const rowIndexSymbol = Symbol.for("rowIndex");
 
 interface SidePanelProps {
