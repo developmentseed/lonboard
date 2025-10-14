@@ -90,6 +90,11 @@ class BaseLayer(BaseWidget):
         extensions: Sequence[BaseExtension] = (),
         **kwargs: Any,
     ) -> None:
+        if self.title is None:
+            if hasattr(self, "_layer_type"):
+                self.title = self._layer_type.title() + " Layer"
+            else:
+                self.title = "Layer"
         # We allow layer extensions to dynamically inject properties onto the layer
         # widgets where the layer is defined. We wish to allow extensions and their
         # properties to be passed in the layer constructor. _However_, if
@@ -277,6 +282,12 @@ class BaseLayer(BaseWidget):
     from JavaScript. Refer
     [here](https://ipywidgets.readthedocs.io/en/stable/examples/Widget%20Events.html#signatures)
     for an example.
+    """
+
+    title = t.CUnicode(default_value=None, allow_none=True).tag(sync=True)
+    """
+    The title of the layer.  The title of the layer is visible in the layer control
+    produced by map.layer_control().
     """
 
 

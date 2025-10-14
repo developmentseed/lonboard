@@ -84,6 +84,7 @@ class BaseLayerKwargs(TypedDict, total=False):
     visible: bool
     opacity: IntFloat
     auto_highlight: bool
+    title: str
 
 
 class ArcLayerKwargs(BaseLayerKwargs, total=False):
