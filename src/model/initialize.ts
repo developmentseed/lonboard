@@ -5,35 +5,28 @@ import type { BaseModel } from "./base";
  * Load and initialize the child models of this model.
  *
  * @param widget_manager The widget manager used to load the models.
- * @param childLayerIds The model IDs of the child models to load.
+ * @param childModelIds The model IDs of the child models to load.
  * @param previousSubModelState Any previously loaded child models. Models that are still present will be reused. Any reactivity on _those models_ will be handled separately.
  * @param initializer A function that takes a WidgetModel and returns an initialized model of type T.
- * @param setStateCounter
  *
  * @return A promise that resolves to a mapping from model ID to initialized model.
  */
 export async function initializeChildModels<T extends BaseModel>(
   widget_manager: IWidgetManager,
-  childLayerIds: string[],
+  childModelIds: string[],
   previousSubModelState: Record<string, T>,
-  initializer: (
-    model: WidgetModel,
-    updateStateCallback: () => void,
-  ) => Promise<T>,
-  setStateCounter: React.Dispatch<React.SetStateAction<Date>>,
+  initializer: (model: WidgetModel) => Promise<T>,
 ): Promise<Record<string, T>> {
-  const childModels = await loadModels(widget_manager, childLayerIds);
-
-  const updateStateCallback = () => setStateCounter(new Date());
+  const childModels = await loadModels(widget_manager, childModelIds);
 
   const newSubModelState: Record<string, T> = {};
 
   for (
     let childModelIdx = 0;
-    childModelIdx < childLayerIds.length;
+    childModelIdx < childModelIds.length;
     childModelIdx++
   ) {
-    const childLayerId = childLayerIds[childModelIdx];
+    const childLayerId = childModelIds[childModelIdx];
     const childModel = childModels[childModelIdx];
 
     // If the layer existed previously, copy its model without constructing
@@ -44,8 +37,8 @@ export async function initializeChildModels<T extends BaseModel>(
       delete previousSubModelState[childLayerId];
     }
 
-    const childLayer = await initializer(childModel, updateStateCallback);
-    newSubModelState[childLayerId] = childLayer;
+    // TODO: should we be using Promise.all here?
+    newSubModelState[childLayerId] = await initializer(childModel);
   }
 
   // finalize models that were deleted

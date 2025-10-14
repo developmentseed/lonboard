@@ -10,7 +10,7 @@ import {
   type BaseLayerModel,
   initializeChildModels,
 } from "./model/index.js";
-import type { IWidgetManager } from "@jupyter-widgets/base";
+import type { IWidgetManager, WidgetModel } from "@jupyter-widgets/base";
 import { initParquetWasm } from "./parquet.js";
 import { isDefined } from "./util.js";
 import { v4 as uuidv4 } from "uuid";
@@ -121,6 +121,7 @@ function App() {
   // Fake state just to get react to re-render when a model callback is called
   // eslint-disable-next-line @typescript-eslint/no-unused-vars
   const [stateCounter, setStateCounter] = useState<Date>(new Date());
+  const updateStateCallback = () => setStateCounter(new Date());
 
   useEffect(() => {
     const loadAndUpdateLayers = async () => {
@@ -129,8 +130,8 @@ function App() {
           model.widget_manager as IWidgetManager,
           childLayerIds,
           layersState,
-          initializeLayer,
-          setStateCounter,
+          async (model: WidgetModel) =>
+            initializeLayer(model, updateStateCallback),
         );
 
         setLayersState(layerModels);
