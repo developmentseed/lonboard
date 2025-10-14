@@ -1,6 +1,7 @@
+import { MapboxOverlay, MapboxOverlayProps } from "@deck.gl/mapbox";
 import React from "react";
 import Map, { useControl } from "react-map-gl/maplibre";
-import { MapboxOverlay, MapboxOverlayProps } from "@deck.gl/mapbox";
+
 import type { MapRendererProps } from "./types";
 
 /**

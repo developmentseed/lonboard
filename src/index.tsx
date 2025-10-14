@@ -1,31 +1,31 @@
-import * as React from "react";
-import { useEffect, useCallback, useState, useRef } from "react";
-import { createRender, useModelState, useModel } from "@anywidget/react";
+import { createRender, useModel, useModelState } from "@anywidget/react";
 import type { Initialize, Render } from "@anywidget/types";
 import { MapViewState, PickingInfo, type Layer } from "@deck.gl/core";
-import { BaseLayerModel, initializeLayer } from "./model/index.js";
+import { DeckGLRef } from "@deck.gl/react";
 import type { IWidgetManager, WidgetModel } from "@jupyter-widgets/base";
-import { initParquetWasm } from "./parquet.js";
-import { isDefined, loadChildModels } from "./util.js";
+import { NextUIProvider } from "@nextui-org/react";
+import throttle from "lodash.throttle";
+import * as React from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 import { v4 as uuidv4 } from "uuid";
-import { Message } from "./types.js";
-import { flyTo } from "./actions/fly-to.js";
-import { useViewStateDebounced } from "./state";
 
+import { flyTo } from "./actions/fly-to.js";
+import { BaseLayerModel, initializeLayer } from "./model/index.js";
+import { initParquetWasm } from "./parquet.js";
+import DeckFirstRenderer from "./renderers/deck-first.js";
+import OverlayRenderer from "./renderers/overlay.js";
+import { MapRendererProps } from "./renderers/types.js";
+import SidePanel from "./sidepanel/index";
+import { useViewStateDebounced } from "./state";
+import Toolbar from "./toolbar.js";
+import { getTooltip } from "./tooltip/index.js";
+import { Message } from "./types.js";
+import { isDefined, loadChildModels } from "./util.js";
 import { MachineContext, MachineProvider } from "./xstate";
 import * as selectors from "./xstate/selectors";
 
-import "./globals.css";
 import "maplibre-gl/dist/maplibre-gl.css";
-import { NextUIProvider } from "@nextui-org/react";
-import Toolbar from "./toolbar.js";
-import throttle from "lodash.throttle";
-import SidePanel from "./sidepanel/index";
-import { getTooltip } from "./tooltip/index.js";
-import { DeckGLRef } from "@deck.gl/react";
-import OverlayRenderer from "./renderers/overlay.js";
-import { MapRendererProps } from "./renderers/types.js";
-import DeckFirstRenderer from "./renderers/deck-first.js";
+import "./globals.css";
 
 await initParquetWasm();
 
