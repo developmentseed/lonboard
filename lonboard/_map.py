@@ -14,6 +14,7 @@ from lonboard._base import BaseAnyWidget
 from lonboard._layer import BaseLayer
 from lonboard._viewport import compute_view
 from lonboard.basemap import CartoBasemap
+from lonboard.controls import BaseControl
 from lonboard.traits import (
     DEFAULT_INITIAL_VIEW_STATE,
     BasemapUrl,
@@ -192,6 +193,13 @@ class Map(BaseAnyWidget):
         **ipywidgets.widget_serialization,
     )
     """One or more `Layer` objects to display on this map.
+    """
+
+    controls = VariableLengthTuple(t.Instance(BaseControl)).tag(
+        sync=True,
+        **ipywidgets.widget_serialization,
+    )
+    """One or more map controls to display on this map.
     """
 
     show_tooltip = t.Bool(default_value=False).tag(sync=True)
