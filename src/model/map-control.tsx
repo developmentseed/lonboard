@@ -129,3 +129,30 @@ export class ScaleModel extends BaseMapControlModel {
     return <div>{<ScaleControl {...props} />}</div>;
   }
 }
+
+export async function initializeControl(
+  model: WidgetModel,
+  updateStateCallback: () => void,
+): Promise<BaseMapControlModel> {
+  const controlType = model.get("_control_type");
+  let controlModel: BaseMapControlModel;
+  switch (controlType) {
+    case FullscreenModel.controlType:
+      controlModel = new FullscreenModel(model, updateStateCallback);
+      break;
+
+    case NavigationModel.controlType:
+      controlModel = new NavigationModel(model, updateStateCallback);
+      break;
+
+    case ScaleModel.controlType:
+      controlModel = new ScaleModel(model, updateStateCallback);
+      break;
+
+    default:
+      throw new Error(`no control supported for ${controlType}`);
+  }
+
+  await controlModel.loadSubModels();
+  return controlModel;
+}
