@@ -28,24 +28,17 @@ export async function initializeChildModels<T extends BaseModel>(
 
   const newSubModelState: Record<string, T> = {};
 
-  for (
-    let childModelIdx = 0;
-    childModelIdx < childModelIds.length;
-    childModelIdx++
-  ) {
-    const childLayerId = childModelIds[childModelIdx];
-    const childModel = childModels[childModelIdx];
-
+  for (const [childModelId, childModel] of Object.entries(childModels)) {
     // If the layer existed previously, copy its model without constructing
     // a new one
-    if (childLayerId in previousSubModelState) {
+    if (childModelId in previousSubModelState) {
       // pop from old state
-      newSubModelState[childLayerId] = previousSubModelState[childLayerId];
-      delete previousSubModelState[childLayerId];
+      newSubModelState[childModelId] = previousSubModelState[childModelId];
+      delete previousSubModelState[childModelId];
     }
 
     // TODO: should we be using Promise.all here?
-    newSubModelState[childLayerId] = await initializer(childModel);
+    newSubModelState[childModelId] = await initializer(childModel);
   }
 
   // finalize models that were deleted
@@ -64,11 +57,18 @@ export async function initializeChildModels<T extends BaseModel>(
 async function loadModels(
   widget_manager: IWidgetManager,
   childModelIds: string[],
-): Promise<WidgetModel[]> {
+): Promise<Record<string, WidgetModel>> {
   const promises = childModelIds.map((childModelId) => {
     // We need to slice off the "IPY_MODEL_" prefix to get the actual model ID
     const modelId = childModelId.slice(IPY_MODEL_LENGTH);
     return widget_manager.get_model(modelId);
   });
-  return await Promise.all(promises);
+
+  const models = await Promise.all(promises);
+
+  const returnedModels: Record<string, WidgetModel> = {};
+  for (let i = 0; i < childModelIds.length; i++) {
+    returnedModels[childModelIds[i]] = models[i];
+  }
+  return returnedModels;
 }
