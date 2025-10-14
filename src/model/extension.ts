@@ -6,8 +6,9 @@ import {
   PathStyleExtension as _PathStyleExtension,
 } from "@deck.gl/extensions";
 import type { WidgetModel } from "@jupyter-widgets/base";
-import { BaseModel } from "./base.js";
+
 import type { BaseLayerModel } from "./base-layer.js";
+import { BaseModel } from "./base.js";
 import { isDefined } from "../util.js";
 
 export abstract class BaseExtensionModel extends BaseModel {

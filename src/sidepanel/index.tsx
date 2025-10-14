@@ -1,7 +1,9 @@
-import React from "react";
 import type { GeoArrowPickingInfo } from "@geoarrow/deck.gl-layers";
-import { XMarkIcon } from "../icons";
 import { Button } from "@nextui-org/react";
+import React from "react";
+
+import { XMarkIcon } from "../icons";
+
 
 const rowIndexSymbol = Symbol.for("rowIndex");
 

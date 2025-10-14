@@ -1,7 +1,9 @@
-import React from "react";
-import { createActorContext } from "@xstate/react";
-import { machine } from "./machine";
 import { createBrowserInspector } from "@statelyai/inspect";
+import { createActorContext } from "@xstate/react";
+import React from "react";
+
+import { machine } from "./machine";
+
 
 export const MachineContext = createActorContext(
   machine,

@@ -1,4 +1,4 @@
-import { createRender, useModelState, useModel } from "@anywidget/react";
+import { createRender, useModel, useModelState } from "@anywidget/react";
 import type { Initialize, Render } from "@anywidget/types";
 import { MapViewState, PickingInfo, type Layer } from "@deck.gl/core";
 import { DeckGLRef } from "@deck.gl/react";
@@ -6,7 +6,7 @@ import type { IWidgetManager, WidgetModel } from "@jupyter-widgets/base";
 import { NextUIProvider } from "@nextui-org/react";
 import throttle from "lodash.throttle";
 import * as React from "react";
-import { useEffect, useCallback, useState, useRef } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 import { v4 as uuidv4 } from "uuid";
 
 import { flyTo } from "./actions/fly-to.js";
@@ -24,8 +24,8 @@ import { isDefined, loadChildModels } from "./util.js";
 import { MachineContext, MachineProvider } from "./xstate";
 import * as selectors from "./xstate/selectors";
 
-import "./globals.css";
 import "maplibre-gl/dist/maplibre-gl.css";
+import "./globals.css";
 
 await initParquetWasm();
 
