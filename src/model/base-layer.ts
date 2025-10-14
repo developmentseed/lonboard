@@ -7,11 +7,12 @@ import type {
   PickingInfo,
 } from "@deck.gl/core";
 import type { WidgetModel } from "@jupyter-widgets/base";
-import { isDefined } from "../util.js";
+
+import { BaseModel } from "./base.js";
 import { initializeExtension } from "./extension.js";
 import type { BaseExtensionModel } from "./extension.js";
-import { BaseModel } from "./base.js";
 import { initializeChildModels } from "./initialize.js";
+import { isDefined } from "../util.js";
 
 export abstract class BaseLayerModel extends BaseModel {
   protected pickable: LayerProps["pickable"];
