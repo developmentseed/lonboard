@@ -71,10 +71,10 @@ class MaplibreBasemap(BaseWidget):
             "overlaid",
             "reverse-controlled",
         ] = "reverse-controlled",
-        basemap_style: str | CartoBasemap = CartoBasemap.PositronNoLabels,
+        style: str | CartoBasemap = CartoBasemap.PositronNoLabels,
     ) -> None:
         """Create a MapLibre GL JS basemap."""
-        super().__init__(mode=mode, basemap_style=basemap_style)  # type: ignore
+        super().__init__(mode=mode, style=style)  # type: ignore
 
     mode = t.Enum(
         [
@@ -103,7 +103,7 @@ class MaplibreBasemap(BaseWidget):
     **Default**: `"reverse-controlled"`
     """
 
-    basemap_style = BasemapUrl(CartoBasemap.PositronNoLabels)
+    style = BasemapUrl(CartoBasemap.PositronNoLabels)
     """
     A URL to a MapLibre-compatible basemap style.
 
