@@ -28,9 +28,16 @@ if TYPE_CHECKING:
 
 
 class ArrowSerialization(ABC):
+    """Base class for serializing Arrow Tables and Arrays.
+
+    Ipywidgets does not easily support streaming of data, and the transport can choke on
+    large single buffers. Therefore, we split a table into multiple RecordBatches and
+    serialize them individually. Then we send a list of buffers to the frontend.
+    """
+
     @abstractmethod
     def _serialize_arrow_batch(self, record_batch: RecordBatch) -> bytes:
-        pass
+        """Serialize one Arrow RecordBatch to a buffer."""
 
     def _serialize_arrow_table(
         self,
@@ -53,35 +60,37 @@ class ArrowSerialization(ABC):
         *,
         max_chunksize: int,
     ) -> list[bytes]:
-        """Serialize an Arrow Array or Column to a Parquet file with one column."""
+        """Serialize an Arrow Array or Column as a table with one column named "value"."""
         pyarrow_table = Table.from_pydict({"value": array})
         return self._serialize_arrow_table(pyarrow_table, max_chunksize=max_chunksize)
 
-    def serialize_widget_table(
+    def serialize_table(
         self,
         table: Table,
         obj: BaseArrowLayer,
     ) -> list[bytes]:
+        """Serialize an Arrow Table from a widget."""
         assert isinstance(table, Table), "expected Arrow table"
         return self._serialize_arrow_table(table, max_chunksize=obj._rows_per_chunk)  # noqa: SLF001
 
     @overload
-    def serialize_widget_accessor(
+    def serialize_accessor(
         self,
         data: ChunkedArray,
         obj: BaseArrowLayer,
     ) -> list[bytes]: ...
     @overload
-    def serialize_widget_accessor(
+    def serialize_accessor(
         self,
         data: str | float | list | tuple | bytes,
         obj: BaseArrowLayer,
     ) -> str | int | float | list | tuple | bytes: ...
-    def serialize_widget_accessor(
+    def serialize_accessor(
         self,
         data: str | float | list | tuple | bytes | ChunkedArray,
         obj: BaseArrowLayer,
     ):
+        """Serialize an Arrow Array or Column from a widget."""
         if data is None:
             return None
 
@@ -99,9 +108,9 @@ class ArrowSerialization(ABC):
         timestamps: ChunkedArray,
         obj: TripsLayer,
     ) -> list[bytes]:
-        """Subtract off min timestamp to fit into f32 integer range.
+        """Serialize timestamps for TripsLayer.
 
-        Then cast to float32.
+        Subtract off min timestamp to fit into f32 integer range. Then cast to float32.
         """
         # Note: this has some overlap with `timestamp_max_physical_value` in utils.
         # Cast to int64 type
@@ -128,7 +137,7 @@ class ArrowSerialization(ABC):
             offsetted_chunks.append(list_array(offsets, f32_values))
 
         f32_timestamps_col = ChunkedArray(offsetted_chunks)
-        return serialize_accessor(f32_timestamps_col, obj)
+        return self.serialize_accessor(f32_timestamps_col, obj)
 
 
 def validate_accessor_length_matches_table(
