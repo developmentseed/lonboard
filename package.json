@@ -4,25 +4,27 @@
   },
   "dependencies": {
     "@anywidget/react": "^0.2.0",
-    "@deck.gl/core": "^9.1.14",
-    "@deck.gl/extensions": "^9.1.14",
-    "@deck.gl/layers": "^9.1.14",
-    "@deck.gl/react": "^9.1.14",
-    "@geoarrow/deck.gl-layers": "^0.3.1",
     "@babel/runtime": "^7.28.4",
+    "@deck.gl/core": "^9.2.1",
+    "@deck.gl/extensions": "^9.2.1",
+    "@deck.gl/layers": "^9.2.1",
+    "@deck.gl/mapbox": "^9.2.1",
+    "@deck.gl/react": "^9.2.1",
+    "@geoarrow/deck.gl-layers": "^0.4.0-beta.1",
+    "@geoarrow/geoarrow-js": "^0.3.2",
     "@nextui-org/react": "^2.4.8",
     "@xstate/react": "^6.0.0",
-    "apache-arrow": "^21.0.0",
+    "apache-arrow": "^21.1.0",
     "esbuild-sass-plugin": "^3.3.1",
     "framer-motion": "^12.23.19",
     "lodash.debounce": "^4.0.8",
     "lodash.throttle": "^4.1.1",
-    "maplibre-gl": "^5.0.0",
+    "maplibre-gl": "^5.9.0",
     "memoize-one": "^6.0.0",
-    "parquet-wasm": "0.7.0",
-    "react": "^19.1.1",
-    "react-dom": "^19.1.1",
-    "react-map-gl": "^8.0.0",
+    "parquet-wasm": "0.7.1",
+    "react": "^19.2.0",
+    "react-dom": "^19.2.0",
+    "react-map-gl": "^8.1.0",
     "uuid": "^13.0.0",
     "xstate": "^5.22.0"
   },
@@ -31,6 +33,7 @@
     "@anywidget/types": "^0.2.0",
     "@eslint/js": "^9.36.0",
     "@jupyter-widgets/base": "^6.0.10",
+    "@playwright/test": "^1.55.1",
     "@statelyai/inspect": "^0.4.0",
     "@types/lodash": "^4.17.13",
     "@types/lodash.debounce": "^4.0.9",
@@ -42,6 +45,7 @@
     "esbuild": "^0.25.10",
     "eslint": "^9.36.0",
     "eslint-config-prettier": "^10.1.8",
+    "eslint-plugin-import": "^2.32.0",
     "eslint-plugin-react": "^7.37.2",
     "globals": "^16.4.0",
     "nodemon": "^3.1.7",
@@ -55,6 +59,17 @@
     "vitest": "^2.1.6"
   },
   "overrides": {
+    "@deck.gl/aggregation-layers": "^9.2.1",
+    "@deck.gl/core": "^9.2.1",
+    "@deck.gl/extensions": "^9.2.1",
+    "@deck.gl/geo-layers": "^9.2.1",
+    "@deck.gl/layers": "^9.2.1",
+    "@deck.gl/widgets": "^9.2.1",
+    "@loaders.gl/core": "^4.3.4",
+    "@luma.gl/constants": "^9.2.1",
+    "@luma.gl/core": "^9.2.1",
+    "@luma.gl/engine": "^9.2.1",
+    "@luma.gl/shadertools": "^9.2.1",
     "@types/react-dom": "^19.1.9"
   },
   "scripts": {
@@ -63,10 +78,15 @@
     "prettier:check": "prettier './src/**/*.{ts,tsx,css}' --check",
     "prettier": "prettier './src/**/*.{ts,tsx,css}' --write",
     "lint": "eslint src",
-    "test": "vitest run"
+    "lint-fix": "eslint src --fix",
+    "test": "vitest run",
+    "pretest:e2e": "npm run build",
+    "test:e2e": "playwright test",
+    "test:e2e:ui": "playwright test --ui",
+    "jupyter:test": "uv run --group dev jupyter lab --no-browser --port=8889 --notebook-dir=tests/e2e/fixtures --IdentityProvider.token=''"
   },
   "volta": {
-    "node": "18.18.2",
-    "npm": "10.2.3"
+    "node": "22.20.0",
+    "npm": "11.6.2"
   }
 }

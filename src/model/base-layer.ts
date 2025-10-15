@@ -7,10 +7,12 @@ import type {
   PickingInfo,
 } from "@deck.gl/core";
 import type { WidgetModel } from "@jupyter-widgets/base";
-import { isDefined, loadChildModels } from "../util.js";
+
+import { BaseModel } from "./base.js";
 import { initializeExtension } from "./extension.js";
 import type { BaseExtensionModel } from "./extension.js";
-import { BaseModel } from "./base.js";
+import { initializeChildModels } from "./initialize.js";
+import { isDefined } from "../util.js";
 
 export abstract class BaseLayerModel extends BaseModel {
   protected pickable: LayerProps["pickable"];
@@ -19,7 +21,7 @@ export abstract class BaseLayerModel extends BaseModel {
   protected autoHighlight: LayerProps["autoHighlight"];
   protected highlightColor: LayerProps["highlightColor"];
 
-  protected extensions: BaseExtensionModel[];
+  protected extensions: Record<string, BaseExtensionModel>;
 
   /** Names of additional layer properties that are dynamically added by
    * extensions and should be rendered with layer attributes.
@@ -36,7 +38,7 @@ export abstract class BaseLayerModel extends BaseModel {
     this.initRegularAttribute("highlight_color", "highlightColor");
     this.initRegularAttribute("selected_bounds", "selectedBounds");
 
-    this.extensions = [];
+    this.extensions = {};
   }
 
   async loadSubModels() {
@@ -44,7 +46,7 @@ export abstract class BaseLayerModel extends BaseModel {
   }
 
   extensionInstances(): LayerExtension[] {
-    return this.extensions
+    return Object.values(this.extensions)
       .map((extension) => extension.extensionInstance())
       .filter((extensionInstance) => extensionInstance !== null);
   }
@@ -67,11 +69,10 @@ export abstract class BaseLayerModel extends BaseModel {
     this.model.save_changes();
   }
 
-  baseLayerProps(): LayerProps {
+  baseLayerProps(): Omit<LayerProps, "id"> {
     return {
       extensions: this.extensionInstances(),
       ...this.extensionProps(),
-      id: this.model.model_id,
       pickable: this.pickable,
       visible: this.visible,
       opacity: this.opacity,
@@ -85,42 +86,42 @@ export abstract class BaseLayerModel extends BaseModel {
 
   /**
    * Layer properties for this layer
+   *
+   * Arrow-based layers will pass in a `batchIndex` because a single layer model
+   * will render multiple layers, one for each internal record batch of the
+   * table.
+   *
+   * If the layer is not Arrow-based, `batchIndex` will be undefined.
    */
-  abstract layerProps(): Omit<LayerProps, "id">;
+  abstract layerProps(batchIndex?: number): LayerProps;
 
   /**
-   * Generate a deck.gl layer from this model description.
+   * Generate an array of deck.gl layers from this model description, one for
+   * each internal record batch of the table.
+   *
+   * Most Arrow-based layers will implement this to return multiple layers.
+   * Non-Arrow-based layers will typically return a single layer.
    */
-  abstract render(): Layer;
+  abstract render(): Layer | Layer[];
 
   // NOTE: this is flaky, especially when changing extensions
   // This is the main place where extensions should still be considered
   // experimental
   async initLayerExtensions() {
     const initExtensionsCallback = async () => {
-      const childModelIds = this.model.get("extensions");
-      if (!childModelIds) {
-        this.extensions = [];
-        return;
-      }
+      const extensionModelIds = this.model.get("extensions");
 
-      const childModels = await loadChildModels(
+      const extensionModels = await initializeChildModels<BaseExtensionModel>(
         this.model.widget_manager,
-        childModelIds,
+        extensionModelIds,
+        this.extensions,
+        async (childModel: WidgetModel) =>
+          initializeExtension(childModel, this, this.updateStateCallback),
       );
 
-      const extensions: BaseExtensionModel[] = [];
-      for (const childModel of childModels) {
-        const extension = await initializeExtension(
-          childModel,
-          this,
-          this.updateStateCallback,
-        );
-        extensions.push(extension);
-      }
-
-      this.extensions = extensions;
+      this.extensions = extensionModels;
     };
+
     await initExtensionsCallback();
 
     // Remove all existing change callbacks for this attribute
