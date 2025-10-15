@@ -1,6 +1,6 @@
 import { createRender, useModel, useModelState } from "@anywidget/react";
 import type { Initialize, Render } from "@anywidget/types";
-import { MapViewState, PickingInfo, type Layer } from "@deck.gl/core";
+import { MapViewState, PickingInfo } from "@deck.gl/core";
 import { DeckGLRef } from "@deck.gl/react";
 import type { IWidgetManager, WidgetModel } from "@jupyter-widgets/base";
 import { NextUIProvider } from "@nextui-org/react";
@@ -10,7 +10,11 @@ import { useCallback, useEffect, useRef, useState } from "react";
 import { v4 as uuidv4 } from "uuid";
 
 import { flyTo } from "./actions/fly-to.js";
-import { BaseLayerModel, initializeLayer } from "./model/index.js";
+import {
+  initializeLayer,
+  type BaseLayerModel,
+  initializeChildModels,
+} from "./model/index.js";
 import { initParquetWasm } from "./parquet.js";
 import DeckFirstRenderer from "./renderers/deck-first.js";
 import OverlayRenderer from "./renderers/overlay.js";
@@ -20,7 +24,7 @@ import { useViewStateDebounced } from "./state";
 import Toolbar from "./toolbar.js";
 import { getTooltip } from "./tooltip/index.js";
 import { Message } from "./types.js";
-import { isDefined, loadChildModels } from "./util.js";
+import { isDefined } from "./util.js";
 import { MachineContext, MachineProvider } from "./xstate";
 import * as selectors from "./xstate/selectors";
 
@@ -39,40 +43,6 @@ const DEFAULT_INITIAL_VIEW_STATE = {
 
 const DEFAULT_MAP_STYLE =
   "https://basemaps.cartocdn.com/gl/positron-nolabels-gl-style/style.json";
-
-async function getChildModelState(
-  childModels: WidgetModel[],
-  childLayerIds: string[],
-  previousSubModelState: Record<string, BaseLayerModel>,
-  setStateCounter: React.Dispatch<React.SetStateAction<Date>>,
-): Promise<Record<string, BaseLayerModel>> {
-  const newSubModelState: Record<string, BaseLayerModel> = {};
-  const updateStateCallback = () => setStateCounter(new Date());
-
-  for (let i = 0; i < childLayerIds.length; i++) {
-    const childLayerId = childLayerIds[i];
-    const childModel = childModels[i];
-
-    // If the layer existed previously, copy its model without constructing
-    // a new one
-    if (childLayerId in previousSubModelState) {
-      // pop from old state
-      newSubModelState[childLayerId] = previousSubModelState[childLayerId];
-      delete previousSubModelState[childLayerId];
-      continue;
-    }
-
-    const childLayer = await initializeLayer(childModel, updateStateCallback);
-    newSubModelState[childLayerId] = childLayer;
-  }
-
-  // finalize models that were deleted
-  for (const previousChildModel of Object.values(previousSubModelState)) {
-    previousChildModel.finalize();
-  }
-
-  return newSubModelState;
-}
 
 function App() {
   const actorRef = MachineContext.useActorRef();
@@ -144,7 +114,7 @@ function App() {
   });
 
   const [mapId] = useState(uuidv4());
-  const [subModelState, setSubModelState] = useState<
+  const [layersState, setLayersState] = useState<
     Record<string, BaseLayerModel>
   >({});
 
@@ -153,22 +123,20 @@ function App() {
   // Fake state just to get react to re-render when a model callback is called
   // eslint-disable-next-line @typescript-eslint/no-unused-vars
   const [stateCounter, setStateCounter] = useState<Date>(new Date());
+  const updateStateCallback = () => setStateCounter(new Date());
 
   useEffect(() => {
     const loadAndUpdateLayers = async () => {
       try {
-        const childModels = await loadChildModels(
+        const layerModels = await initializeChildModels<BaseLayerModel>(
           model.widget_manager as IWidgetManager,
           childLayerIds,
+          layersState,
+          async (model: WidgetModel) =>
+            initializeLayer(model, updateStateCallback),
         );
 
-        const newSubModelState = await getChildModelState(
-          childModels,
-          childLayerIds,
-          subModelState,
-          setStateCounter,
-        );
-        setSubModelState(newSubModelState);
+        setLayersState(layerModels);
 
         if (!isDrawingBBoxSelection) {
           // Note: selected_bounds is a property of the **Map**. In the future,
@@ -189,15 +157,9 @@ function App() {
     loadAndUpdateLayers();
   }, [childLayerIds, bboxSelectBounds, isDrawingBBoxSelection]);
 
-  const layers: Layer[] = [];
-  for (const subModel of Object.values(subModelState)) {
-    const newLayers = subModel.render();
-    if (Array.isArray(newLayers)) {
-      layers.push(...newLayers);
-    } else {
-      layers.push(newLayers);
-    }
-  }
+  const layers = Object.values(layersState).flatMap((layerModel) =>
+    layerModel.render(),
+  );
 
   const onMapClickHandler = useCallback((info: PickingInfo) => {
     // We added this flag to prevent the hover event from firing after a
