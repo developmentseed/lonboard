@@ -16,7 +16,7 @@ if TYPE_CHECKING:
 
 
 class CartoStyle(str, Enum):
-    """Maplibre-supported basemap styles provided by Carto.
+    """Maplibre-supported vector basemap styles provided by Carto.
 
     Refer to [Carto
     documentation](https://docs.carto.com/carto-for-developers/carto-for-react/guides/basemaps)
@@ -72,7 +72,7 @@ class CartoStyle(str, Enum):
     "CartoBasemap is deprecated, use CartoStyle instead. Will be removed in v0.14",
 )
 class CartoBasemap(str, Enum):
-    """Maplibre-supported basemap styles provided by Carto.
+    """Maplibre-supported vector basemap styles provided by Carto.
 
     Refer to [Carto
     documentation](https://docs.carto.com/carto-for-developers/carto-for-react/guides/basemaps)
