@@ -28,17 +28,11 @@ const OverlayRenderer: React.FC<MapRendererProps & OverlayRendererProps> = (
   mapProps,
 ) => {
   // Remove maplibre-specific props before passing to DeckGL
-  const {
-    mapStyle,
-    customAttribution,
-    initialViewState,
-    interleaved,
-    ...deckProps
-  } = mapProps;
+  const { mapStyle, customAttribution, initialViewState, ...deckProps } =
+    mapProps;
   return (
     <Map
       reuseMaps
-      interleaved={interleaved}
       initialViewState={initialViewState}
       mapStyle={mapStyle}
       attributionControl={{ customAttribution }}
