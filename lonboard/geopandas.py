@@ -1,6 +1,6 @@
 from __future__ import annotations
 
-from typing import TYPE_CHECKING, Any
+from typing import TYPE_CHECKING
 
 import geopandas as gpd
 import numpy as np
@@ -13,8 +13,10 @@ from lonboard.colormap import apply_categorical_cmap, apply_continuous_cmap
 
 if TYPE_CHECKING:
     from numpy.typing import ArrayLike, NDArray
+    from pandas.core.series import Series
 
     from lonboard.types.layer import (
+        IntFloat,
         PathLayerKwargs,
         PolygonLayerKwargs,
         ScatterplotLayerKwargs,
@@ -69,8 +71,8 @@ class LonboardAccessor:
         | PolygonLayerKwargs
         | None = None,
         map_kwargs: MapKwargs | None = None,
-        classification_kwds: dict[str, Any] | None = None,
-        nan_color: list[int] | NDArray[np.float32] | None = None,
+        classification_kwds: dict[str, str | IntFloat | ArrayLike | bool] | None = None,
+        nan_color: list[int] | NDArray[np.uint8] | None = None,
         color: str | None = None,
         vmin: float | None = None,
         vmax: float | None = None,
@@ -130,7 +132,7 @@ class LonboardAccessor:
             layer_kwargs = {}
         if isinstance(elevation, str):
             if elevation in gdf.columns:
-                elevation = gdf[elevation]
+                elevation: Series = gdf[elevation]
             else:
                 raise ValueError(
                     f"the designated height column {elevation} is not in the dataframe",
@@ -188,11 +190,11 @@ class LonboardAccessor:
                 color_array = _get_categorical_cmap(gdf[column], cmap, nan_color, alpha)
             elif scheme is None:
                 if vmin is None:
-                    vmin: int | float | None = np.nanmin(gdf[column])
+                    vmin: int | float = np.nanmin(gdf[column])
                 if vmax is None:
-                    vmax: int | float | None = np.nanmax(gdf[column])
+                    vmax: int | float = np.nanmax(gdf[column])
                 # minmax scale the column first, matplotlib needs 0-1
-                transformed: NDArray[np.float32] = (gdf[column] - vmin) / (vmax - vmin)
+                transformed = (gdf[column] - vmin) / (vmax - vmin)
                 color_array = apply_continuous_cmap(
                     values=transformed,
                     cmap=colormaps[cmap],
@@ -211,7 +213,7 @@ class LonboardAccessor:
                     ) from e
                 if scheme.replace("_", "") not in _klasses:
                     raise ValueError(
-                        f"the classification scheme must be a valid mapclassify classifier in {_klasses}, but {scheme} was passed instead",
+                        f"The classification scheme must be a valid mapclassify classifier in {_klasses}, but {scheme} was passed instead",
                     )
                 if k is not None and "k" in classification_kwds:
                     # k passed directly takes precedence
@@ -233,7 +235,7 @@ class LonboardAccessor:
                 layer_kwargs["get_fill_color"] = color_array
         if tiles:
             map_kwargs["basemap_style"] = _query_name(tiles)
-        new_m = viz(
+        new_m: Map = viz(
             gdf,
             polygon_kwargs=layer_kwargs,
             scatterplot_kwargs=layer_kwargs,
@@ -247,10 +249,10 @@ class LonboardAccessor:
 
 
 def _get_categorical_cmap(
-    categories: ArrayLike,
+    categories: pd.Series,
     cmap: str,
-    nan_color: str,
-    alpha: float,
+    nan_color: str | NDArray[np.uint8] | NDArray[np.float64] | list[int],
+    alpha: float | None,
 ) -> NDArray[uint8]:
     try:
         from matplotlib import colormaps
