@@ -8,10 +8,11 @@ import type {
 } from "@deck.gl/core";
 import type { WidgetModel } from "@jupyter-widgets/base";
 
-import { isDefined, loadChildModels } from "../util.js";
 import { BaseModel } from "./base.js";
 import { initializeExtension } from "./extension.js";
 import type { BaseExtensionModel } from "./extension.js";
+import { initializeChildModels } from "./initialize.js";
+import { isDefined } from "../util.js";
 
 export abstract class BaseLayerModel extends BaseModel {
   protected pickable: LayerProps["pickable"];
@@ -20,7 +21,7 @@ export abstract class BaseLayerModel extends BaseModel {
   protected autoHighlight: LayerProps["autoHighlight"];
   protected highlightColor: LayerProps["highlightColor"];
 
-  protected extensions: BaseExtensionModel[];
+  protected extensions: Record<string, BaseExtensionModel>;
 
   /** Names of additional layer properties that are dynamically added by
    * extensions and should be rendered with layer attributes.
@@ -37,7 +38,7 @@ export abstract class BaseLayerModel extends BaseModel {
     this.initRegularAttribute("highlight_color", "highlightColor");
     this.initRegularAttribute("selected_bounds", "selectedBounds");
 
-    this.extensions = [];
+    this.extensions = {};
   }
 
   async loadSubModels() {
@@ -45,7 +46,7 @@ export abstract class BaseLayerModel extends BaseModel {
   }
 
   extensionInstances(): LayerExtension[] {
-    return this.extensions
+    return Object.values(this.extensions)
       .map((extension) => extension.extensionInstance())
       .filter((extensionInstance) => extensionInstance !== null);
   }
@@ -108,29 +109,19 @@ export abstract class BaseLayerModel extends BaseModel {
   // experimental
   async initLayerExtensions() {
     const initExtensionsCallback = async () => {
-      const childModelIds = this.model.get("extensions");
-      if (!childModelIds) {
-        this.extensions = [];
-        return;
-      }
+      const extensionModelIds = this.model.get("extensions");
 
-      const childModels = await loadChildModels(
+      const extensionModels = await initializeChildModels<BaseExtensionModel>(
         this.model.widget_manager,
-        childModelIds,
+        extensionModelIds,
+        this.extensions,
+        async (childModel: WidgetModel) =>
+          initializeExtension(childModel, this, this.updateStateCallback),
       );
 
-      const extensions: BaseExtensionModel[] = [];
-      for (const childModel of childModels) {
-        const extension = await initializeExtension(
-          childModel,
-          this,
-          this.updateStateCallback,
-        );
-        extensions.push(extension);
-      }
-
-      this.extensions = extensions;
+      this.extensions = extensionModels;
     };
+
     await initExtensionsCallback();
 
     // Remove all existing change callbacks for this attribute
