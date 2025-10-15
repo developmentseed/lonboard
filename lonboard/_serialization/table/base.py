@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 from abc import ABC, abstractmethod
+from concurrent.futures import ThreadPoolExecutor
 from typing import TYPE_CHECKING, overload
 
 import arro3.compute as ac
@@ -37,16 +38,14 @@ class ArrowSerialization(ABC):
         *,
         max_chunksize: int,
     ) -> list[bytes]:
-        buffers: list[bytes] = []
         assert max_chunksize > 0
 
-        for record_batch in table.rechunk(max_chunksize=max_chunksize).to_batches():
-            if record_batch.num_rows == 0:
-                raise ValueError("Batch with 0 rows.")
+        batches = table.rechunk(max_chunksize=max_chunksize).to_batches()
+        if any(batch.num_rows == 0 for batch in batches):
+            raise ValueError("Batch with 0 rows.")
 
-            buffers.append(self._serialize_arrow_batch(record_batch))
-
-        return buffers
+        with ThreadPoolExecutor() as executor:
+            return list(executor.map(self._serialize_arrow_batch, batches))
 
     def _serialize_arrow_column(
         self,
