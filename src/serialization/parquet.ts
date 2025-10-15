@@ -26,6 +26,9 @@ export async function initParquetWasm() {
   return;
 }
 
+// For now, simplest to just ensure this is called at least once on module load
+await initParquetWasm();
+
 export function isParquetBuffer(dataView: DataView): boolean {
   if (dataView.byteLength < PARQUET_MAGIC.length) {
     return false;
@@ -42,17 +45,8 @@ export function isParquetBuffer(dataView: DataView): boolean {
 
 /**
  * Parse a Parquet buffer to an Arrow JS table
- *
- * It's most convenient for this to be a sync function, so we assume we've
- * called `initParquetWasm()` elsewhere
  */
 export function parseParquet(dataView: DataView): arrow.Table {
-  if (!WASM_READY) {
-    throw new Error(
-      "parquet-wasm not initialized, initParquetWasm() should have been called first",
-    );
-  }
-
   console.time("readParquet");
 
   // TODO: use arrow-js-ffi for more memory-efficient wasm --> js transfer?

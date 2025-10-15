@@ -27,8 +27,8 @@ import type {
 import type { WidgetModel } from "@jupyter-widgets/base";
 import * as arrow from "apache-arrow";
 
-import { parseParquetBuffers } from "../parquet.js";
 import { BaseLayerModel } from "./base-layer.js";
+import { deserializeArrowTable } from "../serialization/index.js";
 import { isDefined } from "../util.js";
 import {
   PointVector,
@@ -64,13 +64,13 @@ export abstract class BaseArrowLayerModel extends BaseLayerModel {
    * @param   {string}  pythonName  Name of attribute on Python model (usually snake-cased)
    */
   initTable(pythonName: string) {
-    this.table = parseParquetBuffers(this.model.get(pythonName));
+    this.table = deserializeArrowTable(this.model.get(pythonName));
 
     // Remove all existing change callbacks for this attribute
     this.model.off(`change:${pythonName}`);
 
     const callback = () => {
-      this.table = parseParquetBuffers(this.model.get(pythonName));
+      this.table = deserializeArrowTable(this.model.get(pythonName));
     };
     this.model.on(`change:${pythonName}`, callback);
 

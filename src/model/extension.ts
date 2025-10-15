@@ -258,6 +258,5 @@ export async function initializeExtension(
       throw new Error(`no known model for extension type ${extensionType}`);
   }
 
-  await extensionModel.loadSubModels();
   return extensionModel;
 }
