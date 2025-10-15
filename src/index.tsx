@@ -76,7 +76,7 @@ function App() {
 
   const model = useModel();
 
-  const [basemapModelId] = useModelState<string>("basemap");
+  const [basemapModelId] = useModelState<string | null>("basemap");
   const [mapHeight] = useModelState<string>("height");
   const [showTooltip] = useModelState<boolean>("show_tooltip");
   const [showSidePanel] = useModelState<boolean>("show_side_panel");
@@ -130,6 +130,11 @@ function App() {
   useEffect(() => {
     const loadBasemap = async () => {
       try {
+        if (!basemapModelId) {
+          setBasemapState(null);
+          return;
+        }
+
         const basemapModel = await loadModel(
           model.widget_manager as IWidgetManager,
           basemapModelId,
