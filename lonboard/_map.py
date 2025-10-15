@@ -1,6 +1,5 @@
 from __future__ import annotations
 
-from io import StringIO
 from pathlib import Path
 from typing import IO, TYPE_CHECKING, Any, TextIO, overload
 
@@ -8,9 +7,9 @@ import ipywidgets
 import traitlets
 import traitlets as t
 from ipywidgets import CallbackDispatcher
-from ipywidgets.embed import dependency_state, embed_minimal_html
 
 from lonboard._base import BaseAnyWidget
+from lonboard._html_export import map_to_html
 from lonboard._layer import BaseLayer
 from lonboard._viewport import compute_view
 from lonboard.basemap import CartoBasemap
@@ -38,25 +37,6 @@ if TYPE_CHECKING:
 
 # bundler yields lonboard/static/{index.js,styles.css}
 bundler_output_dir = Path(__file__).parent / "static"
-
-# HTML template to override exported map as 100% height
-_HTML_TEMPLATE = """<!DOCTYPE html>
-<html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <title>{title}</title>
-</head>
-<style>
-    html {{ height: 100%; }}
-    body {{ height: 100%; overflow: hidden;}}
-    .widget-subarea {{ height: 100%; }}
-    .jupyter-widgets-disconnected {{ height: 100%; }}
-</style>
-<body>
-{snippet}
-</body>
-</html>
-"""
 
 
 class Map(BaseAnyWidget):
@@ -115,7 +95,9 @@ class Map(BaseAnyWidget):
             buffers: list[bytes],  # noqa: ARG001
         ) -> None:
             if msg.get("kind") == "on-click":
-                self._click_handlers(tuple(msg.get("coordinate")))
+                coord = msg.get("coordinate")
+                if coord is not None:
+                    self._click_handlers(tuple(coord))
 
         super().__init__(layers=layers, **kwargs)
         self._click_handlers = CallbackDispatcher()
@@ -567,34 +549,7 @@ class Map(BaseAnyWidget):
             If `filename` is not passed, returns the HTML content as a `str`.
 
         """
-
-        def inner(fp: str | Path | TextIO | IO[str]) -> None:
-            original_height = self.height
-            try:
-                with self.hold_trait_notifications():
-                    self.height = "100%"
-                    embed_minimal_html(
-                        fp,
-                        views=[self],
-                        title=title or "Lonboard export",
-                        template=_HTML_TEMPLATE,
-                        drop_defaults=False,
-                        # Necessary to pass the state of _this_ specific map. Otherwise, the
-                        # state of all known widgets will be included, ballooning the file size.
-                        state=dependency_state((self), drop_defaults=False),
-                    )
-            finally:
-                # If the map had a height before the HTML was generated, reset it.
-                self.height = original_height
-
-        if filename is None:
-            with StringIO() as sio:
-                inner(sio)
-                return sio.getvalue()
-
-        else:
-            inner(filename)
-            return None
+        return map_to_html(self, filename=filename, title=title)
 
     def as_html(self) -> HTML:
         """Render the current map as a static HTML file in IPython.
