@@ -179,8 +179,6 @@ class Map(BaseAnyWidget):
     Indicates if a click handler has been registered.
     """
 
-    render_mode = t.Unicode(default_value="deck-first").tag(sync=True)
-
     height = HeightTrait().tag(sync=True)
     """Height of the map in pixels, or valid CSS height property.
 
@@ -242,7 +240,7 @@ class Map(BaseAnyWidget):
         )
 
         if self.basemap is not None:
-            return self.basemap.basemap_style
+            return self.basemap.style
 
         return None
 
@@ -253,7 +251,7 @@ class Map(BaseAnyWidget):
             DeprecationWarning,
             stacklevel=2,
         )
-        self.basemap = MaplibreBasemap(basemap_style=value)
+        self.basemap = MaplibreBasemap(style=value)
 
     custom_attribution = t.Union(
         [
