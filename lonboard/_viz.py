@@ -26,7 +26,7 @@ from lonboard._utils import (
     split_mixed_gdf,
     split_mixed_shapely_array,
 )
-from lonboard.basemap import CartoBasemap
+from lonboard.basemap import CartoStyle, MaplibreBasemap
 
 if TYPE_CHECKING:
     import duckdb
@@ -212,8 +212,8 @@ def viz(
 
     map_kwargs = map_kwargs if map_kwargs else {}
 
-    if "basemap_style" not in map_kwargs:
-        map_kwargs["basemap_style"] = CartoBasemap.DarkMatter
+    if "basemap_style" not in map_kwargs and "basemap" not in map_kwargs:
+        map_kwargs["basemap"] = MaplibreBasemap(style=CartoStyle.DarkMatter)
 
     return Map(layers=layers, **map_kwargs)
 

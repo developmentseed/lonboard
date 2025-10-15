@@ -1,3 +1,3 @@
 # lonboard.basemap
 
-::: lonboard.basemap.CartoBasemap
+::: lonboard.basemap.CartoStyle
