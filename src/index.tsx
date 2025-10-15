@@ -1,30 +1,35 @@
-import * as React from "react";
-import { useEffect, useCallback, useState, useRef } from "react";
-import { createRender, useModelState, useModel } from "@anywidget/react";
+import { createRender, useModel, useModelState } from "@anywidget/react";
 import type { Initialize, Render } from "@anywidget/types";
-import Map from "react-map-gl/maplibre";
-import DeckGL from "@deck.gl/react";
-import { MapViewState, PickingInfo, type Layer } from "@deck.gl/core";
-import { BaseLayerModel, initializeLayer } from "./model/index.js";
-import type { WidgetModel } from "@jupyter-widgets/base";
-import { initParquetWasm } from "./parquet.js";
-import { isDefined, loadChildModels } from "./util.js";
+import { MapViewState, PickingInfo } from "@deck.gl/core";
+import { DeckGLRef } from "@deck.gl/react";
+import type { IWidgetManager, WidgetModel } from "@jupyter-widgets/base";
+import { NextUIProvider } from "@nextui-org/react";
+import throttle from "lodash.throttle";
+import * as React from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 import { v4 as uuidv4 } from "uuid";
-import { Message } from "./types.js";
-import { flyTo } from "./actions/fly-to.js";
-import { useViewStateDebounced } from "./state";
 
+import { flyTo } from "./actions/fly-to.js";
+import {
+  initializeLayer,
+  type BaseLayerModel,
+  initializeChildModels,
+} from "./model/index.js";
+import { initParquetWasm } from "./parquet.js";
+import DeckFirstRenderer from "./renderers/deck-first.js";
+import OverlayRenderer from "./renderers/overlay.js";
+import { MapRendererProps } from "./renderers/types.js";
+import SidePanel from "./sidepanel/index";
+import { useViewStateDebounced } from "./state";
+import Toolbar from "./toolbar.js";
+import { getTooltip } from "./tooltip/index.js";
+import { Message } from "./types.js";
+import { isDefined } from "./util.js";
 import { MachineContext, MachineProvider } from "./xstate";
 import * as selectors from "./xstate/selectors";
 
-import "./globals.css";
 import "maplibre-gl/dist/maplibre-gl.css";
-import { NextUIProvider } from "@nextui-org/react";
-import Toolbar from "./toolbar.js";
-import throttle from "lodash.throttle";
-import SidePanel from "./sidepanel/index";
-import { getTooltip } from "./tooltip/index.js";
-import { DeckGLRef } from "@deck.gl/react";
+import "./globals.css";
 
 await initParquetWasm();
 
@@ -38,40 +43,6 @@ const DEFAULT_INITIAL_VIEW_STATE = {
 
 const DEFAULT_MAP_STYLE =
   "https://basemaps.cartocdn.com/gl/positron-nolabels-gl-style/style.json";
-
-async function getChildModelState(
-  childModels: WidgetModel[],
-  childLayerIds: string[],
-  previousSubModelState: Record<string, BaseLayerModel>,
-  setStateCounter: React.Dispatch<React.SetStateAction<Date>>,
-): Promise<Record<string, BaseLayerModel>> {
-  const newSubModelState: Record<string, BaseLayerModel> = {};
-  const updateStateCallback = () => setStateCounter(new Date());
-
-  for (let i = 0; i < childLayerIds.length; i++) {
-    const childLayerId = childLayerIds[i];
-    const childModel = childModels[i];
-
-    // If the layer existed previously, copy its model without constructing
-    // a new one
-    if (childLayerId in previousSubModelState) {
-      // pop from old state
-      newSubModelState[childLayerId] = previousSubModelState[childLayerId];
-      delete previousSubModelState[childLayerId];
-      continue;
-    }
-
-    const childLayer = await initializeLayer(childModel, updateStateCallback);
-    newSubModelState[childLayerId] = childLayer;
-  }
-
-  // finalize models that were deleted
-  for (const previousChildModel of Object.values(previousSubModelState)) {
-    previousChildModel.finalize();
-  }
-
-  return newSubModelState;
-}
 
 function App() {
   const actorRef = MachineContext.useActorRef();
@@ -116,6 +87,7 @@ function App() {
   );
   const [parameters] = useModelState<object>("parameters");
   const [customAttribution] = useModelState<string>("custom_attribution");
+  const [renderMode] = useModelState<string>("render_mode");
 
   // initialViewState is the value of view_state on the Python side. This is
   // called `initial` here because it gets passed in to deck's
@@ -142,7 +114,7 @@ function App() {
   });
 
   const [mapId] = useState(uuidv4());
-  const [subModelState, setSubModelState] = useState<
+  const [layersState, setLayersState] = useState<
     Record<string, BaseLayerModel>
   >({});
 
@@ -151,22 +123,20 @@ function App() {
   // Fake state just to get react to re-render when a model callback is called
   // eslint-disable-next-line @typescript-eslint/no-unused-vars
   const [stateCounter, setStateCounter] = useState<Date>(new Date());
+  const updateStateCallback = () => setStateCounter(new Date());
 
   useEffect(() => {
     const loadAndUpdateLayers = async () => {
       try {
-        const childModels = await loadChildModels(
-          model.widget_manager,
+        const layerModels = await initializeChildModels<BaseLayerModel>(
+          model.widget_manager as IWidgetManager,
           childLayerIds,
+          layersState,
+          async (model: WidgetModel) =>
+            initializeLayer(model, updateStateCallback),
         );
 
-        const newSubModelState = await getChildModelState(
-          childModels,
-          childLayerIds,
-          subModelState,
-          setStateCounter,
-        );
-        setSubModelState(newSubModelState);
+        setLayersState(layerModels);
 
         if (!isDrawingBBoxSelection) {
           // Note: selected_bounds is a property of the **Map**. In the future,
@@ -187,15 +157,9 @@ function App() {
     loadAndUpdateLayers();
   }, [childLayerIds, bboxSelectBounds, isDrawingBBoxSelection]);
 
-  const layers: Layer[] = [];
-  for (const subModel of Object.values(subModelState)) {
-    const newLayers = subModel.render();
-    if (Array.isArray(newLayers)) {
-      layers.push(...newLayers);
-    } else {
-      layers.push(newLayers);
-    }
-  }
+  const layers = Object.values(layersState).flatMap((layerModel) =>
+    layerModel.render(),
+  );
 
   const onMapClickHandler = useCallback((info: PickingInfo) => {
     // We added this flag to prevent the hover event from firing after a
@@ -229,6 +193,45 @@ function App() {
     [isOnMapHoverEventEnabled, justClicked],
   );
 
+  const mapRenderProps: MapRendererProps = {
+    mapStyle: mapStyle || DEFAULT_MAP_STYLE,
+    customAttribution,
+    deckRef,
+    initialViewState: ["longitude", "latitude", "zoom"].every((key) =>
+      Object.keys(initialViewState).includes(key),
+    )
+      ? initialViewState
+      : DEFAULT_INITIAL_VIEW_STATE,
+    layers: bboxSelectPolygonLayer
+      ? layers.concat(bboxSelectPolygonLayer)
+      : layers,
+    getTooltip: (showTooltip && getTooltip) || undefined,
+    getCursor: () => (isDrawingBBoxSelection ? "crosshair" : "grab"),
+    pickingRadius: pickingRadius,
+    onClick: onMapClickHandler,
+    onHover: onMapHoverHandler,
+    // @ts-expect-error useDevicePixels should allow number
+    // https://github.com/visgl/deck.gl/pull/9826
+    useDevicePixels: isDefined(useDevicePixels) ? useDevicePixels : true,
+    onViewStateChange: (event) => {
+      const { viewState } = event;
+
+      // This condition is necessary to confirm that the viewState is
+      // of type MapViewState.
+      if ("latitude" in viewState) {
+        const { longitude, latitude, zoom, pitch, bearing } = viewState;
+        setViewState({
+          longitude,
+          latitude,
+          zoom,
+          pitch,
+          bearing,
+        });
+      }
+    },
+    parameters: parameters || {},
+  };
+
   return (
     <div
       className="lonboard"
@@ -252,58 +255,11 @@ function App() {
           />
         )}
         <div className="bg-red-800 h-full w-full relative">
-          <DeckGL
-            ref={deckRef}
-            style={{ width: "100%", height: "100%" }}
-            initialViewState={
-              ["longitude", "latitude", "zoom"].every((key) =>
-                Object.keys(initialViewState).includes(key),
-              )
-                ? initialViewState
-                : DEFAULT_INITIAL_VIEW_STATE
-            }
-            controller={true}
-            layers={
-              bboxSelectPolygonLayer
-                ? layers.concat(bboxSelectPolygonLayer)
-                : layers
-            }
-            getTooltip={(showTooltip && getTooltip) || undefined}
-            getCursor={() => (isDrawingBBoxSelection ? "crosshair" : "grab")}
-            pickingRadius={pickingRadius}
-            onClick={onMapClickHandler}
-            onHover={onMapHoverHandler}
-            useDevicePixels={
-              isDefined(useDevicePixels) ? useDevicePixels : true
-            }
-            // https://deck.gl/docs/api-reference/core/deck#_typedarraymanagerprops
-            _typedArrayManagerProps={{
-              overAlloc: 1,
-              poolSize: 0,
-            }}
-            onViewStateChange={(event) => {
-              const { viewState } = event;
-
-              // This condition is necessary to confirm that the viewState is
-              // of type MapViewState.
-              if ("latitude" in viewState) {
-                const { longitude, latitude, zoom, pitch, bearing } = viewState;
-                setViewState({
-                  longitude,
-                  latitude,
-                  zoom,
-                  pitch,
-                  bearing,
-                });
-              }
-            }}
-            parameters={parameters || {}}
-          >
-            <Map
-              mapStyle={mapStyle || DEFAULT_MAP_STYLE}
-              customAttribution={customAttribution}
-            ></Map>
-          </DeckGL>
+          {renderMode === "overlay" ? (
+            <OverlayRenderer {...mapRenderProps} />
+          ) : (
+            <DeckFirstRenderer {...mapRenderProps} />
+          )}
         </div>
       </div>
     </div>

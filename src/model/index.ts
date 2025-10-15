@@ -13,3 +13,4 @@ export {
   PathStyleExtension,
   initializeExtension,
 } from "./extension.js";
+export { initializeChildModels } from "./initialize.js";

@@ -1,3 +1,4 @@
+.vscode
 *.mov
 .mypy_cache
 *.html
