@@ -1,5 +1,6 @@
 import * as arrow from "apache-arrow";
 import _initParquetWasm, { readParquet } from "parquet-wasm";
+import {} from "parquet-wasm";
 
 // NOTE: this version must be synced exactly with the parquet-wasm version in
 // use.
@@ -7,21 +8,49 @@ const PARQUET_WASM_VERSION = "0.7.1";
 const PARQUET_WASM_CDN_URL = `https://cdn.jsdelivr.net/npm/parquet-wasm@${PARQUET_WASM_VERSION}/esm/parquet_wasm_bg.wasm`;
 let WASM_READY: boolean = false;
 
+// We initiate the fetch immediately (but don't await it) so that it can be
+// downloaded in the background on app start
+const PARQUET_WASM_FETCH = fetch(PARQUET_WASM_CDN_URL);
+
+const PARQUET_MAGIC = new TextEncoder().encode("PAR1");
+
+/** Initialize the parquet-wasm WASM buffer */
 export async function initParquetWasm() {
   if (WASM_READY) {
     return;
   }
 
-  await _initParquetWasm(PARQUET_WASM_CDN_URL);
+  const wasm_buffer = await PARQUET_WASM_FETCH;
+  await _initParquetWasm(wasm_buffer);
   WASM_READY = true;
+  return;
+}
+
+export function isParquetBuffer(dataView: DataView): boolean {
+  if (dataView.byteLength < PARQUET_MAGIC.length) {
+    return false;
+  }
+
+  for (let i = 0; i < PARQUET_MAGIC.length; i++) {
+    if (dataView.getUint8(i) !== PARQUET_MAGIC[i]) {
+      return false;
+    }
+  }
+
+  return true;
 }
 
 /**
  * Parse a Parquet buffer to an Arrow JS table
+ *
+ * It's most convenient for this to be a sync function, so we assume we've
+ * called `initParquetWasm()` elsewhere
  */
 export function parseParquet(dataView: DataView): arrow.Table {
   if (!WASM_READY) {
-    throw new Error("wasm not ready");
+    throw new Error(
+      "parquet-wasm not initialized, initParquetWasm() should have been called first",
+    );
   }
 
   console.time("readParquet");
@@ -35,25 +64,4 @@ export function parseParquet(dataView: DataView): arrow.Table {
   console.timeEnd("readParquet");
 
   return arrowTable;
-}
-
-/**
- * Parse a list of buffers containing Parquet chunks into an Arrow JS table
- *
- * Each buffer in the list is expected to be a fully self-contained Parquet file
- * that can parse on its own and consists of one arrow Record Batch
- *
- * @var {[type]}
- */
-export function parseParquetBuffers(dataViews: DataView[]): arrow.Table {
-  const batches: arrow.RecordBatch[] = [];
-  for (const chunkBuffer of dataViews) {
-    const table = parseParquet(chunkBuffer);
-    if (table.batches.length !== 1) {
-      console.warn("Expected one batch");
-    }
-    batches.push(...table.batches);
-  }
-
-  return new arrow.Table(batches);
 }

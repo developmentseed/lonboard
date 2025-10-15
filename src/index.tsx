@@ -15,7 +15,6 @@ import {
   type BaseLayerModel,
   initializeChildModels,
 } from "./model/index.js";
-import { initParquetWasm } from "./parquet.js";
 import DeckFirstRenderer from "./renderers/deck-first.js";
 import OverlayRenderer from "./renderers/overlay.js";
 import { MapRendererProps } from "./renderers/types.js";
@@ -30,8 +29,6 @@ import * as selectors from "./xstate/selectors";
 
 import "maplibre-gl/dist/maplibre-gl.css";
 import "./globals.css";
-
-await initParquetWasm();
 
 const DEFAULT_INITIAL_VIEW_STATE = {
   latitude: 10,
