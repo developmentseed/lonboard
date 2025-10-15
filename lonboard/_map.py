@@ -219,7 +219,10 @@ class Map(BaseAnyWidget):
     - Default: `5`
     """
 
-    basemap = t.Instance(MaplibreBasemap).tag(
+    basemap: t.Instance[MaplibreBasemap | None] = t.Instance(
+        MaplibreBasemap,
+        allow_none=True,
+    ).tag(
         sync=True,
         **ipywidgets.widget_serialization,
     )
