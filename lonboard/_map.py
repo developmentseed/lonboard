@@ -102,7 +102,7 @@ class Map(BaseAnyWidget):
                 raise ValueError(
                     "Cannot pass both `basemap_style` and `basemap`. Use only `basemap`.",
                 )
-            kwargs["basemap"] = MaplibreBasemap(basemap_style=basemap_style)
+            kwargs["basemap"] = MaplibreBasemap(style=basemap_style)
 
         if isinstance(layers, BaseLayer):
             layers = [layers]
