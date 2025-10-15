@@ -103,7 +103,7 @@ class ArrowSerialization(ABC):
         validate_accessor_length_matches_table(data, obj.table)
         return self._serialize_arrow_column(data, max_chunksize=obj._rows_per_chunk)  # noqa: SLF001
 
-    def serialize_widget_timestamps(
+    def serialize_timestamps(
         self,
         timestamps: ChunkedArray,
         obj: TripsLayer,
