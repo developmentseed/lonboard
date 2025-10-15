@@ -95,7 +95,9 @@ class Map(BaseAnyWidget):
             buffers: list[bytes],  # noqa: ARG001
         ) -> None:
             if msg.get("kind") == "on-click":
-                self._click_handlers(tuple(msg.get("coordinate")))
+                coord = msg.get("coordinate")
+                if coord is not None:
+                    self._click_handlers(tuple(coord))
 
         super().__init__(layers=layers, **kwargs)
         self._click_handlers = CallbackDispatcher()
