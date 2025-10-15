@@ -1,12 +1,17 @@
 """Basemap helpers."""
 
+from __future__ import annotations
+
 from enum import Enum
-from typing import Literal
+from typing import TYPE_CHECKING
 
 import traitlets as t
 
 from lonboard._base import BaseWidget
 from lonboard.traits import BasemapUrl
+
+if TYPE_CHECKING:
+    from typing import Literal
 
 
 class CartoBasemap(str, Enum):
@@ -74,7 +79,7 @@ class MaplibreBasemap(BaseWidget):
         style: str | CartoBasemap = CartoBasemap.PositronNoLabels,
     ) -> None:
         """Create a MapLibre GL JS basemap."""
-        super().__init__(mode=mode, style=style)  # type: ignore
+        super().__init__(mode=mode, style=style)
 
     mode = t.Enum(
         [
