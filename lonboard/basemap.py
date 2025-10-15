@@ -1,6 +1,12 @@
 """Basemap helpers."""
 
 from enum import Enum
+from typing import Literal
+
+import traitlets as t
+
+from lonboard._base import BaseWidget
+from lonboard.traits import BasemapUrl
 
 
 class CartoBasemap(str, Enum):
@@ -20,7 +26,10 @@ class CartoBasemap(str, Enum):
     DarkMatterNoLabels = (
         "https://basemaps.cartocdn.com/gl/dark-matter-nolabels-gl-style/style.json"
     )
-    """A dark map style without labels."""
+    """A dark map style without labels.
+
+    ![](https://carto.com/help/images/building-maps/basemaps/dark_no_labels.png)
+    """
 
     Positron = "https://basemaps.cartocdn.com/gl/positron-gl-style/style.json"
     """A light map style with labels.
@@ -31,7 +40,10 @@ class CartoBasemap(str, Enum):
     PositronNoLabels = (
         "https://basemaps.cartocdn.com/gl/positron-nolabels-gl-style/style.json"
     )
-    """A light map style without labels."""
+    """A light map style without labels.
+
+    ![](https://carto.com/help/images/building-maps/basemaps/positron_no_labels.png)
+    """
 
     Voyager = "https://basemaps.cartocdn.com/gl/voyager-gl-style/style.json"
     """A light, colored map style with labels.
@@ -42,4 +54,62 @@ class CartoBasemap(str, Enum):
     VoyagerNoLabels = (
         "https://basemaps.cartocdn.com/gl/voyager-nolabels-gl-style/style.json"
     )
-    """A light, colored map style without labels."""
+    """A light, colored map style without labels.
+
+    ![](https://carto.com/help/images/building-maps/basemaps/voyager_no_labels.png)
+    """
+
+
+class MaplibreBasemap(BaseWidget):
+    """A MapLibre GL JS basemap."""
+
+    def __init__(
+        self,
+        *,
+        mode: Literal[
+            "interleaved",
+            "overlaid",
+            "reverse-controlled",
+        ] = "reverse-controlled",
+        basemap_style: str | CartoBasemap = CartoBasemap.PositronNoLabels,
+    ) -> None:
+        """Create a MapLibre GL JS basemap."""
+        super().__init__(mode=mode, basemap_style=basemap_style)  # type: ignore
+
+    mode = t.Enum(
+        [
+            "interleaved",
+            "overlaid",
+            "reverse-controlled",
+        ],
+        default_value="reverse-controlled",
+    )
+    """The basemap integration mode.
+
+    - **`"interleaved"`**:
+
+        The interleaved mode renders deck.gl layers into the same context created by MapLibre. If you need to mix deck.gl layers with MapLibre layers, e.g. having deck.gl surfaces below text labels, or objects occluding each other correctly in 3D, then you have to use this option.
+
+    - **`"overlaid"`**:
+
+        The overlaid mode renders deck.gl in a separate canvas inside the MapLibre's controls container. If your use case does not require interleaving, but you still want to use certain features of maplibre-gl, such as globe view, then you should use this option.
+
+    - **`"reverse-controlled"`**:
+
+        The reverse-controlled mode renders deck.gl above the MapLibre container and blocks any interaction to the base map.
+
+        If you need to have multiple views, you should use this option.
+
+    **Default**: `"reverse-controlled"`
+    """
+
+    basemap_style = BasemapUrl(CartoBasemap.PositronNoLabels)
+    """
+    A URL to a MapLibre-compatible basemap style.
+
+    Various styles are provided in [`lonboard.basemap`](https://developmentseed.org/lonboard/latest/api/basemap/).
+
+    - Type: `str`, holding a URL hosting a basemap style.
+    - Default
+      [`lonboard.basemap.CartoBasemap.PositronNoLabels`][lonboard.basemap.CartoBasemap.PositronNoLabels]
+    """
