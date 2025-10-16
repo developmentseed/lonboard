@@ -19,7 +19,7 @@ from arro3.core import (
 )
 
 from lonboard._constants import MAX_INTEGER_FLOAT32, MIN_INTEGER_FLOAT32
-from lonboard._serialization import TIMESTAMP_ACCESSOR_SERIALIZATION
+from lonboard._serialization import TIMESTAMP_SERIALIZATION
 from lonboard._utils import get_geometry_column_index
 from lonboard.traits import FixedErrorTraitType
 
@@ -56,7 +56,7 @@ class TimestampAccessor(FixedErrorTraitType):
         **kwargs: Any,
     ) -> None:
         super().__init__(*args, **kwargs)
-        self.tag(sync=True, **TIMESTAMP_ACCESSOR_SERIALIZATION)
+        self.tag(sync=True, **TIMESTAMP_SERIALIZATION)
 
     def _reduce_precision(
         self,

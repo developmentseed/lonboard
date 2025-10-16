@@ -16,11 +16,6 @@ export abstract class BaseModel {
     this.callbacks = new Map();
     this.callbacks.set("change", updateStateCallback);
   }
-
-  async loadSubModels() {
-    return;
-  }
-
   /**
    * Initialize an attribute that does not need any transformation from its
    * serialized representation to its deck.gl representation.
