@@ -293,7 +293,7 @@ function App() {
             onClose={() => actorRef.send({ type: "Close side panel" })}
           />
         )}
-        <div className="bg-red-800 h-full w-full relative">
+        <div className="bg-transparent h-full w-full relative">
           {basemapState?.mode === "overlaid" ||
           basemapState?.mode === "interleaved" ? (
             <OverlayRenderer {...mapRenderProps} {...overlayRenderProps} />
