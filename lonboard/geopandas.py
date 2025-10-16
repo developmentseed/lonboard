@@ -70,6 +70,7 @@ class LonboardAccessor:
         k: int | None = 5,
         vmin: float | None = None,
         vmax: float | None = None,
+        height: int | str = 500,
         classification_kwds: dict[str, str | IntFloat | ArrayLike | bool] | None = None,
         layer_kwargs: ScatterplotLayerKwargs
         | PathLayerKwargs
@@ -101,6 +102,7 @@ class LonboardAccessor:
             k : Number of classes to generate. Defaults to 5.
             vmin : Minimum value for color mapping.
             vmax : Maximum value for color mapping.
+            height: Height of the map in pixels, or valid CSS height property.
             classification_kwds : Additional keyword arguments passed to
                 `mapclassify.classify`.
             layer_kwargs : Additional keyword arguments passed to lonboard.viz layer
@@ -215,6 +217,7 @@ class LonboardAccessor:
             map_kwargs["basemap_style"] = _query_name(tiles)
         if attr:
             map_kwargs["custom_attribution"] = attr
+        map_kwargs["height"] = height
 
         layer_kwargs["auto_highlight"] = highlight
         map_kwargs["show_tooltip"] = tooltip
