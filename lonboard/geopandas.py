@@ -13,7 +13,6 @@ from lonboard.colormap import apply_categorical_cmap, apply_continuous_cmap
 
 if TYPE_CHECKING:
     from numpy.typing import ArrayLike, NDArray
-    from pandas.core.series import Series
 
     from lonboard.types.layer import (
         IntFloat,
@@ -57,65 +56,60 @@ class LonboardAccessor:
 
     def explore(  # noqa: C901, PLR0912, PLR0913, PLR0915
         self,
-        *,
         column: str | None = None,
+        *,
         cmap: str | None = None,
-        scheme: str | None = None,
-        k: int | None = 6,
+        color: str | None = None,
+        m: Map | None = None,
+        tiles: str | None = None,
+        tooltip: bool = False,
+        highlight: bool = False,
         categorical: bool = False,
-        elevation: str | ArrayLike | None = None,
-        elevation_scale: float | None = 1,
-        alpha: float | None = 1,
+        scheme: str | None = None,
+        k: int | None = 5,
+        vmin: float | None = None,
+        vmax: float | None = None,
+        classification_kwds: dict[str, str | IntFloat | ArrayLike | bool] | None = None,
         layer_kwargs: ScatterplotLayerKwargs
         | PathLayerKwargs
         | PolygonLayerKwargs
         | None = None,
         map_kwargs: MapKwargs | None = None,
-        classification_kwds: dict[str, str | IntFloat | ArrayLike | bool] | None = None,
         nan_color: list[int] | NDArray[np.uint8] | None = None,
-        color: str | None = None,
-        vmin: float | None = None,
-        vmax: float | None = None,
-        wireframe: bool = False,
-        tiles: str | None = None,
-        highlight: bool = False,
-        m: Map | None = None,
+        alpha: float | None = 1,
     ) -> Map:
         """Explore a dataframe using lonboard and deckgl.
 
         Keyword Args:
             column : Name of column on dataframe to visualize on map.
             cmap : Name of matplotlib colormap to use.
-            scheme : Name of a classification scheme defined by mapclassify.Classifier.
-            k : Number of classes to generate. Defaults to 6.
-            categorical : Whether the data should be treated as categorical or
-                continuous.
-            elevation : Name of column on the dataframe used to extrude each geometry or
-                an array-like in the same order as observations. Defaults to None.
-            elevation_scale : Constant scaler multiplied by elevation value.
-            alpha : Alpha (opacity) parameter in the range (0,1) passed to
-                mapclassify.util.get_color_array.
-            layer_kwargs : Additional keyword arguments passed to lonboard.viz layer
-                arguments (either `polygon_kwargs`, `scatterplot_kwargs`, or `path_kwargs`,
-                depending on input geometry type).
-            map_kwargs : Additional keyword arguments passed to lonboard.viz map_kwargs.
-            classification_kwds : Additional keyword arguments passed to
-                `mapclassify.classify`.
-            nan_color : Color used to shade NaN observations formatted as an RGBA list.
-                Defaults to [255, 255, 255, 255]. If no alpha channel is passed it is
-                assumed to be 255.
             color : single or array of colors passed to Layer.get_fill_color
                 or a lonboard.basemap object, or a string to a maplibre style basemap.
-            vmin : Minimum value for color mapping.
-            vmax : Maximum value for color mapping.
-            wireframe : Whether to use wireframe styling in deckgl.
+            m: An existing Map object to plot onto.
             tiles : Either a known string {"CartoDB Positron",
                 "CartoDB Positron No Label", "CartoDB Darkmatter",
                 "CartoDB Darkmatter No Label", "CartoDB Voyager",
                 "CartoDB Voyager No Label"}
+            tooltip : Whether to render a tooltip on hover on the map.
             highlight : Whether to highlight each feature on mouseover (passed to
                 lonboard.Layer's auto_highlight). Defaults to False.
-            m: An existing Map object to plot onto.
+            categorical : Whether the data should be treated as categorical or
+                continuous.
+            scheme : Name of a classification scheme defined by mapclassify.Classifier.
+            k : Number of classes to generate. Defaults to 5.
+            vmin : Minimum value for color mapping.
+            vmax : Maximum value for color mapping.
+            classification_kwds : Additional keyword arguments passed to
+                `mapclassify.classify`.
+            layer_kwargs : Additional keyword arguments passed to lonboard.viz layer
+                arguments (either `polygon_kwargs`, `scatterplot_kwargs`, or `path_kwargs`,
+                depending on input geometry type).
+            map_kwargs : Additional keyword arguments passed to lonboard.viz map_kwargs.
+            nan_color : Color used to shade NaN observations formatted as an RGBA list.
+                Defaults to [255, 255, 255, 255]. If no alpha channel is passed it is
+                assumed to be 255.
+            alpha : Alpha (opacity) parameter in the range (0,1) passed to
+                mapclassify.util.get_color_array.
 
         Returns:
         lonboard.Map
@@ -130,17 +124,6 @@ class LonboardAccessor:
             classification_kwds = {}
         if layer_kwargs is None:
             layer_kwargs = {}
-        if isinstance(elevation, str):
-            if elevation in gdf.columns:
-                elevation: Series = gdf[elevation]
-            else:
-                raise ValueError(
-                    f"the designated height column {elevation} is not in the dataframe",
-                )
-            if not pd.api.types.is_numeric_dtype(elevation):
-                raise ValueError("elevation must be a numeric data type")
-        if elevation is not None:
-            layer_kwargs["extruded"] = True
         if nan_color is None:
             nan_color = [255, 255, 255, 255]
         if not pd.api.types.is_list_like(nan_color):
@@ -150,13 +133,6 @@ class LonboardAccessor:
                 nan_color = np.append(nan_color, [255])
             else:
                 raise ValueError("nan_color must be an iterable of 3 or 4 values")
-
-        # only polygons have z
-        if ["Polygon", "MultiPolygon"] in gdf.geometry.geom_type.unique():
-            layer_kwargs["get_elevation"] = elevation
-            layer_kwargs["elevation_scale"] = elevation_scale
-            layer_kwargs["wireframe"] = wireframe
-            layer_kwargs["auto_highlight"] = highlight
 
         line = False  # set color of lines, not fill_color
         if ["LineString", "MultiLineString"] in gdf.geometry.geom_type.unique():
@@ -209,7 +185,7 @@ class LonboardAccessor:
                     _klasses.append("userdefined")
                 except ImportError as e:
                     raise ImportError(
-                        "You must have the `mapclassify` package installed to use the `scheme` keyword",
+                        "You must have the package `mapclassify` >=2.7 installed to use the `scheme` keyword",
                     ) from e
                 if scheme.replace("_", "") not in _klasses:
                     raise ValueError(
@@ -235,6 +211,31 @@ class LonboardAccessor:
                 layer_kwargs["get_fill_color"] = color_array
         if tiles:
             map_kwargs["basemap_style"] = _query_name(tiles)
+
+        layer_kwargs["auto_highlight"] = highlight
+        map_kwargs["show_tooltip"] = tooltip
+
+        """
+        additional loboard-specific arguments to consider
+
+        # only polygons have z
+        if ["Polygon", "MultiPolygon"] in gdf.geometry.geom_type.unique():
+            layer_kwargs["get_elevation"] = elevation
+            layer_kwargs["elevation_scale"] = elevation_scale
+            layer_kwargs["wireframe"] = wireframe
+                if isinstance(elevation, str):
+            if elevation in gdf.columns:
+                elevation: Series = gdf[elevation]
+            else:
+                raise ValueError(
+                    f"the designated height column {elevation} is not in the dataframe",
+                )
+            if not pd.api.types.is_numeric_dtype(elevation):
+                raise ValueError("elevation must be a numeric data type")
+        if elevation is not None:
+            layer_kwargs["extruded"] = True
+        """
+
         new_m: Map = viz(
             gdf,
             polygon_kwargs=layer_kwargs,
