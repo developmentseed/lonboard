@@ -9,14 +9,14 @@ else:
     from typing_extensions import TypedDict
 
 if TYPE_CHECKING:
-    from lonboard.basemap import CartoBasemap
+    from lonboard.basemap import MaplibreBasemap
 
 
 class MapKwargs(TypedDict, total=False):
     """Kwargs to pass into map constructor."""
 
     height: int | str
-    basemap_style: str | CartoBasemap
+    basemap: MaplibreBasemap
     parameters: dict[str, Any]
     picking_radius: int
     show_tooltip: bool

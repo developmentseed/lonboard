@@ -50,6 +50,15 @@ export async function initializeChildModels<T extends BaseModel>(
   return newSubModelState;
 }
 
+export async function loadModel(
+  widget_manager: IWidgetManager,
+  childModelId: string,
+): Promise<WidgetModel> {
+  // We need to slice off the "IPY_MODEL_" prefix to get the actual model ID
+  const modelId = childModelId.slice(IPY_MODEL_LENGTH);
+  return widget_manager.get_model(modelId);
+}
+
 /**
  * Load and resolve other widget models.
  *
@@ -59,11 +68,9 @@ async function loadModels(
   widget_manager: IWidgetManager,
   childModelIds: string[],
 ): Promise<Record<string, WidgetModel>> {
-  const promises = childModelIds.map((childModelId) => {
-    // We need to slice off the "IPY_MODEL_" prefix to get the actual model ID
-    const modelId = childModelId.slice(IPY_MODEL_LENGTH);
-    return widget_manager.get_model(modelId);
-  });
+  const promises = childModelIds.map((childModelId) =>
+    loadModel(widget_manager, childModelId),
+  );
 
   const models = await Promise.all(promises);
 
