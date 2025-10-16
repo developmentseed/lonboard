@@ -1,3 +1,4 @@
+import { _GlobeView as GlobeView } from "@deck.gl/core";
 import { MapboxOverlay, MapboxOverlayProps } from "@deck.gl/mapbox";
 import React from "react";
 import Map, { useControl } from "react-map-gl/maplibre";
@@ -28,8 +29,10 @@ const OverlayRenderer: React.FC<MapRendererProps & OverlayRendererProps> = (
   mapProps,
 ) => {
   // Remove maplibre-specific props before passing to DeckGL
-  const { mapStyle, customAttribution, initialViewState, ...deckProps } =
+  const { mapStyle, customAttribution, initialViewState, views, ...deckProps } =
     mapProps;
+  const firstView = Array.isArray(views) ? views[0] : views;
+  const isGlobeView = firstView instanceof GlobeView;
   return (
     <Map
       reuseMaps
@@ -37,6 +40,7 @@ const OverlayRenderer: React.FC<MapRendererProps & OverlayRendererProps> = (
       mapStyle={mapStyle}
       attributionControl={{ customAttribution }}
       style={{ width: "100%", height: "100%" }}
+      {...(isGlobeView && { projection: "globe" })}
     >
       <DeckGLOverlay
         // https://deck.gl/docs/api-reference/core/deck#_typedarraymanagerprops

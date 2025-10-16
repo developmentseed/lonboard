@@ -17,6 +17,7 @@ import {
   initializeChildModels,
 } from "./model/index.js";
 import { loadModel } from "./model/initialize.js";
+import { BaseViewModel, initializeView } from "./model/view.js";
 import { initParquetWasm } from "./parquet.js";
 import DeckFirstRenderer from "./renderers/deck-first.js";
 import OverlayRenderer from "./renderers/overlay.js";
@@ -90,6 +91,9 @@ function App() {
   );
   const [parameters] = useModelState<object>("parameters");
   const [customAttribution] = useModelState<string>("custom_attribution");
+  const [mapId] = useState(uuidv4());
+  const [childLayerIds] = useModelState<string[]>("layers");
+  const [viewIds] = useModelState<string | string[]>("views");
 
   // initialViewState is the value of view_state on the Python side. This is
   // called `initial` here because it gets passed in to deck's
@@ -115,21 +119,18 @@ function App() {
     }
   });
 
-  const [mapId] = useState(uuidv4());
-  const [layersState, setLayersState] = useState<
-    Record<string, BaseLayerModel>
-  >({});
-
-  const [childLayerIds] = useModelState<string[]>("layers");
-
-  const [basemapState, setBasemapState] = useState<MaplibreBasemapModel | null>(
-    null,
-  );
-
   // Fake state just to get react to re-render when a model callback is called
   // eslint-disable-next-line @typescript-eslint/no-unused-vars
   const [stateCounter, setStateCounter] = useState<Date>(new Date());
   const updateStateCallback = () => setStateCounter(new Date());
+
+  //////////////////////
+  // Basemap state
+  //////////////////////
+
+  const [basemapState, setBasemapState] = useState<MaplibreBasemapModel | null>(
+    null,
+  );
 
   useEffect(() => {
     const loadBasemap = async () => {
@@ -155,6 +156,14 @@ function App() {
 
     loadBasemap();
   }, [basemapModelId]);
+
+  //////////////////////
+  // Layers state
+  //////////////////////
+
+  const [layersState, setLayersState] = useState<
+    Record<string, BaseLayerModel>
+  >({});
 
   useEffect(() => {
     const loadAndUpdateLayers = async () => {
@@ -191,6 +200,38 @@ function App() {
   const layers = Object.values(layersState).flatMap((layerModel) =>
     layerModel.render(),
   );
+
+  //////////////////////
+  // Views state
+  //////////////////////
+
+  const [viewsState, setViewsState] = useState<
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    Record<string, BaseViewModel<any>>
+  >({});
+
+  useEffect(() => {
+    const loadAndUpdateViews = async () => {
+      try {
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        const viewsModels = await initializeChildModels<BaseViewModel<any>>(
+          model.widget_manager as IWidgetManager,
+          typeof viewIds === "string" ? [viewIds] : viewIds,
+          viewsState,
+          async (model: WidgetModel) =>
+            initializeView(model, updateStateCallback),
+        );
+
+        setViewsState(viewsModels);
+      } catch (error) {
+        console.error("Error loading child views:", error);
+      }
+    };
+
+    loadAndUpdateViews();
+  }, [viewIds]);
+
+  const views = Object.values(viewsState).map((viewModel) => viewModel.build());
 
   const onMapClickHandler = useCallback((info: PickingInfo) => {
     // We added this flag to prevent the hover event from firing after a
@@ -261,6 +302,7 @@ function App() {
       }
     },
     parameters: parameters || {},
+    views,
   };
 
   const overlayRenderProps: OverlayRendererProps = {

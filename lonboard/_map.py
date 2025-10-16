@@ -172,7 +172,15 @@ class Map(BaseAnyWidget):
     """One or more `Layer` objects to display on this map.
     """
 
-    views = VariableLengthTuple(t.Instance(BaseView)).tag(
+    # Note: it would be nicer to have only VariableLengthTuple, which would ensure the
+    # JS side always receives a list of strings and never a single string, but
+    # VariableLengthTuple won't coerce a single object into a tuple of length 1.
+    views = t.Union(
+        [
+            t.Instance(BaseView),
+            VariableLengthTuple(t.Instance(BaseView)),
+        ],
+    ).tag(
         sync=True,
         **ipywidgets.widget_serialization,
     )

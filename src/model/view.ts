@@ -15,12 +15,14 @@ import {
   OrthographicViewProps,
   OrthographicViewState,
 } from "@deck.gl/core";
+import type { View } from "@deck.gl/core";
 import { CommonViewProps } from "@deck.gl/core/dist/views/view";
 import { WidgetModel } from "@jupyter-widgets/base";
+
 import { isDefined } from "../util";
 import { BaseModel } from "./base";
 
-abstract class BaseViewModel<ViewState> extends BaseModel {
+export abstract class BaseViewModel<ViewState> extends BaseModel {
   protected x: CommonViewProps<ViewState>["x"] | null;
   protected y: CommonViewProps<ViewState>["y"] | null;
   protected width: CommonViewProps<ViewState>["width"] | null;
@@ -51,6 +53,8 @@ abstract class BaseViewModel<ViewState> extends BaseModel {
   }
 
   abstract viewProps(): Omit<CommonViewProps<ViewState>, "id">;
+
+  abstract build(): View;
 }
 
 export class FirstPersonViewModel extends BaseViewModel<FirstPersonViewState> {
@@ -248,5 +252,32 @@ export class OrthographicViewModel extends BaseViewModel<OrthographicViewState> 
       ...this.baseViewProps(),
       ...this.viewProps(),
     });
+  }
+}
+
+export async function initializeView(
+  model: WidgetModel,
+  updateStateCallback: () => void,
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+): Promise<BaseViewModel<any>> {
+  const viewType = model.get("_view_type");
+  switch (viewType) {
+    case FirstPersonViewModel.viewType:
+      return new FirstPersonViewModel(model, updateStateCallback);
+
+    case GlobeViewModel.viewType:
+      return new GlobeViewModel(model, updateStateCallback);
+
+    case MapViewModel.viewType:
+      return new MapViewModel(model, updateStateCallback);
+
+    case OrbitViewModel.viewType:
+      return new OrbitViewModel(model, updateStateCallback);
+
+    case OrthographicViewModel.viewType:
+      return new OrthographicViewModel(model, updateStateCallback);
+
+    default:
+      throw new Error(`no view supported for ${viewType}`);
   }
 }
