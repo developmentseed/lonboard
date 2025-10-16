@@ -8,7 +8,7 @@ import pandas as pd
 from numpy import uint8
 
 from lonboard import Map, viz
-from lonboard.basemap import CartoBasemap
+from lonboard.basemap import CartoStyle
 from lonboard.colormap import apply_categorical_cmap, apply_continuous_cmap
 
 if TYPE_CHECKING:
@@ -26,12 +26,12 @@ __all__ = ["LonboardAccessor"]
 
 _QUERY_NAME_TRANSLATION = str.maketrans(dict.fromkeys("., -_/", ""))
 _basemap_providers = {
-    "CartoDB Positron": CartoBasemap.Positron,
-    "CartoDB Positron No Label": CartoBasemap.PositronNoLabels,
-    "CartoDB Darkmatter": CartoBasemap.DarkMatter,
-    "CartoDB Darkmatter No Label": CartoBasemap.DarkMatterNoLabels,
-    "CartoDB Voyager": CartoBasemap.Voyager,
-    "CartoDB Voyager No Label": CartoBasemap.VoyagerNoLabels,
+    "CartoDB Positron": CartoStyle.Positron,
+    "CartoDB Positron No Label": CartoStyle.PositronNoLabels,
+    "CartoDB Darkmatter": CartoStyle.DarkMatter,
+    "CartoDB Darkmatter No Label": CartoStyle.DarkMatterNoLabels,
+    "CartoDB Voyager": CartoStyle.Voyager,
+    "CartoDB Voyager No Label": CartoStyle.VoyagerNoLabels,
 }
 # Convert keys to lower case without spaces
 _BASEMAP_PROVIDERS = {
@@ -62,6 +62,7 @@ class LonboardAccessor:
         color: str | None = None,
         m: Map | None = None,
         tiles: str | None = None,
+        attr: str | list[str] | None = None,
         tooltip: bool = False,
         highlight: bool = False,
         categorical: bool = False,
@@ -90,6 +91,7 @@ class LonboardAccessor:
                 "CartoDB Positron No Label", "CartoDB Darkmatter",
                 "CartoDB Darkmatter No Label", "CartoDB Voyager",
                 "CartoDB Voyager No Label"}
+            attr : Map tile attribution; only required if passing custom tile URL.
             tooltip : Whether to render a tooltip on hover on the map.
             highlight : Whether to highlight each feature on mouseover (passed to
                 lonboard.Layer's auto_highlight). Defaults to False.
@@ -211,6 +213,8 @@ class LonboardAccessor:
                 layer_kwargs["get_fill_color"] = color_array
         if tiles:
             map_kwargs["basemap_style"] = _query_name(tiles)
+        if attr:
+            map_kwargs["custom_attribution"] = attr
 
         layer_kwargs["auto_highlight"] = highlight
         map_kwargs["show_tooltip"] = tooltip
@@ -274,7 +278,7 @@ def _get_categorical_cmap(
     return apply_categorical_cmap(cat_codes, temp_cmap)
 
 
-def _query_name(name: str) -> CartoBasemap:
+def _query_name(name: str) -> CartoStyle:
     """Return basemap URL based on the name query (mimicking behavior from xyzservices).
 
     Returns a matching basemap from name contains the same letters in the same
