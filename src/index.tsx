@@ -231,7 +231,12 @@ function App() {
     loadAndUpdateViews();
   }, [viewIds]);
 
-  const views = Object.values(viewsState).map((viewModel) => viewModel.build());
+  const _deckViews = Object.values(viewsState).map((viewModel) =>
+    viewModel.build(),
+  );
+  // When the user hasn't specified any views, we let deck.gl create
+  // a default view, and so set undefined here.
+  const views = _deckViews.length > 0 ? _deckViews : undefined;
 
   const onMapClickHandler = useCallback((info: PickingInfo) => {
     // We added this flag to prevent the hover event from firing after a
@@ -330,6 +335,7 @@ function App() {
           height: "100%",
           // Use a dark background when in globe view so the globe is easier to
           // delineate
+          // In the future we may want to allow the user to customize this
           ...(isGlobeView(views) && {
             background: "linear-gradient(0, #000, #223)",
           }),
