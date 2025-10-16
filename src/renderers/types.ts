@@ -20,3 +20,11 @@ export type MapRendererProps<ViewsT extends ViewOrViews = null> = Pick<
   customAttribution: string;
   deckRef?: RefObject<DeckGLRef | null>;
 };
+
+export type OverlayRendererProps = {
+  interleaved: boolean;
+};
+
+export type DeckFirstRendererProps = {
+  renderBasemap: boolean;
+};

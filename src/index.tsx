@@ -10,15 +10,21 @@ import { useCallback, useEffect, useRef, useState } from "react";
 import { v4 as uuidv4 } from "uuid";
 
 import { flyTo } from "./actions/fly-to.js";
+import { DEFAULT_MAP_STYLE, MaplibreBasemapModel } from "./model/basemap.js";
 import {
   initializeLayer,
   type BaseLayerModel,
   initializeChildModels,
 } from "./model/index.js";
+import { loadModel } from "./model/initialize.js";
 import { initParquetWasm } from "./parquet.js";
 import DeckFirstRenderer from "./renderers/deck-first.js";
 import OverlayRenderer from "./renderers/overlay.js";
-import { MapRendererProps } from "./renderers/types.js";
+import {
+  DeckFirstRendererProps,
+  MapRendererProps,
+  OverlayRendererProps,
+} from "./renderers/types.js";
 import SidePanel from "./sidepanel/index";
 import { useViewStateDebounced } from "./state";
 import Toolbar from "./toolbar.js";
@@ -40,9 +46,6 @@ const DEFAULT_INITIAL_VIEW_STATE = {
   bearing: 0,
   pitch: 0,
 };
-
-const DEFAULT_MAP_STYLE =
-  "https://basemaps.cartocdn.com/gl/positron-nolabels-gl-style/style.json";
 
 function App() {
   const actorRef = MachineContext.useActorRef();
@@ -77,7 +80,7 @@ function App() {
 
   const model = useModel();
 
-  const [mapStyle] = useModelState<string>("basemap_style");
+  const [basemapModelId] = useModelState<string | null>("basemap");
   const [mapHeight] = useModelState<string>("height");
   const [showTooltip] = useModelState<boolean>("show_tooltip");
   const [showSidePanel] = useModelState<boolean>("show_side_panel");
@@ -87,7 +90,6 @@ function App() {
   );
   const [parameters] = useModelState<object>("parameters");
   const [customAttribution] = useModelState<string>("custom_attribution");
-  const [renderMode] = useModelState<string>("render_mode");
 
   // initialViewState is the value of view_state on the Python side. This is
   // called `initial` here because it gets passed in to deck's
@@ -120,10 +122,39 @@ function App() {
 
   const [childLayerIds] = useModelState<string[]>("layers");
 
+  const [basemapState, setBasemapState] = useState<MaplibreBasemapModel | null>(
+    null,
+  );
+
   // Fake state just to get react to re-render when a model callback is called
   // eslint-disable-next-line @typescript-eslint/no-unused-vars
   const [stateCounter, setStateCounter] = useState<Date>(new Date());
   const updateStateCallback = () => setStateCounter(new Date());
+
+  useEffect(() => {
+    const loadBasemap = async () => {
+      try {
+        if (!basemapModelId) {
+          setBasemapState(null);
+          return;
+        }
+
+        const basemapModel = await loadModel(
+          model.widget_manager as IWidgetManager,
+          basemapModelId,
+        );
+        const basemap = new MaplibreBasemapModel(
+          basemapModel,
+          updateStateCallback,
+        );
+        setBasemapState(basemap);
+      } catch (error) {
+        console.error("Error loading basemap model:", error);
+      }
+    };
+
+    loadBasemap();
+  }, [basemapModelId]);
 
   useEffect(() => {
     const loadAndUpdateLayers = async () => {
@@ -194,7 +225,7 @@ function App() {
   );
 
   const mapRenderProps: MapRendererProps = {
-    mapStyle: mapStyle || DEFAULT_MAP_STYLE,
+    mapStyle: basemapState?.style || DEFAULT_MAP_STYLE,
     customAttribution,
     deckRef,
     initialViewState: ["longitude", "latitude", "zoom"].every((key) =>
@@ -232,6 +263,14 @@ function App() {
     parameters: parameters || {},
   };
 
+  const overlayRenderProps: OverlayRendererProps = {
+    interleaved: basemapState?.mode === "interleaved",
+  };
+
+  const deckFirstRenderProps: DeckFirstRendererProps = {
+    renderBasemap: Boolean(basemapState),
+  };
+
   return (
     <div
       className="lonboard"
@@ -254,11 +293,12 @@ function App() {
             onClose={() => actorRef.send({ type: "Close side panel" })}
           />
         )}
-        <div className="bg-red-800 h-full w-full relative">
-          {renderMode === "overlay" ? (
-            <OverlayRenderer {...mapRenderProps} />
+        <div className="bg-transparent h-full w-full relative">
+          {basemapState?.mode === "overlaid" ||
+          basemapState?.mode === "interleaved" ? (
+            <OverlayRenderer {...mapRenderProps} {...overlayRenderProps} />
           ) : (
-            <DeckFirstRenderer {...mapRenderProps} />
+            <DeckFirstRenderer {...mapRenderProps} {...deckFirstRenderProps} />
           )}
         </div>
       </div>

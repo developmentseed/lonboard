@@ -20,6 +20,7 @@ export abstract class BaseLayerModel extends BaseModel {
   protected opacity: LayerProps["opacity"];
   protected autoHighlight: LayerProps["autoHighlight"];
   protected highlightColor: LayerProps["highlightColor"];
+  protected beforeId?: string;
 
   protected extensions: Record<string, BaseExtensionModel>;
 
@@ -36,6 +37,7 @@ export abstract class BaseLayerModel extends BaseModel {
     this.initRegularAttribute("opacity", "opacity");
     this.initRegularAttribute("auto_highlight", "autoHighlight");
     this.initRegularAttribute("highlight_color", "highlightColor");
+    this.initRegularAttribute("before_id", "beforeId");
     this.initRegularAttribute("selected_bounds", "selectedBounds");
 
     this.extensions = {};
@@ -81,6 +83,9 @@ export abstract class BaseLayerModel extends BaseModel {
         highlightColor: this.highlightColor,
       }),
       onClick: this.onClick.bind(this),
+      ...(isDefined(this.beforeId) && {
+        beforeId: this.beforeId,
+      }),
     };
   }
 
