@@ -325,7 +325,11 @@ function App() {
       <div
         id={`map-${mapId}`}
         className="flex"
-        style={{ width: "100%", height: "100%" }}
+        style={{
+          width: "100%",
+          height: "100%",
+          background: "linear-gradient(0, #000, #223)",
+        }}
       >
         <Toolbar />
 
