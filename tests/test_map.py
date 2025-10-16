@@ -2,6 +2,7 @@ import pytest
 from traitlets import TraitError
 
 from lonboard import Map, ScatterplotLayer, SolidPolygonLayer
+from lonboard.basemap import MaplibreBasemap
 
 
 def test_map_fails_with_unexpected_argument():
@@ -38,3 +39,13 @@ def allow_single_layer():
 def test_map_basemap_non_url():
     with pytest.raises(TraitError, match=r"expected to be a HTTP\(s\) URL"):
         _m = Map([], basemap_style="hello world")
+
+
+def test_map_default_basemap():
+    m = Map([])
+    assert isinstance(m.basemap, MaplibreBasemap), (
+        "Default basemap should be MaplibreBasemap"
+    )
+
+    assert m.basemap.mode == MaplibreBasemap().mode, "Should match default parameters"
+    assert m.basemap.style == MaplibreBasemap().style, "Should match default parameters"
