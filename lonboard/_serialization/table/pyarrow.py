@@ -49,17 +49,14 @@ class PyArrowIPCSerialization(ArrowSerialization):
 
     def _serialize_arrow_batch(self, record_batch: RecordBatch) -> bytes:
         """Write a single RecordBatch to an Arrow IPC stream in memory and return the bytes."""
-        if record_batch.num_rows == 0:
-            raise ValueError("Batch with 0 rows.")
-
         import pyarrow as pa
 
         bio = BytesIO()
         with pa.ipc.new_stream(
             bio,
-            record_batch.schema,
-            options=pa.ipc.IpcWriteOptions(compression="lz4"),
+            schema=pa.schema(record_batch.schema),
+            options=pa.ipc.IpcWriteOptions(compression=None),
         ) as writer:
-            writer.write_batch(record_batch)
+            writer.write_batch(pa.record_batch(record_batch))
 
         return bio.getvalue()

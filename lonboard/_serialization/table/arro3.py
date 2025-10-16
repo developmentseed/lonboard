@@ -41,12 +41,9 @@ class Arro3IPCSerialization(ArrowSerialization):
 
     def _serialize_arrow_batch(self, record_batch: RecordBatch) -> bytes:
         """Write a single RecordBatch to an Arrow IPC stream in memory and return the bytes."""
-        if record_batch.num_rows == 0:
-            raise ValueError("Batch with 0 rows.")
-
         from arro3.io import write_ipc_stream
 
         bio = BytesIO()
-        write_ipc_stream(record_batch, bio, compression="lz4")
+        write_ipc_stream(record_batch, bio, compression=None)
 
         return bio.getvalue()
