@@ -24,3 +24,7 @@ export type MapRendererProps<ViewsT extends ViewOrViews = null> = Pick<
 export type OverlayRendererProps = {
   interleaved: boolean;
 };
+
+export type DeckFirstRendererProps = {
+  renderBasemap: boolean;
+};

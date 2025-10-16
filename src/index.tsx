@@ -20,7 +20,11 @@ import { loadModel } from "./model/initialize.js";
 import { initParquetWasm } from "./parquet.js";
 import DeckFirstRenderer from "./renderers/deck-first.js";
 import OverlayRenderer from "./renderers/overlay.js";
-import { MapRendererProps, OverlayRendererProps } from "./renderers/types.js";
+import {
+  DeckFirstRendererProps,
+  MapRendererProps,
+  OverlayRendererProps,
+} from "./renderers/types.js";
 import SidePanel from "./sidepanel/index";
 import { useViewStateDebounced } from "./state";
 import Toolbar from "./toolbar.js";
@@ -263,6 +267,10 @@ function App() {
     interleaved: basemapState?.mode === "interleaved",
   };
 
+  const deckFirstRenderProps: DeckFirstRendererProps = {
+    renderBasemap: Boolean(basemapState),
+  };
+
   return (
     <div
       className="lonboard"
@@ -290,7 +298,7 @@ function App() {
           basemapState?.mode === "interleaved" ? (
             <OverlayRenderer {...mapRenderProps} {...overlayRenderProps} />
           ) : (
-            <DeckFirstRenderer {...mapRenderProps} />
+            <DeckFirstRenderer {...mapRenderProps} {...deckFirstRenderProps} />
           )}
         </div>
       </div>
