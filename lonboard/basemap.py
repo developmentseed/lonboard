@@ -1,16 +1,22 @@
 """Basemap helpers."""
 
+from __future__ import annotations
+
 from enum import Enum
-from typing import Literal
+from typing import TYPE_CHECKING, Literal
 
 import traitlets as t
+from typing_extensions import deprecated
 
 from lonboard._base import BaseWidget
 from lonboard.traits import BasemapUrl
 
+if TYPE_CHECKING:
+    from typing import Literal
 
-class CartoBasemap(str, Enum):
-    """Basemap styles provided by Carto.
+
+class CartoStyle(str, Enum):
+    """Maplibre-supported vector basemap styles provided by Carto.
 
     Refer to [Carto
     documentation](https://docs.carto.com/carto-for-developers/carto-for-react/guides/basemaps)
@@ -26,7 +32,10 @@ class CartoBasemap(str, Enum):
     DarkMatterNoLabels = (
         "https://basemaps.cartocdn.com/gl/dark-matter-nolabels-gl-style/style.json"
     )
-    """A dark map style without labels."""
+    """A dark map style without labels.
+
+    ![](https://carto.com/help/images/building-maps/basemaps/dark_no_labels.png)
+    """
 
     Positron = "https://basemaps.cartocdn.com/gl/positron-gl-style/style.json"
     """A light map style with labels.
@@ -37,7 +46,10 @@ class CartoBasemap(str, Enum):
     PositronNoLabels = (
         "https://basemaps.cartocdn.com/gl/positron-nolabels-gl-style/style.json"
     )
-    """A light map style without labels."""
+    """A light map style without labels.
+
+    ![](https://carto.com/help/images/building-maps/basemaps/positron_no_labels.png)
+    """
 
     Voyager = "https://basemaps.cartocdn.com/gl/voyager-gl-style/style.json"
     """A light, colored map style with labels.
@@ -48,7 +60,66 @@ class CartoBasemap(str, Enum):
     VoyagerNoLabels = (
         "https://basemaps.cartocdn.com/gl/voyager-nolabels-gl-style/style.json"
     )
-    """A light, colored map style without labels."""
+    """A light, colored map style without labels.
+
+    ![](https://carto.com/help/images/building-maps/basemaps/voyager_no_labels.png)
+    """
+
+
+# NOTE: this is fully duplicated because you can't subclass enums, and I don't see any
+# other way to provide a deprecation warning
+@deprecated(
+    "CartoBasemap is deprecated, use CartoStyle instead. Will be removed in v0.14",
+)
+class CartoBasemap(str, Enum):
+    """Maplibre-supported vector basemap styles provided by Carto.
+
+    Refer to [Carto
+    documentation](https://docs.carto.com/carto-for-developers/carto-for-react/guides/basemaps)
+    for information on styles.
+    """
+
+    DarkMatter = "https://basemaps.cartocdn.com/gl/dark-matter-gl-style/style.json"
+    """A dark map style with labels.
+
+    ![](https://carto.com/help/images/building-maps/basemaps/dark_labels.png)
+    """
+
+    DarkMatterNoLabels = (
+        "https://basemaps.cartocdn.com/gl/dark-matter-nolabels-gl-style/style.json"
+    )
+    """A dark map style without labels.
+
+    ![](https://carto.com/help/images/building-maps/basemaps/dark_no_labels.png)
+    """
+
+    Positron = "https://basemaps.cartocdn.com/gl/positron-gl-style/style.json"
+    """A light map style with labels.
+
+    ![](https://carto.com/help/images/building-maps/basemaps/positron_labels.png)
+    """
+
+    PositronNoLabels = (
+        "https://basemaps.cartocdn.com/gl/positron-nolabels-gl-style/style.json"
+    )
+    """A light map style without labels.
+
+    ![](https://carto.com/help/images/building-maps/basemaps/positron_no_labels.png)
+    """
+
+    Voyager = "https://basemaps.cartocdn.com/gl/voyager-gl-style/style.json"
+    """A light, colored map style with labels.
+
+    ![](https://carto.com/help/images/building-maps/basemaps/voyager_labels.png)
+    """
+
+    VoyagerNoLabels = (
+        "https://basemaps.cartocdn.com/gl/voyager-nolabels-gl-style/style.json"
+    )
+    """A light, colored map style without labels.
+
+    ![](https://carto.com/help/images/building-maps/basemaps/voyager_no_labels.png)
+    """
 
 
 class MaplibreBasemap(BaseWidget):
@@ -62,12 +133,19 @@ class MaplibreBasemap(BaseWidget):
             "overlaid",
             "reverse-controlled",
         ] = "reverse-controlled",
-        basemap_style: str | CartoBasemap,
+        style: str | CartoStyle = CartoStyle.PositronNoLabels,
     ) -> None:
         """Create a MapLibre GL JS basemap."""
-        super().__init__(mode=mode, basemap_style=basemap_style)  # type: ignore
+        super().__init__(mode=mode, style=style)
 
-    mode = t.Unicode().tag(sync=True)
+    mode = t.Enum(
+        [
+            "interleaved",
+            "overlaid",
+            "reverse-controlled",
+        ],
+        default_value="reverse-controlled",
+    ).tag(sync=True)
     """The basemap integration mode.
 
     - **`"interleaved"`**:
@@ -87,7 +165,7 @@ class MaplibreBasemap(BaseWidget):
     **Default**: `"reverse-controlled"`
     """
 
-    basemap_style = BasemapUrl(CartoBasemap.PositronNoLabels)
+    style = BasemapUrl(CartoStyle.PositronNoLabels).tag(sync=True)
     """
     A URL to a MapLibre-compatible basemap style.
 
@@ -95,5 +173,5 @@ class MaplibreBasemap(BaseWidget):
 
     - Type: `str`, holding a URL hosting a basemap style.
     - Default
-      [`lonboard.basemap.CartoBasemap.PositronNoLabels`][lonboard.basemap.CartoBasemap.PositronNoLabels]
+      [`lonboard.basemap.CartoStyle.PositronNoLabels`][lonboard.basemap.CartoStyle.PositronNoLabels]
     """

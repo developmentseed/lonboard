@@ -1,6 +1,6 @@
 import { createRender, useModel, useModelState } from "@anywidget/react";
 import type { Initialize, Render } from "@anywidget/types";
-import { MapViewState, PickingInfo, type Layer } from "@deck.gl/core";
+import { MapViewState, PickingInfo } from "@deck.gl/core";
 import { DeckGLRef } from "@deck.gl/react";
 import type { IWidgetManager, WidgetModel } from "@jupyter-widgets/base";
 import { NextUIProvider } from "@nextui-org/react";
@@ -10,17 +10,27 @@ import { useCallback, useEffect, useRef, useState } from "react";
 import { v4 as uuidv4 } from "uuid";
 
 import { flyTo } from "./actions/fly-to.js";
-import { BaseLayerModel, initializeLayer } from "./model/index.js";
+import { DEFAULT_MAP_STYLE, MaplibreBasemapModel } from "./model/basemap.js";
+import {
+  initializeLayer,
+  type BaseLayerModel,
+  initializeChildModels,
+} from "./model/index.js";
+import { loadModel } from "./model/initialize.js";
 import { initParquetWasm } from "./parquet.js";
 import DeckFirstRenderer from "./renderers/deck-first.js";
 import OverlayRenderer from "./renderers/overlay.js";
-import { MapRendererProps } from "./renderers/types.js";
+import {
+  DeckFirstRendererProps,
+  MapRendererProps,
+  OverlayRendererProps,
+} from "./renderers/types.js";
 import SidePanel from "./sidepanel/index";
 import { useViewStateDebounced } from "./state";
 import Toolbar from "./toolbar.js";
 import { getTooltip } from "./tooltip/index.js";
 import { Message } from "./types.js";
-import { isDefined, loadChildModels } from "./util.js";
+import { isDefined } from "./util.js";
 import { MachineContext, MachineProvider } from "./xstate";
 import * as selectors from "./xstate/selectors";
 
@@ -36,43 +46,6 @@ const DEFAULT_INITIAL_VIEW_STATE = {
   bearing: 0,
   pitch: 0,
 };
-
-const DEFAULT_MAP_STYLE =
-  "https://basemaps.cartocdn.com/gl/positron-nolabels-gl-style/style.json";
-
-async function getChildModelState(
-  childModels: WidgetModel[],
-  childLayerIds: string[],
-  previousSubModelState: Record<string, BaseLayerModel>,
-  setStateCounter: React.Dispatch<React.SetStateAction<Date>>,
-): Promise<Record<string, BaseLayerModel>> {
-  const newSubModelState: Record<string, BaseLayerModel> = {};
-  const updateStateCallback = () => setStateCounter(new Date());
-
-  for (let i = 0; i < childLayerIds.length; i++) {
-    const childLayerId = childLayerIds[i];
-    const childModel = childModels[i];
-
-    // If the layer existed previously, copy its model without constructing
-    // a new one
-    if (childLayerId in previousSubModelState) {
-      // pop from old state
-      newSubModelState[childLayerId] = previousSubModelState[childLayerId];
-      delete previousSubModelState[childLayerId];
-      continue;
-    }
-
-    const childLayer = await initializeLayer(childModel, updateStateCallback);
-    newSubModelState[childLayerId] = childLayer;
-  }
-
-  // finalize models that were deleted
-  for (const previousChildModel of Object.values(previousSubModelState)) {
-    previousChildModel.finalize();
-  }
-
-  return newSubModelState;
-}
 
 function App() {
   const actorRef = MachineContext.useActorRef();
@@ -107,7 +80,7 @@ function App() {
 
   const model = useModel();
 
-  const [mapStyle] = useModelState<string>("basemap_style");
+  const [basemapModelId] = useModelState<string | null>("basemap");
   const [mapHeight] = useModelState<string>("height");
   const [showTooltip] = useModelState<boolean>("show_tooltip");
   const [showSidePanel] = useModelState<boolean>("show_side_panel");
@@ -117,7 +90,6 @@ function App() {
   );
   const [parameters] = useModelState<object>("parameters");
   const [customAttribution] = useModelState<string>("custom_attribution");
-  const [renderMode] = useModelState<string>("render_mode");
 
   // initialViewState is the value of view_state on the Python side. This is
   // called `initial` here because it gets passed in to deck's
@@ -144,31 +116,58 @@ function App() {
   });
 
   const [mapId] = useState(uuidv4());
-  const [subModelState, setSubModelState] = useState<
+  const [layersState, setLayersState] = useState<
     Record<string, BaseLayerModel>
   >({});
 
   const [childLayerIds] = useModelState<string[]>("layers");
 
+  const [basemapState, setBasemapState] = useState<MaplibreBasemapModel | null>(
+    null,
+  );
+
   // Fake state just to get react to re-render when a model callback is called
   // eslint-disable-next-line @typescript-eslint/no-unused-vars
   const [stateCounter, setStateCounter] = useState<Date>(new Date());
+  const updateStateCallback = () => setStateCounter(new Date());
+
+  useEffect(() => {
+    const loadBasemap = async () => {
+      try {
+        if (!basemapModelId) {
+          setBasemapState(null);
+          return;
+        }
+
+        const basemapModel = await loadModel(
+          model.widget_manager as IWidgetManager,
+          basemapModelId,
+        );
+        const basemap = new MaplibreBasemapModel(
+          basemapModel,
+          updateStateCallback,
+        );
+        setBasemapState(basemap);
+      } catch (error) {
+        console.error("Error loading basemap model:", error);
+      }
+    };
+
+    loadBasemap();
+  }, [basemapModelId]);
 
   useEffect(() => {
     const loadAndUpdateLayers = async () => {
       try {
-        const childModels = await loadChildModels(
+        const layerModels = await initializeChildModels<BaseLayerModel>(
           model.widget_manager as IWidgetManager,
           childLayerIds,
+          layersState,
+          async (model: WidgetModel) =>
+            initializeLayer(model, updateStateCallback),
         );
 
-        const newSubModelState = await getChildModelState(
-          childModels,
-          childLayerIds,
-          subModelState,
-          setStateCounter,
-        );
-        setSubModelState(newSubModelState);
+        setLayersState(layerModels);
 
         if (!isDrawingBBoxSelection) {
           // Note: selected_bounds is a property of the **Map**. In the future,
@@ -189,15 +188,9 @@ function App() {
     loadAndUpdateLayers();
   }, [childLayerIds, bboxSelectBounds, isDrawingBBoxSelection]);
 
-  const layers: Layer[] = [];
-  for (const subModel of Object.values(subModelState)) {
-    const newLayers = subModel.render();
-    if (Array.isArray(newLayers)) {
-      layers.push(...newLayers);
-    } else {
-      layers.push(newLayers);
-    }
-  }
+  const layers = Object.values(layersState).flatMap((layerModel) =>
+    layerModel.render(),
+  );
 
   const onMapClickHandler = useCallback((info: PickingInfo) => {
     // We added this flag to prevent the hover event from firing after a
@@ -232,7 +225,7 @@ function App() {
   );
 
   const mapRenderProps: MapRendererProps = {
-    mapStyle: mapStyle || DEFAULT_MAP_STYLE,
+    mapStyle: basemapState?.style || DEFAULT_MAP_STYLE,
     customAttribution,
     deckRef,
     initialViewState: ["longitude", "latitude", "zoom"].every((key) =>
@@ -270,6 +263,14 @@ function App() {
     parameters: parameters || {},
   };
 
+  const overlayRenderProps: OverlayRendererProps = {
+    interleaved: basemapState?.mode === "interleaved",
+  };
+
+  const deckFirstRenderProps: DeckFirstRendererProps = {
+    renderBasemap: Boolean(basemapState),
+  };
+
   return (
     <div
       className="lonboard"
@@ -292,11 +293,12 @@ function App() {
             onClose={() => actorRef.send({ type: "Close side panel" })}
           />
         )}
-        <div className="bg-red-800 h-full w-full relative">
-          {renderMode === "overlay" ? (
-            <OverlayRenderer {...mapRenderProps} />
+        <div className="bg-transparent h-full w-full relative">
+          {basemapState?.mode === "overlaid" ||
+          basemapState?.mode === "interleaved" ? (
+            <OverlayRenderer {...mapRenderProps} {...overlayRenderProps} />
           ) : (
-            <DeckFirstRenderer {...mapRenderProps} />
+            <DeckFirstRenderer {...mapRenderProps} {...deckFirstRenderProps} />
           )}
         </div>
       </div>

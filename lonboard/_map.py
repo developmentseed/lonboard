@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+import warnings
 from pathlib import Path
 from typing import IO, TYPE_CHECKING, Any, TextIO, overload
 
@@ -12,7 +13,7 @@ from lonboard._base import BaseAnyWidget
 from lonboard._html_export import map_to_html
 from lonboard._layer import BaseLayer
 from lonboard._viewport import compute_view
-from lonboard.basemap import MaplibreBasemap
+from lonboard.basemap import CartoStyle, MaplibreBasemap
 from lonboard.traits import (
     DEFAULT_INITIAL_VIEW_STATE,
     HeightTrait,
@@ -69,6 +70,8 @@ class Map(BaseAnyWidget):
     def __init__(
         self,
         layers: BaseLayer | Sequence[BaseLayer],
+        *,
+        basemap_style: str | CartoStyle | None = None,
         **kwargs: Unpack[MapKwargs],
     ) -> None:
         """Create a new Map.
@@ -80,12 +83,28 @@ class Map(BaseAnyWidget):
             layers: One or more layers to render on this map.
 
         Keyword Args:
+            basemap_style: DEPRECATED. Use `basemap` instead. A URL to a MapLibre-compatible basemap style.
+
+                Various styles are provided in [`lonboard.basemap`](https://developmentseed.org/lonboard/latest/api/basemap/).
+
             kwargs: Passed on to class variables.
 
         Returns:
             A Map object.
 
         """
+        if basemap_style is not None:
+            warnings.warn(
+                "`basemap_style` is deprecated and will be removed in 0.14. Use `basemap` instead.",
+                DeprecationWarning,
+                stacklevel=2,
+            )
+            if "basemap" in kwargs:
+                raise ValueError(
+                    "Cannot pass both `basemap_style` and `basemap`. Use only `basemap`.",
+                )
+            kwargs["basemap"] = MaplibreBasemap(style=basemap_style)
+
         if isinstance(layers, BaseLayer):
             layers = [layers]
 
@@ -215,7 +234,10 @@ class Map(BaseAnyWidget):
     - Default: `5`
     """
 
-    basemap = t.Instance(MaplibreBasemap, allow_none=True).tag(
+    basemap: t.Instance[MaplibreBasemap | None] = t.Instance(
+        MaplibreBasemap,
+        allow_none=True,
+    ).tag(
         sync=True,
         **ipywidgets.widget_serialization,
     )
@@ -225,6 +247,29 @@ class Map(BaseAnyWidget):
 
     Pass `None` to disable rendering a basemap.
     """
+
+    @property
+    def basemap_style(self) -> str | None:
+        """The URL of the basemap style in use."""
+        warnings.warn(
+            "`basemap_style` is deprecated and will be removed in 0.14. Use `basemap` instead.",
+            DeprecationWarning,
+            stacklevel=2,
+        )
+
+        if self.basemap is not None:
+            return self.basemap.style
+
+        return None
+
+    @basemap_style.setter
+    def basemap_style(self, value: str | CartoStyle) -> None:
+        warnings.warn(
+            "`basemap_style` is deprecated and will be removed in 0.14. Use `basemap` instead.",
+            DeprecationWarning,
+            stacklevel=2,
+        )
+        self.basemap = MaplibreBasemap(style=value)
 
     custom_attribution = t.Union(
         [

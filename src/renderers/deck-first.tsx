@@ -2,7 +2,7 @@ import DeckGL from "@deck.gl/react";
 import React from "react";
 import Map from "react-map-gl/maplibre";
 
-import type { MapRendererProps } from "./types";
+import type { DeckFirstRendererProps, MapRendererProps } from "./types";
 
 /**
  * DeckFirst renderer: DeckGL wraps Map component
@@ -12,9 +12,12 @@ import type { MapRendererProps } from "./types";
  * This is the traditional approach where deck.gl has full control over
  * the rendering pipeline.
  */
-const DeckFirstRenderer: React.FC<MapRendererProps> = (mapProps) => {
+const DeckFirstRenderer: React.FC<MapRendererProps & DeckFirstRendererProps> = (
+  mapProps,
+) => {
   // Remove maplibre-specific props before passing to DeckGL
-  const { mapStyle, customAttribution, deckRef, ...deckProps } = mapProps;
+  const { mapStyle, customAttribution, deckRef, renderBasemap, ...deckProps } =
+    mapProps;
   return (
     <DeckGL
       ref={deckRef}
@@ -27,7 +30,9 @@ const DeckFirstRenderer: React.FC<MapRendererProps> = (mapProps) => {
       }}
       {...deckProps}
     >
-      <Map mapStyle={mapStyle} customAttribution={customAttribution}></Map>
+      {renderBasemap && (
+        <Map mapStyle={mapStyle} customAttribution={customAttribution}></Map>
+      )}
     </DeckGL>
   );
 };
