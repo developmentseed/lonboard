@@ -360,7 +360,7 @@ class DataFilterExtension(BaseExtension):
         ),
     }
 
-    filter_size = t.Int(None, min=1, max=4, allow_none=True).tag(sync=True)
+    filter_size = t.Int(1, min=1, max=4, allow_none=True).tag(sync=True)
     """The size of the filter (number of columns to filter by).
 
     The data filter can show/hide data based on 1-4 numeric properties of each object.
@@ -375,7 +375,7 @@ class DataFilterExtension(BaseExtension):
     The category filter can show/hide data based on 1-4 properties of each object.
 
     - Type: `int`. This is required if using category-based filtering.
-    - Default 0.
+    - Default None.
     """
 
 
