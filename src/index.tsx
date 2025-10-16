@@ -93,7 +93,7 @@ function App() {
   const [customAttribution] = useModelState<string>("custom_attribution");
   const [mapId] = useState(uuidv4());
   const [childLayerIds] = useModelState<string[]>("layers");
-  const [viewIds] = useModelState<string | string[]>("views");
+  const [viewIds] = useModelState<string | string[] | null>("views");
 
   // initialViewState is the value of view_state on the Python side. This is
   // called `initial` here because it gets passed in to deck's
@@ -213,6 +213,11 @@ function App() {
   useEffect(() => {
     const loadAndUpdateViews = async () => {
       try {
+        if (!viewIds) {
+          setViewsState({});
+          return;
+        }
+
         // eslint-disable-next-line @typescript-eslint/no-explicit-any
         const viewsModels = await initializeChildModels<BaseViewModel<any>>(
           model.widget_manager as IWidgetManager,

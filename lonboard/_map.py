@@ -172,7 +172,7 @@ class Map(BaseAnyWidget):
     """One or more `Layer` objects to display on this map.
     """
 
-    views = t.Instance(BaseView).tag(
+    views: t.Instance[BaseView | None] = t.Instance(BaseView, allow_none=True).tag(
         sync=True,
         **ipywidgets.widget_serialization,
     )
