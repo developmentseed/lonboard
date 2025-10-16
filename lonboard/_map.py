@@ -172,19 +172,11 @@ class Map(BaseAnyWidget):
     """One or more `Layer` objects to display on this map.
     """
 
-    # Note: it would be nicer to have only VariableLengthTuple, which would ensure the
-    # JS side always receives a list of strings and never a single string, but
-    # VariableLengthTuple won't coerce a single object into a tuple of length 1.
-    views = t.Union(
-        [
-            t.Instance(BaseView),
-            VariableLengthTuple(t.Instance(BaseView)),
-        ],
-    ).tag(
+    views = t.Instance(BaseView).tag(
         sync=True,
         **ipywidgets.widget_serialization,
     )
-    """A single View instance, or an array of View instances.
+    """A View instance.
 
     Views represent the "camera(s)" (essentially viewport dimensions and projection matrices) that you look at your data with. deck.gl offers multiple view types for both geospatial and non-geospatial use cases. Read the [Views and Projections](https://deck.gl/docs/developer-guide/views) guide for the concept and examples.
     """
