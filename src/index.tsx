@@ -31,7 +31,7 @@ import { useViewStateDebounced } from "./state";
 import Toolbar from "./toolbar.js";
 import { getTooltip } from "./tooltip/index.js";
 import { Message } from "./types.js";
-import { isDefined } from "./util.js";
+import { isDefined, isGlobeView } from "./util.js";
 import { MachineContext, MachineProvider } from "./xstate";
 import * as selectors from "./xstate/selectors";
 
@@ -328,7 +328,11 @@ function App() {
         style={{
           width: "100%",
           height: "100%",
-          background: "linear-gradient(0, #000, #223)",
+          // Use a dark background when in globe view so the globe is easier to
+          // delineate
+          ...(isGlobeView(views) && {
+            background: "linear-gradient(0, #000, #223)",
+          }),
         }}
       >
         <Toolbar />
