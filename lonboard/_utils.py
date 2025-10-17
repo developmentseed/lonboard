@@ -58,12 +58,19 @@ def auto_downcast(df: DF) -> DF:
 
     check_pandas_version()
 
+    # This will fail if the df is pandas input:
+    # TypeError: data type 'geometry' not understood
+    try:
+        df_attr = df.select_dtypes(exclude="geometry")
+    except TypeError:
+        df_attr = df
+
     # Convert objects to numeric types where possible.
     # Note: we have to exclude geometry because
-    # `convert_dtypes(dtype_backend="pyarrow")` fails on the geometory column, but we
+    # `convert_dtypes(dtype_backend="pyarrow")` fails on the geometry column, but we
     # also have to manually cast to a non-geo data frame because it'll fail to convert
     # dtypes on a GeoDataFrame without a geom col
-    casted_df = pd.DataFrame(df.select_dtypes(exclude="geometry")).convert_dtypes(  # type: ignore
+    casted_df = pd.DataFrame(df_attr).convert_dtypes(  # type: ignore
         infer_objects=True,
         convert_string=True,
         convert_integer=True,

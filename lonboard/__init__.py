@@ -7,6 +7,7 @@ from ._layer import (
     BitmapLayer,
     BitmapTileLayer,
     ColumnLayer,
+    H3HexagonLayer,
     HeatmapLayer,
     PathLayer,
     PointCloudLayer,
