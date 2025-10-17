@@ -10,8 +10,8 @@
     "@deck.gl/layers": "^9.2.1",
     "@deck.gl/mapbox": "^9.2.1",
     "@deck.gl/react": "^9.2.1",
-    "@geoarrow/deck.gl-layers": "^0.4.0-beta.1",
-    "@geoarrow/geoarrow-js": "^0.3.2",
+    "@geoarrow/deck.gl-layers": "^0.4.0-beta.4",
+    "@geoarrow/geoarrow-js": "file:../../geoarrow/geoarrow-js/geoarrow-geoarrow-js-0.3.2.tgz",
     "@nextui-org/react": "^2.4.8",
     "@xstate/react": "^6.0.0",
     "apache-arrow": "^21.1.0",
@@ -25,6 +25,7 @@
     "react": "^19.2.0",
     "react-dom": "^19.2.0",
     "react-map-gl": "^8.1.0",
+    "threads": "1.7.0",
     "uuid": "^13.0.0",
     "xstate": "^5.22.0"
   },

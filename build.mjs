@@ -1,10 +1,10 @@
-import esbuild from "esbuild";
-import dotenv from "dotenv";
-import { sassPlugin } from "esbuild-sass-plugin";
-import tailwindcss from "tailwindcss";
 import autoprefixer from "autoprefixer";
+import dotenv from "dotenv";
+import esbuild from "esbuild";
+import { sassPlugin } from "esbuild-sass-plugin";
 import postcss from "postcss";
 import postcssPresetEnv from "postcss-preset-env";
+import tailwindcss from "tailwindcss";
 
 // Load environment variables from .env file
 dotenv.config();
@@ -40,6 +40,10 @@ esbuild.build({
       },
     }),
   ],
+  loader: {
+    ".worker.js": "text",
+    ".worker.min.js": "text",
+  },
   // Code splitting didn't work initially because it tried to load from a local
   // relative path ./chunk.js
   // splitting: true,
