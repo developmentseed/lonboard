@@ -20,6 +20,7 @@ dependencies = [
     "pyproj>=3.3",
     "typing-extensions>=4.6.0; python_version < '3.12'",
     "geoarrow-rust-core>=0.5.2",
+    "pydantic>=2.12.2",
 ]
 keywords = [
     "GIS",

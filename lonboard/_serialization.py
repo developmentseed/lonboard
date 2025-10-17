@@ -22,6 +22,8 @@ from traitlets import TraitError
 from lonboard._utils import timestamp_start_offset
 
 if TYPE_CHECKING:
+    from pydantic import BaseModel
+
     from lonboard._layer import BaseArrowLayer
     from lonboard.experimental._layer import TripsLayer
     from lonboard.models import ViewState
@@ -159,11 +161,15 @@ def validate_accessor_length_matches_table(
         raise TraitError("accessor must have same length as table")
 
 
-def serialize_view_state(data: ViewState | None, obj: Any) -> None | dict[str, Any]:  # noqa: ARG001
+def serialize_view_state(data: ViewState | None, _obj: Any) -> None | dict[str, Any]:
     if data is None:
         return None
 
     return data._asdict()
+
+
+def serialize_pydantic_model(data: BaseModel, _obj: Any) -> None | dict[str, Any]:
+    return data.model_dump(exclude_unset=True, exclude_none=True)
 
 
 def serialize_timestamp_accessor(

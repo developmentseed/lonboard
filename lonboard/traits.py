@@ -10,7 +10,7 @@ from __future__ import annotations
 
 import sys
 import warnings
-from typing import TYPE_CHECKING, Any, NoReturn, TypeVar
+from typing import TYPE_CHECKING, Any, Generic, NoReturn, TypeVar
 from typing import cast as type_cast
 from urllib.parse import urlparse
 
@@ -24,6 +24,7 @@ from arro3.core import (
     Table,
     fixed_size_list_array,
 )
+from pydantic import BaseModel, ValidationError
 from traitlets import TraitError, Undefined
 from traitlets.utils.descriptions import class_of, describe
 
@@ -34,6 +35,7 @@ from lonboard._geoarrow.ops.coord_layout import convert_struct_column_to_interle
 from lonboard._serialization import (
     ACCESSOR_SERIALIZATION,
     TABLE_SERIALIZATION,
+    serialize_pydantic_model,
     serialize_view_state,
 )
 from lonboard._utils import get_geometry_column_index
@@ -443,6 +445,34 @@ class FloatAccessor(FixedErrorTraitType):
 
         value = value.cast(DataType.float32())
         return value.rechunk(max_chunksize=obj._rows_per_chunk)
+
+
+PydanticModelT = TypeVar("PydanticModelT", bound=BaseModel)
+
+
+class PydanticModelTrait(FixedErrorTraitType, Generic[PydanticModelT]):
+    """A trait to validate input for a pydantic model.
+
+    The pydantic model must be a subclass of `pydantic.BaseModel`.
+    """
+
+    klass: type[PydanticModelT]
+
+    def __init__(
+        self: TraitType,
+        klass: type[PydanticModelT],
+        *args: Any,
+        **kwargs: Any,
+    ) -> None:
+        self.klass = klass  # type: ignore[assignment]
+        super().__init__(*args, **kwargs)
+        self.tag(sync=True, to_json=serialize_pydantic_model)
+
+    def validate(self, obj: HasTraits, value: dict[str, Any]) -> BaseModel:
+        try:
+            return self.klass(**value)
+        except ValidationError as e:
+            self.error(obj, value, error=e)
 
 
 class TextAccessor(FixedErrorTraitType):
