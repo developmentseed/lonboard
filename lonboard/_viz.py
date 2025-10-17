@@ -165,8 +165,6 @@ def viz(
             [`PolygonLayer`][lonboard.PolygonLayer]s.
         map_kwargs: a `dict` of parameters to pass down to the generated
             [`Map`][lonboard.Map].
-        con: Deprecated: the active DuckDB connection. This argument has no effect and
-            might be removed in the future.
 
     For more control over rendering, construct [`Map`][lonboard.Map] and `Layer` objects
     directly.
