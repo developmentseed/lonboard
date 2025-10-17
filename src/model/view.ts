@@ -28,7 +28,6 @@ export abstract class BaseViewModel<ViewState> extends BaseModel {
   protected width: CommonViewProps<ViewState>["width"] | null;
   protected height: CommonViewProps<ViewState>["height"] | null;
   protected padding: CommonViewProps<ViewState>["padding"] | null;
-  protected controller: CommonViewProps<ViewState>["controller"] | null;
 
   constructor(model: WidgetModel, updateStateCallback: () => void) {
     super(model, updateStateCallback);
@@ -48,7 +47,6 @@ export abstract class BaseViewModel<ViewState> extends BaseModel {
       ...(isDefined(this.width) && { width: this.width }),
       ...(isDefined(this.height) && { height: this.height }),
       ...(isDefined(this.padding) && { padding: this.padding }),
-      ...(isDefined(this.controller) && { controller: this.controller }),
     };
   }
 
