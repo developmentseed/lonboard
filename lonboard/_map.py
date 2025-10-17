@@ -9,6 +9,7 @@ import traitlets
 import traitlets as t
 from ipywidgets import CallbackDispatcher
 
+from lonboard import _validators as validators
 from lonboard._base import BaseAnyWidget
 from lonboard._html_export import map_to_html
 from lonboard._layer import BaseLayer
@@ -28,6 +29,7 @@ if TYPE_CHECKING:
 
     from IPython.display import HTML  # type: ignore
 
+    from lonboard._validators.types import TraitProposal
     from lonboard.types.map import MapKwargs
 
     if sys.version_info >= (3, 12):
@@ -177,6 +179,13 @@ class Map(BaseAnyWidget):
         once it's been initially rendered.
 
     """
+
+    @t.validate("view_state")
+    def _validate_view_state(
+        self,
+        proposal: TraitProposal[ViewStateTrait, dict[str, Any], Map],
+    ) -> dict[str, Any] | None:
+        return validators.map.validate_view_state(proposal)
 
     _has_click_handlers = t.Bool(default_value=False, allow_none=False).tag(sync=True)
     """
