@@ -30,7 +30,7 @@ import * as arrow from "apache-arrow";
 import { parseParquetBuffers } from "../parquet.js";
 import { BaseLayerModel } from "./base-layer.js";
 import { isDefined } from "../util.js";
-import { earcutWorkerPool } from "./earcut-pool.js";
+import { EARCUT_WORKER_POOL } from "./earcut-pool.js";
 import {
   PointVector,
   ColorAccessorInput,
@@ -670,7 +670,7 @@ export class PolygonModel extends BaseArrowLayerModel {
     return {
       id: `${this.model.model_id}-${batchIndex}`,
       data: this.table.batches[batchIndex],
-      earcutWorkerPool,
+      earcutWorkerPool: EARCUT_WORKER_POOL,
       ...(isDefined(this.stroked) && { stroked: this.stroked }),
       ...(isDefined(this.filled) && { filled: this.filled }),
       ...(isDefined(this.extruded) && { extruded: this.extruded }),
@@ -868,7 +868,7 @@ export class SolidPolygonModel extends BaseArrowLayerModel {
     return {
       id: `${this.model.model_id}-${batchIndex}`,
       data: this.table.batches[batchIndex],
-      earcutWorkerPool,
+      earcutWorkerPool: EARCUT_WORKER_POOL,
       ...(isDefined(this.filled) && { filled: this.filled }),
       ...(isDefined(this.extruded) && { extruded: this.extruded }),
       ...(isDefined(this.wireframe) && { wireframe: this.wireframe }),
