@@ -1250,7 +1250,6 @@ class BasemapUrl(traitlets.Unicode):
         **kwargs: Any,
     ) -> None:
         super().__init__(*args, **kwargs)
-        self.tag(sync=True)
 
     def validate(self, obj: HasTraits | None, value: Any) -> Any:
         value = super().validate(obj, value)

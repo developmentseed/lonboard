@@ -279,6 +279,14 @@ class BaseLayer(BaseWidget):
     for an example.
     """
 
+    before_id = t.Unicode(None, allow_none=True).tag(sync=True)
+    """The ID of a layer in the Maplibre basemap layer stack. This deck.gl layer will be
+    rendered just before the layer with the given ID.
+
+    This only has an effect when the map's `basemap` is a `MaplibreBasemap`, and the map
+    is rendering in `"interleaved"` mode.
+    """
+
 
 def default_geoarrow_viewport(
     table: Table,

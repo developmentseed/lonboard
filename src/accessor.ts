@@ -1,6 +1,7 @@
 import * as arrow from "apache-arrow";
-import { parseParquetBuffers } from "./parquet.js";
 import { useState, useEffect } from "react";
+
+import { parseParquetBuffers } from "./parquet.js";
 
 type AccessorRaw = DataView[] | unknown;
 
