@@ -241,8 +241,6 @@ function App() {
     pickingRadius: pickingRadius,
     onClick: onMapClickHandler,
     onHover: onMapHoverHandler,
-    // @ts-expect-error useDevicePixels should allow number
-    // https://github.com/visgl/deck.gl/pull/9826
     useDevicePixels: isDefined(useDevicePixels) ? useDevicePixels : true,
     onViewStateChange: (event) => {
       const { viewState } = event;
