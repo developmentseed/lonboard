@@ -221,6 +221,9 @@ class Map(BaseAnyWidget):
 
     basemap: t.Instance[MaplibreBasemap | None] = t.Instance(
         MaplibreBasemap,
+        # If both `args` and `kw` are None, then the default value is None.
+        # Set empty kw so that the default is MaplibreBasemap() with default params
+        kw={},
         allow_none=True,
     ).tag(
         sync=True,
