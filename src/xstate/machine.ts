@@ -1,6 +1,6 @@
-import { assign, createMachine } from "xstate";
 import { PickingInfo } from "@deck.gl/core";
 import { GeoArrowPickingInfo } from "@geoarrow/deck.gl-layers";
+import { assign, createMachine } from "xstate";
 
 export const machine = createMachine(
   {

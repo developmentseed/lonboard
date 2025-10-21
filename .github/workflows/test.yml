@@ -25,7 +25,7 @@ jobs:
 
       # Note: this should stay synced with the volta-pinned version in
       # package.json
-      - uses: actions/setup-node@v5
+      - uses: actions/setup-node@v6
         with:
           node-version: "18"
 
@@ -43,7 +43,7 @@ jobs:
           npm ci
 
       - name: Install a specific version of uv
-        uses: astral-sh/setup-uv@v6
+        uses: astral-sh/setup-uv@v7
         with:
           enable-cache: true
           version: "0.4.x"

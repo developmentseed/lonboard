@@ -1,11 +1,10 @@
 """High-level, super-simple API for visualizing GeoDataFrames."""
 
-# ruff: noqa: C901, PLR0911, PLR0912, PLR0913, PLR0915
+# ruff: noqa: C901, PLR0911, PLR0912, PLR0915
 
 from __future__ import annotations
 
 import json
-import warnings
 from textwrap import dedent
 from typing import TYPE_CHECKING, Any, Protocol, TypeAlias, cast
 
@@ -26,7 +25,7 @@ from lonboard._utils import (
     split_mixed_gdf,
     split_mixed_shapely_array,
 )
-from lonboard.basemap import CartoBasemap
+from lonboard.basemap import CartoStyle, MaplibreBasemap
 
 if TYPE_CHECKING:
     import duckdb
@@ -89,7 +88,6 @@ def viz(
     path_kwargs: PathLayerKwargs | None = None,
     polygon_kwargs: PolygonLayerKwargs | None = None,
     map_kwargs: MapKwargs | None = None,
-    con: duckdb.DuckDBPyConnection | None = None,
 ) -> Map:
     """Plot your data easily.
 
@@ -167,8 +165,6 @@ def viz(
             [`PolygonLayer`][lonboard.PolygonLayer]s.
         map_kwargs: a `dict` of parameters to pass down to the generated
             [`Map`][lonboard.Map].
-        con: Deprecated: the active DuckDB connection. This argument has no effect and
-            might be removed in the future.
 
     For more control over rendering, construct [`Map`][lonboard.Map] and `Layer` objects
     directly.
@@ -178,14 +174,6 @@ def viz(
 
     """
     global COLOR_COUNTER  # noqa: PLW0603 Using the global statement to update `COLOR_COUNTER` is discouraged
-
-    if con is not None:
-        warnings.warn(
-            "The 'con' argument is deprecated and may be removed in a future version. "
-            "It has no effect.",
-            category=DeprecationWarning,
-            stacklevel=2,
-        )
 
     if isinstance(data, (list, tuple)):
         layers: list[ScatterplotLayer | PathLayer | PolygonLayer] = []
@@ -212,8 +200,8 @@ def viz(
 
     map_kwargs = map_kwargs if map_kwargs else {}
 
-    if "basemap_style" not in map_kwargs:
-        map_kwargs["basemap_style"] = CartoBasemap.DarkMatter
+    if "basemap_style" not in map_kwargs and "basemap" not in map_kwargs:
+        map_kwargs["basemap"] = MaplibreBasemap(style=CartoStyle.DarkMatter)
 
     return Map(layers=layers, **map_kwargs)
 

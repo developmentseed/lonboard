@@ -13,8 +13,6 @@
 
 from __future__ import annotations
 
-import warnings
-from textwrap import dedent
 from typing import TYPE_CHECKING, Any
 
 import ipywidgets
@@ -279,6 +277,14 @@ class BaseLayer(BaseWidget):
     from JavaScript. Refer
     [here](https://ipywidgets.readthedocs.io/en/stable/examples/Widget%20Events.html#signatures)
     for an example.
+    """
+
+    before_id = t.Unicode(None, allow_none=True).tag(sync=True)
+    """The ID of a layer in the Maplibre basemap layer stack. This deck.gl layer will be
+    rendered just before the layer with the given ID.
+
+    This only has an effect when the map's `basemap` is a `MaplibreBasemap`, and the map
+    is rendering in `"interleaved"` mode.
     """
 
 
@@ -2030,21 +2036,9 @@ class HeatmapLayer(BaseArrowLayer):
         table: ArrowStreamExportable,
         **kwargs: Unpack[HeatmapLayerKwargs],
     ) -> None:
-        err_msg = """
-        The `HeatmapLayer` is not currently working.
-
-        As of Lonboard v0.10, Lonboard upgraded to version 9.0 of the underlying
-        [deck.gl](https://deck.gl/) library. deck.gl [appears to have a
-        bug](https://github.com/visgl/deck.gl/issues/8960#issuecomment-2284791644) with
-        the HeatmapLayer in 9.0, that has not yet been fixed.
-
-        Please temporarily downgrade to Lonboard v0.9 if you would like to use the
-        `HeatmapLayer`.
-        """
-        warnings.warn(dedent(err_msg), UserWarning)
-
         # NOTE: we override the default for _rows_per_chunk because otherwise we render
-        # one heatmap per _chunk_ not for the entire dataset.
+        # one heatmap per _chunk_ not for the entire dataset (we don't have a way to
+        # concat batches in the frontend)
         table_o3 = Table.from_arrow(table)
         super().__init__(table=table, _rows_per_chunk=len(table_o3), **kwargs)
 

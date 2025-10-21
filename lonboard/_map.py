@@ -1,6 +1,6 @@
 from __future__ import annotations
 
-from io import StringIO
+import warnings
 from pathlib import Path
 from typing import IO, TYPE_CHECKING, Any, TextIO, overload
 
@@ -8,15 +8,14 @@ import ipywidgets
 import traitlets
 import traitlets as t
 from ipywidgets import CallbackDispatcher
-from ipywidgets.embed import dependency_state, embed_minimal_html
 
 from lonboard._base import BaseAnyWidget
+from lonboard._html_export import map_to_html
 from lonboard._layer import BaseLayer
 from lonboard._viewport import compute_view
-from lonboard.basemap import CartoBasemap
+from lonboard.basemap import CartoStyle, MaplibreBasemap
 from lonboard.traits import (
     DEFAULT_INITIAL_VIEW_STATE,
-    BasemapUrl,
     HeightTrait,
     VariableLengthTuple,
     ViewStateTrait,
@@ -38,25 +37,6 @@ if TYPE_CHECKING:
 
 # bundler yields lonboard/static/{index.js,styles.css}
 bundler_output_dir = Path(__file__).parent / "static"
-
-# HTML template to override exported map as 100% height
-_HTML_TEMPLATE = """<!DOCTYPE html>
-<html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <title>{title}</title>
-</head>
-<style>
-    html {{ height: 100%; }}
-    body {{ height: 100%; overflow: hidden;}}
-    .widget-subarea {{ height: 100%; }}
-    .jupyter-widgets-disconnected {{ height: 100%; }}
-</style>
-<body>
-{snippet}
-</body>
-</html>
-"""
 
 
 class Map(BaseAnyWidget):
@@ -89,6 +69,8 @@ class Map(BaseAnyWidget):
     def __init__(
         self,
         layers: BaseLayer | Sequence[BaseLayer],
+        *,
+        basemap_style: str | CartoStyle | None = None,
         **kwargs: Unpack[MapKwargs],
     ) -> None:
         """Create a new Map.
@@ -100,12 +82,28 @@ class Map(BaseAnyWidget):
             layers: One or more layers to render on this map.
 
         Keyword Args:
+            basemap_style: DEPRECATED. Use `basemap` instead. A URL to a MapLibre-compatible basemap style.
+
+                Various styles are provided in [`lonboard.basemap`](https://developmentseed.org/lonboard/latest/api/basemap/).
+
             kwargs: Passed on to class variables.
 
         Returns:
             A Map object.
 
         """
+        if basemap_style is not None:
+            warnings.warn(
+                "`basemap_style` is deprecated and will be removed in 0.14. Use `basemap` instead.",
+                DeprecationWarning,
+                stacklevel=2,
+            )
+            if "basemap" in kwargs:
+                raise ValueError(
+                    "Cannot pass both `basemap_style` and `basemap`. Use only `basemap`.",
+                )
+            kwargs["basemap"] = MaplibreBasemap(style=basemap_style)
+
         if isinstance(layers, BaseLayer):
             layers = [layers]
 
@@ -115,7 +113,9 @@ class Map(BaseAnyWidget):
             buffers: list[bytes],  # noqa: ARG001
         ) -> None:
             if msg.get("kind") == "on-click":
-                self._click_handlers(tuple(msg.get("coordinate")))
+                coord = msg.get("coordinate")
+                if coord is not None:
+                    self._click_handlers(tuple(coord))
 
         super().__init__(layers=layers, **kwargs)
         self._click_handlers = CallbackDispatcher()
@@ -219,16 +219,45 @@ class Map(BaseAnyWidget):
     - Default: `5`
     """
 
-    basemap_style = BasemapUrl(CartoBasemap.PositronNoLabels)
-    """
-    A URL to a MapLibre-compatible basemap style.
+    basemap: t.Instance[MaplibreBasemap | None] = t.Instance(
+        MaplibreBasemap,
+        # If both `args` and `kw` are None, then the default value is None.
+        # Set empty kw so that the default is MaplibreBasemap() with default params
+        kw={},
+        allow_none=True,
+    ).tag(
+        sync=True,
+        **ipywidgets.widget_serialization,
+    )
+    """A basemap instance.
 
-    Various styles are provided in [`lonboard.basemap`](https://developmentseed.org/lonboard/latest/api/basemap/).
+    See [`lonboard.basemap.MaplibreBasemap`] for more information.
 
-    - Type: `str`, holding a URL hosting a basemap style.
-    - Default
-      [`lonboard.basemap.CartoBasemap.PositronNoLabels`][lonboard.basemap.CartoBasemap.PositronNoLabels]
+    Pass `None` to disable rendering a basemap.
     """
+
+    @property
+    def basemap_style(self) -> str | None:
+        """The URL of the basemap style in use."""
+        warnings.warn(
+            "`basemap_style` is deprecated and will be removed in 0.14. Use `basemap` instead.",
+            DeprecationWarning,
+            stacklevel=2,
+        )
+
+        if self.basemap is not None:
+            return self.basemap.style
+
+        return None
+
+    @basemap_style.setter
+    def basemap_style(self, value: str | CartoStyle) -> None:
+        warnings.warn(
+            "`basemap_style` is deprecated and will be removed in 0.14. Use `basemap` instead.",
+            DeprecationWarning,
+            stacklevel=2,
+        )
+        self.basemap = MaplibreBasemap(style=value)
 
     custom_attribution = t.Union(
         [
@@ -402,6 +431,7 @@ class Map(BaseAnyWidget):
 
         Args:
             layers: New layers to add to the map. This can be:
+
                 - a layer instance
                 - a list or tuple of layer instances
                 - another `Map` instance, in which case its layers will be added to this
@@ -565,34 +595,7 @@ class Map(BaseAnyWidget):
             If `filename` is not passed, returns the HTML content as a `str`.
 
         """
-
-        def inner(fp: str | Path | TextIO | IO[str]) -> None:
-            original_height = self.height
-            try:
-                with self.hold_trait_notifications():
-                    self.height = "100%"
-                    embed_minimal_html(
-                        fp,
-                        views=[self],
-                        title=title or "Lonboard export",
-                        template=_HTML_TEMPLATE,
-                        drop_defaults=False,
-                        # Necessary to pass the state of _this_ specific map. Otherwise, the
-                        # state of all known widgets will be included, ballooning the file size.
-                        state=dependency_state((self), drop_defaults=False),
-                    )
-            finally:
-                # If the map had a height before the HTML was generated, reset it.
-                self.height = original_height
-
-        if filename is None:
-            with StringIO() as sio:
-                inner(sio)
-                return sio.getvalue()
-
-        else:
-            inner(filename)
-            return None
+        return map_to_html(self, filename=filename, title=title)
 
     def as_html(self) -> HTML:
         """Render the current map as a static HTML file in IPython.
