@@ -16,8 +16,14 @@ const DeckFirstRenderer: React.FC<MapRendererProps & DeckFirstRendererProps> = (
   mapProps,
 ) => {
   // Remove maplibre-specific props before passing to DeckGL
-  const { mapStyle, customAttribution, deckRef, renderBasemap, ...deckProps } =
-    mapProps;
+  const {
+    controls,
+    mapStyle,
+    customAttribution,
+    deckRef,
+    renderBasemap,
+    ...deckProps
+  } = mapProps;
   return (
     <DeckGL
       ref={deckRef}
@@ -30,6 +36,7 @@ const DeckFirstRenderer: React.FC<MapRendererProps & DeckFirstRendererProps> = (
       }}
       {...deckProps}
     >
+      {controls.map((control) => control.renderDeck())}
       {renderBasemap && (
         <Map mapStyle={mapStyle} customAttribution={customAttribution}></Map>
       )}
