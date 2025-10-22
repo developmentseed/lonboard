@@ -444,6 +444,7 @@ class Map(BaseAnyWidget):
 
         Args:
             layers: New layers to add to the map. This can be:
+
                 - a layer instance
                 - a list or tuple of layer instances
                 - another `Map` instance, in which case its layers will be added to this
