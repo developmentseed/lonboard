@@ -2,8 +2,8 @@ import type { DeckProps, View } from "@deck.gl/core";
 import type { DeckGLRef } from "@deck.gl/react";
 import type { RefObject } from "react";
 
-type ViewOrViews = View | View[] | null;
-export type MapRendererProps<ViewsT extends ViewOrViews = null> = Pick<
+type ViewOrViews = View | View[];
+export type MapRendererProps<ViewsT extends ViewOrViews = ViewOrViews> = Pick<
   DeckProps<ViewsT>,
   | "getCursor"
   | "getTooltip"
@@ -15,8 +15,17 @@ export type MapRendererProps<ViewsT extends ViewOrViews = null> = Pick<
   | "parameters"
   | "pickingRadius"
   | "useDevicePixels"
+  | "views"
 > & {
   mapStyle: string;
   customAttribution: string;
   deckRef?: RefObject<DeckGLRef | null>;
+};
+
+export type OverlayRendererProps = {
+  interleaved: boolean;
+};
+
+export type DeckFirstRendererProps = {
+  renderBasemap: boolean;
 };

@@ -1,7 +1,8 @@
 // NOTE: the content of this file is isolated to avoid circular imports.
 
-import { parseAccessor } from "../accessor.js";
 import type { WidgetModel } from "@jupyter-widgets/base";
+
+import { parseAccessor } from "../accessor.js";
 
 export abstract class BaseModel {
   protected model: WidgetModel;
@@ -14,10 +15,6 @@ export abstract class BaseModel {
     this.updateStateCallback = updateStateCallback;
     this.callbacks = new Map();
     this.callbacks.set("change", updateStateCallback);
-  }
-
-  async loadSubModels() {
-    return;
   }
 
   /**

@@ -1,7 +1,9 @@
+import { MapboxOverlay, MapboxOverlayProps } from "@deck.gl/mapbox";
 import React from "react";
 import Map, { useControl } from "react-map-gl/maplibre";
-import { MapboxOverlay, MapboxOverlayProps } from "@deck.gl/mapbox";
-import type { MapRendererProps } from "./types";
+
+import type { MapRendererProps, OverlayRendererProps } from "./types";
+import { isGlobeView } from "../util";
 
 /**
  * DeckGLOverlay component that integrates deck.gl with react-map-gl
@@ -23,15 +25,12 @@ function DeckGLOverlay(props: MapboxOverlayProps) {
  * MapboxOverlay. This approach gives the base map more control and can
  * enable features like interleaved rendering between map and deck layers.
  */
-const OverlayRenderer: React.FC<MapRendererProps> = (mapProps) => {
+const OverlayRenderer: React.FC<MapRendererProps & OverlayRendererProps> = (
+  mapProps,
+) => {
   // Remove maplibre-specific props before passing to DeckGL
-  const {
-    mapStyle,
-    customAttribution,
-    initialViewState,
-    // deckRef,
-    ...deckProps
-  } = mapProps;
+  const { mapStyle, customAttribution, initialViewState, views, ...deckProps } =
+    mapProps;
   return (
     <Map
       reuseMaps
@@ -39,9 +38,9 @@ const OverlayRenderer: React.FC<MapRendererProps> = (mapProps) => {
       mapStyle={mapStyle}
       attributionControl={{ customAttribution }}
       style={{ width: "100%", height: "100%" }}
+      {...(isGlobeView(views) && { projection: "globe" })}
     >
       <DeckGLOverlay
-        // ref={deckRef}
         // https://deck.gl/docs/api-reference/core/deck#_typedarraymanagerprops
         _typedArrayManagerProps={{
           overAlloc: 1,

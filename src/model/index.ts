@@ -19,3 +19,4 @@ export {
   NavigationModel,
   ScaleModel,
 } from "./map-control.js";
+export { initializeChildModels } from "./initialize.js";

@@ -47,6 +47,7 @@ if TYPE_CHECKING:
     from traitlets.utils.sentinel import Sentinel
 
     from lonboard._layer import BaseArrowLayer
+    from lonboard._map import Map
 
 DEFAULT_INITIAL_VIEW_STATE = {
     "latitude": 10,
@@ -943,7 +944,7 @@ class ViewStateTrait(FixedErrorTraitType):
 
         self.tag(sync=True, to_json=serialize_view_state)
 
-    def validate(self, obj: Any, value: Any) -> None | ViewState:
+    def validate(self, obj: Map, value: Any) -> None | ViewState:
         if value is None:
             return None
 
@@ -1078,7 +1079,6 @@ class BasemapUrl(traitlets.Unicode):
         **kwargs: Any,
     ) -> None:
         super().__init__(*args, **kwargs)
-        self.tag(sync=True)
 
     def validate(self, obj: HasTraits | None, value: Any) -> Any:
         value = super().validate(obj, value)
