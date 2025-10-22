@@ -11,6 +11,7 @@ import {
   NavigationControl,
   ScaleControl,
 } from "react-map-gl/maplibre";
+
 import { isDefined } from "../util";
 import { BaseModel } from "./base";
 
@@ -45,7 +46,7 @@ export abstract class BaseMapControlModel extends BaseModel {
   abstract renderMaplibre(): React.JSX.Element | null;
 }
 
-export class FullscreenModel extends BaseMapControlModel {
+export class FullscreenControlModel extends BaseMapControlModel {
   static controlType = "fullscreen";
 
   constructor(model: WidgetModel, updateStateCallback: () => void) {
@@ -61,7 +62,7 @@ export class FullscreenModel extends BaseMapControlModel {
   }
 }
 
-export class NavigationModel extends BaseMapControlModel {
+export class NavigationControlModel extends BaseMapControlModel {
   static controlType = "navigation";
 
   protected showCompass?: boolean;
@@ -103,7 +104,7 @@ export class NavigationModel extends BaseMapControlModel {
   }
 }
 
-export class ScaleModel extends BaseMapControlModel {
+export class ScaleControlModel extends BaseMapControlModel {
   static controlType = "scale";
 
   protected maxWidth?: number;
@@ -137,22 +138,21 @@ export async function initializeControl(
   const controlType = model.get("_control_type");
   let controlModel: BaseMapControlModel;
   switch (controlType) {
-    case FullscreenModel.controlType:
-      controlModel = new FullscreenModel(model, updateStateCallback);
+    case FullscreenControlModel.controlType:
+      controlModel = new FullscreenControlModel(model, updateStateCallback);
       break;
 
-    case NavigationModel.controlType:
-      controlModel = new NavigationModel(model, updateStateCallback);
+    case NavigationControlModel.controlType:
+      controlModel = new NavigationControlModel(model, updateStateCallback);
       break;
 
-    case ScaleModel.controlType:
-      controlModel = new ScaleModel(model, updateStateCallback);
+    case ScaleControlModel.controlType:
+      controlModel = new ScaleControlModel(model, updateStateCallback);
       break;
 
     default:
       throw new Error(`no control supported for ${controlType}`);
   }
 
-  await controlModel.loadSubModels();
   return controlModel;
 }

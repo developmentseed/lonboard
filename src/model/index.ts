@@ -15,8 +15,8 @@ export {
 } from "./extension.js";
 export {
   BaseMapControlModel,
-  FullscreenModel,
-  NavigationModel,
-  ScaleModel,
+  FullscreenControlModel,
+  NavigationControlModel,
+  ScaleControlModel,
 } from "./map-control.js";
 export { initializeChildModels } from "./initialize.js";
