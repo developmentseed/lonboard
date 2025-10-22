@@ -943,8 +943,9 @@ export class SimpleMeshModel extends BaseLayerModel {
     this.initRegularAttribute("wireframe", "wireframe");
   }
 
-  layerProps(): Omit<SimpleMeshLayerProps, "id"> {
+  layerProps(): SimpleMeshLayerProps {
     return {
+      id: this.model.model_id,
       data: DUMMY_DATA,
       mesh: {
         positions: this.positions,
