@@ -292,7 +292,7 @@ function App() {
     pickingRadius: pickingRadius,
     onClick: onMapClickHandler,
     onHover: onMapHoverHandler,
-    useDevicePixels: isDefined(useDevicePixels) ? useDevicePixels : true,
+    ...(isDefined(useDevicePixels) && { useDevicePixels }),
     onViewStateChange: (event) => {
       const { viewState } = event;
 
