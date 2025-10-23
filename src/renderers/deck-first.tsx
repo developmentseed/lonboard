@@ -1,4 +1,4 @@
-import DeckGL from "@deck.gl/react";
+import DeckGL, { FullscreenWidget, ZoomWidget } from "@deck.gl/react";
 import React from "react";
 import Map from "react-map-gl/maplibre";
 
@@ -36,6 +36,7 @@ const DeckFirstRenderer: React.FC<MapRendererProps & DeckFirstRendererProps> = (
       }}
       {...deckProps}
     >
+      <ZoomWidget id="my-fullscreen" placement="top-left" />
       {controls.map((control) => control.renderDeck())}
       {renderBasemap && (
         <Map mapStyle={mapStyle} customAttribution={customAttribution}></Map>
