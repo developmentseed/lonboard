@@ -2,7 +2,7 @@ import { createRender, useModel, useModelState } from "@anywidget/react";
 import type { Initialize, Render } from "@anywidget/types";
 import { MapViewState, PickingInfo } from "@deck.gl/core";
 import { DeckGLRef } from "@deck.gl/react";
-import type { IWidgetManager, WidgetModel } from "@jupyter-widgets/base";
+import type { IWidgetManager } from "@jupyter-widgets/base";
 import { NextUIProvider } from "@nextui-org/react";
 import throttle from "lodash.throttle";
 import * as React from "react";
@@ -10,14 +10,12 @@ import { useCallback, useEffect, useRef, useState } from "react";
 import { v4 as uuidv4 } from "uuid";
 
 import { flyTo } from "./actions/fly-to.js";
-import { DEFAULT_MAP_STYLE, MaplibreBasemapModel } from "./model/basemap.js";
 import {
-  initializeLayer,
-  type BaseLayerModel,
-  initializeChildModels,
-} from "./model/index.js";
-import { loadModel } from "./model/initialize.js";
-import { BaseViewModel, initializeView } from "./model/view.js";
+  useBasemapState,
+  useLayersState,
+  useViewsState,
+} from "./hooks/index.js";
+import { DEFAULT_MAP_STYLE } from "./model/basemap.js";
 import { initParquetWasm } from "./parquet.js";
 import DeckFirstRenderer from "./renderers/deck-first.js";
 import OverlayRenderer from "./renderers/overlay.js";
@@ -94,6 +92,10 @@ function App() {
   const [mapId] = useState(uuidv4());
   const [childLayerIds] = useModelState<string[]>("layers");
   const [viewIds] = useModelState<string | string[] | null>("views");
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
+  const [_selectedBounds, setSelectedBounds] = useModelState<number[] | null>(
+    "selected_bounds",
+  );
 
   // initialViewState is the value of view_state on the Python side. This is
   // called `initial` here because it gets passed in to deck's
@@ -124,124 +126,26 @@ function App() {
   const [stateCounter, setStateCounter] = useState<Date>(new Date());
   const updateStateCallback = () => setStateCounter(new Date());
 
-  //////////////////////
-  // Basemap state
-  //////////////////////
-
-  const [basemapState, setBasemapState] = useState<MaplibreBasemapModel | null>(
-    null,
+  const basemapState = useBasemapState(
+    basemapModelId,
+    model.widget_manager as IWidgetManager,
+    updateStateCallback,
   );
 
-  useEffect(() => {
-    const loadBasemap = async () => {
-      try {
-        if (!basemapModelId) {
-          setBasemapState(null);
-          return;
-        }
-
-        const basemapModel = await loadModel(
-          model.widget_manager as IWidgetManager,
-          basemapModelId,
-        );
-        const basemap = new MaplibreBasemapModel(
-          basemapModel,
-          updateStateCallback,
-        );
-        setBasemapState(basemap);
-      } catch (error) {
-        console.error("Error loading basemap model:", error);
-      }
-    };
-
-    loadBasemap();
-  }, [basemapModelId]);
-
-  //////////////////////
-  // Layers state
-  //////////////////////
-
-  const [layersState, setLayersState] = useState<
-    Record<string, BaseLayerModel>
-  >({});
-
-  useEffect(() => {
-    const loadAndUpdateLayers = async () => {
-      try {
-        const layerModels = await initializeChildModels<BaseLayerModel>(
-          model.widget_manager as IWidgetManager,
-          childLayerIds,
-          layersState,
-          async (model: WidgetModel) =>
-            initializeLayer(model, updateStateCallback),
-        );
-
-        setLayersState(layerModels);
-
-        if (!isDrawingBBoxSelection) {
-          // Note: selected_bounds is a property of the **Map**. In the future,
-          // when we use deck.gl to perform picking, we'll have
-          // `selected_indices` as a property of each individual layer.
-          model.set("selected_bounds", bboxSelectBounds);
-          model.save_changes();
-          // childModels.forEach((layer) => {
-          //   layer.set("selected_bounds", bboxSelectBounds);
-          //   layer.save_changes();
-          // });
-        }
-      } catch (error) {
-        console.error("Error loading child models or setting bounds:", error);
-      }
-    };
-
-    loadAndUpdateLayers();
-  }, [childLayerIds, bboxSelectBounds, isDrawingBBoxSelection]);
-
-  const layers = Object.values(layersState).flatMap((layerModel) =>
-    layerModel.render(),
+  const layers = useLayersState(
+    childLayerIds,
+    model.widget_manager as IWidgetManager,
+    updateStateCallback,
+    bboxSelectBounds,
+    isDrawingBBoxSelection,
+    setSelectedBounds,
   );
 
-  //////////////////////
-  // Views state
-  //////////////////////
-
-  const [viewsState, setViewsState] = useState<
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    Record<string, BaseViewModel<any>>
-  >({});
-
-  useEffect(() => {
-    const loadAndUpdateViews = async () => {
-      try {
-        if (!viewIds) {
-          setViewsState({});
-          return;
-        }
-
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any
-        const viewsModels = await initializeChildModels<BaseViewModel<any>>(
-          model.widget_manager as IWidgetManager,
-          typeof viewIds === "string" ? [viewIds] : viewIds,
-          viewsState,
-          async (model: WidgetModel) =>
-            initializeView(model, updateStateCallback),
-        );
-
-        setViewsState(viewsModels);
-      } catch (error) {
-        console.error("Error loading child views:", error);
-      }
-    };
-
-    loadAndUpdateViews();
-  }, [viewIds]);
-
-  const _deckViews = Object.values(viewsState).map((viewModel) =>
-    viewModel.build(),
+  const views = useViewsState(
+    viewIds,
+    model.widget_manager as IWidgetManager,
+    updateStateCallback,
   );
-  // When the user hasn't specified any views, we let deck.gl create
-  // a default view, and so set undefined here.
-  const views = _deckViews.length > 0 ? _deckViews : undefined;
 
   const onMapClickHandler = useCallback((info: PickingInfo) => {
     // We added this flag to prevent the hover event from firing after a
