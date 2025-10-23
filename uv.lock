@@ -1791,6 +1791,7 @@ cli = [
 geopandas = [
     { name = "geopandas" },
     { name = "pandas" },
+    { name = "pyarrow" },
     { name = "shapely" },
 ]
 movingpandas = [
@@ -1845,6 +1846,7 @@ requires-dist = [
     { name = "movingpandas", marker = "extra == 'movingpandas'", specifier = ">=0.17" },
     { name = "numpy", specifier = ">=1.14" },
     { name = "pandas", marker = "extra == 'geopandas'", specifier = ">=2" },
+    { name = "pyarrow", marker = "extra == 'geopandas'", specifier = ">=16" },
     { name = "pyogrio", marker = "extra == 'cli'", specifier = ">=0.8" },
     { name = "pyproj", specifier = ">=3.3" },
     { name = "shapely", marker = "extra == 'cli'", specifier = ">=2" },
