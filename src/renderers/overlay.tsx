@@ -29,8 +29,14 @@ const OverlayRenderer: React.FC<MapRendererProps & OverlayRendererProps> = (
   mapProps,
 ) => {
   // Remove maplibre-specific props before passing to DeckGL
-  const { mapStyle, customAttribution, initialViewState, views, ...deckProps } =
-    mapProps;
+  const {
+    controls,
+    mapStyle,
+    customAttribution,
+    initialViewState,
+    views,
+    ...deckProps
+  } = mapProps;
   return (
     <Map
       reuseMaps
@@ -40,6 +46,7 @@ const OverlayRenderer: React.FC<MapRendererProps & OverlayRendererProps> = (
       style={{ width: "100%", height: "100%" }}
       {...(isGlobeView(views) && { projection: "globe" })}
     >
+      {controls.map((control) => control.renderMaplibre())}
       <DeckGLOverlay
         // https://deck.gl/docs/api-reference/core/deck#_typedarraymanagerprops
         _typedArrayManagerProps={{

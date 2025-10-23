@@ -13,4 +13,10 @@ export {
   PathStyleExtension,
   initializeExtension,
 } from "./extension.js";
+export {
+  BaseMapControlModel,
+  FullscreenControlModel,
+  NavigationControlModel,
+  ScaleControlModel,
+} from "./map-control.js";
 export { initializeChildModels } from "./initialize.js";

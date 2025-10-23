@@ -15,8 +15,10 @@ import {
   initializeLayer,
   type BaseLayerModel,
   initializeChildModels,
+  BaseMapControlModel,
 } from "./model/index.js";
 import { loadModel } from "./model/initialize.js";
+import { initializeControl } from "./model/map-control.js";
 import { BaseViewModel, initializeView } from "./model/view.js";
 import { initParquetWasm } from "./parquet.js";
 import DeckFirstRenderer from "./renderers/deck-first.js";
@@ -94,6 +96,7 @@ function App() {
   const [mapId] = useState(uuidv4());
   const [childLayerIds] = useModelState<string[]>("layers");
   const [viewIds] = useModelState<string | string[] | null>("views");
+  const [controlsIds] = useModelState<string[]>("controls");
 
   // initialViewState is the value of view_state on the Python side. This is
   // called `initial` here because it gets passed in to deck's
@@ -156,6 +159,36 @@ function App() {
 
     loadBasemap();
   }, [basemapModelId]);
+
+  //////////////////////
+  // Controls state
+  //////////////////////
+
+  const [controlsState, setControlsState] = useState<
+    Record<string, BaseMapControlModel>
+  >({});
+
+  useEffect(() => {
+    const loadMapControls = async () => {
+      try {
+        const controlsModels = await initializeChildModels<BaseMapControlModel>(
+          model.widget_manager as IWidgetManager,
+          controlsIds,
+          controlsState,
+          async (model: WidgetModel) =>
+            initializeControl(model, updateStateCallback),
+        );
+
+        setControlsState(controlsModels);
+      } catch (error) {
+        console.error("Error loading controls:", error);
+      }
+    };
+
+    loadMapControls();
+  }, [controlsIds]);
+
+  const controls = Object.values(controlsState);
 
   //////////////////////
   // Layers state
@@ -311,6 +344,7 @@ function App() {
     },
     parameters: parameters || {},
     views,
+    controls,
   };
 
   const overlayRenderProps: OverlayRendererProps = {

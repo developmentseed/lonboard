@@ -2,12 +2,14 @@ from collections.abc import Sequence
 from functools import partial
 from typing import Any
 
-import traitlets
+import traitlets as t
 from ipywidgets import FloatRangeSlider
 from ipywidgets.widgets.trait_types import TypedTuple
 
 # Import from source to allow mkdocstrings to link to base class
 from ipywidgets.widgets.widget_box import VBox
+
+from lonboard._base import BaseWidget
 
 
 class MultiRangeSlider(VBox):
@@ -62,7 +64,7 @@ class MultiRangeSlider(VBox):
     # We use a tuple to force reassignment to update the list
     # This is because list mutations do not get propagated as events
     # https://github.com/jupyter-widgets/ipywidgets/blob/b2531796d414b0970f18050d6819d932417b9953/python/ipywidgets/ipywidgets/widgets/widget_box.py#L52-L54
-    value = TypedTuple(trait=TypedTuple(trait=traitlets.Float())).tag(sync=True)
+    value = TypedTuple(trait=TypedTuple(trait=t.Float())).tag(sync=True)
 
     def __init__(self, children: Sequence[FloatRangeSlider], **kwargs: Any) -> None:
         """Create a new MultiRangeSlider."""
@@ -88,3 +90,74 @@ class MultiRangeSlider(VBox):
             initial_values.append(child.value)
 
         super().__init__(children, value=initial_values, **kwargs)
+
+
+class BaseControl(BaseWidget):
+    """A deck.gl or Maplibre Control."""
+
+    position = t.Union(
+        [
+            t.Unicode("top-left"),
+            t.Unicode("top-right"),
+            t.Unicode("bottom-left"),
+            t.Unicode("bottom-right"),
+        ],
+        allow_none=True,
+        default_value=None,
+    ).tag(sync=True)
+    """Position of the control in the map.
+    """
+
+
+class FullscreenControl(BaseControl):
+    """A deck.gl FullscreenControl."""
+
+    _control_type = t.Unicode("fullscreen").tag(sync=True)
+
+
+class NavigationControl(BaseControl):
+    """A deck.gl NavigationControl."""
+
+    _control_type = t.Unicode("navigation").tag(sync=True)
+
+    show_compass = t.Bool(allow_none=True, default_value=None).tag(sync=True)
+    """Whether to show the compass button.
+
+    Default `true`.
+    """
+
+    show_zoom = t.Bool(allow_none=True, default_value=None).tag(sync=True)
+    """Whether to show the zoom buttons.
+
+    Default `true`.
+    """
+
+    visualize_pitch = t.Bool(allow_none=True, default_value=None).tag(sync=True)
+    """Whether to enable pitch visualization.
+
+    Default `true`.
+    """
+
+    visualize_roll = t.Bool(allow_none=True, default_value=None).tag(sync=True)
+    """Whether to enable roll visualization.
+
+    Default `false`.
+    """
+
+
+class ScaleControl(BaseControl):
+    """A deck.gl ScaleControl."""
+
+    _control_type = t.Unicode("scale").tag(sync=True)
+
+    max_width = t.Int(allow_none=True, default_value=None).tag(sync=True)
+    """The maximum width of the scale control in pixels.
+
+    Default `100`.
+    """
+
+    unit = t.Unicode(allow_none=True, default_value=None).tag(sync=True)
+    """The unit of the scale.
+
+    One of `'metric'`, `'imperial'`, or `'nautical'`. Default is `'metric'`.
+    """
