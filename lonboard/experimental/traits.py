@@ -331,12 +331,16 @@ class TextureTrait(FixedErrorTraitType):
         value = np.ascontiguousarray(value)
 
         return {
-            "width": value.shape[1],
             "height": value.shape[0],
+            "width": value.shape[1],
             "data": memoryview(value),
         }
 
     def validate(self, obj: BaseArrowLayer, value) -> Any:
+        # Pre-validated input from existing layer state
+        if isinstance(value, dict) and set(value.keys()) == {"height", "width", "data"}:
+            return value
+
         # str input can be an image to a remote URL
         if isinstance(value, str):
             return value

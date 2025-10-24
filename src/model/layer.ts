@@ -909,11 +909,13 @@ export class SurfaceModel extends BaseLayerModel {
   /** triples of indices into positions array that create the triangles of the mesh */
   protected triangles!: arrow.Vector<arrow.FixedSizeList<arrow.Uint32>>;
 
-  protected texture?: {
-    width: number;
-    height: number;
-    data: DataView;
-  };
+  protected texture?:
+    | string
+    | {
+        width: number;
+        height: number;
+        data: DataView;
+      };
   protected wireframe: SimpleMeshLayerProps["wireframe"];
 
   constructor(model: WidgetModel, updateStateCallback: () => void) {
@@ -925,6 +927,31 @@ export class SurfaceModel extends BaseLayerModel {
 
     this.initRegularAttribute("texture", "texture");
     this.initRegularAttribute("wireframe", "wireframe");
+  }
+
+  /**
+   * Prepare texture input from Python side to something deck.gl can consume.
+   *
+   * I initially tried to pass in raw texture parameters, but I kept getting
+   * WebGL errors. For now, it's simplest to go through an ImageData object.
+   */
+  prepareTexture(): SimpleMeshLayerProps["texture"] {
+    if (!isDefined(this.texture)) {
+      return undefined;
+    }
+
+    if (typeof this.texture === "string") {
+      return this.texture;
+    }
+
+    const data: Uint8ClampedArray = new Uint8ClampedArray(
+      this.texture.data.buffer,
+      this.texture.data.byteOffset,
+      this.texture.data.byteLength,
+    );
+
+    // @ts-expect-error: ImageData constructor typing
+    return new ImageData(data, this.texture.width, this.texture.height);
   }
 
   layerProps(): SimpleMeshLayerProps {
@@ -952,17 +979,7 @@ export class SurfaceModel extends BaseLayerModel {
           },
         },
       },
-      ...(isDefined(this.texture) && {
-        texture: {
-          width: this.texture.width,
-          height: this.texture.height,
-          data: new Uint8ClampedArray(
-            this.texture.data.buffer,
-            this.texture.data.byteOffset,
-            this.texture.data.byteLength,
-          ),
-        },
-      }),
+      ...(isDefined(this.texture) && { texture: this.prepareTexture() }),
       ...(isDefined(this.wireframe) && { wireframe: this.wireframe }),
       // We're only rendering a single mesh, without instancing
       // https://github.com/visgl/deck.gl/blob/93111b667b919148da06ff1918410cf66381904f/modules/geo-layers/src/terrain-layer/terrain-layer.ts#L244
