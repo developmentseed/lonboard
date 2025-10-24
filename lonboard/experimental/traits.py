@@ -273,14 +273,11 @@ class MeshAccessor(FixedErrorTraitType):
 
 
 class TextureTrait(FixedErrorTraitType):
-    """A representation of a deck.gl texture trait.
-
-    This trait can accept either a URL string or raw bytes representing image data.
-    """
+    """A representation of a deck.gl texture trait."""
 
     default_value = None
     allow_none = True
-    info_text = "a URL string or raw bytes representing image data"
+    info_text = "a URL string or numpy array representing image data"
 
     def __init__(
         self: TraitType,
