@@ -278,7 +278,8 @@ class TextureTrait(FixedErrorTraitType):
     This trait can accept either a URL string or raw bytes representing image data.
     """
 
-    default_value = Undefined
+    default_value = None
+    allow_none = True
     info_text = "a URL string or raw bytes representing image data"
 
     def __init__(
@@ -326,15 +327,22 @@ class TextureTrait(FixedErrorTraitType):
 
         assert value.shape[-1] == 4
 
+        # Ensure array is C-contiguous (copies only if needed)
+        value = np.ascontiguousarray(value)
+
         return {
             "width": value.shape[1],
             "height": value.shape[0],
-            "data": value.tobytes(),
+            "data": memoryview(value),
         }
 
     def validate(self, obj: BaseArrowLayer, value) -> Any:
         # str input can be an image to a remote URL
         if isinstance(value, str):
+            return value
+
+        # bytes input can be raw image data (e.g. as a PNG)
+        if isinstance(value, bytes):
             return value
 
         if isinstance(value, np.ndarray):
