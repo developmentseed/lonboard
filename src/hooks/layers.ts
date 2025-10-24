@@ -56,14 +56,7 @@ export function useLayersState(
     };
 
     loadAndUpdateLayers();
-  }, [
-    layerIds,
-    bboxSelectBounds,
-    isDrawingBBoxSelection,
-    widgetManager,
-    updateStateCallback,
-    setSelectedBounds,
-  ]);
+  }, [layerIds, bboxSelectBounds, isDrawingBBoxSelection]);
 
   return Object.values(layersState).flatMap((layerModel) =>
     layerModel.render(),
