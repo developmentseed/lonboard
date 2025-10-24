@@ -206,7 +206,7 @@ class SurfaceLayer(BaseLayer):
         ),
     )
 
-    texture = t.Unicode().tag(sync=True)
+    texture = t.Unicode(allow_none=True).tag(sync=True)
 
     wireframe = t.Bool(None, allow_none=True).tag(sync=True)
     """Whether to render the mesh in wireframe mode.
