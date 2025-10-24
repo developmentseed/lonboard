@@ -13,13 +13,20 @@ from arro3.core import (
     DataType,
     Scalar,
     Table,
+    fixed_size_list_array,
     list_array,
     list_flatten,
     list_offsets,
 )
+import numpy as np
+from traitlets.traitlets import TraitType, Undefined
 
 from lonboard._constants import MAX_INTEGER_FLOAT32, MIN_INTEGER_FLOAT32
-from lonboard._serialization import TIMESTAMP_ACCESSOR_SERIALIZATION
+from lonboard._serialization import (
+    ACCESSOR_SERIALIZATION,
+    TIMESTAMP_ACCESSOR_SERIALIZATION,
+    serialize_pyarrow_column,
+)
 from lonboard._utils import get_geometry_column_index
 from lonboard.traits import FixedErrorTraitType
 
@@ -27,6 +34,7 @@ if TYPE_CHECKING:
     from traitlets.traitlets import TraitType
 
     from lonboard._layer import BaseArrowLayer
+    from lonboard.experimental._layer import SurfaceLayer
 
 
 class TimestampAccessor(FixedErrorTraitType):
@@ -216,3 +224,49 @@ class TimestampAccessor(FixedErrorTraitType):
         value = value.rechunk(max_chunksize=obj._rows_per_chunk)
         self._validate_timestamp_offsets(obj, value)
         return value
+
+
+class MeshAccessor(FixedErrorTraitType):
+    """A representation of a deck.gl mesh accessor."""
+
+    default_value = None
+    info_text = "a Arrow ListArray representing a nested array of 3D positions"
+    list_size: int
+    expected_arrow_type: DataType
+
+    def __init__(
+        self: TraitType,
+        *args: Any,
+        list_size: int,
+        expected_arrow_type: DataType,
+        **kwargs: Any,
+    ) -> None:
+        self.list_size = list_size
+        self.expected_arrow_type = expected_arrow_type
+        super().__init__(*args, **kwargs)
+        self.tag(
+            sync=True,
+            to_json=lambda data, obj: serialize_pyarrow_column(
+                data,
+                max_chunksize=len(data),
+            ),
+        )
+
+    def numpy_to_arrow(self, obj: SurfaceLayer, value: np.ndarray) -> Array:
+        values_array = Array.from_numpy(
+            value.ravel("C").astype(np.float32),
+        )
+        return fixed_size_list_array(values_array, self.list_size)
+
+    def validate(self, obj: SurfaceLayer, value) -> ChunkedArray:
+        if isinstance(value, np.ndarray):
+            value = self.numpy_to_arrow(obj, value)
+
+        if hasattr(value, "__arrow_c_array__"):
+            value = ChunkedArray([Array.from_arrow(value)])
+        elif hasattr(value, "__arrow_c_stream__"):
+            value = ChunkedArray.from_arrow(value)
+        else:
+            self.error(obj, value)
+
+        return value.cast(self.expected_arrow_type)
