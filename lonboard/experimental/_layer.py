@@ -17,7 +17,7 @@ from arro3.core import DataType, Scalar
 from lonboard._constants import EXTENSION_NAME, MIN_INTEGER_FLOAT32
 from lonboard._layer import BaseArrowLayer, BaseLayer
 from lonboard._utils import timestamp_max_physical_value, timestamp_start_offset
-from lonboard.experimental.traits import TimestampAccessor
+from lonboard.experimental.traits import TimestampAccessor, MeshAccessor
 from lonboard.traits import (
     ArrowTableTrait,
     ColorAccessor,
@@ -176,17 +176,44 @@ class ArcLayer(BaseArrowLayer):
         )
 
 
-class SimpleMeshLayer(BaseLayer):
-    """SimpleMeshLayer."""
+class SurfaceLayer(BaseLayer):
+    """SurfaceLayer."""
 
     def __init__(self, **kwargs) -> None:
         super().__init__(**kwargs)  # type: ignore
 
-    _layer_type = t.Unicode("simple-mesh").tag(sync=True)
+    _layer_type = t.Unicode("surface").tag(sync=True)
 
-    positions = PointAccessor(None, allow_none=True)
-    normals = PointAccessor(None, allow_none=True)
-    tex_coords = PointAccessor(None, allow_none=True)
+    positions = MeshAccessor(
+        list_size=3,
+        expected_arrow_type=DataType.list(
+            DataType.float32(),
+            3,
+        ),
+    )
+    tex_coords = MeshAccessor(
+        list_size=2,
+        expected_arrow_type=DataType.list(
+            DataType.float32(),
+            2,
+        ),
+    )
+    triangles = MeshAccessor(
+        list_size=3,
+        expected_arrow_type=DataType.list(
+            DataType.uint32(),
+            3,
+        ),
+    )
+
+    texture = t.Unicode().tag(sync=True)
+
+    wireframe = t.Bool(None, allow_none=True).tag(sync=True)
+    """Whether to render the mesh in wireframe mode.
+
+    - Type: `bool`, optional
+    - Default: `False`
+    """
 
 
 class TextLayer(BaseArrowLayer):

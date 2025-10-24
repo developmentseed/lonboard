@@ -503,7 +503,8 @@ class BitmapLayer(BaseLayer):
 
     _layer_type = t.Unicode("bitmap").tag(sync=True)
 
-    image = t.Unicode().tag(sync=True)
+    image = t.Any().tag(sync=True)
+    # image = t.Union([t.Bytes(), t.Unicode()]).tag(sync=True)
     """The URL to an image to display.
 
     - Type: `str`

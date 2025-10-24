@@ -899,71 +899,57 @@ export class SolidPolygonModel extends BaseArrowLayerModel {
   }
 }
 
-type MeshPositions = {
-  value: Float32Array;
-  size: number;
-};
+export class SurfaceModel extends BaseLayerModel {
+  static layerType = "surface";
 
-type MeshNormals = {
-  value: Float32Array;
-  size: number;
-};
+  /** vec3. x, y in pixels, z in meters */
+  protected positions!: arrow.Vector<arrow.FixedSizeList<arrow.Float32>>;
+  /** vec2. 1 to 1 relationship with position. represents the uv on the texture image. 0,0 to 1,1. */
+  protected texCoords!: arrow.Vector<arrow.FixedSizeList<arrow.Float32>>;
+  /** triples of indices into positions array that create the triangles of the mesh */
+  protected triangles!: arrow.Vector<arrow.FixedSizeList<arrow.Uint32>>;
 
-type MeshTexCoords = {
-  value: Float32Array;
-  size: number;
-};
-
-const DUMMY_DATA: number[] = [1];
-
-export class SimpleMeshModel extends BaseLayerModel {
-  static layerType = "simple-mesh";
-
-  protected positions!: MeshPositions;
-  protected normals!: MeshNormals;
-  protected texCoords!: MeshTexCoords;
-
-  protected sizeScale: SimpleMeshLayerProps["sizeScale"];
+  protected texture: SimpleMeshLayerProps["texture"];
   protected wireframe: SimpleMeshLayerProps["wireframe"];
-  // protected material: SimpleMeshLayerProps["material"];
-  // protected getPosition: SimpleMeshLayerProps["getPosition"] | null;
-  // protected getColor: SimpleMeshLayerProps["getColor"] | null;
-  // protected getOrientation: SimpleMeshLayerProps["getOrientation"] | null;
-  // protected getScale: SimpleMeshLayerProps["getScale"] | null;
-  // protected getTranslation: SimpleMeshLayerProps["getTranslation"] | null;
 
   constructor(model: WidgetModel, updateStateCallback: () => void) {
     super(model, updateStateCallback);
 
     this.initVectorizedAccessor("positions", "positions");
-    this.initVectorizedAccessor("normals", "normals");
     this.initVectorizedAccessor("tex_coords", "texCoords");
+    this.initVectorizedAccessor("triangles", "triangles");
 
-    this.initRegularAttribute("size_scale", "sizeScale");
+    this.initRegularAttribute("texture", "texture");
     this.initRegularAttribute("wireframe", "wireframe");
   }
 
   layerProps(): SimpleMeshLayerProps {
     return {
       id: this.model.model_id,
-      data: DUMMY_DATA,
+      // Dummy data because we're only rendering _one_ instance of this mesh
+      // https://github.com/visgl/deck.gl/blob/93111b667b919148da06ff1918410cf66381904f/modules/geo-layers/src/terrain-layer/terrain-layer.ts#L241
+      data: [1],
       mesh: {
-        positions: this.positions,
-        normals: this.normals,
-        texCoords: this.texCoords,
+        indices: {
+          // We assume Vector has only one Data chunk
+          value: this.triangles.data[0].children[0].values,
+          size: 1,
+        },
+        attributes: {
+          POSITION: {
+            // We assume Vector has only one Data chunk
+            value: this.positions.data[0].children[0].values,
+            size: 3,
+          },
+          TEXCOORD_0: {
+            // We assume Vector has only one Data chunk
+            value: this.texCoords.data[0].children[0].values,
+            size: 2,
+          },
+        },
       },
-      ...(isDefined(this.sizeScale) && { sizeScale: this.sizeScale }),
+      ...(isDefined(this.texture) && { texture: this.texture }),
       ...(isDefined(this.wireframe) && { wireframe: this.wireframe }),
-      // ...(isDefined(this.material) && { material: this.material }),
-      // ...(isDefined(this.getPosition) && { getPosition: this.getPosition }),
-      // ...(isDefined(this.getColor) && { getColor: this.getColor }),
-      // ...(isDefined(this.getOrientation) && {
-      //   getOrientation: this.getOrientation,
-      // }),
-      // ...(isDefined(this.getScale) && { getScale: this.getScale }),
-      // ...(isDefined(this.getTranslation) && {
-      //   getTranslation: this.getTranslation,
-      // }),
     };
   }
 
@@ -1273,8 +1259,8 @@ export async function initializeLayer(
       layerModel = new SolidPolygonModel(model, updateStateCallback);
       break;
 
-    case SimpleMeshModel.layerType:
-      layerModel = new SimpleMeshModel(model, updateStateCallback);
+    case SurfaceModel.layerType:
+      layerModel = new SurfaceModel(model, updateStateCallback);
       break;
 
     case TextModel.layerType:
