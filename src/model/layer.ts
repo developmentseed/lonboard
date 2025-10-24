@@ -950,6 +950,14 @@ export class SurfaceModel extends BaseLayerModel {
       },
       ...(isDefined(this.texture) && { texture: this.texture }),
       ...(isDefined(this.wireframe) && { wireframe: this.wireframe }),
+      // We're only rendering a single mesh, without instancing
+      // https://github.com/visgl/deck.gl/blob/93111b667b919148da06ff1918410cf66381904f/modules/geo-layers/src/terrain-layer/terrain-layer.ts#L244
+      _instanced: false,
+      // Dummy accessors for the dummy data
+      // We place our mesh at the coordinate origin
+      getPosition: [0, 0, 0],
+      // We give a white color to turn off color mixing with the texture
+      getColor: [255, 255, 255],
     };
   }
 

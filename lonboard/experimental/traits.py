@@ -25,6 +25,7 @@ from lonboard._constants import MAX_INTEGER_FLOAT32, MIN_INTEGER_FLOAT32
 from lonboard._serialization import (
     ACCESSOR_SERIALIZATION,
     TIMESTAMP_ACCESSOR_SERIALIZATION,
+    serialize_pyarrow_column,
 )
 from lonboard._utils import get_geometry_column_index
 from lonboard.traits import FixedErrorTraitType
@@ -243,7 +244,13 @@ class MeshAccessor(FixedErrorTraitType):
         self.list_size = list_size
         self.expected_arrow_type = expected_arrow_type
         super().__init__(*args, **kwargs)
-        self.tag(sync=True, **ACCESSOR_SERIALIZATION)
+        self.tag(
+            sync=True,
+            to_json=lambda data, obj: serialize_pyarrow_column(
+                data,
+                max_chunksize=len(data),
+            ),
+        )
 
     def numpy_to_arrow(self, obj: SurfaceLayer, value: np.ndarray) -> Array:
         values_array = Array.from_numpy(
@@ -257,6 +264,8 @@ class MeshAccessor(FixedErrorTraitType):
 
         if hasattr(value, "__arrow_c_array__"):
             value = ChunkedArray([Array.from_arrow(value)])
+        elif hasattr(value, "__arrow_c_stream__"):
+            value = ChunkedArray.from_arrow(value)
         else:
             self.error(obj, value)
 
