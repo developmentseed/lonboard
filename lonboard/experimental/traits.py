@@ -319,8 +319,8 @@ class TextureTrait(FixedErrorTraitType):
             )
 
         if value.shape[-1] == 3:
-            rgba = np.empty((*rgb.shape[:2], 4), dtype=np.uint8)
-            rgba[..., :3] = rgb
+            rgba = np.empty((*value.shape[:2], 4), dtype=np.uint8)
+            rgba[..., :3] = value
             rgba[..., 3] = 255
             value = rgba
 
