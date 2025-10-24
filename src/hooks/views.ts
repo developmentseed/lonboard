@@ -47,7 +47,7 @@ export function useViewsState(
     };
 
     loadAndUpdateViews();
-  }, [viewIds, widgetManager, updateStateCallback]);
+  }, [viewIds]);
 
   const views = Object.values(viewsState).map((viewModel) => viewModel.build());
 
