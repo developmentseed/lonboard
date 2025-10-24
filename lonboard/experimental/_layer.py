@@ -17,7 +17,7 @@ from arro3.core import DataType, Scalar
 from lonboard._constants import EXTENSION_NAME, MIN_INTEGER_FLOAT32
 from lonboard._layer import BaseArrowLayer, BaseLayer
 from lonboard._utils import timestamp_max_physical_value, timestamp_start_offset
-from lonboard.experimental.traits import TimestampAccessor, MeshAccessor
+from lonboard.experimental.traits import TextureTrait, TimestampAccessor, MeshAccessor
 from lonboard.traits import (
     ArrowTableTrait,
     ColorAccessor,
@@ -206,7 +206,7 @@ class SurfaceLayer(BaseLayer):
         ),
     )
 
-    texture = t.Unicode(allow_none=True).tag(sync=True)
+    texture = TextureTrait().tag(sync=True)
 
     wireframe = t.Bool(None, allow_none=True).tag(sync=True)
     """Whether to render the mesh in wireframe mode.

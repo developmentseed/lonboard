@@ -270,3 +270,78 @@ class MeshAccessor(FixedErrorTraitType):
             self.error(obj, value)
 
         return value.cast(self.expected_arrow_type)
+
+
+class TextureTrait(FixedErrorTraitType):
+    """A representation of a deck.gl texture trait.
+
+    This trait can accept either a URL string or raw bytes representing image data.
+    """
+
+    default_value = Undefined
+    info_text = "a URL string or raw bytes representing image data"
+
+    def __init__(
+        self: TraitType,
+        *args: Any,
+        **kwargs: Any,
+    ) -> None:
+        super().__init__(*args, **kwargs)
+        # This uses the default traitlet serialization for bytes (inside of a dict) and
+        # strings
+        self.tag(sync=True)
+
+    def numpy_to_value(
+        self,
+        obj: BaseArrowLayer,
+        value: np.ndarray,
+    ) -> dict[str, Any]:
+        # Should be an array of uint8, shape (height, width, channels)
+        if value.dtype != np.uint8:
+            self.error(
+                obj,
+                value,
+                info="a numpy array of dtype uint8 representing image data",
+            )
+
+        if len(value.shape) != 3:
+            self.error(
+                obj,
+                value,
+                info="a 3-dimensional numpy array representing image data",
+            )
+
+        if value.shape[-1] not in (3, 4):
+            self.error(
+                obj,
+                value,
+                info="a numpy array with 3 (RGB) or 4 (RGBA) channels representing image data",
+            )
+
+        if value.shape[-1] == 3:
+            rgba = np.empty((*rgb.shape[:2], 4), dtype=np.uint8)
+            rgba[..., :3] = rgb
+            rgba[..., 3] = 255
+            value = rgba
+
+        assert value.shape[-1] == 4
+
+        return {
+            "width": value.shape[1],
+            "height": value.shape[0],
+            "data": value.tobytes(),
+        }
+
+    def validate(self, obj: BaseArrowLayer, value) -> Any:
+        # str input can be an image to a remote URL
+        if isinstance(value, str):
+            return value
+
+        if isinstance(value, np.ndarray):
+            return self.numpy_to_value(obj, value)
+
+        self.error(
+            obj,
+            value,
+            info="a URL string or a numpy ndarray array representing image data",
+        )

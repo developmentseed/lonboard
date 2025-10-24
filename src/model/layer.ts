@@ -909,7 +909,11 @@ export class SurfaceModel extends BaseLayerModel {
   /** triples of indices into positions array that create the triangles of the mesh */
   protected triangles!: arrow.Vector<arrow.FixedSizeList<arrow.Uint32>>;
 
-  protected texture: SimpleMeshLayerProps["texture"];
+  protected texture?: {
+    width: number;
+    height: number;
+    data: DataView;
+  };
   protected wireframe: SimpleMeshLayerProps["wireframe"];
 
   constructor(model: WidgetModel, updateStateCallback: () => void) {
@@ -948,7 +952,17 @@ export class SurfaceModel extends BaseLayerModel {
           },
         },
       },
-      ...(isDefined(this.texture) && { texture: this.texture }),
+      ...(isDefined(this.texture) && {
+        texture: {
+          width: this.texture.width,
+          height: this.texture.height,
+          data: new Uint8ClampedArray(
+            this.texture.data.buffer,
+            this.texture.data.byteOffset,
+            this.texture.data.byteLength,
+          ),
+        },
+      }),
       ...(isDefined(this.wireframe) && { wireframe: this.wireframe }),
       // We're only rendering a single mesh, without instancing
       // https://github.com/visgl/deck.gl/blob/93111b667b919148da06ff1918410cf66381904f/modules/geo-layers/src/terrain-layer/terrain-layer.ts#L244
