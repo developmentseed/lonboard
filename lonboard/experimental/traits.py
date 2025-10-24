@@ -269,12 +269,4 @@ class MeshAccessor(FixedErrorTraitType):
         else:
             self.error(obj, value)
 
-        # Try to cast to the expected type
         return value.cast(self.expected_arrow_type)
-
-        # if not DataType.equals(value.type, self.expected_arrow_type):
-        #     self.error(
-        #         obj,
-        #         value,
-        #         info=(f"array to have type {self.expected_arrow_type}"),
-        #     )
