@@ -156,7 +156,7 @@ export class ArcModel extends BaseArrowLayerModel {
     for (let batchIdx = 0; batchIdx < this.table.batches.length; batchIdx++) {
       layers.push(
         new GeoArrowArcLayer({
-          ...this.baseLayerProps(),
+          ...this.baseLayerProps(batchIdx),
           ...this.layerProps(batchIdx),
         }),
       );
@@ -417,7 +417,7 @@ export class ColumnModel extends BaseArrowLayerModel {
     for (let batchIdx = 0; batchIdx < this.table.batches.length; batchIdx++) {
       layers.push(
         new GeoArrowColumnLayer({
-          ...this.baseLayerProps(),
+          ...this.baseLayerProps(batchIdx),
           ...this.layerProps(batchIdx),
         }),
       );
@@ -491,7 +491,7 @@ export class HeatmapModel extends BaseArrowLayerModel {
     for (let batchIdx = 0; batchIdx < this.table.batches.length; batchIdx++) {
       layers.push(
         new GeoArrowHeatmapLayer({
-          ...this.baseLayerProps(),
+          ...this.baseLayerProps(batchIdx),
           ...this.layerProps(batchIdx),
         }),
       );
@@ -561,7 +561,7 @@ export class PathModel extends BaseArrowLayerModel {
     for (let batchIdx = 0; batchIdx < this.table.batches.length; batchIdx++) {
       layers.push(
         new GeoArrowPathLayer({
-          ...this.baseLayerProps(),
+          ...this.baseLayerProps(batchIdx),
           ...this.layerProps(batchIdx),
         }),
       );
@@ -610,7 +610,7 @@ export class PointCloudModel extends BaseArrowLayerModel {
     for (let batchIdx = 0; batchIdx < this.table.batches.length; batchIdx++) {
       layers.push(
         new GeoArrowPointCloudLayer({
-          ...this.baseLayerProps(),
+          ...this.baseLayerProps(batchIdx),
           ...this.layerProps(batchIdx),
         }),
       );
@@ -715,7 +715,7 @@ export class PolygonModel extends BaseArrowLayerModel {
     for (let batchIdx = 0; batchIdx < this.table.batches.length; batchIdx++) {
       layers.push(
         new GeoArrowPolygonLayer({
-          ...this.baseLayerProps(),
+          ...this.baseLayerProps(batchIdx),
           ...this.layerProps(batchIdx),
         }),
       );
@@ -827,7 +827,7 @@ export class ScatterplotModel extends BaseArrowLayerModel {
     for (let batchIdx = 0; batchIdx < this.table.batches.length; batchIdx++) {
       layers.push(
         new GeoArrowScatterplotLayer({
-          ...this.baseLayerProps(),
+          ...this.baseLayerProps(batchIdx),
           ...this.layerProps(batchIdx),
         }),
       );
@@ -890,7 +890,7 @@ export class SolidPolygonModel extends BaseArrowLayerModel {
     for (let batchIdx = 0; batchIdx < this.table.batches.length; batchIdx++) {
       layers.push(
         new GeoArrowSolidPolygonLayer({
-          ...this.baseLayerProps(),
+          ...this.baseLayerProps(batchIdx),
           ...this.layerProps(batchIdx),
         }),
       );
@@ -1159,7 +1159,7 @@ export class TextModel extends BaseArrowLayerModel {
     for (let batchIdx = 0; batchIdx < this.table.batches.length; batchIdx++) {
       layers.push(
         new GeoArrowTextLayer({
-          ...this.baseLayerProps(),
+          ...this.baseLayerProps(batchIdx),
           ...this.layerProps(batchIdx),
         }),
       );
@@ -1242,7 +1242,7 @@ export class TripsModel extends BaseArrowLayerModel {
     for (let batchIdx = 0; batchIdx < this.table.batches.length; batchIdx++) {
       layers.push(
         new GeoArrowTripsLayer({
-          ...this.baseLayerProps(),
+          ...this.baseLayerProps(batchIdx),
           ...this.layerProps(batchIdx),
         }),
       );
