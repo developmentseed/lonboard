@@ -75,7 +75,8 @@
   },
   "scripts": {
     "build": "node ./build.mjs",
-    "build:watch": "nodemon --watch src/ --exec \"npm run build\" --ext js,json,ts,tsx,css",
+    "build:dev": "NODE_ENV=development node ./build.mjs",
+    "build:watch": "nodemon --watch src/ --exec \"npm run build:dev\" --ext js,json,ts,tsx,css",
     "prettier:check": "prettier './src/**/*.{ts,tsx,css}' --check",
     "prettier": "prettier './src/**/*.{ts,tsx,css}' --write",
     "lint": "eslint src",
