@@ -1,7 +1,3 @@
-// deck.gl
-// SPDX-License-Identifier: MIT
-// Copyright (c) vis.gl contributors
-
 export type ZRange = [minZ: number, maxZ: number];
 
 export type Bounds = [minX: number, minY: number, maxX: number, maxY: number];
@@ -32,4 +28,12 @@ export type TileLoadProps = {
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   userData?: Record<string, any>;
   zoom?: number;
+};
+
+/**
+ * Custom tile index for COG tiles
+ */
+export type COGTileIndex = TileIndex & {
+  // Optional: include bounds for debugging/rendering
+  bounds?: [number, number, number, number];
 };

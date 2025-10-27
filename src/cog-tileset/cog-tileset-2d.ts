@@ -1,9 +1,8 @@
 import { Viewport } from "@deck.gl/core";
 import { _Tileset2D as Tileset2D } from "@deck.gl/geo-layers";
-import { TileIndex, ZRange } from "@deck.gl/geo-layers/dist/tileset-2d/types";
-import { Matrix4 } from "@math.gl/core";
 
 import { getOSMTileIndices } from "./tile-2d-traversal";
+import type { COGTileIndex, ZRange } from "./types";
 
 type Bounds = [minX: number, minY: number, maxX: number, maxY: number];
 
@@ -14,8 +13,6 @@ export class COGTileset2D extends Tileset2D {
     minZoom,
     zRange,
     tileSize,
-    modelMatrix,
-    modelMatrixInverse,
     zoomOffset,
   }: {
     viewport: Viewport;
@@ -23,11 +20,18 @@ export class COGTileset2D extends Tileset2D {
     minZoom?: number;
     zRange: ZRange | null;
     tileSize?: number;
-    modelMatrix?: Matrix4;
-    modelMatrixInverse?: Matrix4;
     zoomOffset?: number;
-  }): TileIndex[] {
+  }): COGTileIndex[] {
     const { extent } = this.opts;
+    return getTileIndices({
+      viewport,
+      maxZoom,
+      minZoom,
+      zRange,
+      extent: extent as Bounds,
+      tileSize,
+      zoomOffset,
+    });
   }
 }
 
@@ -46,8 +50,6 @@ export function getTileIndices({
   zRange,
   extent,
   tileSize = TILE_SIZE,
-  modelMatrix,
-  modelMatrixInverse,
   zoomOffset = 0,
 }: {
   viewport: Viewport;
@@ -56,10 +58,9 @@ export function getTileIndices({
   zRange: ZRange | null;
   extent?: Bounds;
   tileSize?: number;
-  modelMatrix?: Matrix4;
-  modelMatrixInverse?: Matrix4;
   zoomOffset?: number;
-}) {
+}): COGTileIndex[] {
+  // Note: for now this only supports geospatial viewports
   let z =
     Math.round(viewport.zoom + Math.log2(TILE_SIZE / tileSize)) + zoomOffset;
   if (typeof minZoom === "number" && Number.isFinite(minZoom) && z < minZoom) {
