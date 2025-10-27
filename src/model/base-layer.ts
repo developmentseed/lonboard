@@ -7,6 +7,7 @@ import type {
   PickingInfo,
 } from "@deck.gl/core";
 import type { WidgetModel } from "@jupyter-widgets/base";
+import { Vector } from "apache-arrow";
 
 import { BaseModel } from "./base.js";
 import { initializeExtension } from "./extension.js";
@@ -53,11 +54,16 @@ export abstract class BaseLayerModel extends BaseModel {
       .filter((extensionInstance) => extensionInstance !== null);
   }
 
-  extensionProps() {
+  extensionProps(batchIndex?: number): Record<string, unknown> {
     const props: Record<string, unknown> = {};
     for (const layerPropertyName of this.extensionLayerPropertyNames) {
-      if (isDefined(this[layerPropertyName as keyof this])) {
-        props[layerPropertyName] = this[layerPropertyName as keyof this];
+      const value = this[layerPropertyName as keyof this];
+      if (isDefined(value)) {
+        if (value instanceof Vector) {
+          props[layerPropertyName] = value.data[batchIndex ?? 0];
+        } else {
+          props[layerPropertyName] = value;
+        }
       }
     }
     // console.log("extension props", props);
@@ -71,10 +77,10 @@ export abstract class BaseLayerModel extends BaseModel {
     this.model.save_changes();
   }
 
-  baseLayerProps(): Omit<LayerProps, "id"> {
+  baseLayerProps(batchIndex?: number): Omit<LayerProps, "id"> {
     return {
       extensions: this.extensionInstances(),
-      ...this.extensionProps(),
+      ...this.extensionProps(batchIndex),
       pickable: this.pickable,
       visible: this.visible,
       opacity: this.opacity,
