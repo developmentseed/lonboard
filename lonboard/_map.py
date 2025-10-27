@@ -20,6 +20,7 @@ from lonboard.traits import (
     VariableLengthTuple,
     ViewStateTrait,
 )
+from lonboard.view import BaseView
 
 if TYPE_CHECKING:
     import sys
@@ -151,6 +152,8 @@ class Map(BaseAnyWidget):
     _esm = bundler_output_dir / "index.js"
     _css = bundler_output_dir / "index.css"
 
+    # TODO: change this view state to allow non-map view states if we have non-map views
+    # Also allow a list/tuple of view states for multiple views
     view_state = ViewStateTrait()
     """
     The view state of the map.
@@ -174,6 +177,7 @@ class Map(BaseAnyWidget):
         once it's been initially rendered.
 
     """
+
     _has_click_handlers = t.Bool(default_value=False, allow_none=False).tag(sync=True)
     """
     Indicates if a click handler has been registered.
@@ -190,6 +194,15 @@ class Map(BaseAnyWidget):
         **ipywidgets.widget_serialization,
     )
     """One or more `Layer` objects to display on this map.
+    """
+
+    views: t.Instance[BaseView | None] = t.Instance(BaseView, allow_none=True).tag(
+        sync=True,
+        **ipywidgets.widget_serialization,
+    )
+    """A View instance.
+
+    Views represent the "camera(s)" (essentially viewport dimensions and projection matrices) that you look at your data with. deck.gl offers multiple view types for both geospatial and non-geospatial use cases. Read the [Views and Projections](https://deck.gl/docs/developer-guide/views) guide for the concept and examples.
     """
 
     show_tooltip = t.Bool(default_value=False).tag(sync=True)
@@ -221,6 +234,9 @@ class Map(BaseAnyWidget):
 
     basemap: t.Instance[MaplibreBasemap | None] = t.Instance(
         MaplibreBasemap,
+        # If both `args` and `kw` are None, then the default value is None.
+        # Set empty kw so that the default is MaplibreBasemap() with default params
+        kw={},
         allow_none=True,
     ).tag(
         sync=True,
