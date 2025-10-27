@@ -365,7 +365,7 @@ class DataFilterExtension(BaseExtension):
 
     The data filter can show/hide data based on 1-4 numeric properties of each object.
 
-    - Type: `int`. This is required if using range-based filtering.
+    - Type: `int`, optional. This is required if using range-based filtering.
     - Default 1.
     """
 
@@ -374,7 +374,7 @@ class DataFilterExtension(BaseExtension):
 
     The category filter can show/hide data based on 1-4 properties of each object.
 
-    - Type: `int`. This is required if using category-based filtering.
+    - Type: `int`, optional. This is required if using category-based filtering.
     - Default None.
     """
 
