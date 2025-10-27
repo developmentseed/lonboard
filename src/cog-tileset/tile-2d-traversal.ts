@@ -7,7 +7,7 @@ import {
 } from "@math.gl/culling";
 import { lngLatToWorld } from "@math.gl/web-mercator";
 
-import { Bounds, TileIndex, ZRange } from "./types.js";
+import { Bounds, COGTileIndex, TileIndex, ZRange } from "./types.js";
 import { osmTile2lngLat } from "./utils.js";
 
 const TILE_SIZE = 512;
@@ -32,15 +32,43 @@ const REF_POINTS_11 = REF_POINTS_9.concat([
   [0.75, 0.5],
 ]); // 2 additional points on equator for top tile
 
-class OSMNode {
+/**
+ * COG Metadata extracted from GeoTIFF
+ */
+interface COGMetadata {
+  width: number;
+  height: number;
+  tileWidth: number;
+  tileHeight: number;
+  tilesX: number;
+  tilesY: number;
+  bbox: [number, number, number, number]; // [minX, minY, maxX, maxY] in COG's CRS
+  projection: string;
+  overviews: Array<{
+    level: number;
+    width: number;
+    height: number;
+    tilesX: number;
+    tilesY: number;
+    scaleFactor: number;
+  }>;
+  image: any; // GeoTIFF reference
+}
+
+/**
+ * COG Tile Node - similar to upstream's OSMNode but for COG's tile structure
+ */
+class COGNode {
   x: number;
   y: number;
   z: number;
 
+  private cogMetadata: COGMetadata;
+
   private childVisible?: boolean;
   private selected?: boolean;
 
-  private _children?: OSMNode[];
+  private _children?: COGNode[];
 
   constructor(x: number, y: number, z: number) {
     this.x = x;
@@ -49,20 +77,23 @@ class OSMNode {
   }
 
   get children() {
+    // NOTE: for complex COGs you may need to actually compute the child indexes
+    // https://github.com/developmentseed/morecantile/blob/12698fbd4e52dc1a0fcac4b5658dcc4f3c9e5343/morecantile/models.py#L1668-L1713
     if (!this._children) {
       const x = this.x * 2;
       const y = this.y * 2;
       const z = this.z + 1;
       this._children = [
-        new OSMNode(x, y, z),
-        new OSMNode(x, y + 1, z),
-        new OSMNode(x + 1, y, z),
-        new OSMNode(x + 1, y + 1, z),
+        new COGNode(x, y, z),
+        new COGNode(x, y + 1, z),
+        new COGNode(x + 1, y, z),
+        new COGNode(x + 1, y + 1, z),
       ];
     }
     return this._children;
   }
 
+  /** Update whether this node is visible or not. */
   update(params: {
     viewport: Viewport;
     project: ((xyz: number[]) => number[]) | null;
@@ -89,10 +120,11 @@ class OSMNode {
       project,
     );
 
-    // First, check if this tile is visible
-    if (bounds && !this.insideBounds(bounds)) {
-      return false;
-    }
+    // TODO: restore
+    // // First, check if this tile is visible
+    // if (bounds && !this.insideBounds(bounds)) {
+    //   return false;
+    // }
 
     const isInside = cullingVolume.computeVisibility(boundingVolume);
     if (isInside < 0) {
@@ -127,7 +159,7 @@ class OSMNode {
     return true;
   }
 
-  getSelected(result: OSMNode[] = []): OSMNode[] {
+  getSelected(result: COGNode[] = []): COGNode[] {
     if (this.selected) {
       result.push(this);
     }
@@ -139,17 +171,18 @@ class OSMNode {
     return result;
   }
 
-  insideBounds([minX, minY, maxX, maxY]: Bounds): boolean {
-    const scale = Math.pow(2, this.z);
-    const extent = TILE_SIZE / scale;
+  // TODO: update implementation
+  // insideBounds([minX, minY, maxX, maxY]: Bounds): boolean {
+  //   const scale = Math.pow(2, this.z);
+  //   const extent = TILE_SIZE / scale;
 
-    return (
-      this.x * extent < maxX &&
-      this.y * extent < maxY &&
-      (this.x + 1) * extent > minX &&
-      (this.y + 1) * extent > minY
-    );
-  }
+  //   return (
+  //     this.x * extent < maxX &&
+  //     this.y * extent < maxY &&
+  //     (this.x + 1) * extent > minX &&
+  //     (this.y + 1) * extent > minY
+  //   );
+  // }
 
   getBoundingVolume(
     zRange: ZRange,
