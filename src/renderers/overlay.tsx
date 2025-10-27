@@ -3,6 +3,7 @@ import React from "react";
 import Map, { useControl } from "react-map-gl/maplibre";
 
 import type { MapRendererProps, OverlayRendererProps } from "./types";
+import { isGlobeView } from "../util";
 
 /**
  * DeckGLOverlay component that integrates deck.gl with react-map-gl
@@ -28,7 +29,7 @@ const OverlayRenderer: React.FC<MapRendererProps & OverlayRendererProps> = (
   mapProps,
 ) => {
   // Remove maplibre-specific props before passing to DeckGL
-  const { mapStyle, customAttribution, initialViewState, ...deckProps } =
+  const { mapStyle, customAttribution, initialViewState, views, ...deckProps } =
     mapProps;
   return (
     <Map
@@ -37,6 +38,7 @@ const OverlayRenderer: React.FC<MapRendererProps & OverlayRendererProps> = (
       mapStyle={mapStyle}
       attributionControl={{ customAttribution }}
       style={{ width: "100%", height: "100%" }}
+      {...(isGlobeView(views) && { projection: "globe" })}
     >
       <DeckGLOverlay
         // https://deck.gl/docs/api-reference/core/deck#_typedarraymanagerprops
