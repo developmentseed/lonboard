@@ -1,4 +1,4 @@
-import type { View } from "@deck.gl/core";
+import { MapView, type View } from "@deck.gl/core";
 import type { IWidgetManager, WidgetModel } from "@jupyter-widgets/base";
 import { useEffect, useState } from "react";
 
@@ -51,7 +51,7 @@ export function useViewsState(
 
   const views = Object.values(viewsState).map((viewModel) => viewModel.build());
 
-  // When the user hasn't specified any views, we let deck.gl create
-  // a default view, and so set undefined here.
-  return views.length > 0 ? views : undefined;
+  // When the user hasn't specified any views, we default to a single MapView
+  // with repeat enabled
+  return views.length > 0 ? views : [new MapView({ repeat: true })];
 }
