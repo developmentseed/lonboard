@@ -17,8 +17,8 @@ from arro3.core import DataType, Scalar
 from lonboard._constants import EXTENSION_NAME, MIN_INTEGER_FLOAT32
 from lonboard._layer import BaseArrowLayer
 from lonboard._utils import timestamp_max_physical_value, timestamp_start_offset
-from lonboard.experimental.traits import TimestampAccessor
 from lonboard.traits import (
+    TimestampAccessor,
     ArrowTableTrait,
     ColorAccessor,
     FloatAccessor,
