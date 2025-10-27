@@ -34,7 +34,7 @@ if TYPE_CHECKING:
     from traitlets.traitlets import TraitType
 
     from lonboard._layer import BaseArrowLayer
-    from lonboard.experimental._layer import SurfaceLayer
+    from lonboard.experimental._surface import SurfaceLayer
 
 
 class TimestampAccessor(FixedErrorTraitType):
