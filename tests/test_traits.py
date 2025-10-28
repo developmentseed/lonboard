@@ -10,7 +10,7 @@ from arro3.core import Table
 from traitlets import TraitError
 
 from lonboard._base import BaseExtension
-from lonboard._layer import BaseArrowLayer, BaseLayer
+from lonboard.layer import BaseArrowLayer, BaseLayer
 from lonboard.layer_extension import DataFilterExtension
 from lonboard.traits import (
     ArrowTableTrait,
