@@ -143,11 +143,14 @@ class SurfaceLayer(BaseLayer):
         image_height = image_arr.shape[0]
         image_width = image_arr.shape[1]
 
+        # Generate mesh grid in normalized [0, 1] coordinates
+        # These positions serve as texture coordinates
         tex_coords, triangles = generate_mesh_grid(
             n_rows=mesh_n_rows,
             n_cols=mesh_n_cols,
         )
 
+        # Reproject mesh vertices from image CRS to EPSG:4326
         source_crs_coords = rescale_positions_to_image_crs(
             tex_coords,
             image_height=image_height,
@@ -163,19 +166,11 @@ class SurfaceLayer(BaseLayer):
         )
         lonlat_coords = np.stack([lons, lats], axis=-1)
 
+        # Add z-coordinate (elevation), setting to zero as we care about a flat mesh on
+        # the map surface
         final_positions = np.concatenate(
             [lonlat_coords, np.zeros((lonlat_coords.shape[0], 1), dtype=np.float32)],
             axis=-1,
-        )
-
-        tex_coords = np.array(
-            [
-                [0, 0],  # bottom-left
-                [1, 0],  # bottom-right
-                [0, 1],  # top-left
-                [1, 1],  # top-right
-            ],
-            dtype=np.float32,
         )
 
         return cls(
