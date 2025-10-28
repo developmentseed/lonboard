@@ -8,7 +8,7 @@ import traitlets as t
 
 from lonboard._geoarrow.ops.bbox import Bbox
 from lonboard._geoarrow.ops.centroid import WeightedCentroid
-from lonboard.layer import BaseLayer
+from lonboard.layer._base import BaseLayer
 from lonboard.traits import (
     VariableLengthTuple,
 )
@@ -16,12 +16,8 @@ from lonboard.traits import (
 if TYPE_CHECKING:
     import sys
 
-    from lonboard.types.layer import (
-        BitmapLayerKwargs,
-        BitmapTileLayerKwargs,
-    )
+    from lonboard.types.layer import BitmapLayerKwargs, BitmapTileLayerKwargs
 
-if TYPE_CHECKING:
     if sys.version_info >= (3, 11):
         pass
     else:

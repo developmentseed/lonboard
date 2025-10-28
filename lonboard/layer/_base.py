@@ -32,16 +32,12 @@ if TYPE_CHECKING:
     import sys
     from collections.abc import Sequence
 
+    import duckdb
     import geopandas as gpd
+    import pyproj
     from arro3.core.types import ArrowStreamExportable
 
-    from lonboard.types.layer import (
-        BaseLayerKwargs,
-    )
-
-if TYPE_CHECKING:
-    import duckdb
-    import pyproj
+    from lonboard.types.layer import BaseLayerKwargs
 
     if sys.version_info >= (3, 11):
         from typing import Self
