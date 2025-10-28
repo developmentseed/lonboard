@@ -20,9 +20,7 @@ from arro3.core import (
 from traitlets.traitlets import TraitType
 
 from lonboard._constants import MAX_INTEGER_FLOAT32, MIN_INTEGER_FLOAT32
-from lonboard._serialization import (
-    TIMESTAMP_ACCESSOR_SERIALIZATION,
-)
+from lonboard._serialization import TIMESTAMP_ACCESSOR_SERIALIZATION
 from lonboard._utils import get_geometry_column_index
 from lonboard.traits import FixedErrorTraitType
 

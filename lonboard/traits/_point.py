@@ -5,17 +5,11 @@ from __future__ import annotations
 from typing import TYPE_CHECKING, Any
 
 import numpy as np
-from arro3.core import (
-    Array,
-    ChunkedArray,
-    DataType,
-    fixed_size_list_array,
-)
+from arro3.core import Array, ChunkedArray, DataType, Field, fixed_size_list_array
 
+from lonboard._geoarrow.extension_types import CoordinateDimension, coord_storage_type
 from lonboard._geoarrow.ops.coord_layout import convert_struct_column_to_interleaved
-from lonboard._serialization import (
-    ACCESSOR_SERIALIZATION,
-)
+from lonboard._serialization import ACCESSOR_SERIALIZATION
 from lonboard.traits._base import FixedErrorTraitType
 
 if TYPE_CHECKING:
@@ -63,8 +57,27 @@ class PointAccessor(FixedErrorTraitType):
                 info="Point array to have 2 or 3 as its second dimension",
             )
 
-        assert np.issubdtype(value.dtype, np.float64)
-        array = fixed_size_list_array(value.ravel("C"), list_size)
+        if not np.issubdtype(value.dtype, np.float64):
+            self.error(obj, value, info="Point array to have float64 type.")
+
+        # Set geoarrow extension metadata
+        field = Field(
+            "",
+            coord_storage_type(
+                interleaved=True,
+                dims=CoordinateDimension.XY
+                if list_size == 2
+                else CoordinateDimension.XYZ,
+            ),
+            nullable=True,
+            metadata={"ARROW:extension:name": "geoarrow.point"},
+        )
+        array = fixed_size_list_array(
+            value.ravel("C"),
+            list_size,
+            type=field,
+        )
+
         return ChunkedArray([array])
 
     def validate(
