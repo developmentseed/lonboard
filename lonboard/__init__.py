@@ -5,6 +5,7 @@ from ._map import Map
 from ._version import __version__
 from ._viz import viz
 from .layer import (
+    ArcLayer,
     BaseArrowLayer,
     BaseLayer,
     BitmapLayer,
@@ -16,9 +17,11 @@ from .layer import (
     PolygonLayer,
     ScatterplotLayer,
     SolidPolygonLayer,
+    TripsLayer,
 )
 
 __all__ = [
+    "ArcLayer",
     "BaseArrowLayer",
     "BaseLayer",
     "BitmapLayer",
@@ -31,6 +34,7 @@ __all__ = [
     "PolygonLayer",
     "ScatterplotLayer",
     "SolidPolygonLayer",
+    "TripsLayer",
     "__version__",
     "colormap",
     "controls",

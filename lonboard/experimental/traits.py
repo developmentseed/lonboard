@@ -21,7 +21,7 @@ from lonboard.traits import FixedErrorTraitType
 if TYPE_CHECKING:
     from traitlets.traitlets import TraitType
 
-    from lonboard._layer import BaseArrowLayer
+    from lonboard.layer import BaseArrowLayer
     from lonboard.experimental._surface import SurfaceLayer
 
 
