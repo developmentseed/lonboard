@@ -11,16 +11,12 @@ from ipywidgets import CallbackDispatcher
 
 from lonboard._base import BaseAnyWidget
 from lonboard._html_export import map_to_html
-from lonboard._layer import BaseLayer
 from lonboard._viewport import compute_view
 from lonboard.basemap import CartoStyle, MaplibreBasemap
 from lonboard.controls import BaseControl
-from lonboard.traits import (
-    DEFAULT_INITIAL_VIEW_STATE,
-    HeightTrait,
-    VariableLengthTuple,
-    ViewStateTrait,
-)
+from lonboard.layer import BaseLayer
+from lonboard.traits import HeightTrait, VariableLengthTuple, ViewStateTrait
+from lonboard.traits._map import DEFAULT_INITIAL_VIEW_STATE
 from lonboard.view import BaseView
 
 if TYPE_CHECKING:

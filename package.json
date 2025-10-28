@@ -1,7 +1,4 @@
 {
-  "comment": {
-    "maplibre": "Upgrading maplibre to v4 broke the basemap in static HTML exports."
-  },
   "dependencies": {
     "@anywidget/react": "^0.2.0",
     "@babel/runtime": "^7.28.4",
@@ -9,6 +6,7 @@
     "@deck.gl/extensions": "^9.2.2",
     "@deck.gl/layers": "^9.2.2",
     "@deck.gl/mapbox": "^9.2.2",
+    "@deck.gl/mesh-layers": "^9.2.2",
     "@deck.gl/react": "^9.2.2",
     "@geoarrow/deck.gl-layers": "^0.4.0-beta.1",
     "@geoarrow/geoarrow-js": "^0.3.2",
@@ -25,6 +23,7 @@
     "react": "^19.2.0",
     "react-dom": "^19.2.0",
     "react-map-gl": "^8.1.0",
+    "threads": "1.7.0",
     "uuid": "^13.0.0",
     "xstate": "^5.22.0"
   },

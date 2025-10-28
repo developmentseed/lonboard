@@ -4,6 +4,6 @@
 
 > Screen recording from [U.S. County-to-County Migration example](../../../examples/migration/).
 
-::: lonboard.experimental.ArcLayer
+::: lonboard.ArcLayer
     options:
       inherited_members: true
