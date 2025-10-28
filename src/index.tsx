@@ -1,8 +1,8 @@
 import { createRender, useModel, useModelState } from "@anywidget/react";
 import type { Initialize, Render } from "@anywidget/types";
-import { MapViewState, PickingInfo, type Layer } from "@deck.gl/core";
+import { MapViewState, PickingInfo } from "@deck.gl/core";
 import { DeckGLRef } from "@deck.gl/react";
-import type { IWidgetManager, WidgetModel } from "@jupyter-widgets/base";
+import type { IWidgetManager } from "@jupyter-widgets/base";
 import { NextUIProvider } from "@nextui-org/react";
 import throttle from "lodash.throttle";
 import * as React from "react";
@@ -10,17 +10,27 @@ import { useCallback, useEffect, useRef, useState } from "react";
 import { v4 as uuidv4 } from "uuid";
 
 import { flyTo } from "./actions/fly-to.js";
-import { BaseLayerModel, initializeLayer } from "./model/index.js";
+import {
+  useBasemapState,
+  useControlsState,
+  useLayersState,
+  useViewsState,
+} from "./hooks/index.js";
+import { DEFAULT_MAP_STYLE } from "./model/basemap.js";
 import { initParquetWasm } from "./parquet.js";
 import DeckFirstRenderer from "./renderers/deck-first.js";
 import OverlayRenderer from "./renderers/overlay.js";
-import { MapRendererProps } from "./renderers/types.js";
+import {
+  DeckFirstRendererProps,
+  MapRendererProps,
+  OverlayRendererProps,
+} from "./renderers/types.js";
 import SidePanel from "./sidepanel/index";
 import { useViewStateDebounced } from "./state";
 import Toolbar from "./toolbar.js";
 import { getTooltip } from "./tooltip/index.js";
 import { Message } from "./types.js";
-import { isDefined, loadChildModels } from "./util.js";
+import { isDefined, isGlobeView } from "./util.js";
 import { MachineContext, MachineProvider } from "./xstate";
 import * as selectors from "./xstate/selectors";
 
@@ -36,43 +46,6 @@ const DEFAULT_INITIAL_VIEW_STATE = {
   bearing: 0,
   pitch: 0,
 };
-
-const DEFAULT_MAP_STYLE =
-  "https://basemaps.cartocdn.com/gl/positron-nolabels-gl-style/style.json";
-
-async function getChildModelState(
-  childModels: WidgetModel[],
-  childLayerIds: string[],
-  previousSubModelState: Record<string, BaseLayerModel>,
-  setStateCounter: React.Dispatch<React.SetStateAction<Date>>,
-): Promise<Record<string, BaseLayerModel>> {
-  const newSubModelState: Record<string, BaseLayerModel> = {};
-  const updateStateCallback = () => setStateCounter(new Date());
-
-  for (let i = 0; i < childLayerIds.length; i++) {
-    const childLayerId = childLayerIds[i];
-    const childModel = childModels[i];
-
-    // If the layer existed previously, copy its model without constructing
-    // a new one
-    if (childLayerId in previousSubModelState) {
-      // pop from old state
-      newSubModelState[childLayerId] = previousSubModelState[childLayerId];
-      delete previousSubModelState[childLayerId];
-      continue;
-    }
-
-    const childLayer = await initializeLayer(childModel, updateStateCallback);
-    newSubModelState[childLayerId] = childLayer;
-  }
-
-  // finalize models that were deleted
-  for (const previousChildModel of Object.values(previousSubModelState)) {
-    previousChildModel.finalize();
-  }
-
-  return newSubModelState;
-}
 
 function App() {
   const actorRef = MachineContext.useActorRef();
@@ -107,7 +80,7 @@ function App() {
 
   const model = useModel();
 
-  const [mapStyle] = useModelState<string>("basemap_style");
+  const [basemapModelId] = useModelState<string | null>("basemap");
   const [mapHeight] = useModelState<string>("height");
   const [showTooltip] = useModelState<boolean>("show_tooltip");
   const [showSidePanel] = useModelState<boolean>("show_side_panel");
@@ -117,7 +90,14 @@ function App() {
   );
   const [parameters] = useModelState<object>("parameters");
   const [customAttribution] = useModelState<string>("custom_attribution");
-  const [renderMode] = useModelState<string>("render_mode");
+  const [mapId] = useState(uuidv4());
+  const [childLayerIds] = useModelState<string[]>("layers");
+  const [viewIds] = useModelState<string | string[] | null>("views");
+  const [controlsIds] = useModelState<string[]>("controls");
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
+  const [_selectedBounds, setSelectedBounds] = useModelState<number[] | null>(
+    "selected_bounds",
+  );
 
   // initialViewState is the value of view_state on the Python side. This is
   // called `initial` here because it gets passed in to deck's
@@ -143,61 +123,37 @@ function App() {
     }
   });
 
-  const [mapId] = useState(uuidv4());
-  const [subModelState, setSubModelState] = useState<
-    Record<string, BaseLayerModel>
-  >({});
-
-  const [childLayerIds] = useModelState<string[]>("layers");
-
   // Fake state just to get react to re-render when a model callback is called
   // eslint-disable-next-line @typescript-eslint/no-unused-vars
   const [stateCounter, setStateCounter] = useState<Date>(new Date());
+  const updateStateCallback = () => setStateCounter(new Date());
 
-  useEffect(() => {
-    const loadAndUpdateLayers = async () => {
-      try {
-        const childModels = await loadChildModels(
-          model.widget_manager as IWidgetManager,
-          childLayerIds,
-        );
+  const basemapState = useBasemapState(
+    basemapModelId,
+    model.widget_manager as IWidgetManager,
+    updateStateCallback,
+  );
 
-        const newSubModelState = await getChildModelState(
-          childModels,
-          childLayerIds,
-          subModelState,
-          setStateCounter,
-        );
-        setSubModelState(newSubModelState);
+  const controls = useControlsState(
+    controlsIds,
+    model.widget_manager as IWidgetManager,
+    updateStateCallback,
+  );
 
-        if (!isDrawingBBoxSelection) {
-          // Note: selected_bounds is a property of the **Map**. In the future,
-          // when we use deck.gl to perform picking, we'll have
-          // `selected_indices` as a property of each individual layer.
-          model.set("selected_bounds", bboxSelectBounds);
-          model.save_changes();
-          // childModels.forEach((layer) => {
-          //   layer.set("selected_bounds", bboxSelectBounds);
-          //   layer.save_changes();
-          // });
-        }
-      } catch (error) {
-        console.error("Error loading child models or setting bounds:", error);
-      }
-    };
+  const layers = useLayersState(
+    childLayerIds,
+    model.widget_manager as IWidgetManager,
+    updateStateCallback,
+    bboxSelectBounds,
+    isDrawingBBoxSelection,
+    setSelectedBounds,
+  );
 
-    loadAndUpdateLayers();
-  }, [childLayerIds, bboxSelectBounds, isDrawingBBoxSelection]);
-
-  const layers: Layer[] = [];
-  for (const subModel of Object.values(subModelState)) {
-    const newLayers = subModel.render();
-    if (Array.isArray(newLayers)) {
-      layers.push(...newLayers);
-    } else {
-      layers.push(newLayers);
-    }
-  }
+  const views = useViewsState(
+    viewIds,
+    model.widget_manager as IWidgetManager,
+    updateStateCallback,
+  );
 
   const onMapClickHandler = useCallback((info: PickingInfo) => {
     // We added this flag to prevent the hover event from firing after a
@@ -232,7 +188,7 @@ function App() {
   );
 
   const mapRenderProps: MapRendererProps = {
-    mapStyle: mapStyle || DEFAULT_MAP_STYLE,
+    mapStyle: basemapState?.style || DEFAULT_MAP_STYLE,
     customAttribution,
     deckRef,
     initialViewState: ["longitude", "latitude", "zoom"].every((key) =>
@@ -248,9 +204,7 @@ function App() {
     pickingRadius: pickingRadius,
     onClick: onMapClickHandler,
     onHover: onMapHoverHandler,
-    // @ts-expect-error useDevicePixels should allow number
-    // https://github.com/visgl/deck.gl/pull/9826
-    useDevicePixels: isDefined(useDevicePixels) ? useDevicePixels : true,
+    ...(isDefined(useDevicePixels) && { useDevicePixels }),
     onViewStateChange: (event) => {
       const { viewState } = event;
 
@@ -268,6 +222,16 @@ function App() {
       }
     },
     parameters: parameters || {},
+    views,
+    controls,
+  };
+
+  const overlayRenderProps: OverlayRendererProps = {
+    interleaved: basemapState?.mode === "interleaved",
+  };
+
+  const deckFirstRenderProps: DeckFirstRendererProps = {
+    renderBasemap: Boolean(basemapState),
   };
 
   return (
@@ -282,7 +246,16 @@ function App() {
       <div
         id={`map-${mapId}`}
         className="flex"
-        style={{ width: "100%", height: "100%" }}
+        style={{
+          width: "100%",
+          height: "100%",
+          // Use a dark background when in globe view so the globe is easier to
+          // delineate
+          // In the future we may want to allow the user to customize this
+          ...(isGlobeView(views) && {
+            background: "linear-gradient(0, #000, #223)",
+          }),
+        }}
       >
         <Toolbar />
 
@@ -292,11 +265,12 @@ function App() {
             onClose={() => actorRef.send({ type: "Close side panel" })}
           />
         )}
-        <div className="bg-red-800 h-full w-full relative">
-          {renderMode === "overlay" ? (
-            <OverlayRenderer {...mapRenderProps} />
+        <div className="bg-transparent h-full w-full relative">
+          {basemapState?.mode === "overlaid" ||
+          basemapState?.mode === "interleaved" ? (
+            <OverlayRenderer {...mapRenderProps} {...overlayRenderProps} />
           ) : (
-            <DeckFirstRenderer {...mapRenderProps} />
+            <DeckFirstRenderer {...mapRenderProps} {...deckFirstRenderProps} />
           )}
         </div>
       </div>

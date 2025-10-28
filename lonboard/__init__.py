@@ -1,7 +1,11 @@
 """Python library for fast, interactive geospatial vector data visualization in Jupyter."""
 
 from . import colormap, controls, experimental, layer_extension, traits
-from ._layer import (
+from ._map import Map
+from ._version import __version__
+from ._viz import viz
+from .layer import (
+    ArcLayer,
     BaseArrowLayer,
     BaseLayer,
     BitmapLayer,
@@ -14,12 +18,11 @@ from ._layer import (
     PolygonLayer,
     ScatterplotLayer,
     SolidPolygonLayer,
+    TripsLayer,
 )
-from ._map import Map
-from ._version import __version__
-from ._viz import viz
 
 __all__ = [
+    "ArcLayer",
     "BaseArrowLayer",
     "BaseLayer",
     "BitmapLayer",
@@ -32,6 +35,7 @@ __all__ = [
     "PolygonLayer",
     "ScatterplotLayer",
     "SolidPolygonLayer",
+    "TripsLayer",
     "__version__",
     "colormap",
     "controls",

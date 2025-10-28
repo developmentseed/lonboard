@@ -1,10 +1,11 @@
 # lonboard.traits
 
+::: lonboard.traits.ArrowTableTrait
 ::: lonboard.traits.ColorAccessor
 ::: lonboard.traits.DashArrayAccessor
-::: lonboard.traits.FloatAccessor
 ::: lonboard.traits.FilterValueAccessor
+::: lonboard.traits.FloatAccessor
 ::: lonboard.traits.NormalAccessor
 ::: lonboard.traits.PointAccessor
-::: lonboard.traits.ArrowTableTrait
-::: lonboard.experimental.traits.TimestampAccessor
+::: lonboard.traits.TimestampAccessor
+::: lonboard.traits.ViewStateTrait

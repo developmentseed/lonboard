@@ -21,7 +21,7 @@ jobs:
 
       # Note: this should stay synced with the volta-pinned version in
       # package.json
-      - uses: actions/setup-node@v5
+      - uses: actions/setup-node@v6
         with:
           node-version: "18"
 
@@ -44,7 +44,7 @@ jobs:
           # If no files with path lonboard/static, fail
           unzip -l dist/*.whl | grep "lonboard/static" || exit 1
 
-      - uses: actions/upload-artifact@v4
+      - uses: actions/upload-artifact@v5
         with:
           path: ./dist/
 
@@ -52,7 +52,7 @@ jobs:
     needs: [build]
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/download-artifact@v5
+      - uses: actions/download-artifact@v6
         with:
           name: artifact
           path: dist
