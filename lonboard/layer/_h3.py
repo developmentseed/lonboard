@@ -1,9 +1,12 @@
 from __future__ import annotations
 
+import warnings
 from typing import TYPE_CHECKING
 
+import numpy as np
 import traitlets as t
 
+from lonboard._geoarrow.ops import Bbox, WeightedCentroid
 from lonboard._utils import auto_downcast as _auto_downcast
 from lonboard.layer._base import BaseArrowLayer
 from lonboard.traits import ArrowTableTrait, ColorAccessor, FloatAccessor, H3Accessor
@@ -12,6 +15,7 @@ if TYPE_CHECKING:
     import sys
 
     import pandas as pd
+    from arro3.core import ChunkedArray
     from arro3.core.types import ArrowStreamExportable
 
     from lonboard.types.layer import H3AccessorInput, H3HexagonLayerKwargs
@@ -25,6 +29,57 @@ if TYPE_CHECKING:
         from typing import Unpack
     else:
         from typing_extensions import Unpack
+
+SEED_VALUE = 42
+RNG = np.random.default_rng(SEED_VALUE)
+MAX_SAMPLE_N = 10000
+
+
+def default_h3_viewport(ca: ChunkedArray) -> tuple[Bbox, WeightedCentroid] | None:
+    try:
+        import h3.api.numpy_int as h3
+    except ImportError:
+        warnings.warn(
+            "h3-py is not installed, cannot compute default H3 viewport.",
+            ImportWarning,
+        )
+        return None
+
+    sample_n = min(MAX_SAMPLE_N, len(ca))
+    sample_h3 = RNG.choice(ca.to_numpy(), size=sample_n, replace=False)
+
+    if not hasattr(h3, "cells_to_geo"):
+        warnings.warn(
+            "h3-py v4 is not installed, cannot compute default H3 viewport.",
+            ImportWarning,
+        )
+        return None
+
+    geo_dict = h3.cells_to_geo(sample_h3)
+
+    geom_type = geo_dict.get("type")
+    if geom_type == "Polygon":
+        polygons = [geo_dict["coordinates"]]
+    elif geom_type == "MultiPolygon":
+        polygons = geo_dict["coordinates"]
+    else:
+        # I think it should always be Polygon/MultiPolygon
+        return None
+
+    coords = np.array(
+        [pt for polygon in polygons for ring in polygon for pt in ring],
+        dtype=np.float64,
+    )
+    centroid = coords.mean(axis=0)
+
+    minx, miny = coords.min(axis=0)
+    maxx, maxy = coords.max(axis=0)
+
+    return (
+        Bbox(minx=float(minx), miny=float(miny), maxx=float(maxx), maxy=float(maxy)),
+        # Still give it the weight of the full input dataset
+        WeightedCentroid(x=float(centroid[0]), y=float(centroid[1]), num_items=len(ca)),
+    )
 
 
 class H3HexagonLayer(BaseArrowLayer):
@@ -87,6 +142,13 @@ class H3HexagonLayer(BaseArrowLayer):
             _rows_per_chunk=_rows_per_chunk,
             **kwargs,
         )
+
+        # Assign viewport after get_hexagon has already been validated to be uint64
+        # array
+        default_viewport = default_h3_viewport(self.get_hexagon)
+        if default_viewport is not None:
+            self._bbox = default_viewport[0]
+            self._weighted_centroid = default_viewport[1]
 
     @classmethod
     def from_pandas(

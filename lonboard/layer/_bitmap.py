@@ -6,8 +6,7 @@ from typing import TYPE_CHECKING
 
 import traitlets as t
 
-from lonboard._geoarrow.ops.bbox import Bbox
-from lonboard._geoarrow.ops.centroid import WeightedCentroid
+from lonboard._geoarrow.ops import Bbox, WeightedCentroid
 from lonboard.layer._base import BaseLayer
 from lonboard.traits import (
     VariableLengthTuple,
