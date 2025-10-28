@@ -18,7 +18,6 @@ from lonboard._geoarrow.extension_types import construct_geometry_array
 from lonboard._geoarrow.geopandas_interop import geopandas_to_geoarrow
 from lonboard._geoarrow.parse_wkb import parse_serialized_table
 from lonboard._geoarrow.row_index import add_positional_row_index
-from lonboard._layer import PathLayer, PolygonLayer, ScatterplotLayer
 from lonboard._map import Map
 from lonboard._utils import (
     get_geometry_column_index,
@@ -26,6 +25,7 @@ from lonboard._utils import (
     split_mixed_shapely_array,
 )
 from lonboard.basemap import CartoStyle, MaplibreBasemap
+from lonboard.layer import PathLayer, PolygonLayer, ScatterplotLayer
 
 if TYPE_CHECKING:
     import duckdb

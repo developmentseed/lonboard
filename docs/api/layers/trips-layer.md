@@ -4,7 +4,7 @@
 
 > Screenshot from Air Traffic Control example.
 
-::: lonboard.experimental.TripsLayer
+::: lonboard.TripsLayer
     options:
       filters:
         - "!^_"

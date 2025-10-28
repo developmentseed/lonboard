@@ -8,8 +8,8 @@ import traitlets as t
 from affine import Affine
 from arro3.core import DataType
 
-from lonboard._layer import BaseLayer
 from lonboard.experimental.traits import MeshAccessor, TextureTrait
+from lonboard.layer import BaseLayer
 
 if TYPE_CHECKING:
     import sys

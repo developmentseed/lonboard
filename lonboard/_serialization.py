@@ -22,8 +22,7 @@ from traitlets import TraitError
 from lonboard._utils import timestamp_start_offset
 
 if TYPE_CHECKING:
-    from lonboard._layer import BaseArrowLayer
-    from lonboard.experimental._layer import TripsLayer
+    from lonboard.layer import BaseArrowLayer, TripsLayer
     from lonboard.models import ViewState
 
 

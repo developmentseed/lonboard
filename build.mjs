@@ -45,6 +45,10 @@ esbuild.build({
     }),
   ],
   platform: "browser",
+  loader: {
+    ".worker.js": "text",
+    ".worker.min.js": "text",
+  },
   // Code splitting didn't work initially because it tried to load from a local
   // relative path ./chunk.js
   // splitting: true,

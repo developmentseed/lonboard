@@ -4,10 +4,8 @@ These layers have not been as well tested as other layers. You may encounter cra
 unexpected behavior when using them.
 """
 
-from ._layer import ArcLayer, TextLayer, TripsLayer
+from ._layer import TextLayer
 
 __all__ = [
-    "ArcLayer",
     "TextLayer",
-    "TripsLayer",
 ]
