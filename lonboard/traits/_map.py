@@ -6,9 +6,7 @@ from urllib.parse import urlparse
 import traitlets
 
 from lonboard._environment import DEFAULT_HEIGHT
-from lonboard._serialization import (
-    serialize_view_state,
-)
+from lonboard._serialization import serialize_view_state
 from lonboard.models import ViewState
 from lonboard.traits._base import FixedErrorTraitType
 

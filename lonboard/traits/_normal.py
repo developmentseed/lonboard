@@ -6,17 +6,9 @@ import warnings
 from typing import TYPE_CHECKING, Any
 
 import numpy as np
-from arro3.core import (
-    Array,
-    ChunkedArray,
-    DataType,
-    Field,
-    fixed_size_list_array,
-)
+from arro3.core import Array, ChunkedArray, DataType, Field, fixed_size_list_array
 
-from lonboard._serialization import (
-    ACCESSOR_SERIALIZATION,
-)
+from lonboard._serialization import ACCESSOR_SERIALIZATION
 from lonboard.traits._base import FixedErrorTraitType
 
 if TYPE_CHECKING:

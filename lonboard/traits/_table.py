@@ -5,16 +5,11 @@ from __future__ import annotations
 from typing import TYPE_CHECKING, Any
 from typing import cast as type_cast
 
-from arro3.core import (
-    DataType,
-    Table,
-)
+from arro3.core import DataType, Table
 
 from lonboard._constants import EXTENSION_NAME
 from lonboard._geoarrow.box_to_polygon import parse_box_encoded_table
-from lonboard._serialization import (
-    TABLE_SERIALIZATION,
-)
+from lonboard._serialization import TABLE_SERIALIZATION
 from lonboard._utils import get_geometry_column_index
 from lonboard.traits._base import FixedErrorTraitType
 
