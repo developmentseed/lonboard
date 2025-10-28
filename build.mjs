@@ -9,8 +9,13 @@ import tailwindcss from "tailwindcss";
 // Load environment variables from .env file
 dotenv.config();
 
+const node_env = process.env.NODE_ENV || "production";
+
 // List of environment variables to expose to the build
-const env = {
+const defineEnv = {
+  // Ref https://github.com/manzt/anywidget/issues/369#issuecomment-1792376003
+  "define.amd": "false",
+  "process.env.NODE_ENV": node_env,
   "process.env.XSTATE_INSPECT": JSON.stringify(
     process.env.XSTATE_INSPECT || "false",
   ),
@@ -18,16 +23,15 @@ const env = {
 
 esbuild.build({
   entryPoints: ["./src/index.tsx"],
-  bundle: true,
-  minify: true,
-  target: ["es2022"],
   outdir: "lonboard/static/",
+  bundle: true,
   format: "esm",
-  // Ref https://github.com/manzt/anywidget/issues/369#issuecomment-1792376003
-  define: {
-    "define.amd": "false",
-    ...env,
-  },
+  target: ["es2022"],
+  // Build sourcemaps when not in prod
+  sourcemap: node_env !== "production",
+  // Minify only in prod
+  minify: node_env === "production",
+  define: defineEnv,
   plugins: [
     sassPlugin({
       async transform(source) {
@@ -40,6 +44,7 @@ esbuild.build({
       },
     }),
   ],
+  platform: "browser",
   loader: {
     ".worker.js": "text",
     ".worker.min.js": "text",
