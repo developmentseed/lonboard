@@ -170,6 +170,7 @@ class ColumnLayerKwargs(BaseLayerKwargs, total=False):
 
 
 class H3HexagonLayerKwargs(BaseLayerKwargs, total=False):
+    high_precision: bool
     stroked: bool
     filled: bool
     extruded: bool

@@ -200,6 +200,8 @@ class H3HexagonLayer(BaseArrowLayer):
     todo
     """
 
+    high_precision = t.Bool(None, allow_none=True).tag(sync=True)
+
     stroked = t.Bool(None, allow_none=True).tag(sync=True)
     """Whether to draw an outline around the polygon (solid fill).
 
