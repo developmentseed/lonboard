@@ -28,6 +28,7 @@ __all__ = [
     "BitmapLayer",
     "BitmapTileLayer",
     "ColumnLayer",
+    "H3HexagonLayer",
     "HeatmapLayer",
     "Map",
     "PathLayer",

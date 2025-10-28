@@ -12,11 +12,11 @@ import {
   GeoArrowScatterplotLayer,
   GeoArrowSolidPolygonLayer,
   _GeoArrowTextLayer as GeoArrowTextLayer,
-  _GeoArrowH3HexagonLayer as GeoArrowH3HexagonLayer,
+  GeoArrowH3HexagonLayer,
   GeoArrowTripsLayer,
 } from "@geoarrow/deck.gl-layers";
 import type {
-  _GeoArrowH3HexagonLayerProps as GeoArrowH3HexagonLayerProps,
+  GeoArrowH3HexagonLayerProps,
   GeoArrowArcLayerProps,
   GeoArrowColumnLayerProps,
   GeoArrowHeatmapLayerProps,
