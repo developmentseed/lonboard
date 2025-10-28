@@ -50,6 +50,18 @@ def load_arr_and_transform(
     return arr, overview_transform
 
 
+def apply_colormap(
+    arr: NDArray[np.uint8],
+    cmap: dict[int, tuple[int, int, int] | tuple[int, int, int, int]],
+) -> NDArray[np.uint8]:
+    """Apply rasterio colormap to single-band array."""
+    lut = np.zeros((max(cmap.keys()), 4), dtype=np.uint8)
+    for k, v in cmap.items():
+        lut[k] = v
+
+    return lut[arr]
+
+
 def generate_mesh_grid(
     *,
     n_rows: int = 50,
@@ -137,8 +149,11 @@ class SurfaceLayer(BaseLayer):
 
         arr, transform = load_arr_and_transform(src, downscale=downscale)
 
-        # swap axes order from (bands, rows, columns) to (rows, columns, bands)
-        image_arr: np.ndarray = rasterio.plot.reshape_as_image(arr)
+        if arr.shape[0] == 1 and src.colormap(1) is not None:
+            image_arr = apply_colormap(arr[0], src.colormap(1))
+        else:
+            # swap axes order from (bands, rows, columns) to (rows, columns, bands)
+            image_arr = rasterio.plot.reshape_as_image(arr)
 
         image_height = image_arr.shape[0]
         image_width = image_arr.shape[1]
