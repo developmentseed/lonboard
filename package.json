@@ -10,6 +10,7 @@
     "@deck.gl/react": "^9.2.2",
     "@geoarrow/deck.gl-layers": "^0.4.0-beta.1",
     "@geoarrow/geoarrow-js": "^0.3.2",
+    "@maplibre/maplibre-gl-geocoder": "^1.9.1",
     "@nextui-org/react": "^2.4.8",
     "@xstate/react": "^6.0.0",
     "apache-arrow": "^21.1.0",
