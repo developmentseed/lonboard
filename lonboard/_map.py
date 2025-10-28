@@ -13,7 +13,12 @@ from lonboard._base import BaseAnyWidget
 from lonboard._html_export import map_to_html
 from lonboard._viewport import compute_view
 from lonboard.basemap import CartoStyle, MaplibreBasemap
-from lonboard.controls import BaseControl
+from lonboard.controls import (
+    BaseControl,
+    FullscreenControl,
+    NavigationControl,
+    ScaleControl,
+)
 from lonboard.layer import BaseLayer
 from lonboard.traits import HeightTrait, VariableLengthTuple, ViewStateTrait
 from lonboard.traits._map import DEFAULT_INITIAL_VIEW_STATE
@@ -193,7 +198,14 @@ class Map(BaseAnyWidget):
     """One or more `Layer` objects to display on this map.
     """
 
-    controls = VariableLengthTuple(t.Instance(BaseControl)).tag(
+    controls = VariableLengthTuple(
+        t.Instance(BaseControl),
+        default_value=(
+            FullscreenControl(),
+            NavigationControl(),
+            ScaleControl(),
+        ),
+    ).tag(
         sync=True,
         **ipywidgets.widget_serialization,
     )
