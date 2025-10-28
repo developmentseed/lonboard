@@ -10,9 +10,9 @@ import { useCallback, useEffect, useRef, useState } from "react";
 import { v4 as uuidv4 } from "uuid";
 
 import { flyTo } from "./actions/fly-to.js";
-import { useControlsState } from "./hooks/controls.js";
 import {
   useBasemapState,
+  useControlsState,
   useLayersState,
   useViewsState,
 } from "./hooks/index.js";
