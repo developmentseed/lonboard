@@ -7,6 +7,7 @@
 #   Then the default value in the JS GeoArrow layer (defined in
 #   `@geoarrow/deck.gl-layers`) will be used.
 
+from ._base import BaseArrowLayer, BaseLayer
 from ._bitmap import BitmapLayer, BitmapTileLayer
 from ._column import ColumnLayer
 from ._heatmap import HeatmapLayer
@@ -16,6 +17,8 @@ from ._polygon import PolygonLayer, SolidPolygonLayer
 from ._scatterplot import ScatterplotLayer
 
 __all__ = [
+    "BaseArrowLayer",
+    "BaseLayer",
     "BitmapLayer",
     "BitmapTileLayer",
     "ColumnLayer",
