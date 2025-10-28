@@ -3,8 +3,7 @@ import pyarrow as pa
 from arro3.core import Table
 from geoarrow.rust.core import point, points
 
-from lonboard import Map
-from lonboard.experimental import ArcLayer
+from lonboard import ArcLayer, Map
 
 
 def test_arc_layer_geoarrow_interleaved():
