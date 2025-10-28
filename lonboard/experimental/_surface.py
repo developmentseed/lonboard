@@ -50,6 +50,71 @@ def load_arr_and_transform(
     return arr, overview_transform
 
 
+def apply_colormap(
+    arr: NDArray[np.uint8],
+    cmap: dict[int, tuple[int, int, int] | tuple[int, int, int, int]],
+) -> NDArray[np.uint8]:
+    """Apply rasterio colormap to single-band array."""
+    lut = np.zeros((max(cmap.keys()), 4), dtype=np.uint8)
+    for k, v in cmap.items():
+        lut[k] = v
+
+    return lut[arr]
+
+
+def generate_mesh_grid(
+    *,
+    n_rows: int = 50,
+    n_cols: int = 50,
+) -> tuple[NDArray[np.float32], NDArray[np.uint32]]:
+    """Generate a regular grid mesh with the given number of rows and columns.
+
+    Creates a mesh covering the unit square [0, 1] x [0, 1] divided into
+    n_rows x n_cols cells. Each cell is split into two triangles along the diagonal.
+
+    Args:
+        n_rows: Number of rows in the grid
+        n_cols: Number of columns in the grid
+
+    Returns:
+        positions: Array of shape ((n_rows+1) * (n_cols+1), 2) containing vertex positions
+                   in normalized image coordinates [0, 1]
+        triangles: Array of shape (n_rows * n_cols * 2, 3) containing triangle vertex indices
+
+    """
+    # Generate vertex grid
+    # We need (n_rows + 1) x (n_cols + 1) vertices to create n_rows x n_cols cells
+    x = np.linspace(0, 1, n_cols + 1, dtype=np.float32)
+    y = np.linspace(0, 1, n_rows + 1, dtype=np.float32)
+
+    # Create meshgrid and flatten to get all vertex positions
+    xx, yy = np.meshgrid(x, y)
+    positions = np.stack([xx.ravel(), yy.ravel()], axis=-1)
+
+    # Generate triangle indices
+    # For each cell (i, j), we create two triangles:
+    # Triangle 1: bottom-left, bottom-right, top-left
+    # Triangle 2: bottom-right, top-right, top-left
+    triangles = np.empty((n_rows * n_cols * 2, 3), dtype=np.uint32)
+
+    i = 0
+    for row in range(n_rows):
+        for col in range(n_cols):
+            # Vertex indices for the current cell
+            bottom_left = row * (n_cols + 1) + col
+            bottom_right = bottom_left + 1
+            top_left = (row + 1) * (n_cols + 1) + col
+            top_right = top_left + 1
+
+            triangles[i] = [bottom_left, bottom_right, top_left]
+            triangles[i + 1] = [bottom_right, top_right, top_left]
+            i += 2
+
+    triangles_array = np.array(triangles, dtype=np.uint32)
+
+    return positions, triangles_array
+
+
 def rescale_positions_to_image_crs(
     positions: NDArray[np.float32],
     *,
@@ -76,30 +141,33 @@ class SurfaceLayer(BaseLayer):
         src: DatasetReader,
         *,
         downscale: int | None = None,
+        mesh_n_rows: int = 50,
+        mesh_n_cols: int = 50,
         **kwargs: Any,
     ) -> Self:
         import rasterio.plot
 
         arr, transform = load_arr_and_transform(src, downscale=downscale)
 
-        # swap axes order from (bands, rows, columns) to (rows, columns, bands)
-        image_arr: np.ndarray = rasterio.plot.reshape_as_image(arr)
+        if arr.shape[0] == 1 and src.colormap(1) is not None:
+            image_arr = apply_colormap(arr[0], src.colormap(1))
+        else:
+            # swap axes order from (bands, rows, columns) to (rows, columns, bands)
+            image_arr = rasterio.plot.reshape_as_image(arr)
 
         image_height = image_arr.shape[0]
         image_width = image_arr.shape[1]
 
-        positions = np.array(
-            [
-                [0, 0],  # bottom-left
-                [1, 0],  # bottom-right
-                [0, 1],  # top-left
-                [1, 1],  # top-right
-            ],
-            dtype=np.float32,
+        # Generate mesh grid in normalized [0, 1] coordinates
+        # These positions serve as texture coordinates
+        tex_coords, triangles = generate_mesh_grid(
+            n_rows=mesh_n_rows,
+            n_cols=mesh_n_cols,
         )
 
+        # Reproject mesh vertices from image CRS to EPSG:4326
         source_crs_coords = rescale_positions_to_image_crs(
-            positions,
+            tex_coords,
             image_height=image_height,
             image_width=image_width,
             transform=transform,
@@ -113,27 +181,11 @@ class SurfaceLayer(BaseLayer):
         )
         lonlat_coords = np.stack([lons, lats], axis=-1)
 
+        # Add z-coordinate (elevation), setting to zero as we care about a flat mesh on
+        # the map surface
         final_positions = np.concatenate(
             [lonlat_coords, np.zeros((lonlat_coords.shape[0], 1), dtype=np.float32)],
             axis=-1,
-        )
-
-        triangles = np.array(
-            [
-                [0, 1, 2],
-                [1, 2, 3],
-            ],
-            dtype=np.uint32,
-        )
-
-        tex_coords = np.array(
-            [
-                [0, 0],  # bottom-left
-                [1, 0],  # bottom-right
-                [0, 1],  # top-left
-                [1, 1],  # top-right
-            ],
-            dtype=np.float32,
         )
 
         return cls(
