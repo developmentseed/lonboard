@@ -10,6 +10,7 @@ import { useCallback, useEffect, useRef, useState } from "react";
 import { v4 as uuidv4 } from "uuid";
 
 import { flyTo } from "./actions/fly-to.js";
+import { useControlsState } from "./hooks/controls.js";
 import {
   useBasemapState,
   useLayersState,
@@ -35,7 +36,6 @@ import * as selectors from "./xstate/selectors";
 
 import "maplibre-gl/dist/maplibre-gl.css";
 import "./globals.css";
-import { useControlsState } from "./hooks/controls.js";
 
 await initParquetWasm();
 
