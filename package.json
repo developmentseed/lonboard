@@ -1,7 +1,4 @@
 {
-  "comment": {
-    "maplibre": "Upgrading maplibre to v4 broke the basemap in static HTML exports."
-  },
   "dependencies": {
     "@anywidget/react": "^0.2.0",
     "@babel/runtime": "^7.28.4",
