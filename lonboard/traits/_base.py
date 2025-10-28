@@ -130,7 +130,7 @@ class VariableLengthTuple(traitlets.Container):
     def __init__(
         self,
         trait: T | Sentinel = None,
-        default_value: tuple[T] | Sentinel | None = Undefined,
+        default_value: tuple[T, ...] | Sentinel | None = Undefined,
         minlen: int = 0,
         maxlen: int = sys.maxsize,
         **kwargs: Any,
