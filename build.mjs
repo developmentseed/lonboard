@@ -15,7 +15,7 @@ const node_env = process.env.NODE_ENV || "production";
 const defineEnv = {
   // Ref https://github.com/manzt/anywidget/issues/369#issuecomment-1792376003
   "define.amd": "false",
-  "process.env.NODE_ENV": node_env,
+  "process.env.NODE_ENV": JSON.stringify(node_env),
   "process.env.XSTATE_INSPECT": JSON.stringify(
     process.env.XSTATE_INSPECT || "false",
   ),
