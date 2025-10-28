@@ -20,7 +20,7 @@ if TYPE_CHECKING:
     import pandas as pd
     from traitlets.traitlets import TraitType
 
-    from lonboard._layer import BaseArrowLayer
+    from lonboard.layer import BaseArrowLayer
 
 
 class TextAccessor(FixedErrorTraitType):

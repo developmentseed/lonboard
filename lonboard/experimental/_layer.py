@@ -1,6 +1,6 @@
 # Notes:
 #
-# - See module docstring of lonboard._layer for note on passing None as default value.
+# - See module docstring of lonboard.layer for note on passing None as default value.
 
 # ruff: noqa
 
