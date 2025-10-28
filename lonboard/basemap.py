@@ -132,7 +132,7 @@ class MaplibreBasemap(BaseWidget):
             "interleaved",
             "overlaid",
             "reverse-controlled",
-        ] = "reverse-controlled",
+        ] = "overlaid",
         style: str | CartoStyle = CartoStyle.PositronNoLabels,
     ) -> None:
         """Create a MapLibre GL JS basemap."""
@@ -144,7 +144,7 @@ class MaplibreBasemap(BaseWidget):
             "overlaid",
             "reverse-controlled",
         ],
-        default_value="reverse-controlled",
+        default_value="overlaid",
     ).tag(sync=True)
     """The basemap integration mode.
 
@@ -162,7 +162,7 @@ class MaplibreBasemap(BaseWidget):
 
         If you need to have multiple views, you should use this option.
 
-    **Default**: `"reverse-controlled"`
+    **Default**: `"overlaid"`
     """
 
     style = BasemapUrl(CartoStyle.PositronNoLabels).tag(sync=True)
