@@ -7,7 +7,7 @@ from typing import TYPE_CHECKING, Any
 import numpy as np
 from arro3.core import Array, ChunkedArray, DataType
 
-from lonboard._h3._str_to_h3 import str_to_h3
+from lonboard._h3 import str_to_h3
 from lonboard._serialization import ACCESSOR_SERIALIZATION
 from lonboard.traits._base import FixedErrorTraitType
 
@@ -124,5 +124,9 @@ class H3Accessor(FixedErrorTraitType):
                 value,
                 info="H3 Arrow array must be uint64 type.",
             )
+
+        # Ideally we would validate the H3 indices here, but I hit spurious validation
+        # errors with the kontur 22km dataset
+        # https://data.humdata.org/dataset/kontur-population-dataset-22km
 
         return value.rechunk(max_chunksize=obj._rows_per_chunk)

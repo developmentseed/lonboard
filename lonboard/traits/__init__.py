@@ -9,6 +9,7 @@ from ._base import FixedErrorTraitType, VariableLengthTuple
 from ._color import ColorAccessor
 from ._extensions import DashArrayAccessor, FilterValueAccessor
 from ._float import FloatAccessor
+from ._h3 import H3Accessor
 from ._map import BasemapUrl, HeightTrait, ViewStateTrait
 from ._normal import NormalAccessor
 from ._point import PointAccessor
@@ -25,6 +26,7 @@ __all__ = [
     "FilterValueAccessor",
     "FixedErrorTraitType",
     "FloatAccessor",
+    "H3Accessor",
     "HeightTrait",
     "NormalAccessor",
     "PointAccessor",
