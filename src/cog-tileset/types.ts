@@ -167,7 +167,7 @@ export type COGMetadata = {
   tilesX: number;
   tilesY: number;
   bbox: Bounds; // COG's CRS
-  projection: string;
+  projection: string | null;
   overviews: COGOverview[];
   image: GeoTIFF; // GeoTIFF reference
 };
