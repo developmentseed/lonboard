@@ -1,19 +1,22 @@
-import {
-  GeoArrowPolygonLayer,
-  GeoArrowSolidPolygonLayer,
-  GeoArrowA5Layer,
-  GeoArrowH3HexagonLayer,
-} from "@geoarrow/deck.gl-layers";
 import type {
   GeoArrowA5LayerProps,
+  GeoArrowGeohashLayerProps,
   GeoArrowH3HexagonLayerProps,
   GeoArrowPolygonLayerProps,
+  GeoArrowS2LayerProps,
   GeoArrowSolidPolygonLayerProps,
+} from "@geoarrow/deck.gl-layers";
+import {
+  GeoArrowA5Layer,
+  GeoArrowGeohashLayer,
+  GeoArrowH3HexagonLayer,
+  GeoArrowPolygonLayer,
+  GeoArrowS2Layer,
+  GeoArrowSolidPolygonLayer,
 } from "@geoarrow/deck.gl-layers";
 import type { WidgetModel } from "@jupyter-widgets/base";
 import * as arrow from "apache-arrow";
 
-import { BaseArrowLayerModel } from "./base.js";
 import { isDefined } from "../../util.js";
 import { EARCUT_WORKER_POOL } from "../earcut-pool.js";
 import {
@@ -22,6 +25,7 @@ import {
   accessColorData,
   accessFloatData,
 } from "../types.js";
+import { BaseArrowLayerModel } from "./base.js";
 
 export class SolidPolygonModel extends BaseArrowLayerModel {
   static layerType = "solid-polygon";
@@ -270,6 +274,70 @@ export class A5Model extends BasePolygonModel {
     for (let batchIdx = 0; batchIdx < this.table.batches.length; batchIdx++) {
       layers.push(
         new GeoArrowA5Layer({
+          ...this.baseLayerProps(),
+          ...this.layerProps(batchIdx),
+        }),
+      );
+    }
+    return layers;
+  }
+}
+
+export class GeohashModel extends BasePolygonModel {
+  static layerType = "geohash";
+
+  protected getGeohash!: arrow.Vector<arrow.Utf8>;
+
+  constructor(model: WidgetModel, updateStateCallback: () => void) {
+    super(model, updateStateCallback);
+
+    this.initVectorizedAccessor("get_geohash", "getGeohash");
+  }
+
+  layerProps(batchIndex: number): GeoArrowGeohashLayerProps {
+    return {
+      getGeohash: this.getGeohash.data[batchIndex],
+      ...this.basePolygonLayerProps(batchIndex),
+    };
+  }
+
+  render(): GeoArrowGeohashLayer[] {
+    const layers: GeoArrowGeohashLayer[] = [];
+    for (let batchIdx = 0; batchIdx < this.table.batches.length; batchIdx++) {
+      layers.push(
+        new GeoArrowGeohashLayer({
+          ...this.baseLayerProps(),
+          ...this.layerProps(batchIdx),
+        }),
+      );
+    }
+    return layers;
+  }
+}
+
+export class S2Model extends BasePolygonModel {
+  static layerType = "s2";
+
+  protected getS2Token!: arrow.Vector<arrow.Utf8>;
+
+  constructor(model: WidgetModel, updateStateCallback: () => void) {
+    super(model, updateStateCallback);
+
+    this.initVectorizedAccessor("get_s2_token", "getS2Token");
+  }
+
+  layerProps(batchIndex: number): GeoArrowS2LayerProps {
+    return {
+      getS2Token: this.getS2Token.data[batchIndex],
+      ...this.basePolygonLayerProps(batchIndex),
+    };
+  }
+
+  render(): GeoArrowS2Layer[] {
+    const layers: GeoArrowS2Layer[] = [];
+    for (let batchIdx = 0; batchIdx < this.table.batches.length; batchIdx++) {
+      layers.push(
+        new GeoArrowS2Layer({
           ...this.baseLayerProps(),
           ...this.layerProps(batchIdx),
         }),

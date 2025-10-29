@@ -12,11 +12,13 @@ from ._arc import ArcLayer
 from ._base import BaseArrowLayer, BaseLayer
 from ._bitmap import BitmapLayer, BitmapTileLayer
 from ._column import ColumnLayer
+from ._geohash import GeohashLayer
 from ._h3 import H3HexagonLayer
 from ._heatmap import HeatmapLayer
 from ._path import PathLayer
 from ._point_cloud import PointCloudLayer
 from ._polygon import PolygonLayer, SolidPolygonLayer
+from ._s2 import S2Layer
 from ._scatterplot import ScatterplotLayer
 from ._trips import TripsLayer
 
@@ -28,11 +30,13 @@ __all__ = [
     "BitmapLayer",
     "BitmapTileLayer",
     "ColumnLayer",
+    "GeohashLayer",
     "H3HexagonLayer",
     "HeatmapLayer",
     "PathLayer",
     "PointCloudLayer",
     "PolygonLayer",
+    "S2Layer",
     "ScatterplotLayer",
     "SolidPolygonLayer",
     "TripsLayer",

@@ -216,6 +216,14 @@ class A5LayerKwargs(PolygonLayerKwargs, total=False):
     pass
 
 
+class S2LayerKwargs(PolygonLayerKwargs, total=False):
+    pass
+
+
+class GeohashLayerKwargs(PolygonLayerKwargs, total=False):
+    pass
+
+
 class ScatterplotLayerKwargs(BaseLayerKwargs, total=False):
     radius_units: Units
     radius_scale: IntFloat

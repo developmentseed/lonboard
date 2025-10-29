@@ -8,7 +8,7 @@ from lonboard._utils import auto_downcast as _auto_downcast
 
 # Important to import from ._polygon to avoid circular imports
 from lonboard.layer._polygon import PolygonLayer
-from lonboard.traits import A5Accessor, ArrowTableTrait
+from lonboard.traits import ArrowTableTrait, TextAccessor
 
 if TYPE_CHECKING:
     import sys
@@ -16,7 +16,7 @@ if TYPE_CHECKING:
     import pandas as pd
     from arro3.core.types import ArrowStreamExportable
 
-    from lonboard.types.layer import A5AccessorInput, A5LayerKwargs
+    from lonboard.types.layer import S2LayerKwargs, TextAccessorInput
 
     if sys.version_info >= (3, 11):
         from typing import Self
@@ -29,8 +29,8 @@ if TYPE_CHECKING:
         from typing_extensions import Unpack
 
 
-class A5Layer(PolygonLayer):
-    """The `A5Layer` renders filled and/or stroked polygons based on the [A5](https://a5geo.org) geospatial indexing system.
+class S2Layer(PolygonLayer):
+    """The `S2Layer` renders filled and/or stroked polygons based on the [S2](http://s2geometry.io/) geospatial indexing system.
 
     !!! warning
         This layer does not currently support auto-centering the map view based on the
@@ -41,23 +41,23 @@ class A5Layer(PolygonLayer):
         self,
         table: ArrowStreamExportable,
         *,
-        get_pentagon: A5AccessorInput,
+        get_s2_token: TextAccessorInput,
         _rows_per_chunk: int | None = None,
-        **kwargs: Unpack[A5LayerKwargs],
+        **kwargs: Unpack[S2LayerKwargs],
     ) -> None:
-        """Create a new A5Layer.
+        """Create a new S2Layer.
 
         Args:
-            table: An Arrow table with properties to associate with the A5 pentagons.
+            table: An Arrow table with properties to associate with the S2 cells.
 
         Keyword Args:
-            get_pentagon: The cell identifier of each A5 pentagon.
-            kwargs: Extra args passed down as A5Layer attributes.
+            get_s2_token: The identifier of each S2 cell.
+            kwargs: Extra args passed down as S2Layer attributes.
 
         """
         super().__init__(
             table=table,
-            get_pentagon=get_pentagon,
+            get_s2_token=get_s2_token,
             _rows_per_chunk=_rows_per_chunk,
             **kwargs,
         )
@@ -67,19 +67,19 @@ class A5Layer(PolygonLayer):
         cls,
         df: pd.DataFrame,
         *,
-        get_pentagon: A5AccessorInput,
+        get_s2_token: TextAccessorInput,
         auto_downcast: bool = True,
-        **kwargs: Unpack[A5LayerKwargs],
+        **kwargs: Unpack[S2LayerKwargs],
     ) -> Self:
-        """Create a new A5Layer from a pandas DataFrame.
+        """Create a new S2Layer from a pandas DataFrame.
 
         Args:
-            df: a Pandas DataFrame with properties to associate with A5 pentagons.
+            df: a Pandas DataFrame with properties to associate with S2 cells.
 
         Keyword Args:
-            get_pentagon: A5 cell identifier of each A5 hexagon.
+            get_s2_token: S2 cell identifier of each S2 hexagon.
             auto_downcast: Whether to save memory on input by casting to smaller types. Defaults to True.
-            kwargs: Extra args passed down as A5Layer attributes.
+            kwargs: Extra args passed down as S2Layer attributes.
 
         """
         try:
@@ -95,21 +95,21 @@ class A5Layer(PolygonLayer):
             df = _auto_downcast(df.copy())  # type: ignore
 
         table = pa.Table.from_pandas(df)
-        return cls(table, get_pentagon=get_pentagon, **kwargs)
+        return cls(table, get_s2_token=get_s2_token, **kwargs)
 
-    _layer_type = t.Unicode("a5").tag(sync=True)
+    _layer_type = t.Unicode("s2").tag(sync=True)
 
     table = ArrowTableTrait(geometry_required=False)
-    """An Arrow table with properties to associate with the A5 pentagons.
+    """An Arrow table with properties to associate with the S2 cells.
 
     If you have a Pandas `DataFrame`, use
-    [`from_pandas`][lonboard.A5Layer.from_pandas] instead.
+    [`from_pandas`][lonboard.S2Layer.from_pandas] instead.
     """
 
-    get_pentagon = A5Accessor()
-    """The cell identifier of each A5 pentagon.
+    get_s2_token = TextAccessor()
+    """The cell identifier of each S2 cell.
 
-    Accepts either an array of strings or uint64 integers representing A5 cell IDs.
+    Accepts either an array of strings or uint64 integers representing S2 cell IDs.
 
-    - Type: [A5Accessor][lonboard.traits.A5Accessor]
+    - Type: [TextAccessor][lonboard.traits.TextAccessor]
     """
