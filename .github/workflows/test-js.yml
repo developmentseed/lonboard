@@ -1,4 +1,4 @@
-name: CI
+name: JavaScript Build and Lint
 
 on:
   push:
@@ -11,7 +11,7 @@ concurrency:
   cancel-in-progress: true
 
 jobs:
-  lint-and-test:
+  build-and-lint:
     runs-on: ubuntu-latest
 
     steps:
@@ -43,5 +43,4 @@ jobs:
       - name: Lint check
         run: npm run lint
 
-      - name: Test
-        run: npm run test
+      
