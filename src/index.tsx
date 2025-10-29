@@ -12,6 +12,7 @@ import { v4 as uuidv4 } from "uuid";
 import { flyTo } from "./actions/fly-to.js";
 import {
   useBasemapState,
+  useControlsState,
   useLayersState,
   useViewsState,
 } from "./hooks/index.js";
@@ -92,6 +93,7 @@ function App() {
   const [mapId] = useState(uuidv4());
   const [childLayerIds] = useModelState<string[]>("layers");
   const [viewIds] = useModelState<string | string[] | null>("views");
+  const [controlsIds] = useModelState<string[]>("controls");
   // eslint-disable-next-line @typescript-eslint/no-unused-vars
   const [_selectedBounds, setSelectedBounds] = useModelState<number[] | null>(
     "selected_bounds",
@@ -128,6 +130,12 @@ function App() {
 
   const basemapState = useBasemapState(
     basemapModelId,
+    model.widget_manager as IWidgetManager,
+    updateStateCallback,
+  );
+
+  const controls = useControlsState(
+    controlsIds,
     model.widget_manager as IWidgetManager,
     updateStateCallback,
   );
@@ -215,6 +223,7 @@ function App() {
     },
     parameters: parameters || {},
     views,
+    controls,
   };
 
   const overlayRenderProps: OverlayRendererProps = {
