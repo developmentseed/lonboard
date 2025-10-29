@@ -9,8 +9,10 @@ import { PathModel } from "./path.js";
 import { PointCloudModel } from "./point-cloud.js";
 import {
   A5Model,
+  GeohashModel,
   H3HexagonModel,
   PolygonModel,
+  S2Model,
   SolidPolygonModel,
 } from "./polygon.js";
 import { ScatterplotModel } from "./scatterplot.js";
@@ -62,6 +64,10 @@ export async function initializeLayer(
       layerModel = new ColumnModel(model, updateStateCallback);
       break;
 
+    case GeohashModel.layerType:
+      layerModel = new GeohashModel(model, updateStateCallback);
+      break;
+
     case H3HexagonModel.layerType:
       layerModel = new H3HexagonModel(model, updateStateCallback);
       break;
@@ -80,6 +86,10 @@ export async function initializeLayer(
 
     case PolygonModel.layerType:
       layerModel = new PolygonModel(model, updateStateCallback);
+      break;
+
+    case S2Model.layerType:
+      layerModel = new S2Model(model, updateStateCallback);
       break;
 
     case ScatterplotModel.layerType:
