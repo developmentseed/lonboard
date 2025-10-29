@@ -1,7 +1,13 @@
-import { assert, Viewport } from "@deck.gl/core";
-import { CullingVolume, AxisAlignedBoundingBox } from "@math.gl/culling";
+import { _GlobeViewport, assert, Viewport } from "@deck.gl/core";
+import { AxisAlignedBoundingBox, CullingVolume, Plane } from "@math.gl/culling";
 
-import type { COGMetadata, COGOverview, ZRange } from "./types";
+import type {
+  Bounds,
+  COGMetadata,
+  COGOverview,
+  COGTileIndex,
+  ZRange,
+} from "./types";
 
 // for calculating bounding volume of a tile in a non-web-mercator viewport
 // const REF_POINTS_5 = [
@@ -18,7 +24,7 @@ import type { COGMetadata, COGOverview, ZRange } from "./types";
  * Uses TileMatrixSet ordering where: index 0 = coarsest, higher = finer.
  * In this ordering, z === level (both increase with detail).
  */
-export class COGTileNode {
+class COGTileNode {
   /** Index across a row */
   x: number;
   /** Index down a column */
@@ -93,8 +99,10 @@ export class COGTileNode {
     project: ((xyz: number[]) => number[]) | null;
     cullingVolume: CullingVolume;
     elevationBounds: ZRange;
-    minZ: number; // Minimum z (coarsest acceptable)
-    maxZ: number; // Maximum z (finest acceptable)
+    /** Minimum (coarsest) COG overview level */
+    minZ: number;
+    /** Maximum (finest) COG overview level */
+    maxZ: number;
   }): boolean {
     const { viewport, cullingVolume, elevationBounds, minZ, maxZ, project } =
       params;
@@ -186,6 +194,7 @@ export class COGTileNode {
     const overview = this.overview;
     const { bbox } = this.cogMetadata;
 
+    // TODO: use tileWidth/tileHeight from cogMetadata instead?
     const cogWidth = bbox[2] - bbox[0];
     const cogHeight = bbox[3] - bbox[1];
 
@@ -258,4 +267,111 @@ export class COGTileNode {
       (Math.PI / 2 - 2 * Math.atan(Math.exp(-y / R))) * (180 / Math.PI);
     return [lng, lat, 0];
   }
+}
+
+/**
+ * Get tile indices visible in viewport
+ * Uses frustum culling similar to OSM implementation
+ *
+ * Overviews follow TileMatrixSet ordering: index 0 = coarsest, higher = finer
+ */
+export function getTileIndices(opts: {
+  cogMetadata: COGMetadata;
+  viewport: Viewport;
+  maxZ: number;
+  // minZ?: number;
+  zRange: ZRange | null;
+}): COGTileIndex[] {
+  const { cogMetadata, viewport, maxZ, zRange } = opts;
+
+  const project: ((xyz: number[]) => number[]) | null =
+    viewport instanceof _GlobeViewport && viewport.resolution
+      ? viewport.projectPosition
+      : null;
+
+  // Get the culling volume of the current camera
+  const planes: Plane[] = Object.values(viewport.getFrustumPlanes()).map(
+    ({ normal, distance }) => new Plane(normal.clone().negate(), distance),
+  );
+  const cullingVolume = new CullingVolume(planes);
+
+  // Project zRange from meters to common space
+  const unitsPerMeter = viewport.distanceScales.unitsPerMeter[2];
+  const elevationMin = (zRange && zRange[0] * unitsPerMeter) || 0;
+  const elevationMax = (zRange && zRange[1] * unitsPerMeter) || 0;
+
+  // // Always load at the current zoom level if pitch is small
+  // const minZ =
+  //   viewport instanceof WebMercatorViewport && viewport.pitch <= 60 ? maxZ : 0;
+
+  // // Map maxZoom/minZoom to COG overview levels
+  // // In COG: level 0 = full resolution (finest), higher levels = coarser
+  // // In deck.gl zoom: higher = finer
+  // // So we need to invert: maxZoom (finest) → minLevel (level 0)
+  // const minLevel = 0; // Always allow full resolution
+  // const maxLevel = Math.min(
+  //   cogMetadata.overviews.length - 1,
+  //   Math.max(0, cogMetadata.overviews.length - 1 - (maxZ || 0)),
+  // );
+
+  // Start from coarsest overview
+  const coarsestOverview = cogMetadata.overviews[0];
+
+  // Create root tiles at coarsest level
+  // In contrary to OSM tiling, we usually have more than one tile at the
+  // coarsest level (z=0)
+  const roots: COGTileNode[] = [];
+  for (let y = 0; y < coarsestOverview.tilesY; y++) {
+    for (let x = 0; x < coarsestOverview.tilesX; x++) {
+      roots.push(new COGTileNode(x, y, 0, cogMetadata));
+    }
+  }
+
+  // Traverse and update visibility
+  const traversalParams = {
+    viewport,
+    project,
+    cullingVolume,
+    elevationBounds: [elevationMin, elevationMax] as ZRange,
+    minZ: 0,
+    maxZ,
+  };
+
+  for (const root of roots) {
+    root.update(traversalParams);
+  }
+
+  // Collect selected tiles
+  const selectedNodes: COGTileNode[] = [];
+  for (const root of roots) {
+    root.getSelected(selectedNodes);
+  }
+
+  // Convert to tile indices with bounds
+  return selectedNodes.map((node) => {
+    const overview = cogMetadata.overviews[node.z];
+    const { bbox } = cogMetadata;
+
+    const cogWidth = bbox[2] - bbox[0];
+    const cogHeight = bbox[3] - bbox[1];
+
+    // TODO: use tileWidth/tileHeight from cogMetadata instead?
+    const tileGeoWidth = cogWidth / overview.tilesX;
+    const tileGeoHeight = cogHeight / overview.tilesY;
+
+    const bounds: Bounds = [
+      bbox[0] + node.x * tileGeoWidth,
+      bbox[1] + node.y * tileGeoHeight,
+      bbox[0] + (node.x + 1) * tileGeoWidth,
+      bbox[1] + (node.y + 1) * tileGeoHeight,
+    ];
+
+    return {
+      x: node.x,
+      y: node.y,
+      z: node.z,
+      level: node.z,
+      bounds,
+    };
+  });
 }
