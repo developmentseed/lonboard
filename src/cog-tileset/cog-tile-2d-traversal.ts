@@ -189,32 +189,6 @@ export class COGTileNode {
     return result;
   }
 
-  // Can probably be removed.
-  // See note in `update`.
-
-  // /**
-  //  * Check if tile intersects user-specified bounds (in COG coordinate space)
-  //  */
-  // insideBounds([minX, minY, maxX, maxY]: Bounds): boolean {
-  //   const overview = this.overview;
-  //   const { bbox, tileWidth, tileHeight } = this.cogMetadata;
-
-  //   const cogWidth = bbox[2] - bbox[0];
-  //   const cogHeight = bbox[3] - bbox[1];
-
-  //   const tileGeoWidth = cogWidth / overview.tilesX;
-  //   const tileGeoHeight = cogHeight / overview.tilesY;
-
-  //   const tileMinX = bbox[0] + this.x * tileGeoWidth;
-  //   const tileMinY = bbox[1] + this.y * tileGeoHeight;
-  //   const tileMaxX = tileMinX + tileGeoWidth;
-  //   const tileMaxY = tileMinY + tileGeoHeight;
-
-  //   return (
-  //     tileMinX < maxX && tileMinY < maxY && tileMaxX > minX && tileMaxY > minY
-  //   );
-  // }
-
   /**
    * Calculate bounding volume for frustum culling
    */
