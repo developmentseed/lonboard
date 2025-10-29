@@ -19,12 +19,12 @@ if TYPE_CHECKING:
     from lonboard.layer import BaseArrowLayer
 
 
-class H3Accessor(FixedErrorTraitType):
-    """A trait to validate h3 cell input.
+class A5Accessor(FixedErrorTraitType):
+    """A trait to validate A5 cell input.
 
     Various input is allowed:
 
-    - A numpy `ndarray` with an object, S15, or uint64 data type.
+    - A numpy `ndarray` with an object, S16, or uint64 data type.
     - A pandas `Series` with an object or uint64 data type.
     - A pyarrow string, large string, string view array, or uint64 array, or a chunked array of those types.
     - Any Arrow string, large string, string view array, or uint64 array, or a chunked array of those types from a library that implements the [Arrow PyCapsule
@@ -60,37 +60,37 @@ class H3Accessor(FixedErrorTraitType):
             self.error(
                 obj,
                 value,
-                info="H3 Pandas series not object or uint64 dtype.",
+                info="A5 Pandas series not object or uint64 dtype.",
             )
 
-        if not (value.str.len() == 15).all():
+        if not (value.str.len() == 16).all():
             self.error(
                 obj,
                 value,
-                info="H3 Pandas series not all 15 characters long.",
+                info="A5 Pandas series not all 16 characters long.",
             )
 
-        return np.asarray(value, dtype="S15")
+        return np.asarray(value, dtype="S16")
 
     def _numpy_to_arrow(self, obj: BaseArrowLayer, value: np.ndarray) -> ChunkedArray:
         if np.issubdtype(value.dtype, np.uint64):
             return ChunkedArray([value])
 
         if np.issubdtype(value.dtype, np.object_):
-            if {len(v) for v in value} != {15}:
+            if {len(v) for v in value} != {16}:
                 self.error(
                     obj,
                     value,
-                    info="numpy object array not all 15 characters long",
+                    info="numpy object array not all 16 characters long",
                 )
 
-            value = np.asarray(value, dtype="S15")
+            value = np.asarray(value, dtype="S16")
 
-        if not np.issubdtype(value.dtype, np.dtype("S15")):
+        if not np.issubdtype(value.dtype, np.dtype("S16")):
             self.error(obj, value, info="numpy array not object, str, or uint64 dtype")
 
-        h3_uint8_array = str_to_h3(value)
-        return ChunkedArray([h3_uint8_array])
+        a5_uint8_array = str_to_h3(value)
+        return ChunkedArray([a5_uint8_array])
 
     def validate(self, obj: BaseArrowLayer, value: Any) -> ChunkedArray:
         # pandas Series
@@ -122,7 +122,7 @@ class H3Accessor(FixedErrorTraitType):
             self.error(
                 obj,
                 value,
-                info="H3 Arrow array must be uint64 type.",
+                info="A5 Arrow array must be uint64 type.",
             )
 
         return value.rechunk(max_chunksize=obj._rows_per_chunk)

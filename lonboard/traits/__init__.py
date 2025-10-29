@@ -4,6 +4,7 @@ Refer to https://traitlets.readthedocs.io/en/stable/defining_traits.html for
 documentation on how to define new traitlet types.
 """
 
+from ._a5 import A5Accessor
 from ._base import FixedErrorTraitType, VariableLengthTuple
 from ._color import ColorAccessor
 from ._extensions import DashArrayAccessor, FilterValueAccessor
@@ -16,6 +17,7 @@ from ._text import TextAccessor
 from ._timestamp import TimestampAccessor
 
 __all__ = [
+    "A5Accessor",
     "ArrowTableTrait",
     "BasemapUrl",
     "ColorAccessor",

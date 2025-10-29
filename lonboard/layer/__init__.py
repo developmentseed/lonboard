@@ -7,6 +7,7 @@
 #   Then the default value in the JS GeoArrow layer (defined in
 #   `@geoarrow/deck.gl-layers`) will be used.
 
+from ._a5 import A5Layer
 from ._arc import ArcLayer
 from ._base import BaseArrowLayer, BaseLayer
 from ._bitmap import BitmapLayer, BitmapTileLayer
@@ -19,6 +20,7 @@ from ._scatterplot import ScatterplotLayer
 from ._trips import TripsLayer
 
 __all__ = [
+    "A5Layer",
     "ArcLayer",
     "BaseArrowLayer",
     "BaseLayer",

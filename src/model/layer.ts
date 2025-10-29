@@ -13,12 +13,14 @@ import {
   GeoArrowSolidPolygonLayer,
   _GeoArrowTextLayer as GeoArrowTextLayer,
   GeoArrowH3HexagonLayer,
+  GeoArrowA5Layer,
   GeoArrowTripsLayer,
 } from "@geoarrow/deck.gl-layers";
 import type {
   GeoArrowH3HexagonLayerProps,
   GeoArrowArcLayerProps,
   GeoArrowColumnLayerProps,
+  GeoArrowA5LayerProps,
   GeoArrowHeatmapLayerProps,
   GeoArrowPathLayerProps,
   GeoArrowPolygonLayerProps,
@@ -79,6 +81,68 @@ export abstract class BaseArrowLayerModel extends BaseLayerModel {
     this.model.on(`change:${pythonName}`, callback);
 
     this.callbacks.set(`change:${pythonName}`, callback);
+  }
+}
+
+export class A5Model extends BaseArrowLayerModel {
+  static layerType = "a5";
+
+  protected extruded?: GeoArrowA5LayerProps["extruded"] | null;
+
+  protected getPentagon!: arrow.Vector<arrow.Uint64>;
+  protected getFillColor?: ColorAccessorInput | null;
+  protected getLineColor?: ColorAccessorInput | null;
+  protected getLineWidth?: FloatAccessorInput | null;
+  protected getElevation?: FloatAccessorInput | null;
+
+  constructor(model: WidgetModel, updateStateCallback: () => void) {
+    super(model, updateStateCallback);
+
+    this.initRegularAttribute("high_precision", "highPrecision");
+    this.initRegularAttribute("coverage", "coverage");
+    this.initRegularAttribute("center_hexagon", "centerHexagon");
+    this.initRegularAttribute("extruded", "extruded");
+
+    this.initVectorizedAccessor("get_pentagon", "getPentagon");
+    this.initVectorizedAccessor("get_fill_color", "getFillColor");
+    this.initVectorizedAccessor("get_line_color", "getLineColor");
+    this.initVectorizedAccessor("get_line_width", "getLineWidth");
+    this.initVectorizedAccessor("get_elevation", "getElevation");
+  }
+
+  layerProps(batchIndex: number): GeoArrowA5LayerProps {
+    return {
+      id: `${this.model.model_id}-${batchIndex}`,
+      data: this.table.batches[batchIndex],
+      // Required argument
+      getPentagon: this.getPentagon.data[batchIndex],
+      ...(isDefined(this.extruded) && { extruded: this.extruded }),
+      ...(isDefined(this.getFillColor) && {
+        getFillColor: accessColorData(this.getFillColor, batchIndex),
+      }),
+      ...(isDefined(this.getLineColor) && {
+        getLineColor: accessColorData(this.getLineColor, batchIndex),
+      }),
+      ...(isDefined(this.getLineWidth) && {
+        getLineWidth: accessFloatData(this.getLineWidth, batchIndex),
+      }),
+      ...(isDefined(this.getElevation) && {
+        getElevation: accessFloatData(this.getElevation, batchIndex),
+      }),
+    };
+  }
+
+  render(): GeoArrowA5Layer[] {
+    const layers: GeoArrowA5Layer[] = [];
+    for (let batchIdx = 0; batchIdx < this.table.batches.length; batchIdx++) {
+      layers.push(
+        new GeoArrowA5Layer({
+          ...this.baseLayerProps(),
+          ...this.layerProps(batchIdx),
+        }),
+      );
+    }
+    return layers;
   }
 }
 
@@ -1335,6 +1399,10 @@ export async function initializeLayer(
   const layerType = model.get("_layer_type");
   let layerModel: BaseLayerModel;
   switch (layerType) {
+    case A5Model.layerType:
+      layerModel = new A5Model(model, updateStateCallback);
+      break;
+
     case ArcModel.layerType:
       layerModel = new ArcModel(model, updateStateCallback);
       break;
