@@ -39,14 +39,6 @@ import "./globals.css";
 
 await initParquetWasm();
 
-const DEFAULT_INITIAL_VIEW_STATE = {
-  latitude: 10,
-  longitude: 0,
-  zoom: 0.5,
-  bearing: 0,
-  pitch: 0,
-};
-
 function App() {
   const actorRef = MachineContext.useActorRef();
   const isDrawingBBoxSelection = MachineContext.useSelector(
@@ -191,11 +183,7 @@ function App() {
     mapStyle: basemapState?.style || DEFAULT_MAP_STYLE,
     customAttribution,
     deckRef,
-    initialViewState: ["longitude", "latitude", "zoom"].every((key) =>
-      Object.keys(initialViewState).includes(key),
-    )
-      ? initialViewState
-      : DEFAULT_INITIAL_VIEW_STATE,
+    initialViewState,
     layers: bboxSelectPolygonLayer
       ? layers.concat(bboxSelectPolygonLayer)
       : layers,
@@ -211,14 +199,8 @@ function App() {
       // This condition is necessary to confirm that the viewState is
       // of type MapViewState.
       if ("latitude" in viewState) {
-        const { longitude, latitude, zoom, pitch, bearing } = viewState;
-        setViewState({
-          longitude,
-          latitude,
-          zoom,
-          pitch,
-          bearing,
-        });
+        // TODO: ensure all view state types get updated on the JS side
+        setViewState(viewState);
       }
     },
     parameters: parameters || {},
