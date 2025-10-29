@@ -1,9 +1,8 @@
-import h3.api.numpy_int as h3
+# ruff: noqa: ERA001
+
 import numpy as np
 import pandas as pd
 import pyarrow as pa
-import pytest
-from traitlets import TraitError
 
 from lonboard import Map
 from lonboard._h3 import h3_to_str
@@ -45,15 +44,18 @@ def test_from_geopandas():
     assert isinstance(m.layers[0], H3HexagonLayer)
 
 
-def test_invalid_indices_passed_as_int():
-    df = pd.DataFrame({"h3": INVALID_INDICES})
+# We removed invalid index checking because of spurious validation errors with
+# some real-world datasets.
+# https://data.humdata.org/dataset/kontur-population-dataset-22km
+# def test_invalid_indices_passed_as_int():
+#     df = pd.DataFrame({"h3": INVALID_INDICES})
 
-    with pytest.raises(TraitError):
-        H3HexagonLayer.from_pandas(df, get_hexagon=INVALID_INDICES)
+#     with pytest.raises(TraitError):
+#         H3HexagonLayer.from_pandas(df, get_hexagon=INVALID_INDICES)
 
 
-def test_invalid_indices_passed_as_str():
-    df = pd.DataFrame({"h3": [h3.int_to_str(INVALID_INDICES[0])]})
+# def test_invalid_indices_passed_as_str():
+#     df = pd.DataFrame({"h3": [h3.int_to_str(INVALID_INDICES[0])]})
 
-    with pytest.raises(TraitError):
-        H3HexagonLayer.from_pandas(df, get_hexagon=df["h3"])
+#     with pytest.raises(TraitError):
+#         H3HexagonLayer.from_pandas(df, get_hexagon=df["h3"])
