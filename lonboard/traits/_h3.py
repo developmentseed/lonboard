@@ -7,7 +7,7 @@ from typing import TYPE_CHECKING, Any
 import numpy as np
 from arro3.core import Array, ChunkedArray, DataType
 
-from lonboard._h3._str_to_h3 import str_to_h3
+from lonboard._h3 import str_to_h3, validate_h3_indices
 from lonboard._serialization import ACCESSOR_SERIALIZATION
 from lonboard.traits._base import FixedErrorTraitType
 
@@ -123,6 +123,15 @@ class H3Accessor(FixedErrorTraitType):
                 obj,
                 value,
                 info="H3 Arrow array must be uint64 type.",
+            )
+
+        try:
+            validate_h3_indices(value.to_numpy())
+        except ValueError as e:
+            self.error(
+                obj,
+                value,
+                info=f"H3 index validation error: {e}",
             )
 
         return value.rechunk(max_chunksize=obj._rows_per_chunk)

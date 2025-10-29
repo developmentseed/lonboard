@@ -1,6 +1,9 @@
+import h3.api.numpy_int as h3
 import numpy as np
 import pandas as pd
 import pyarrow as pa
+import pytest
+from traitlets import TraitError
 
 from lonboard import Map
 from lonboard._h3 import h3_to_str
@@ -28,6 +31,8 @@ VALID_INDICES = np.array(
     dtype=np.uint64,
 )
 
+INVALID_INDICES = np.array([0x88C2BAE305336BFF], dtype=np.uint64)
+
 
 def test_from_geopandas():
     hex_str = h3_to_str(VALID_INDICES)
@@ -38,3 +43,17 @@ def test_from_geopandas():
     layer = H3HexagonLayer.from_pandas(df, get_hexagon=hex_str_pa_arr)
     m = Map(layer)
     assert isinstance(m.layers[0], H3HexagonLayer)
+
+
+def test_invalid_indices_passed_as_int():
+    df = pd.DataFrame({"h3": INVALID_INDICES})
+
+    with pytest.raises(TraitError):
+        H3HexagonLayer.from_pandas(df, get_hexagon=INVALID_INDICES)
+
+
+def test_invalid_indices_passed_as_str():
+    df = pd.DataFrame({"h3": [h3.int_to_str(INVALID_INDICES[0])]})
+
+    with pytest.raises(TraitError):
+        H3HexagonLayer.from_pandas(df, get_hexagon=df["h3"])
