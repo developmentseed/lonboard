@@ -29,11 +29,6 @@ const DeckFirstRenderer: React.FC<MapRendererProps & DeckFirstRendererProps> = (
       ref={deckRef}
       style={{ width: "100%", height: "100%" }}
       controller={true}
-      // https://deck.gl/docs/api-reference/core/deck#_typedarraymanagerprops
-      _typedArrayManagerProps={{
-        overAlloc: 1,
-        poolSize: 0,
-      }}
       {...deckProps}
     >
       {controls.map((control) => control.renderDeck())}

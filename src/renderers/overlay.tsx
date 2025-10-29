@@ -47,14 +47,7 @@ const OverlayRenderer: React.FC<MapRendererProps & OverlayRendererProps> = (
       {...(isGlobeView(views) && { projection: "globe" })}
     >
       {controls.map((control) => control.renderMaplibre())}
-      <DeckGLOverlay
-        // https://deck.gl/docs/api-reference/core/deck#_typedarraymanagerprops
-        _typedArrayManagerProps={{
-          overAlloc: 1,
-          poolSize: 0,
-        }}
-        {...deckProps}
-      />
+      <DeckGLOverlay {...deckProps} />
     </Map>
   );
 };
