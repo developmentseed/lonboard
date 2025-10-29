@@ -30,7 +30,12 @@ if TYPE_CHECKING:
 
 
 class GeohashLayer(PolygonLayer):
-    """The `GeohashLayer` renders filled and/or stroked polygons based on the [Geohash](https://en.wikipedia.org/wiki/Geohash) geospatial indexing system."""
+    """The `GeohashLayer` renders filled and/or stroked polygons based on the [Geohash](https://en.wikipedia.org/wiki/Geohash) geospatial indexing system.
+
+    !!! warning
+        This layer does not currently support auto-centering the map view based on the
+        extent of the input.
+    """
 
     def __init__(
         self,

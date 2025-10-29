@@ -30,7 +30,12 @@ if TYPE_CHECKING:
 
 
 class S2Layer(PolygonLayer):
-    """The `S2Layer` renders filled and/or stroked polygons based on the [S2](http://s2geometry.io/) geospatial indexing system."""
+    """The `S2Layer` renders filled and/or stroked polygons based on the [S2](http://s2geometry.io/) geospatial indexing system.
+
+    !!! warning
+        This layer does not currently support auto-centering the map view based on the
+        extent of the input.
+    """
 
     def __init__(
         self,

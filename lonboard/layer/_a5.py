@@ -30,7 +30,12 @@ if TYPE_CHECKING:
 
 
 class A5Layer(PolygonLayer):
-    """The `A5Layer` renders filled and/or stroked polygons based on the [A5](https://a5geo.org) geospatial indexing system."""
+    """The `A5Layer` renders filled and/or stroked polygons based on the [A5](https://a5geo.org) geospatial indexing system.
+
+    !!! warning
+        This layer does not currently support auto-centering the map view based on the
+        extent of the input.
+    """
 
     def __init__(
         self,
