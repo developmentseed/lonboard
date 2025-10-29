@@ -48,9 +48,8 @@ def test_from_geopandas():
 def test_invalid_indices_passed_as_int():
     df = pd.DataFrame({"h3": INVALID_INDICES})
 
-    layer = H3HexagonLayer.from_pandas(df, get_hexagon=INVALID_INDICES)
-    m = Map(layer)
-    assert isinstance(m.layers[0], H3HexagonLayer)
+    with pytest.raises(TraitError):
+        H3HexagonLayer.from_pandas(df, get_hexagon=INVALID_INDICES)
 
 
 def test_invalid_indices_passed_as_str():
