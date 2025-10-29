@@ -5,16 +5,10 @@ from __future__ import annotations
 from typing import TYPE_CHECKING, Any
 
 import numpy as np
-from arro3.core import (
-    Array,
-    ChunkedArray,
-    DataType,
-)
+from arro3.core import Array, ChunkedArray, DataType
 
 from lonboard._h3._str_to_h3 import str_to_h3
-from lonboard._serialization import (
-    ACCESSOR_SERIALIZATION,
-)
+from lonboard._serialization import ACCESSOR_SERIALIZATION
 from lonboard.traits._base import FixedErrorTraitType
 
 if TYPE_CHECKING:

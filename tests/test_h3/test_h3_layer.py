@@ -4,7 +4,7 @@ import pyarrow as pa
 
 from lonboard import Map
 from lonboard._h3 import h3_to_str
-from lonboard.layer._h3 import H3HexagonLayer
+from lonboard.layer import H3HexagonLayer
 
 VALID_INDICES = np.array(
     [

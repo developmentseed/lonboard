@@ -9,8 +9,7 @@ import traitlets as t
 from lonboard._geoarrow.ops import Bbox, WeightedCentroid
 from lonboard._utils import auto_downcast as _auto_downcast
 from lonboard.layer._base import BaseArrowLayer
-from lonboard.traits import ArrowTableTrait, ColorAccessor, FloatAccessor
-from lonboard.traits._h3 import H3Accessor
+from lonboard.traits import ArrowTableTrait, ColorAccessor, FloatAccessor, H3Accessor
 
 if TYPE_CHECKING:
     import sys
