@@ -60,7 +60,7 @@ def test_map_default_basemap():
 
 def test_view_state_empty_input():
     m = Map([], view_state={})
-    assert m.view_state is None
+    assert m.view_state == MapViewState()
 
 
 def test_view_state_partial_dict():
