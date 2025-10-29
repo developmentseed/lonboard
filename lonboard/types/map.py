@@ -10,6 +10,7 @@ else:
 
 if TYPE_CHECKING:
     from lonboard.basemap import MaplibreBasemap
+    from lonboard.models import BaseViewState
     from lonboard.view import BaseView
 
 
@@ -24,4 +25,4 @@ class MapKwargs(TypedDict, total=False):
     show_side_panel: bool
     use_device_pixels: int | float | bool
     views: BaseView | list[BaseView] | tuple[BaseView, ...]
-    view_state: dict[str, Any]
+    view_state: BaseViewState | dict[str, Any]

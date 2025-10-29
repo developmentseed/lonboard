@@ -21,9 +21,9 @@ from lonboard.controls import (
     ScaleControl,
 )
 from lonboard.layer import BaseLayer
-from lonboard.models import BaseViewState, MapViewState
+from lonboard.models import BaseViewState, GlobeViewState, MapViewState
 from lonboard.traits import HeightTrait, VariableLengthTuple, ViewStateTrait
-from lonboard.view import BaseView
+from lonboard.view import BaseView, GlobeView, MapView
 
 if TYPE_CHECKING:
     import sys
@@ -521,24 +521,33 @@ class Map(BaseAnyWidget):
             return
 
         current_view_state = self.view_state
-        if isinstance(current_view_state, MapViewState):
-            changes = {}
-            if longitude is not None:
-                changes["longitude"] = longitude
-            if latitude is not None:
-                changes["latitude"] = latitude
-            if zoom is not None:
-                changes["zoom"] = zoom
-            if pitch is not None:
-                changes["pitch"] = pitch
-            if bearing is not None:
-                changes["bearing"] = bearing
 
+        changes = {}
+        if longitude is not None:
+            changes["longitude"] = longitude
+        if latitude is not None:
+            changes["latitude"] = latitude
+        if zoom is not None:
+            changes["zoom"] = zoom
+
+        # Only params allowed by globe view state
+        if isinstance(current_view_state, GlobeViewState):
             self.view_state = replace(current_view_state, **changes)
-        else:
-            raise TypeError(
-                "Can only set MapViewState or GlobeViewState parameters individually via set_view_state.\nFor other view state types, pass a complete view_state object.",
-            )
+            return
+
+        # Add more params allowed by map view state
+        if pitch is not None:
+            changes["pitch"] = pitch
+        if bearing is not None:
+            changes["bearing"] = bearing
+
+        if isinstance(current_view_state, MapViewState):
+            self.view_state = replace(current_view_state, **changes)
+            return
+
+        raise TypeError(
+            "Can only set MapViewState or GlobeViewState parameters individually via set_view_state.\nFor other view state types, pass a complete view_state object.",
+        )
 
     def fly_to(  # noqa: PLR0913
         self,
@@ -664,4 +673,7 @@ class Map(BaseAnyWidget):
 
     @traitlets.default("view_state")
     def _default_initial_view_state(self) -> dict[str, Any]:
-        return compute_view(self.layers)  # type: ignore
+        if isinstance(self.views, (MapView, GlobeView)):
+            return compute_view(self.layers)  # type: ignore
+
+        return {}
