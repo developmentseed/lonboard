@@ -30,6 +30,8 @@ if TYPE_CHECKING:
 
 
 class A5Layer(PolygonLayer):
+    """The `A5Layer` renders filled and/or stroked polygons based on the [A5](https://a5geo.org) geospatial indexing system."""
+
     def __init__(
         self,
         table: ArrowStreamExportable,
@@ -38,14 +40,14 @@ class A5Layer(PolygonLayer):
         _rows_per_chunk: int | None = None,
         **kwargs: Unpack[A5LayerKwargs],
     ) -> None:
-        """Create a new H3HexagonLayer.
+        """Create a new A5Layer.
 
         Args:
-            table: _description_
+            table: An Arrow table with properties to associate with the A5 pentagons.
 
         Keyword Args:
-            get_pentagon: _description_
-            kwargs: Extra args passed down as H3HexagonLayer attributes.
+            get_pentagon: The cell identifier of each A5 pentagon.
+            kwargs: Extra args passed down as A5Layer attributes.
 
         """
         super().__init__(
@@ -64,21 +66,15 @@ class A5Layer(PolygonLayer):
         auto_downcast: bool = True,
         **kwargs: Unpack[A5LayerKwargs],
     ) -> Self:
-        """Create a new H3HexagonLayer from a pandas DataFrame.
+        """Create a new A5Layer from a pandas DataFrame.
 
         Args:
-            df: _description_
+            df: a Pandas DataFrame with properties to associate with A5 pentagons.
 
         Keyword Args:
-            get_pentagon: _description_
-            auto_downcast: _description_. Defaults to True.
-            kwargs: Extra args passed down as H3HexagonLayer attributes.
-
-        Raises:
-            ImportError: _description_
-
-        Returns:
-            _description_
+            get_pentagon: A5 cell identifier of each A5 hexagon.
+            auto_downcast: Whether to save memory on input by casting to smaller types. Defaults to True.
+            kwargs: Extra args passed down as A5Layer attributes.
 
         """
         try:
@@ -99,8 +95,16 @@ class A5Layer(PolygonLayer):
     _layer_type = t.Unicode("a5").tag(sync=True)
 
     table = ArrowTableTrait(geometry_required=False)
+    """An Arrow table with properties to associate with the A5 pentagons.
+
+    If you have a Pandas `DataFrame`, use
+    [`from_pandas`][lonboard.A5Layer.from_pandas] instead.
+    """
 
     get_pentagon = A5Accessor()
-    """
-    todo
+    """The cell identifier of each A5 pentagon.
+
+    Accepts either an array of strings or uint64 integers representing A5 cell IDs.
+
+    - Type: [A5Accessor][lonboard.traits.A5Accessor]
     """

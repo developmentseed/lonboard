@@ -130,10 +130,10 @@ class H3HexagonLayer(PolygonLayer):
         """Create a new H3HexagonLayer.
 
         Args:
-            table: _description_
+            table: An Arrow table with properties to associate with the H3 hexagons.
 
         Keyword Args:
-            get_hexagon: _description_
+            get_hexagon: The cell identifier of each H3 hexagon.
             kwargs: Extra args passed down as H3HexagonLayer attributes.
 
         """
@@ -169,12 +169,6 @@ class H3HexagonLayer(PolygonLayer):
             get_hexagon: H3 cell identifier of each H3 hexagon.
             auto_downcast: Whether to save memory on input by casting to smaller types. Defaults to True.
             kwargs: Extra args passed down as H3HexagonLayer attributes.
-
-        Raises:
-            ImportError: _description_
-
-        Returns:
-            _description_
 
         """
         try:
