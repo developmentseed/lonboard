@@ -2,8 +2,8 @@ import { TileLayer, TileLayerProps } from "@deck.gl/geo-layers";
 import { BitmapLayer, BitmapLayerProps } from "@deck.gl/layers";
 import type { WidgetModel } from "@jupyter-widgets/base";
 
+import { BaseLayerModel } from "./base.js";
 import { isDefined } from "../../util.js";
-import { BaseLayerModel } from "../base-layer.js";
 
 export class BitmapModel extends BaseLayerModel {
   static layerType = "bitmap";

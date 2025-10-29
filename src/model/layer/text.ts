@@ -13,7 +13,7 @@ import {
   accessFloatData,
   StringVector,
 } from "../types.js";
-import { BaseArrowLayerModel } from "./arrow-base.js";
+import { BaseArrowLayerModel } from "./base.js";
 
 export class TextModel extends BaseArrowLayerModel {
   static layerType = "text";

@@ -2,8 +2,8 @@ import { SimpleMeshLayer, SimpleMeshLayerProps } from "@deck.gl/mesh-layers";
 import type { WidgetModel } from "@jupyter-widgets/base";
 import * as arrow from "apache-arrow";
 
+import { BaseLayerModel } from "./base.js";
 import { isDefined } from "../../util.js";
-import { BaseLayerModel } from "../base-layer.js";
 
 export class SurfaceModel extends BaseLayerModel {
   static layerType = "surface";

@@ -1,6 +1,7 @@
 import { WidgetModel } from "@jupyter-widgets/base";
 
 import { ArcModel } from "./arc.js";
+import { BaseLayerModel } from "./base.js";
 import { BitmapModel, BitmapTileModel } from "./bitmap.js";
 import { ColumnModel } from "./column.js";
 import { HeatmapModel } from "./heatmap.js";
@@ -11,7 +12,6 @@ import { ScatterplotModel } from "./scatterplot.js";
 import { SurfaceModel } from "./surface.js";
 import { TextModel } from "./text.js";
 import { TripsModel } from "./trips.js";
-import { BaseLayerModel } from "../base-layer.js";
 
 export { ArcModel } from "./arc.js";
 export { BitmapModel, BitmapTileModel } from "./bitmap.js";

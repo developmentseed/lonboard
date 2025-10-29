@@ -11,7 +11,7 @@ import type {
 import type { WidgetModel } from "@jupyter-widgets/base";
 import * as arrow from "apache-arrow";
 
-import { BaseArrowLayerModel } from "./arrow-base.js";
+import { BaseArrowLayerModel } from "./base.js";
 import { isDefined } from "../../util.js";
 import { EARCUT_WORKER_POOL } from "../earcut-pool.js";
 import {

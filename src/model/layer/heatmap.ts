@@ -4,7 +4,7 @@ import type { WidgetModel } from "@jupyter-widgets/base";
 
 import { isDefined } from "../../util.js";
 import { PointVector, FloatAccessorInput, accessFloatData } from "../types.js";
-import { BaseArrowLayerModel } from "./arrow-base.js";
+import { BaseArrowLayerModel } from "./base.js";
 
 export class HeatmapModel extends BaseArrowLayerModel {
   static layerType = "heatmap";

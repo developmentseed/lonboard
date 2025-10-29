@@ -2,7 +2,7 @@ import { GeoArrowColumnLayer } from "@geoarrow/deck.gl-layers";
 import type { GeoArrowColumnLayerProps } from "@geoarrow/deck.gl-layers";
 import type { WidgetModel } from "@jupyter-widgets/base";
 
-import { BaseArrowLayerModel } from "./arrow-base.js";
+import { BaseArrowLayerModel } from "./base.js";
 import { isDefined } from "../../util.js";
 import {
   PointVector,

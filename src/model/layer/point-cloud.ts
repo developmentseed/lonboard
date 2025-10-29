@@ -4,7 +4,7 @@ import type { WidgetModel } from "@jupyter-widgets/base";
 
 import { isDefined } from "../../util.js";
 import { ColorAccessorInput, accessColorData, NormalVector } from "../types.js";
-import { BaseArrowLayerModel } from "./arrow-base.js";
+import { BaseArrowLayerModel } from "./base.js";
 
 export class PointCloudModel extends BaseArrowLayerModel {
   static layerType = "point-cloud";

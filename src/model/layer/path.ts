@@ -9,7 +9,7 @@ import {
   accessColorData,
   accessFloatData,
 } from "../types.js";
-import { BaseArrowLayerModel } from "./arrow-base.js";
+import { BaseArrowLayerModel } from "./base.js";
 
 export class PathModel extends BaseArrowLayerModel {
   static layerType = "path";
