@@ -1,21 +1,16 @@
-import { Viewport } from "@deck.gl/core";
-import {
-  CullingVolume,
-  AxisAlignedBoundingBox,
-  makeOrientedBoundingBoxFromPoints,
-} from "@math.gl/culling";
+import { assert, Viewport } from "@deck.gl/core";
+import { CullingVolume, AxisAlignedBoundingBox } from "@math.gl/culling";
 
-import { Bounds, ZRange } from "./types";
-import type { COGMetadata, COGOverview } from "./types";
+import type { COGMetadata, COGOverview, ZRange } from "./types";
 
 // for calculating bounding volume of a tile in a non-web-mercator viewport
-const REF_POINTS_5 = [
-  [0.5, 0.5],
-  [0, 0],
-  [0, 1],
-  [1, 0],
-  [1, 1],
-]; // 4 corners and center
+// const REF_POINTS_5 = [
+//   [0.5, 0.5],
+//   [0, 0],
+//   [0, 1],
+//   [1, 0],
+//   [1, 1],
+// ]; // 4 corners and center
 
 /**
  * COG Tile Node - similar to OSMNode but for COG's tile structure
@@ -189,7 +184,7 @@ export class COGTileNode {
     project: ((xyz: number[]) => number[]) | null,
   ) {
     const overview = this.overview;
-    const { bbox, tileWidth, tileHeight } = this.cogMetadata;
+    const { bbox } = this.cogMetadata;
 
     const cogWidth = bbox[2] - bbox[0];
     const cogHeight = bbox[3] - bbox[1];
@@ -203,35 +198,34 @@ export class COGTileNode {
     const tileMaxY = tileMinY + tileGeoHeight;
 
     if (project) {
+      assert(false, "TODO: check bounding volume implementation in Globe view");
+
       // Custom projection (e.g., GlobeView)
-      // Sample points on tile to create bounding volume
-      const refPoints = [
-        [0.5, 0.5], // center
-        [0, 0],
-        [0, 1],
-        [1, 0],
-        [1, 1], // corners
-      ];
+      // Estimate bounding box from sample points
+      // TODO: switch to higher ref points at lowest zoom levels, like upstream
+      // const refPoints = REF_POINTS_5;
 
-      const refPointPositions: number[][] = [];
-      for (const [fx, fy] of refPoints) {
-        const geoX = tileMinX + fx * tileGeoWidth;
-        const geoY = tileMinY + fy * tileGeoHeight;
+      // const refPointPositions: number[][] = [];
+      // for (const [fx, fy] of refPoints) {
+      //   const geoX = tileMinX + fx * tileGeoWidth;
+      //   const geoY = tileMinY + fy * tileGeoHeight;
 
-        // Convert from COG coordinates to lng/lat
-        // This assumes COG is in Web Mercator - adjust for other projections
-        const lngLat = this.cogCoordsToLngLat([geoX, geoY]);
-        lngLat[2] = zRange[0];
-        refPointPositions.push(project(lngLat));
+      //   // Convert from COG coordinates to lng/lat
+      //   // This assumes COG is in Web Mercator - adjust for other projections
+      //   const lngLat = this.cogCoordsToLngLat([geoX, geoY]);
+      //   lngLat[2] = zRange[0];
+      //   refPointPositions.push(project(lngLat));
 
-        if (zRange[0] !== zRange[1]) {
-          lngLat[2] = zRange[1];
-          refPointPositions.push(project(lngLat));
-        }
-      }
+      //   if (zRange[0] !== zRange[1]) {
+      //     lngLat[2] = zRange[1];
+      //     refPointPositions.push(project(lngLat));
+      //   }
+      // }
 
-      return makeOrientedBoundingBoxFromPoints(refPointPositions);
+      // return makeOrientedBoundingBoxFromPoints(refPointPositions);
     }
+
+    assert(false, "bounding volume of web mercator is probably wrong");
 
     // Web Mercator projection
     // Assuming COG is already in Web Mercator (EPSG:3857)
