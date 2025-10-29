@@ -100,17 +100,9 @@ export class COGTileNode {
     elevationBounds: ZRange;
     minZ: number; // Minimum z (coarsest acceptable)
     maxZ: number; // Maximum z (finest acceptable)
-    bounds?: Bounds; // In COG's coordinate space
   }): boolean {
-    const {
-      viewport,
-      cullingVolume,
-      elevationBounds,
-      minZ,
-      maxZ,
-      bounds,
-      project,
-    } = params;
+    const { viewport, cullingVolume, elevationBounds, minZ, maxZ, project } =
+      params;
 
     // Get bounding volume for this tile
     const boundingVolume = this.getBoundingVolume(elevationBounds, project);
