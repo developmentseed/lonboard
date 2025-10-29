@@ -102,10 +102,16 @@ class COGTileNode {
     /** Minimum (coarsest) COG overview level */
     minZ: number;
     /** Maximum (finest) COG overview level */
-    maxZ: number;
+    maxZ?: number;
   }): boolean {
-    const { viewport, cullingVolume, elevationBounds, minZ, maxZ, project } =
-      params;
+    const {
+      viewport,
+      cullingVolume,
+      elevationBounds,
+      minZ,
+      maxZ = this.cogMetadata.overviews.length - 1,
+      project,
+    } = params;
 
     // Get bounding volume for this tile
     const boundingVolume = this.getBoundingVolume(elevationBounds, project);
@@ -275,14 +281,16 @@ class COGTileNode {
  *
  * Overviews follow TileMatrixSet ordering: index 0 = coarsest, higher = finer
  */
-export function getTileIndices(opts: {
-  cogMetadata: COGMetadata;
-  viewport: Viewport;
-  maxZ: number;
-  // minZ?: number;
-  zRange: ZRange | null;
-}): COGTileIndex[] {
-  const { cogMetadata, viewport, maxZ, zRange } = opts;
+export function getTileIndices(
+  cogMetadata: COGMetadata,
+  opts: {
+    viewport: Viewport;
+    maxZ?: number;
+    // minZ?: number;
+    zRange: ZRange | null;
+  },
+): COGTileIndex[] {
+  const { viewport, maxZ, zRange } = opts;
 
   const project: ((xyz: number[]) => number[]) | null =
     viewport instanceof _GlobeViewport && viewport.resolution
@@ -347,6 +355,8 @@ export function getTileIndices(opts: {
     root.getSelected(selectedNodes);
   }
 
+  // TODO: remove this from here
+  // Instead, move it to `getTileMetadata` in the tileset class
   // Convert to tile indices with bounds
   return selectedNodes.map((node) => {
     const overview = cogMetadata.overviews[node.z];

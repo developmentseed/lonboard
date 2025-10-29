@@ -5,23 +5,20 @@
  * following the pattern from deck.gl's OSM tile indexing.
  */
 
-import { Viewport, WebMercatorViewport, _GlobeViewport } from "@deck.gl/core";
+import { Viewport, _GlobeViewport } from "@deck.gl/core";
 import { _Tileset2D as Tileset2D } from "@deck.gl/geo-layers";
-import type { Bounds, ZRange } from "@deck.gl/geo-layers/dist/tileset-2d/types";
-import {
-  CullingVolume,
-  Plane,
-  AxisAlignedBoundingBox,
-  makeOrientedBoundingBoxFromPoints,
-} from "@math.gl/culling";
+import type { Tileset2DProps } from "@deck.gl/geo-layers/dist/tileset-2d";
+import type { ZRange } from "@deck.gl/geo-layers/dist/tileset-2d/types";
+import { Matrix4 } from "@math.gl/core";
 import { GeoTIFF } from "geotiff";
 
+import { getTileIndices } from "./cog-tile-2d-traversal";
 import type { COGMetadata, COGTileIndex, COGOverview } from "./types";
 
 /**
  * Extract COG metadata
  */
-async function extractCOGMetadata(tiff: GeoTIFF): Promise<COGMetadata> {
+export async function extractCOGMetadata(tiff: GeoTIFF): Promise<COGMetadata> {
   const image = await tiff.getImage();
 
   const width = image.getWidth();
@@ -92,4 +89,71 @@ async function extractCOGMetadata(tiff: GeoTIFF): Promise<COGMetadata> {
     overviews,
     image: tiff,
   };
+}
+
+/**
+ * COGTileset2D with proper frustum culling
+ */
+export class COGTileset2D extends Tileset2D {
+  private cogMetadata: COGMetadata;
+
+  constructor(cogMetadata: COGMetadata, opts: Tileset2DProps) {
+    super(opts);
+    this.cogMetadata = cogMetadata;
+  }
+
+  /**
+   * Get tile indices visible in viewport
+   * Uses frustum culling similar to OSM implementation
+   *
+   * Overviews follow TileMatrixSet ordering: index 0 = coarsest, higher = finer
+   */
+  getTileIndices(opts: {
+    viewport: Viewport;
+    maxZoom?: number;
+    minZoom?: number;
+    zRange: ZRange | null;
+    modelMatrix?: Matrix4;
+    modelMatrixInverse?: Matrix4;
+  }): COGTileIndex[] {
+    return getTileIndices(this.cogMetadata, opts);
+  }
+
+  getTileId(index: COGTileIndex): string {
+    return `${index.x}-${index.y}-${index.z}`;
+  }
+
+  getParentIndex(index: COGTileIndex): COGTileIndex {
+    if (index.z === 0) {
+      // Already at coarsest level
+      return index;
+    }
+
+    const currentOverview = this.cogMetadata.overviews[index.z];
+    const parentOverview = this.cogMetadata.overviews[index.z - 1];
+
+    const scaleFactor =
+      currentOverview.scaleFactor / parentOverview.scaleFactor;
+
+    return {
+      x: Math.floor(index.x / scaleFactor),
+      y: Math.floor(index.y / scaleFactor),
+      z: index.z - 1,
+    };
+  }
+
+  getTileZoom(index: COGTileIndex): number {
+    return index.z;
+  }
+
+  getTileMetadata(index: COGTileIndex): Record<string, unknown> {
+    const overview = this.cogMetadata.overviews[index.z];
+    return {
+      bounds: index.bounds,
+      level: index.level,
+      tileWidth: this.cogMetadata.tileWidth,
+      tileHeight: this.cogMetadata.tileHeight,
+      overview,
+    };
+  }
 }
