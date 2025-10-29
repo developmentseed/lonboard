@@ -14,19 +14,20 @@ from lonboard._constants import OGC_84
 from lonboard._geoarrow._duckdb import from_duckdb as _from_duckdb
 from lonboard._geoarrow.c_stream_import import import_arrow_c_stream
 from lonboard._geoarrow.geopandas_interop import geopandas_to_geoarrow
-from lonboard._geoarrow.ops import reproject_table
-from lonboard._geoarrow.ops.bbox import Bbox, total_bounds
-from lonboard._geoarrow.ops.centroid import WeightedCentroid, weighted_centroid
+from lonboard._geoarrow.ops import (
+    Bbox,
+    WeightedCentroid,
+    reproject_table,
+    total_bounds,
+    weighted_centroid,
+)
 from lonboard._geoarrow.ops.coord_layout import make_geometry_interleaved
 from lonboard._geoarrow.parse_wkb import parse_serialized_table
 from lonboard._geoarrow.row_index import add_positional_row_index
 from lonboard._serialization import infer_rows_per_chunk
 from lonboard._utils import auto_downcast as _auto_downcast
 from lonboard._utils import get_geometry_column_index, remove_extension_kwargs
-from lonboard.traits import (
-    ArrowTableTrait,
-    VariableLengthTuple,
-)
+from lonboard.traits import ArrowTableTrait, VariableLengthTuple
 
 if TYPE_CHECKING:
     import sys
