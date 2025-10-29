@@ -5,7 +5,9 @@ from typing import TYPE_CHECKING
 import traitlets as t
 
 from lonboard._utils import auto_downcast as _auto_downcast
-from lonboard.layer import PolygonLayer
+
+# Important to import from ._polygon to avoid circular imports
+from lonboard.layer._polygon import PolygonLayer
 from lonboard.traits import A5Accessor, ArrowTableTrait
 
 if TYPE_CHECKING:
