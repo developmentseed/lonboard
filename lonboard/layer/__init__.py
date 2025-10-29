@@ -11,6 +11,7 @@ from ._arc import ArcLayer
 from ._base import BaseArrowLayer, BaseLayer
 from ._bitmap import BitmapLayer, BitmapTileLayer
 from ._column import ColumnLayer
+from ._h3 import H3HexagonLayer
 from ._heatmap import HeatmapLayer
 from ._path import PathLayer
 from ._point_cloud import PointCloudLayer
@@ -25,6 +26,7 @@ __all__ = [
     "BitmapLayer",
     "BitmapTileLayer",
     "ColumnLayer",
+    "H3HexagonLayer",
     "HeatmapLayer",
     "PathLayer",
     "PointCloudLayer",
