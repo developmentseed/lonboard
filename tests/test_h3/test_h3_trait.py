@@ -4,8 +4,8 @@ import pyarrow as pa
 import pytest
 from traitlets import TraitError
 
-from lonboard._layer import BaseLayer
-from lonboard.traits import H3Accessor
+from lonboard.layer import BaseLayer
+from lonboard.traits._h3 import H3Accessor
 
 VALID_INDICES = np.array(
     [
