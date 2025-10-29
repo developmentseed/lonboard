@@ -20,7 +20,9 @@ sys.path.insert(0, str(project_root))
 def sample_geodataframe():
     """Simple GeoDataFrame for testing."""
     return gpd.GeoDataFrame(
-        {"name": ["test_point"], "value": [1]}, geometry=[Point(0, 0)], crs="EPSG:4326",
+        {"name": ["test_point"], "value": [1]},
+        geometry=[Point(0, 0)],
+        crs="EPSG:4326",
     )
 
 
