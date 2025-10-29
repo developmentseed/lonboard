@@ -10,4 +10,4 @@ https://mkdocstrings.github.io/python/usage/configuration/members/#filters
       filters:
 
 
-::: lonboard.models.ViewState
+::: lonboard.models.MapViewState
