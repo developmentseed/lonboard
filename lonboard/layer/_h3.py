@@ -83,36 +83,37 @@ def default_h3_viewport(ca: ChunkedArray) -> tuple[Bbox, WeightedCentroid] | Non
 
 
 class H3HexagonLayer(PolygonLayer):
-    """The `H3HexagonLayer` renders H3 hexagons.
+    """The `H3HexagonLayer` renders hexagons from the [H3](https://h3geo.org/) geospatial indexing system.
 
     **Example:**
 
-    From GeoPandas:
+    From Pandas:
 
     ```py
-    import geopandas as gpd
+    import pandas as pd
     from lonboard import Map, H3HexagonLayer
 
-    # A GeoDataFrame with Polygon or MultiPolygon geometries
-    gdf = gpd.GeoDataFrame()
-    layer = H3HexagonLayer.from_geopandas(
-        gdf,
-        get_fill_color=[255, 0, 0],
+    # A DataFrame with H3 cell identifiers
+    df = pd.DataFrame({
+        "h3_index": ["8928308280fffff", "8928308280bffff", ...],
+        "other_attributes": [...],
+    })
+    layer = H3HexagonLayer.from_pandas(
+        df,
+        get_hexagon=df["h3_index"],
     )
     m = Map(layer)
     ```
 
-    From an Arrow-compatible source like [pyogrio][pyogrio] or [geoarrow-rust](https://geoarrow.github.io/geoarrow-rs/python/latest):
+    Or, you can pass in an Arrow table directly
 
     ```py
-    from geoarrow.rust.io import read_flatgeobuf
     from lonboard import Map, H3HexagonLayer
 
-    # Example: A FlatGeobuf file with Polygon or MultiPolygon geometries
-    table = read_flatgeobuf("path/to/file.fgb")
+    # Example: An Arrow table with H3 identifiers as a column
     layer = H3HexagonLayer(
         table,
-        get_fill_color=[255, 0, 0],
+        get_hexagon=table["h3_index"],
     )
     m = Map(layer)
     ```
@@ -162,11 +163,11 @@ class H3HexagonLayer(PolygonLayer):
         """Create a new H3HexagonLayer from a pandas DataFrame.
 
         Args:
-            df: _description_
+            df: a Pandas DataFrame with properties to associate with H3 hexagons.
 
         Keyword Args:
-            get_hexagon: _description_
-            auto_downcast: _description_. Defaults to True.
+            get_hexagon: H3 cell identifier of each H3 hexagon.
+            auto_downcast: Whether to save memory on input by casting to smaller types. Defaults to True.
             kwargs: Extra args passed down as H3HexagonLayer attributes.
 
         Raises:
@@ -194,10 +195,46 @@ class H3HexagonLayer(PolygonLayer):
     _layer_type = t.Unicode("h3-hexagon").tag(sync=True)
 
     table = ArrowTableTrait(geometry_required=False)
+    """An Arrow table with properties to associate with the H3 hexagons.
+
+    If you have a Pandas `DataFrame`, use
+    [`from_pandas`][lonboard.H3HexagonLayer.from_pandas] instead.
+    """
 
     get_hexagon = H3Accessor()
-    """
-    todo
+    """The cell identifier of each H3 hexagon.
+
+    Accepts either an array of strings or uint64 integers representing H3 cell IDs.
+
+    - Type: [H3Accessor][lonboard.traits.H3Accessor]
     """
 
     high_precision = t.Bool(None, allow_none=True).tag(sync=True)
+    """Whether to render H3 hexagons in high-precision mode.
+
+    Each hexagon in the H3 indexing system is [slightly different in shape](https://h3geo.org/docs/core-library/coordsystems). To draw a large number of hexagons efficiently, the `H3HexagonLayer` may choose to use instanced drawing by assuming that all hexagons within the current viewport have the same shape as the one at the center of the current viewport. The discrepancy is usually too small to be visible.
+
+    There are several cases in which high-precision mode is required. In these cases, `H3HexagonLayer` may choose to switch to high-precision mode, where it trades performance for accuracy:
+
+    * The input set contains a pentagon. There are 12 pentagons world wide at each resolution, and these cells and their immediate neighbors have significant differences in shape.
+    * The input set is at a coarse resolution (res `0` through res `5`). These cells have larger differences in shape, particularly when using a Mercator projection.
+    * The input set contains hexagons with different resolutions.
+
+    Possible values:
+
+    * `None`: The layer chooses the mode automatically. High-precision rendering is only used if an edge case is encountered in the data.
+    * `True`: Always use high-precision rendering.
+    * `False`: Always use instanced rendering, regardless of the characteristics of the data.
+
+    - Type: `bool | None`, optional
+    - Default: `None`
+    """
+
+    coverage = t.Float(None, allow_none=True, min=0, max=1).tag(sync=True)
+    """Hexagon radius multiplier, between 0 - 1.
+
+    When coverage = 1, hexagon is rendered with actual size, by specifying a different value (between 0 and 1) hexagon can be scaled down.
+
+    - Type: `float`, optional
+    - Default: `1`
+    """
