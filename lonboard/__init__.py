@@ -5,6 +5,7 @@ from ._map import Map
 from ._version import __version__
 from ._viz import viz
 from .layer import (
+    A5Layer,
     ArcLayer,
     BaseArrowLayer,
     BaseLayer,
@@ -21,6 +22,7 @@ from .layer import (
 )
 
 __all__ = [
+    "A5Layer",
     "ArcLayer",
     "BaseArrowLayer",
     "BaseLayer",

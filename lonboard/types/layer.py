@@ -62,6 +62,7 @@ H3AccessorInput = Union[
     ArrowArrayExportable,
     ArrowStreamExportable,
 ]
+A5AccessorInput = H3AccessorInput
 NormalAccessorInput = Union[
     list[int],
     tuple[int, int, int],
@@ -169,25 +170,6 @@ class ColumnLayerKwargs(BaseLayerKwargs, total=False):
     get_line_width: FloatAccessorInput
 
 
-class H3HexagonLayerKwargs(BaseLayerKwargs, total=False):
-    high_precision: bool
-    stroked: bool
-    filled: bool
-    extruded: bool
-    wireframe: bool
-    elevation_scale: IntFloat
-    line_width_units: Units
-    line_width_scale: IntFloat
-    line_width_min_pixels: IntFloat
-    line_width_max_pixels: IntFloat
-    line_joint_rounded: bool
-    line_miter_limit: IntFloat
-    get_fill_color: ColorAccessorInput
-    get_line_color: ColorAccessorInput
-    get_line_width: FloatAccessorInput
-    get_elevation: FloatAccessorInput
-
-
 class PathLayerKwargs(BaseLayerKwargs, total=False):
     width_units: Units
     width_scale: IntFloat
@@ -224,6 +206,14 @@ class PolygonLayerKwargs(BaseLayerKwargs, total=False):
     get_line_color: ColorAccessorInput
     get_line_width: FloatAccessorInput
     get_elevation: FloatAccessorInput
+
+
+class H3HexagonLayerKwargs(PolygonLayerKwargs, total=False):
+    high_precision: bool
+
+
+class A5LayerKwargs(PolygonLayerKwargs, total=False):
+    pass
 
 
 class ScatterplotLayerKwargs(BaseLayerKwargs, total=False):

@@ -1,9 +1,11 @@
 import {
   GeoArrowPolygonLayer,
   GeoArrowSolidPolygonLayer,
+  GeoArrowA5Layer,
   GeoArrowH3HexagonLayer,
 } from "@geoarrow/deck.gl-layers";
 import type {
+  GeoArrowA5LayerProps,
   GeoArrowH3HexagonLayerProps,
   GeoArrowPolygonLayerProps,
   GeoArrowSolidPolygonLayerProps,
@@ -181,6 +183,10 @@ export abstract class BasePolygonModel extends BaseArrowLayerModel {
 export class PolygonModel extends BasePolygonModel {
   static layerType = "polygon";
 
+  constructor(model: WidgetModel, updateStateCallback: () => void) {
+    super(model, updateStateCallback);
+  }
+
   layerProps(batchIndex: number): GeoArrowPolygonLayerProps {
     return this.basePolygonLayerProps(batchIndex);
   }
@@ -218,7 +224,6 @@ export class H3HexagonModel extends BasePolygonModel {
 
   layerProps(batchIndex: number): GeoArrowH3HexagonLayerProps {
     return {
-      // Required argument
       getHexagon: this.getHexagon.data[batchIndex],
       ...(isDefined(this.highPrecision) && {
         highPrecision: this.highPrecision,
@@ -233,6 +238,38 @@ export class H3HexagonModel extends BasePolygonModel {
     for (let batchIdx = 0; batchIdx < this.table.batches.length; batchIdx++) {
       layers.push(
         new GeoArrowH3HexagonLayer({
+          ...this.baseLayerProps(),
+          ...this.layerProps(batchIdx),
+        }),
+      );
+    }
+    return layers;
+  }
+}
+
+export class A5Model extends BasePolygonModel {
+  static layerType = "a5";
+
+  protected getPentagon!: arrow.Vector<arrow.Uint64>;
+
+  constructor(model: WidgetModel, updateStateCallback: () => void) {
+    super(model, updateStateCallback);
+
+    this.initVectorizedAccessor("get_pentagon", "getPentagon");
+  }
+
+  layerProps(batchIndex: number): GeoArrowA5LayerProps {
+    return {
+      getPentagon: this.getPentagon.data[batchIndex],
+      ...this.basePolygonLayerProps(batchIndex),
+    };
+  }
+
+  render(): GeoArrowA5Layer[] {
+    const layers: GeoArrowA5Layer[] = [];
+    for (let batchIdx = 0; batchIdx < this.table.batches.length; batchIdx++) {
+      layers.push(
+        new GeoArrowA5Layer({
           ...this.baseLayerProps(),
           ...this.layerProps(batchIdx),
         }),

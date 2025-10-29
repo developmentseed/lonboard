@@ -7,7 +7,12 @@ import { ColumnModel } from "./column.js";
 import { HeatmapModel } from "./heatmap.js";
 import { PathModel } from "./path.js";
 import { PointCloudModel } from "./point-cloud.js";
-import { SolidPolygonModel, H3HexagonModel, PolygonModel } from "./polygon.js";
+import {
+  A5Model,
+  H3HexagonModel,
+  PolygonModel,
+  SolidPolygonModel,
+} from "./polygon.js";
 import { ScatterplotModel } from "./scatterplot.js";
 import { SurfaceModel } from "./surface.js";
 import { TextModel } from "./text.js";
@@ -19,7 +24,12 @@ export { ColumnModel } from "./column.js";
 export { HeatmapModel } from "./heatmap.js";
 export { PathModel } from "./path.js";
 export { PointCloudModel } from "./point-cloud.js";
-export { H3HexagonModel, PolygonModel, SolidPolygonModel } from "./polygon.js";
+export {
+  A5Model,
+  H3HexagonModel,
+  PolygonModel,
+  SolidPolygonModel,
+} from "./polygon.js";
 export { ScatterplotModel } from "./scatterplot.js";
 export { SurfaceModel } from "./surface.js";
 export { TextModel } from "./text.js";
@@ -32,6 +42,10 @@ export async function initializeLayer(
   const layerType = model.get("_layer_type");
   let layerModel: BaseLayerModel;
   switch (layerType) {
+    case A5Model.layerType:
+      layerModel = new A5Model(model, updateStateCallback);
+      break;
+
     case ArcModel.layerType:
       layerModel = new ArcModel(model, updateStateCallback);
       break;
