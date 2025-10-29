@@ -6,24 +6,8 @@ from urllib.parse import urlparse
 import traitlets
 
 from lonboard._environment import DEFAULT_HEIGHT
-from lonboard.models import (
-    BaseViewState,
-    FirstPersonViewState,
-    GlobeViewState,
-    MapViewState,
-    OrbitViewState,
-    OrthographicViewState,
-    _serialize_view_state,
-)
+from lonboard.models import BaseViewState, _serialize_view_state
 from lonboard.traits._base import FixedErrorTraitType
-from lonboard.view import (
-    BaseView,
-    FirstPersonView,
-    GlobeView,
-    MapView,
-    OrbitView,
-    OrthographicView,
-)
 
 if TYPE_CHECKING:
     from traitlets import HasTraits
@@ -82,15 +66,6 @@ class HeightTrait(FixedErrorTraitType):
         assert False
 
 
-VIEW_STATE_VALIDATORS: dict[type[BaseView], type[BaseViewState]] = {
-    MapView: MapViewState,
-    GlobeView: GlobeViewState,
-    FirstPersonView: FirstPersonViewState,
-    OrbitView: OrbitViewState,
-    OrthographicView: OrthographicViewState,
-}
-
-
 class ViewStateTrait(FixedErrorTraitType):
     """Trait to validate view state input."""
 
@@ -109,13 +84,9 @@ class ViewStateTrait(FixedErrorTraitType):
     def validate(self, obj: Map, value: Any) -> None | BaseViewState:
         view = obj.views
         if view is None:
-            return MapViewState() if value is None else value
+            return None
         else:  # noqa: RET505 (typing issue)
-            validator = VIEW_STATE_VALIDATORS.get(type(view))
-            if validator is None:
-                self.error(obj, value, info="unsupported view type")
-                assert False
-
+            validator = view._view_state_type  # noqa: SLF001
             return validator(value)  # type: ignore
         #     view
 

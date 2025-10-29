@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import warnings
+from dataclasses import replace
 from pathlib import Path
 from typing import IO, TYPE_CHECKING, Any, TextIO, overload
 
@@ -20,8 +21,8 @@ from lonboard.controls import (
     ScaleControl,
 )
 from lonboard.layer import BaseLayer
+from lonboard.models import BaseViewState, MapViewState
 from lonboard.traits import HeightTrait, VariableLengthTuple, ViewStateTrait
-from lonboard.traits._map import DEFAULT_INITIAL_VIEW_STATE
 from lonboard.view import BaseView
 
 if TYPE_CHECKING:
@@ -154,9 +155,7 @@ class Map(BaseAnyWidget):
     _esm = bundler_output_dir / "index.js"
     _css = bundler_output_dir / "index.css"
 
-    # TODO: change this view state to allow non-map view states if we have non-map views
-    # Also allow a list/tuple of view states for multiple views
-    view_state = ViewStateTrait()
+    view_state: BaseViewState | None = ViewStateTrait()  # type: ignore
     """
     The view state of the map.
 
@@ -492,8 +491,9 @@ class Map(BaseAnyWidget):
         elif reset_zoom:
             self.view_state = compute_view(self.layers)  # type: ignore
 
-    def set_view_state(
+    def set_view_state(  # noqa: PLR0913
         self,
+        view_state: BaseViewState | None = None,
         *,
         longitude: float | None = None,
         latitude: float | None = None,
@@ -505,6 +505,9 @@ class Map(BaseAnyWidget):
 
         Any parameters that are unset will not be changed.
 
+        Args:
+            view_state: A complete view state object to set on the map.
+
         Keyword Args:
             longitude: the new longitude to set on the map. Defaults to None.
             latitude: the new latitude to set on the map. Defaults to None.
@@ -513,24 +516,29 @@ class Map(BaseAnyWidget):
             bearing: the new bearing to set on the map. Defaults to None.
 
         """
-        view_state = (
-            self.view_state._asdict()  # type: ignore
-            if self.view_state is not None
-            else DEFAULT_INITIAL_VIEW_STATE
-        )
+        if view_state is not None:
+            self.view_state = view_state
+            return
 
-        if longitude is not None:
-            view_state["longitude"] = longitude
-        if latitude is not None:
-            view_state["latitude"] = latitude
-        if zoom is not None:
-            view_state["zoom"] = zoom
-        if pitch is not None:
-            view_state["pitch"] = pitch
-        if bearing is not None:
-            view_state["bearing"] = bearing
+        current_view_state = self.view_state
+        if isinstance(current_view_state, MapViewState):
+            changes = {}
+            if longitude is not None:
+                changes["longitude"] = longitude
+            if latitude is not None:
+                changes["latitude"] = latitude
+            if zoom is not None:
+                changes["zoom"] = zoom
+            if pitch is not None:
+                changes["pitch"] = pitch
+            if bearing is not None:
+                changes["bearing"] = bearing
 
-        self.view_state = view_state
+            self.view_state = replace(current_view_state, **changes)
+        else:
+            raise TypeError(
+                "Can only set MapViewState or GlobeViewState parameters individually via set_view_state.\nFor other view state types, pass a complete view_state object.",
+            )
 
     def fly_to(  # noqa: PLR0913
         self,
