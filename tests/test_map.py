@@ -78,13 +78,23 @@ def test_view_state_globe_view_dict():
         "latitude": 37.8,
         "zoom": 2.0,
     }
-    m = Map([], view=GlobeView(), view_state=view_state)
+    m = Map(
+        [],
+        view=GlobeView(),
+        view_state=view_state,
+        basemap=MaplibreBasemap(mode="interleaved"),
+    )
     assert m.view_state == GlobeViewState(**view_state)
 
 
 def test_view_state_globe_view_instance():
     view_state = GlobeViewState(longitude=-122.45, latitude=37.8, zoom=2.0)
-    m = Map([], view=GlobeView(), view_state=view_state)
+    m = Map(
+        [],
+        view=GlobeView(),
+        view_state=view_state,
+        basemap=MaplibreBasemap(mode="interleaved"),
+    )
     assert m.view_state == view_state
 
 
@@ -129,6 +139,7 @@ def test_globe_view_state_partial_update():
         [],
         view=GlobeView(),
         view_state={"longitude": -100, "latitude": 40, "zoom": 5},
+        basemap=MaplibreBasemap(mode="interleaved"),
     )
     m.set_view_state(latitude=45)
     assert m.view_state == GlobeViewState(longitude=-100, latitude=45, zoom=5)
