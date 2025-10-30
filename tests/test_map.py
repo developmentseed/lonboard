@@ -147,3 +147,27 @@ def test_set_view_state_orbit():
     )
     m.set_view_state(new_view_state)
     assert m.view_state == new_view_state
+
+
+def test_map_view_validate_globe_view_basemap():
+    with pytest.raises(
+        TraitError,
+        match=r"GlobeView requires the basemap mode to be 'interleaved'.",
+    ):
+        Map([], view=GlobeView(), basemap=MaplibreBasemap(mode="overlaid"))
+
+    # Start with interleaved then try to set overlaid
+    m = Map([], view=GlobeView(), basemap=MaplibreBasemap(mode="interleaved"))
+    with pytest.raises(
+        TraitError,
+        match=r"GlobeView requires the basemap mode to be 'interleaved'.",
+    ):
+        m.basemap = MaplibreBasemap(mode="overlaid")
+
+    # Start with overlaid then try to set to GlobeView
+    m = Map([], basemap=MaplibreBasemap(mode="overlaid"))
+    with pytest.raises(
+        TraitError,
+        match=r"GlobeView requires the basemap mode to be 'interleaved'.",
+    ):
+        m.view = GlobeView()
