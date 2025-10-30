@@ -3,13 +3,13 @@ from traitlets import TraitError
 
 from lonboard import Map, ScatterplotLayer, SolidPolygonLayer
 from lonboard.basemap import MaplibreBasemap
-from lonboard.models import (
+from lonboard.view import FirstPersonView, GlobeView, OrthographicView
+from lonboard.view_state import (
     FirstPersonViewState,
     GlobeViewState,
     MapViewState,
     OrthographicViewState,
 )
-from lonboard.view import FirstPersonView, GlobeView, OrthographicView
 
 
 def test_map_fails_with_unexpected_argument():

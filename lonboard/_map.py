@@ -21,9 +21,9 @@ from lonboard.controls import (
     ScaleControl,
 )
 from lonboard.layer import BaseLayer
-from lonboard.models import BaseViewState, GlobeViewState, MapViewState
 from lonboard.traits import HeightTrait, VariableLengthTuple, ViewStateTrait
 from lonboard.view import BaseView, GlobeView, MapView
+from lonboard.view_state import BaseViewState, GlobeViewState, MapViewState
 
 if TYPE_CHECKING:
     import sys
@@ -159,7 +159,9 @@ class Map(BaseAnyWidget):
     """
     The view state of the map.
 
-    - Type: [`ViewState`][lonboard.models.ViewState]
+    - Type: A subclass of [`BaseViewState`][lonboard.models.BaseViewState], such as
+        [`MapViewState`][lonboard.models.MapViewState] or
+        [`GlobeViewState`][lonboard.models.GlobeViewState].
     - Default: Automatically inferred from the data passed to the map.
 
     You can initialize the map to a specific view state using this property:

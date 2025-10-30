@@ -1,7 +1,7 @@
 import traitlets as t
 
 from lonboard._base import BaseWidget
-from lonboard.models import (
+from lonboard.view_state import (
     BaseViewState,
     FirstPersonViewState,
     GlobeViewState,
