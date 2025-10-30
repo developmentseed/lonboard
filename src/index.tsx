@@ -198,8 +198,7 @@ function App() {
 
       // This condition is necessary to confirm that the viewState is
       // of type MapViewState.
-      if ("latitude" in viewState) {
-        console.log("View state changed:", viewState);
+      if (viewState && "latitude" in viewState) {
         // TODO: ensure all view state types get updated on the JS side
         setViewState(viewState);
       }
