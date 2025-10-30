@@ -8,6 +8,3 @@ https://mkdocstrings.github.io/python/usage/configuration/members/#filters
       group_by_category: false
       show_bases: false
       filters:
-
-
-::: lonboard.models.MapViewState

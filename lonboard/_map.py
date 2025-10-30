@@ -159,9 +159,9 @@ class Map(BaseAnyWidget):
     """
     The view state of the map.
 
-    - Type: A subclass of [`BaseViewState`][lonboard.models.BaseViewState], such as
-        [`MapViewState`][lonboard.models.MapViewState] or
-        [`GlobeViewState`][lonboard.models.GlobeViewState].
+    - Type: A subclass of [`BaseViewState`][lonboard.view_state.BaseViewState], such as
+        [`MapViewState`][lonboard.view_state.MapViewState] or
+        [`GlobeViewState`][lonboard.view_state.GlobeViewState].
     - Default: Automatically inferred from the data passed to the map.
 
     You can initialize the map to a specific view state using this property:
