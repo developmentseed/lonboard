@@ -1,7 +1,6 @@
 from __future__ import annotations
 
-from dataclasses import asdict, dataclass
-from typing import Any
+from dataclasses import dataclass
 
 
 class BaseViewState:
@@ -143,17 +142,3 @@ class OrbitViewState(BaseViewState):
 
     max_rotation_x: float = 90.0
     """The max rotating angle around X axis. Default 90."""
-
-
-def _to_camel(s: str) -> str:
-    parts = s.split("_")
-    return parts[0] + "".join(p.title() for p in parts[1:])
-
-
-def _serialize_view_state(data: BaseViewState | None, _obj: Any) -> Any:
-    if data is None:
-        return None
-
-    d = asdict(data)  # type: ignore
-    # Convert to camel case and remove None values
-    return {_to_camel(k): v for k, v in d.items() if v is not None}

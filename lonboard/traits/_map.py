@@ -6,8 +6,9 @@ from urllib.parse import urlparse
 import traitlets
 
 from lonboard._environment import DEFAULT_HEIGHT
-from lonboard.models import BaseViewState, MapViewState, _serialize_view_state
+from lonboard._serialization import serialize_view_state
 from lonboard.traits._base import FixedErrorTraitType
+from lonboard.view_state import BaseViewState, MapViewState
 
 if TYPE_CHECKING:
     from traitlets import HasTraits
@@ -79,7 +80,7 @@ class ViewStateTrait(FixedErrorTraitType):
     ) -> None:
         super().__init__(*args, **kwargs)
 
-        self.tag(sync=True, to_json=_serialize_view_state)
+        self.tag(sync=True, to_json=serialize_view_state)
 
     def validate(self, obj: Map, value: Any) -> None | BaseViewState:
         view = obj.views

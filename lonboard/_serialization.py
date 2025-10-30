@@ -2,8 +2,9 @@ from __future__ import annotations
 
 import math
 from concurrent.futures import ThreadPoolExecutor
+from dataclasses import asdict
 from io import BytesIO
-from typing import TYPE_CHECKING, overload
+from typing import TYPE_CHECKING, Any, overload
 
 import arro3.compute as ac
 from arro3.core import (
@@ -23,6 +24,7 @@ from lonboard._utils import timestamp_start_offset
 
 if TYPE_CHECKING:
     from lonboard.layer import BaseArrowLayer, TripsLayer
+    from lonboard.view_state import BaseViewState
 
 
 DEFAULT_PARQUET_COMPRESSION = "ZSTD"
@@ -189,6 +191,20 @@ def serialize_timestamp_accessor(
 
     f32_timestamps_col = ChunkedArray(offsetted_chunks)
     return serialize_accessor(f32_timestamps_col, obj)
+
+
+def _to_camel(s: str) -> str:
+    parts = s.split("_")
+    return parts[0] + "".join(p.title() for p in parts[1:])
+
+
+def serialize_view_state(data: BaseViewState | None, _obj: Any) -> Any:
+    if data is None:
+        return None
+
+    d = asdict(data)  # type: ignore
+    # Convert to camel case and remove None values
+    return {_to_camel(k): v for k, v in d.items() if v is not None}
 
 
 ACCESSOR_SERIALIZATION = {"to_json": serialize_accessor}
