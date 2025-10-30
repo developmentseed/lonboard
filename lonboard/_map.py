@@ -6,7 +6,6 @@ from pathlib import Path
 from typing import IO, TYPE_CHECKING, Any, TextIO, overload
 
 import ipywidgets
-import traitlets
 import traitlets as t
 from ipywidgets import CallbackDispatcher
 
@@ -31,7 +30,13 @@ if TYPE_CHECKING:
 
     from IPython.display import HTML  # type: ignore
 
+    from lonboard._validators.types import TraitProposal
     from lonboard.types.map import MapKwargs
+
+    if sys.version_info >= (3, 11):
+        from typing import Self
+    else:
+        from typing_extensions import Self
 
     if sys.version_info >= (3, 12):
         from typing import Unpack
@@ -221,6 +226,23 @@ class Map(BaseAnyWidget):
     Views represent the "camera(s)" (essentially viewport dimensions and projection matrices) that you look at your data with. deck.gl offers multiple view types for both geospatial and non-geospatial use cases. Read the [Views and Projections](https://deck.gl/docs/developer-guide/views) guide for the concept and examples.
     """
 
+    @t.validate("view")
+    def _validate_view(
+        self,
+        proposal: TraitProposal[t.Instance[BaseView | None], BaseView, Self],
+    ) -> BaseView:
+        # if proposed view is a globe view, ensure that basemap is interleaved
+        if (
+            isinstance(proposal["value"], GlobeView)
+            and self.basemap is not None
+            and self.basemap.mode != "interleaved"
+        ):
+            raise t.TraitError(
+                "GlobeView requires the basemap mode to be 'interleaved'. Please set `basemap.mode='interleaved'`.",
+            )
+
+        return proposal["value"]
+
     show_tooltip = t.Bool(default_value=False).tag(sync=True)
     """
     Whether to render a tooltip on hover on the map.
@@ -264,6 +286,27 @@ class Map(BaseAnyWidget):
 
     Pass `None` to disable rendering a basemap.
     """
+
+    @t.validate("basemap")
+    def _validate_basemap(
+        self,
+        proposal: TraitProposal[
+            t.Instance[MaplibreBasemap | None],
+            MaplibreBasemap,
+            Self,
+        ],
+    ) -> MaplibreBasemap | None:
+        # If proposed basemap is not interleaved, ensure current view is not globe view
+        if (
+            proposal["value"] is not None
+            and proposal["value"].mode != "interleaved"
+            and isinstance(self.view, GlobeView)
+        ):
+            raise t.TraitError(
+                "GlobeView requires the basemap mode to be 'interleaved'. Please set `basemap.mode='interleaved'`.",
+            )
+
+        return proposal["value"]
 
     @property
     def basemap_style(self) -> str | None:
@@ -673,7 +716,7 @@ class Map(BaseAnyWidget):
 
         return HTML(self.to_html())
 
-    @traitlets.default("view_state")
+    @t.default("view_state")
     def _default_initial_view_state(self) -> dict[str, Any]:
         if isinstance(self.view, (MapView, GlobeView)):
             return compute_view(self.layers)  # type: ignore
