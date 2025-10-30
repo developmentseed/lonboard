@@ -31,7 +31,7 @@ from lonboard.traits import ArrowTableTrait, VariableLengthTuple
 
 if TYPE_CHECKING:
     import sys
-    from collections.abc import Sequence
+    from collections.abc import Generator, Sequence
 
     import duckdb
     import geopandas as gpd
@@ -312,6 +312,17 @@ class BaseArrowLayer(BaseLayer):
     # The following traitlets **are** serialized to JS
 
     table: ArrowTableTrait
+
+    def _repr_keys(self) -> Generator[str, Any, None]:
+        # Avoid rendering `table` in the string repr
+        #
+        # By default, `_repr_mimebundle_` creates the rich HTML content **and** a plain
+        # text repr to show in environments that don't support rendering HTML. We want
+        # to avoid generating a str repr of any large values.
+        # https://github.com/developmentseed/lonboard/issues/1014
+        for key in super()._repr_keys():
+            if key != "table":
+                yield key
 
     def __init__(
         self,
