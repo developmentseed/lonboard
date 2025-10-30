@@ -167,7 +167,7 @@ def viz(  # noqa: PLR0913
             [`PolygonLayer`][lonboard.PolygonLayer]s.
         map_kwargs: a `dict` of parameters to pass down to the generated
             [`Map`][lonboard.Map].
-        view: a [view instance][lonboard.BaseView] to use for the map view, or the string "globe".
+        view: a [view instance][lonboard.view.BaseView] to use for the map view, or the string "globe".
 
     For more control over rendering, construct [`Map`][lonboard.Map] and `Layer` objects
     directly.
