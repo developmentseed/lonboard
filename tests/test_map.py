@@ -3,6 +3,13 @@ from traitlets import TraitError
 
 from lonboard import Map, ScatterplotLayer, SolidPolygonLayer
 from lonboard.basemap import MaplibreBasemap
+from lonboard.view import FirstPersonView, GlobeView, OrthographicView
+from lonboard.view_state import (
+    FirstPersonViewState,
+    GlobeViewState,
+    MapViewState,
+    OrthographicViewState,
+)
 
 
 def test_map_fails_with_unexpected_argument():
@@ -49,3 +56,94 @@ def test_map_default_basemap():
 
     assert m.basemap.mode == MaplibreBasemap().mode, "Should match default parameters"
     assert m.basemap.style == MaplibreBasemap().style, "Should match default parameters"
+
+
+def test_view_state_empty_input():
+    m = Map([], view_state={})
+    assert m.view_state == MapViewState()
+
+
+def test_view_state_partial_dict():
+    view_state = {
+        "longitude": -122.45,
+        "latitude": 37.8,
+    }
+    m = Map([], view_state=view_state)
+    assert m.view_state == MapViewState(**view_state)
+
+
+def test_view_state_globe_view_dict():
+    view_state = {
+        "longitude": -122.45,
+        "latitude": 37.8,
+        "zoom": 2.0,
+    }
+    m = Map([], views=GlobeView(), view_state=view_state)
+    assert m.view_state == GlobeViewState(**view_state)
+
+
+def test_view_state_globe_view_instance():
+    view_state = GlobeViewState(longitude=-122.45, latitude=37.8, zoom=2.0)
+    m = Map([], views=GlobeView(), view_state=view_state)
+    assert m.view_state == view_state
+
+
+def test_view_state_first_person_dict():
+    view_state = {
+        "longitude": -122.45,
+        "latitude": 37.8,
+        "position": [0, 0, 10],
+    }
+    m = Map([], views=FirstPersonView(), view_state=view_state)
+    assert m.view_state == FirstPersonViewState(**view_state)
+
+
+def test_view_state_orthographic_view_empty():
+    view_state = {}
+    m = Map([], views=OrthographicView(), view_state=view_state)
+    assert m.view_state == OrthographicViewState(**view_state)
+
+
+def test_set_view_state_map_view_kwargs():
+    m = Map([])
+    set_state = {"longitude": -100, "latitude": 40, "zoom": 5}
+    m.set_view_state(**set_state)
+    assert m.view_state == MapViewState(**set_state)
+
+
+def test_set_view_state_map_view_instance():
+    m = Map([])
+    set_state = MapViewState(longitude=-100, latitude=40, zoom=5)
+    m.set_view_state(set_state)
+    assert m.view_state == set_state
+
+
+def test_set_view_state_partial_update():
+    m = Map([], view_state={"longitude": -100, "latitude": 40, "zoom": 5})
+    m.set_view_state(latitude=45)
+    assert m.view_state == MapViewState(longitude=-100, latitude=45, zoom=5)
+
+
+def test_globe_view_state_partial_update():
+    m = Map(
+        [],
+        views=GlobeView(),
+        view_state={"longitude": -100, "latitude": 40, "zoom": 5},
+    )
+    m.set_view_state(latitude=45)
+    assert m.view_state == GlobeViewState(longitude=-100, latitude=45, zoom=5)
+
+
+def test_set_view_state_orbit():
+    m = Map(
+        [],
+        views=FirstPersonView(),
+        view_state={"longitude": -100, "latitude": 40},
+    )
+    new_view_state = FirstPersonViewState(
+        longitude=-120,
+        latitude=50,
+        position=(0, 0, 10),
+    )
+    m.set_view_state(new_view_state)
+    assert m.view_state == new_view_state

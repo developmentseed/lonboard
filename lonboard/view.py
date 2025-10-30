@@ -1,6 +1,14 @@
 import traitlets as t
 
 from lonboard._base import BaseWidget
+from lonboard.view_state import (
+    BaseViewState,
+    FirstPersonViewState,
+    GlobeViewState,
+    MapViewState,
+    OrbitViewState,
+    OrthographicViewState,
+)
 
 
 class BaseView(BaseWidget):
@@ -9,6 +17,8 @@ class BaseView(BaseWidget):
     The `View` class and its subclasses are used to specify where and how your deck.gl layers should be rendered. Applications typically instantiate at least one `View` subclass.
 
     """
+
+    _view_state_type: type[BaseViewState] = BaseViewState
 
     x = t.Union([t.Int(), t.Unicode()], allow_none=True, default_value=None).tag(
         sync=True,
@@ -50,6 +60,8 @@ class FirstPersonView(BaseView):
     """
 
     _view_type = t.Unicode("first-person-view").tag(sync=True)
+
+    _view_state_type = FirstPersonViewState
 
     projection_matrix = t.List(
         t.Float(),
@@ -98,6 +110,8 @@ class GlobeView(BaseView):
 
     _view_type = t.Unicode("globe-view").tag(sync=True)
 
+    _view_state_type = GlobeViewState
+
     resolution = t.Float(allow_none=True, default_value=None).tag(sync=True)
     """The resolution at which to turn flat features into 3D meshes, in degrees.
 
@@ -124,6 +138,8 @@ class MapView(BaseView):
     """
 
     _view_type = t.Unicode("map-view").tag(sync=True)
+
+    _view_state_type = MapViewState
 
     repeat = t.Bool(allow_none=True, default_value=None).tag(sync=True)
     """
@@ -183,6 +199,8 @@ class OrbitView(BaseView):
 
     _view_type = t.Unicode("orbit-view").tag(sync=True)
 
+    _view_state_type = OrbitViewState
+
     orbit_axis = t.Unicode(allow_none=True, default_value=None).tag(sync=True)
     """Axis with 360 degrees rotating freedom, either `'Y'` or `'Z'`, default to `'Z'`."""
 
@@ -232,6 +250,8 @@ class OrthographicView(BaseView):
     """
 
     _view_type = t.Unicode("orthographic-view").tag(sync=True)
+
+    _view_state_type = OrthographicViewState
 
     flip_y = t.Bool(allow_none=True, default_value=None).tag(sync=True)
     """

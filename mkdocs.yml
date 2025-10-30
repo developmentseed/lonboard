@@ -81,6 +81,8 @@ nav:
       - api/colormap.md
       - api/controls.md
       - api/traits.md
+      - api/view.md
+      - api/view_state.md
       - Experimental:
           - Layers:
               - api/layers/arc-layer.md
