@@ -84,7 +84,7 @@ function App() {
   const [customAttribution] = useModelState<string>("custom_attribution");
   const [mapId] = useState(uuidv4());
   const [childLayerIds] = useModelState<string[]>("layers");
-  const [viewIds] = useModelState<string | string[] | null>("views");
+  const [viewIds] = useModelState<string | string[] | null>("view");
   const [controlsIds] = useModelState<string[]>("controls");
   // eslint-disable-next-line @typescript-eslint/no-unused-vars
   const [_selectedBounds, setSelectedBounds] = useModelState<number[] | null>(
