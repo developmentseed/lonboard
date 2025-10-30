@@ -212,7 +212,7 @@ class Map(BaseAnyWidget):
     )
     """One or more map controls to display on this map."""
 
-    views: t.Instance[BaseView | None] = t.Instance(BaseView, allow_none=True).tag(
+    view: t.Instance[BaseView | None] = t.Instance(BaseView, allow_none=True).tag(
         sync=True,
         **ipywidgets.widget_serialization,
     )
@@ -675,7 +675,7 @@ class Map(BaseAnyWidget):
 
     @traitlets.default("view_state")
     def _default_initial_view_state(self) -> dict[str, Any]:
-        if isinstance(self.views, (MapView, GlobeView)):
+        if isinstance(self.view, (MapView, GlobeView)):
             return compute_view(self.layers)  # type: ignore
 
         return {}

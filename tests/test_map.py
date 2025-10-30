@@ -78,13 +78,13 @@ def test_view_state_globe_view_dict():
         "latitude": 37.8,
         "zoom": 2.0,
     }
-    m = Map([], views=GlobeView(), view_state=view_state)
+    m = Map([], view=GlobeView(), view_state=view_state)
     assert m.view_state == GlobeViewState(**view_state)
 
 
 def test_view_state_globe_view_instance():
     view_state = GlobeViewState(longitude=-122.45, latitude=37.8, zoom=2.0)
-    m = Map([], views=GlobeView(), view_state=view_state)
+    m = Map([], view=GlobeView(), view_state=view_state)
     assert m.view_state == view_state
 
 
@@ -94,13 +94,13 @@ def test_view_state_first_person_dict():
         "latitude": 37.8,
         "position": [0, 0, 10],
     }
-    m = Map([], views=FirstPersonView(), view_state=view_state)
+    m = Map([], view=FirstPersonView(), view_state=view_state)
     assert m.view_state == FirstPersonViewState(**view_state)
 
 
 def test_view_state_orthographic_view_empty():
     view_state = {}
-    m = Map([], views=OrthographicView(), view_state=view_state)
+    m = Map([], view=OrthographicView(), view_state=view_state)
     assert m.view_state == OrthographicViewState(**view_state)
 
 
@@ -127,7 +127,7 @@ def test_set_view_state_partial_update():
 def test_globe_view_state_partial_update():
     m = Map(
         [],
-        views=GlobeView(),
+        view=GlobeView(),
         view_state={"longitude": -100, "latitude": 40, "zoom": 5},
     )
     m.set_view_state(latitude=45)
@@ -137,7 +137,7 @@ def test_globe_view_state_partial_update():
 def test_set_view_state_orbit():
     m = Map(
         [],
-        views=FirstPersonView(),
+        view=FirstPersonView(),
         view_state={"longitude": -100, "latitude": 40},
     )
     new_view_state = FirstPersonViewState(

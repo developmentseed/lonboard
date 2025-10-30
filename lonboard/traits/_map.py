@@ -83,7 +83,6 @@ class ViewStateTrait(FixedErrorTraitType):
         self.tag(sync=True, to_json=serialize_view_state)
 
     def validate(self, obj: Map, value: Any) -> None | BaseViewState:
-        view = obj.views
         if value is None:
             return None
 
@@ -91,5 +90,6 @@ class ViewStateTrait(FixedErrorTraitType):
             return value
 
         # Otherwise dict input
+        view = obj.view
         validator = view._view_state_type if view is not None else MapViewState  # noqa: SLF001
         return validator(**value)  # type: ignore
