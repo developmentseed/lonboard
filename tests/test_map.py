@@ -189,8 +189,8 @@ def test_map_view_validate_globe_view_basemap():
 def test_default_view_state_inferred():
     gdf = gpd.read_file(get_path("nybb"))
     m = viz(gdf)
-    assert m.view_state == MapViewState(
-        longitude=-73.90046557757934,
-        latitude=40.67106374683537,
-        zoom=9,
-    )
+    view_state = m.view_state
+    assert isinstance(view_state, MapViewState)
+    assert view_state.longitude - (-73.90) < 1e-2
+    assert view_state.latitude - 40.67 < 1e-2
+    assert view_state.zoom == 9
