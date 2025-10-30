@@ -1,7 +1,9 @@
+import geopandas as gpd
 import pytest
+from geodatasets import get_path
 from traitlets import TraitError
 
-from lonboard import Map, ScatterplotLayer, SolidPolygonLayer
+from lonboard import Map, ScatterplotLayer, SolidPolygonLayer, viz
 from lonboard.basemap import MaplibreBasemap
 from lonboard.view import FirstPersonView, GlobeView, OrthographicView
 from lonboard.view_state import (
@@ -182,3 +184,13 @@ def test_map_view_validate_globe_view_basemap():
         match=r"GlobeView requires the basemap mode to be 'interleaved'.",
     ):
         m.view = GlobeView()
+
+
+def test_default_view_state_inferred():
+    gdf = gpd.read_file(get_path("nybb"))
+    m = viz(gdf)
+    view_state = m.view_state
+    assert isinstance(view_state, MapViewState)
+    assert view_state.longitude - (-73.90) < 1e-2
+    assert view_state.latitude - 40.67 < 1e-2
+    assert view_state.zoom == 9

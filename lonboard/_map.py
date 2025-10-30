@@ -718,7 +718,7 @@ class Map(BaseAnyWidget):
 
     @t.default("view_state")
     def _default_initial_view_state(self) -> dict[str, Any]:
-        if isinstance(self.view, (MapView, GlobeView)):
+        if self.view is None or isinstance(self.view, (MapView, GlobeView)):
             return compute_view(self.layers)  # type: ignore
 
         return {}
