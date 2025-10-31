@@ -1,10 +1,28 @@
 from __future__ import annotations
 
 from dataclasses import dataclass
+from typing import TYPE_CHECKING, Any
+
+if TYPE_CHECKING:
+    import sys
+
+    if sys.version_info >= (3, 11):
+        from typing import Self
+    else:
+        from typing_extensions import Self
 
 
+@dataclass(frozen=True)
 class BaseViewState:
     """Base class for view states."""
+
+    @classmethod
+    def _from_frontend(cls, **kwargs: dict[str, Any]) -> Self:
+        allowed_field_names = {
+            field.name for field in cls.__dataclass_fields__.values()
+        }
+        filtered_kwargs = {k: v for k, v in kwargs.items() if k in allowed_field_names}
+        return cls(**filtered_kwargs)
 
 
 @dataclass(frozen=True)
