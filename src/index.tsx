@@ -4,6 +4,7 @@ import { MapViewState, PickingInfo } from "@deck.gl/core";
 import { DeckGLRef } from "@deck.gl/react";
 import type { IWidgetManager } from "@jupyter-widgets/base";
 import { NextUIProvider } from "@nextui-org/react";
+import debounce from "lodash.debounce";
 import throttle from "lodash.throttle";
 import * as React from "react";
 import { useCallback, useEffect, useRef, useState } from "react";
@@ -193,6 +194,11 @@ function App() {
     onClick: onMapClickHandler,
     onHover: onMapHoverHandler,
     ...(isDefined(useDevicePixels) && { useDevicePixels }),
+    // This is a hack to force a react re-render when the canvas is resized
+    // https://github.com/developmentseed/lonboard/issues/994
+    // until the upstream is resolved:
+    // https://github.com/visgl/deck.gl/issues/9666
+    onResize: debounce(updateStateCallback, 100),
     onViewStateChange: (event) => {
       setViewState(sanitizeViewState(views, event.viewState));
     },
