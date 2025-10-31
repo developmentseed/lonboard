@@ -30,7 +30,7 @@ import { useViewStateDebounced } from "./state";
 import Toolbar from "./toolbar.js";
 import { getTooltip } from "./tooltip/index.js";
 import { Message } from "./types.js";
-import { isDefined, isGlobeView } from "./util.js";
+import { isDefined, isGlobeView, sanitizeViewState } from "./util.js";
 import { MachineContext, MachineProvider } from "./xstate";
 import * as selectors from "./xstate/selectors";
 
@@ -194,14 +194,7 @@ function App() {
     onHover: onMapHoverHandler,
     ...(isDefined(useDevicePixels) && { useDevicePixels }),
     onViewStateChange: (event) => {
-      const { viewState } = event;
-
-      // This condition is necessary to confirm that the viewState is
-      // of type MapViewState.
-      if (viewState && "latitude" in viewState) {
-        // TODO: ensure all view state types get updated on the JS side
-        setViewState(viewState);
-      }
+      setViewState(sanitizeViewState(views, event.viewState));
     },
     parameters: parameters || {},
     views,
