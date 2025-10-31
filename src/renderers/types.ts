@@ -13,6 +13,7 @@ export type MapRendererProps<ViewsT extends ViewOrViews = ViewOrViews> = Pick<
   | "layers"
   | "onClick"
   | "onHover"
+  | "onResize"
   | "onViewStateChange"
   | "parameters"
   | "pickingRadius"
