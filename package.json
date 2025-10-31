@@ -52,10 +52,10 @@
     "postcss-modules": "^6.0.1",
     "postcss-preset-env": "^10.1.1",
     "prettier": "^3.4.1",
-    "tailwindcss": "^3.4.15",
+    "tailwindcss": "^4.1.16",
     "typescript": "^5.7.2",
     "typescript-eslint": "^8.16.0",
-    "vitest": "^3.2.4"
+    "vitest": "^4.0.5"
   },
   "overrides": {
     "@deck.gl/aggregation-layers": "^9.2.2",
