@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+import re
 from typing import TYPE_CHECKING, Any
 from urllib.parse import urlparse
 
@@ -92,4 +93,12 @@ class ViewStateTrait(FixedErrorTraitType):
         # Otherwise dict input
         view = obj.view
         validator = view._view_state_type if view is not None else MapViewState  # noqa: SLF001
-        return validator(**value)  # type: ignore
+
+        # The frontend currently sends back data in camelCase
+        snake_case_kwargs = {_camel_to_snake(k): v for k, v in value.items()}
+        return validator(**snake_case_kwargs)  # type: ignore
+
+
+def _camel_to_snake(name: str) -> str:
+    s1 = re.sub("(.)([A-Z][a-z]+)", r"\1_\2", name)
+    return re.sub("([a-z0-9])([A-Z])", r"\1_\2", s1).lower()
