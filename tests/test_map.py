@@ -1,8 +1,17 @@
+import geopandas as gpd
 import pytest
+from geodatasets import get_path
 from traitlets import TraitError
 
-from lonboard import Map, ScatterplotLayer, SolidPolygonLayer
+from lonboard import Map, ScatterplotLayer, SolidPolygonLayer, viz
 from lonboard.basemap import MaplibreBasemap
+from lonboard.view import FirstPersonView, GlobeView, OrthographicView
+from lonboard.view_state import (
+    FirstPersonViewState,
+    GlobeViewState,
+    MapViewState,
+    OrthographicViewState,
+)
 
 
 def test_map_fails_with_unexpected_argument():
@@ -49,3 +58,139 @@ def test_map_default_basemap():
 
     assert m.basemap.mode == MaplibreBasemap().mode, "Should match default parameters"
     assert m.basemap.style == MaplibreBasemap().style, "Should match default parameters"
+
+
+def test_view_state_empty_input():
+    m = Map([], view_state={})
+    assert m.view_state == MapViewState()
+
+
+def test_view_state_partial_dict():
+    view_state = {
+        "longitude": -122.45,
+        "latitude": 37.8,
+    }
+    m = Map([], view_state=view_state)
+    assert m.view_state == MapViewState(**view_state)
+
+
+def test_view_state_globe_view_dict():
+    view_state = {
+        "longitude": -122.45,
+        "latitude": 37.8,
+        "zoom": 2.0,
+    }
+    m = Map(
+        [],
+        view=GlobeView(),
+        view_state=view_state,
+        basemap=MaplibreBasemap(mode="interleaved"),
+    )
+    assert m.view_state == GlobeViewState(**view_state)
+
+
+def test_view_state_globe_view_instance():
+    view_state = GlobeViewState(longitude=-122.45, latitude=37.8, zoom=2.0)
+    m = Map(
+        [],
+        view=GlobeView(),
+        view_state=view_state,
+        basemap=MaplibreBasemap(mode="interleaved"),
+    )
+    assert m.view_state == view_state
+
+
+def test_view_state_first_person_dict():
+    view_state = {
+        "longitude": -122.45,
+        "latitude": 37.8,
+        "position": [0, 0, 10],
+    }
+    m = Map([], view=FirstPersonView(), view_state=view_state)
+    assert m.view_state == FirstPersonViewState(**view_state)
+
+
+def test_view_state_orthographic_view_empty():
+    view_state = {}
+    m = Map([], view=OrthographicView(), view_state=view_state)
+    assert m.view_state == OrthographicViewState(**view_state)
+
+
+def test_set_view_state_map_view_kwargs():
+    m = Map([])
+    set_state = {"longitude": -100, "latitude": 40, "zoom": 5}
+    m.set_view_state(**set_state)
+    assert m.view_state == MapViewState(**set_state)
+
+
+def test_set_view_state_map_view_instance():
+    m = Map([])
+    set_state = MapViewState(longitude=-100, latitude=40, zoom=5)
+    m.set_view_state(set_state)
+    assert m.view_state == set_state
+
+
+def test_set_view_state_partial_update():
+    m = Map([], view_state={"longitude": -100, "latitude": 40, "zoom": 5})
+    m.set_view_state(latitude=45)
+    assert m.view_state == MapViewState(longitude=-100, latitude=45, zoom=5)
+
+
+def test_globe_view_state_partial_update():
+    m = Map(
+        [],
+        view=GlobeView(),
+        view_state={"longitude": -100, "latitude": 40, "zoom": 5},
+        basemap=MaplibreBasemap(mode="interleaved"),
+    )
+    m.set_view_state(latitude=45)
+    assert m.view_state == GlobeViewState(longitude=-100, latitude=45, zoom=5)
+
+
+def test_set_view_state_orbit():
+    m = Map(
+        [],
+        view=FirstPersonView(),
+        view_state={"longitude": -100, "latitude": 40},
+    )
+    new_view_state = FirstPersonViewState(
+        longitude=-120,
+        latitude=50,
+        position=(0, 0, 10),
+    )
+    m.set_view_state(new_view_state)
+    assert m.view_state == new_view_state
+
+
+def test_map_view_validate_globe_view_basemap():
+    with pytest.raises(
+        TraitError,
+        match=r"GlobeView requires the basemap mode to be 'interleaved'.",
+    ):
+        Map([], view=GlobeView(), basemap=MaplibreBasemap(mode="overlaid"))
+
+    # Start with interleaved then try to set overlaid
+    m = Map([], view=GlobeView(), basemap=MaplibreBasemap(mode="interleaved"))
+    with pytest.raises(
+        TraitError,
+        match=r"GlobeView requires the basemap mode to be 'interleaved'.",
+    ):
+        m.basemap = MaplibreBasemap(mode="overlaid")
+
+    # Start with overlaid then try to set to GlobeView
+    m = Map([], basemap=MaplibreBasemap(mode="overlaid"))
+    with pytest.raises(
+        TraitError,
+        match=r"GlobeView requires the basemap mode to be 'interleaved'.",
+    ):
+        m.view = GlobeView()
+
+
+def test_default_view_state_inferred():
+    gdf = gpd.read_file(get_path("nybb"))
+    m = viz(gdf)
+    view_state = m.view_state
+    assert isinstance(view_state, MapViewState)
+    assert view_state.longitude - (-73.90) < 1e-2
+    assert view_state.latitude - 40.67 < 1e-2
+    assert view_state.zoom == 9

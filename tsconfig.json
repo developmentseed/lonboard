@@ -2,23 +2,26 @@
   "include": ["src/**/*"],
   "exclude": ["node_modules"],
   "compilerOptions": {
+    "module": "esnext",
     "moduleResolution": "node",
-    "module": "ES2022",
-    "outDir": "./dist",
-    "allowJs": true,
     "target": "ES2022",
+
+    "outDir": "./dist",
+    "rootDir": "src",
     "declaration": true,
+    "declarationMap": true,
+    "sourceMap": true,
+
+    "strict": true,
+    "skipLibCheck": true,
+    "strictNullChecks": true,
+
     "noEmit": false,
     "noEmitOnError": false,
-    "esModuleInterop": true,
     "forceConsistentCasingInFileNames": true,
-    "jsx": "react",
-    "skipLibCheck": true,
-    "strict": true,
-    "strictNullChecks": true,
-    // "lib": [
-    //   "es2019.array", "es6", "dom"
-    // ],
-    "rootDir": "."
+    "esModuleInterop": true,
+
+    "jsx": "react-jsx",
+    "allowJs": true
   }
 }

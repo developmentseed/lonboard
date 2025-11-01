@@ -67,16 +67,18 @@ class WeightedCentroid:
 
         if self.x is None or self.y is None:
             assert self.x is None and self.y is None and self.num_items == 0
-            self.x = float(np.mean(np_arr[:, 0]))
-            self.y = float(np.mean(np_arr[:, 1]))
+            mean = np.mean(np_arr, axis=0)
+            self.x = float(mean[0])
+            self.y = float(mean[1])
             self.num_items = new_chunk_len
             return
 
         existing_modifier = self.num_items / (self.num_items + new_chunk_len)
         new_chunk_modifier = new_chunk_len / (self.num_items + new_chunk_len)
 
-        new_chunk_avg_x = np.mean(np_arr[:, 0])
-        new_chunk_avg_y = np.mean(np_arr[:, 1])
+        new_chunk_avg = np.mean(np_arr, axis=0)
+        new_chunk_avg_x = new_chunk_avg[0]
+        new_chunk_avg_y = new_chunk_avg[1]
 
         existing_x_avg = self.x
         existing_y_avg = self.y

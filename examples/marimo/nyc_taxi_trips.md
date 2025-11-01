@@ -47,9 +47,8 @@ from matplotlib.colors import Normalize
 from palettable.colorbrewer.diverging import BrBG_10
 from tqdm.notebook import tqdm
 
-from lonboard import Map, ScatterplotLayer
+from lonboard import ArcLayer, Map, ScatterplotLayer
 from lonboard.colormap import apply_continuous_cmap
-from lonboard.experimental import ArcLayer
 from lonboard.layer_extension import BrushingExtension
 ```
 

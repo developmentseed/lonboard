@@ -1,22 +1,24 @@
-import {
-  FirstPersonView,
+import type {
   FirstPersonViewProps,
   FirstPersonViewState,
-  _GlobeView as GlobeView,
   GlobeViewProps,
   GlobeViewState,
-  MapView,
   MapViewProps,
   MapViewState,
-  OrbitView,
   OrbitViewProps,
   OrbitViewState,
-  OrthographicView,
   OrthographicViewProps,
   OrthographicViewState,
+  View,
 } from "@deck.gl/core";
-import type { View } from "@deck.gl/core";
-import { CommonViewProps } from "@deck.gl/core/dist/views/view";
+import {
+  FirstPersonView,
+  _GlobeView as GlobeView,
+  MapView,
+  OrbitView,
+  OrthographicView,
+} from "@deck.gl/core";
+import type { CommonViewProps } from "@deck.gl/core/dist/views/view";
 import { WidgetModel } from "@jupyter-widgets/base";
 
 import { isDefined } from "../util";

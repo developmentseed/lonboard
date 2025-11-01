@@ -16,20 +16,22 @@ const DeckFirstRenderer: React.FC<MapRendererProps & DeckFirstRendererProps> = (
   mapProps,
 ) => {
   // Remove maplibre-specific props before passing to DeckGL
-  const { mapStyle, customAttribution, deckRef, renderBasemap, ...deckProps } =
-    mapProps;
+  const {
+    controls,
+    mapStyle,
+    customAttribution,
+    deckRef,
+    renderBasemap,
+    ...deckProps
+  } = mapProps;
   return (
     <DeckGL
       ref={deckRef}
       style={{ width: "100%", height: "100%" }}
       controller={true}
-      // https://deck.gl/docs/api-reference/core/deck#_typedarraymanagerprops
-      _typedArrayManagerProps={{
-        overAlloc: 1,
-        poolSize: 0,
-      }}
       {...deckProps}
     >
+      {controls.map((control) => control.renderDeck())}
       {renderBasemap && (
         <Map mapStyle={mapStyle} customAttribution={customAttribution}></Map>
       )}

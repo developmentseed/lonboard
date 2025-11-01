@@ -1,11 +1,6 @@
 export { BaseModel } from "./base.js";
-export { BaseLayerModel } from "./base-layer.js";
-export {
-  PathModel,
-  ScatterplotModel,
-  SolidPolygonModel,
-  initializeLayer,
-} from "./layer.js";
+export { BaseLayerModel } from "./layer/base.js";
+export { initializeLayer } from "./layer/index.js";
 export {
   BaseExtensionModel,
   BrushingExtension,
@@ -13,4 +8,10 @@ export {
   PathStyleExtension,
   initializeExtension,
 } from "./extension.js";
+export {
+  BaseMapControlModel,
+  FullscreenControlModel,
+  NavigationControlModel,
+  ScaleControlModel,
+} from "./map-control.js";
 export { initializeChildModels } from "./initialize.js";
