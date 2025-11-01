@@ -2,10 +2,10 @@ import arro3
 import geopandas as gpd
 import pytest
 from shapely.geometry import Point
+from traitlets import TraitError
 
 import lonboard
 from lonboard.layer_extension import DataFilterExtension
-from lonboard.traits import TraitError
 
 
 @pytest.fixture
