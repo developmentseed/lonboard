@@ -919,7 +919,7 @@ class FilterCategoryAccessor(FixedErrorTraitType):
                     f"category_size ({category_size}) to match 2nd dimension of numpy array"
                 ),
             )
-        array = fixed_size_list_array(value, category_size)
+        array = fixed_size_list_array(value.ravel("C"), category_size)
         return ChunkedArray([array])
 
     def validate(
