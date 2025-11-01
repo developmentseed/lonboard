@@ -1,15 +1,29 @@
+import { ControlPosition } from "@deck.gl/mapbox/dist/types";
 import {
   CompassWidget,
   FullscreenWidget,
   _ScaleWidget as ScaleWidget,
   ZoomWidget,
 } from "@deck.gl/react";
+import {
+  _GoogleGeocoder as GoogleGeocoder,
+  _MapboxGeocoder as MapboxGeocoder,
+  _OpenCageGeocoder as OpenCageGeocoder,
+  _CoordinatesGeocoder as CoordinatesGeocoder,
+} from "@deck.gl/widgets";
+import type { Geocoder } from "@deck.gl/widgets";
 import type { WidgetModel } from "@jupyter-widgets/base";
+import MaplibreGeocoder, {
+  CarmenGeojsonFeature,
+  MaplibreGeocoderApi,
+  MaplibreGeocoderOptions,
+} from "@maplibre/maplibre-gl-geocoder";
 import React from "react";
 import {
   FullscreenControl,
   NavigationControl,
   ScaleControl,
+  useControl,
 } from "react-map-gl/maplibre";
 
 import { isDefined } from "../util";
@@ -133,6 +147,93 @@ export class ScaleControlModel extends BaseMapControlModel {
     return <div>{<ScaleControl {...props} />}</div>;
   }
 }
+
+function MaplibreGeocoderControl(
+  api: MaplibreGeocoderApi,
+  props: MaplibreGeocoderOptions,
+  opts?: ControlOptions,
+) {
+  useControl(() => new MaplibreGeocoder(api, props), opts);
+
+  return null;
+}
+
+export class GeocoderControlModel extends BaseMapControlModel {
+  static controlType = "geocoder";
+
+  protected provider?: string;
+  protected apiKey?: string;
+
+  constructor(model: WidgetModel, updateStateCallback: () => void) {
+    super(model, updateStateCallback);
+  }
+
+  providerInstance(): Geocoder | null {
+    switch (this.provider) {
+      case "google":
+        return GoogleGeocoder;
+      case "mapbox":
+        return MapboxGeocoder;
+      case "opencage":
+        return OpenCageGeocoder;
+      case "coordinates":
+        return CoordinatesGeocoder;
+      default:
+        return null;
+    }
+  }
+
+  maplibreApi(): MaplibreGeocoderApi | null {
+    const provider = this.providerInstance();
+    if (provider instanceof MaplibreGeocoder) {
+      return {
+        forwardGeocode: async (config) => {
+          const queryString = config.query?.toString() || "";
+          const result = await provider.geocode(queryString, this.apiKey || "");
+          const feature: CarmenGeojsonFeature = {
+            id: "",
+            text: queryString,
+            place_name: "",
+            place_type: [],
+            type: "Feature",
+            geometry: {
+              type: "Point",
+              coordinates: [result?.longitude || 0, result?.longitude || 0],
+            },
+            properties: {},
+          };
+          return {
+            type: "FeatureCollection",
+            features: [feature],
+          };
+        },
+      };
+    }
+    return null;
+  }
+
+  renderDeck() {
+    return null;
+  }
+
+  renderMaplibre() {
+    const api = this.maplibreApi();
+    if (api) {
+      return (
+        <MaplibreGeocoderControl
+          api={api}
+          props={{ accessToken: this.apiKey || "" }}
+          opts={this.baseMaplibreProps()}
+        />
+      );
+    }
+    return null;
+  }
+}
+
+type ControlOptions = {
+  position?: ControlPosition;
+};
 
 export async function initializeControl(
   model: WidgetModel,
