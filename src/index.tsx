@@ -7,7 +7,7 @@ import { NextUIProvider } from "@nextui-org/react";
 import debounce from "lodash.debounce";
 import throttle from "lodash.throttle";
 import * as React from "react";
-import { useCallback, useRef, useState } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 import { v4 as uuidv4 } from "uuid";
 
 import { flyTo } from "./actions/fly-to.js";
@@ -63,7 +63,12 @@ function App() {
   const [justClicked, setJustClicked] = useState<boolean>(false);
 
   const deckRef = useRef<DeckGLRef | null>(null);
-
+  useEffect(() => {
+    if (deckRef.current && typeof window !== "undefined") {
+      (window as unknown as Record<string, unknown>).__deck =
+        deckRef.current.deck;
+    }
+  }, [deckRef.current]);
   const model = useModel();
 
   const [basemapModelId] = useModelState<string | null>("basemap");
