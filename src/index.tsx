@@ -62,8 +62,8 @@ function App() {
 
   const [justClicked, setJustClicked] = useState<boolean>(false);
 
-  // Expose DeckGL instance on window for Playwright e2e tests
   const deckRef = useRef<DeckGLRef | null>(null);
+  // Expose deck instance on window for debugging
   useEffect(() => {
     if (deckRef.current && typeof window !== "undefined") {
       (window as unknown as Record<string, unknown>).__deck =

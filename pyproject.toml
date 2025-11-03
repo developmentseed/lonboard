@@ -18,7 +18,7 @@ dependencies = [
     "numpy>=1.14",
     # The same version pin as geopandas
     "pyproj>=3.3",
-    "typing-extensions>=4.6.0; python_version < '3.12'",
+    "typing-extensions>=4.12.0",
     "geoarrow-rust-core>=0.5.2",
 ]
 keywords = [
@@ -87,6 +87,7 @@ dev = [
     "pyarrow>=21.0.0",
     "pyogrio>=0.9.0",
     "pytest>=8.3.4",
+    "pytest-ipywidgets>=1.54.0",
     "rasterio>=1.4.3",
     "ruff>=0.13.0",
     "sidecar>=0.7.0",
