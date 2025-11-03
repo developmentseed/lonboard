@@ -63,12 +63,14 @@ function App() {
   const [justClicked, setJustClicked] = useState<boolean>(false);
 
   const deckRef = useRef<DeckGLRef | null>(null);
+  // Expose deck instance on window for debugging
   useEffect(() => {
     if (deckRef.current && typeof window !== "undefined") {
       (window as unknown as Record<string, unknown>).__deck =
         deckRef.current.deck;
     }
   }, [deckRef.current]);
+
   const model = useModel();
 
   const [basemapModelId] = useModelState<string | null>("basemap");
