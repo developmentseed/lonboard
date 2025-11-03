@@ -2,7 +2,13 @@
 
 Browser-based testing for Lonboard's UI interaction workflows.
 
-## Quick Start
+## Install playwright browser
+
+```bash
+uv run playwright install chromium
+```
+
+## Run UI tests
 
 ```bash
 # Run UI tests
