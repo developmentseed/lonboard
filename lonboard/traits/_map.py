@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+import re
 from typing import TYPE_CHECKING, Any
 from urllib.parse import urlparse
 
@@ -7,22 +8,14 @@ import traitlets
 
 from lonboard._environment import DEFAULT_HEIGHT
 from lonboard._serialization import serialize_view_state
-from lonboard.models import ViewState
 from lonboard.traits._base import FixedErrorTraitType
+from lonboard.view_state import BaseViewState, MapViewState
 
 if TYPE_CHECKING:
     from traitlets import HasTraits
     from traitlets.traitlets import TraitType
 
     from lonboard._map import Map
-
-DEFAULT_INITIAL_VIEW_STATE = {
-    "latitude": 10,
-    "longitude": 0,
-    "zoom": 0.5,
-    "bearing": 0,
-    "pitch": 0,
-}
 
 
 class BasemapUrl(traitlets.Unicode):
@@ -79,7 +72,7 @@ class ViewStateTrait(FixedErrorTraitType):
     """Trait to validate view state input."""
 
     allow_none = True
-    default_value = DEFAULT_INITIAL_VIEW_STATE
+    default_value = None
 
     def __init__(
         self: TraitType,
@@ -90,16 +83,22 @@ class ViewStateTrait(FixedErrorTraitType):
 
         self.tag(sync=True, to_json=serialize_view_state)
 
-    def validate(self, obj: Map, value: Any) -> None | ViewState:
+    def validate(self, obj: Map, value: Any) -> None | BaseViewState:
         if value is None:
             return None
 
-        if isinstance(value, ViewState):
+        if isinstance(value, BaseViewState):
             return value
 
-        if isinstance(value, dict):
-            value = {**DEFAULT_INITIAL_VIEW_STATE, **value}
-            return ViewState(**value)
+        # Otherwise dict input
+        view = obj.view
+        validator = view._view_state_type if view is not None else MapViewState  # noqa: SLF001
 
-        self.error(obj, value)
-        assert False
+        # The frontend currently sends back data in camelCase
+        snake_case_kwargs = {_camel_to_snake(k): v for k, v in value.items()}
+        return validator(**snake_case_kwargs)  # type: ignore
+
+
+def _camel_to_snake(name: str) -> str:
+    s1 = re.sub("(.)([A-Z][a-z]+)", r"\1_\2", name)
+    return re.sub("([a-z0-9])([A-Z])", r"\1_\2", s1).lower()

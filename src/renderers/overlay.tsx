@@ -1,6 +1,6 @@
 import { MapboxOverlay, MapboxOverlayProps } from "@deck.gl/mapbox";
 import React from "react";
-import Map, { useControl } from "react-map-gl/maplibre";
+import Map, { useControl, ViewStateChangeEvent } from "react-map-gl/maplibre";
 
 import type { MapRendererProps, OverlayRendererProps } from "./types";
 import { isGlobeView } from "../util";
@@ -35,8 +35,21 @@ const OverlayRenderer: React.FC<MapRendererProps & OverlayRendererProps> = (
     customAttribution,
     initialViewState,
     views,
+    onViewStateChange,
     ...deckProps
   } = mapProps;
+  const onMoveEnd = onViewStateChange
+    ? (evt: ViewStateChangeEvent) => {
+        const viewState = {
+          longitude: evt.viewState.longitude,
+          latitude: evt.viewState.latitude,
+          zoom: evt.viewState.zoom,
+          pitch: evt.viewState.pitch,
+          bearing: evt.viewState.bearing,
+        };
+        onViewStateChange({ viewId: "mapLibreId", viewState });
+      }
+    : undefined;
   return (
     <Map
       reuseMaps
@@ -44,17 +57,11 @@ const OverlayRenderer: React.FC<MapRendererProps & OverlayRendererProps> = (
       mapStyle={mapStyle}
       attributionControl={{ customAttribution }}
       style={{ width: "100%", height: "100%" }}
+      onMoveEnd={onMoveEnd}
       {...(isGlobeView(views) && { projection: "globe" })}
     >
       {controls.map((control) => control.renderMaplibre())}
-      <DeckGLOverlay
-        // https://deck.gl/docs/api-reference/core/deck#_typedarraymanagerprops
-        _typedArrayManagerProps={{
-          overAlloc: 1,
-          poolSize: 0,
-        }}
-        {...deckProps}
-      />
+      <DeckGLOverlay {...deckProps} />
     </Map>
   );
 };

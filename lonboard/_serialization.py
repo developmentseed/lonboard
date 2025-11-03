@@ -2,6 +2,7 @@ from __future__ import annotations
 
 import math
 from concurrent.futures import ThreadPoolExecutor
+from dataclasses import asdict
 from io import BytesIO
 from typing import TYPE_CHECKING, Any, overload
 
@@ -23,7 +24,7 @@ from lonboard._utils import timestamp_start_offset
 
 if TYPE_CHECKING:
     from lonboard.layer import BaseArrowLayer, TripsLayer
-    from lonboard.models import ViewState
+    from lonboard.view_state import BaseViewState
 
 
 DEFAULT_PARQUET_COMPRESSION = "ZSTD"
@@ -158,13 +159,6 @@ def validate_accessor_length_matches_table(
         raise TraitError("accessor must have same length as table")
 
 
-def serialize_view_state(data: ViewState | None, obj: Any) -> None | dict[str, Any]:  # noqa: ARG001
-    if data is None:
-        return None
-
-    return data._asdict()
-
-
 def serialize_timestamp_accessor(
     timestamps: ChunkedArray,
     obj: TripsLayer,
@@ -197,6 +191,20 @@ def serialize_timestamp_accessor(
 
     f32_timestamps_col = ChunkedArray(offsetted_chunks)
     return serialize_accessor(f32_timestamps_col, obj)
+
+
+def _to_camel(s: str) -> str:
+    parts = s.split("_")
+    return parts[0] + "".join(p.title() for p in parts[1:])
+
+
+def serialize_view_state(data: BaseViewState | None, _obj: Any) -> Any:
+    if data is None:
+        return None
+
+    d = asdict(data)  # type: ignore
+    # Convert to camel case and remove None values
+    return {_to_camel(k): v for k, v in d.items() if v is not None}
 
 
 ACCESSOR_SERIALIZATION = {"to_json": serialize_accessor}

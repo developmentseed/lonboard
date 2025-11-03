@@ -14,23 +14,24 @@ from lonboard._constants import OGC_84
 from lonboard._geoarrow._duckdb import from_duckdb as _from_duckdb
 from lonboard._geoarrow.c_stream_import import import_arrow_c_stream
 from lonboard._geoarrow.geopandas_interop import geopandas_to_geoarrow
-from lonboard._geoarrow.ops import reproject_table
-from lonboard._geoarrow.ops.bbox import Bbox, total_bounds
-from lonboard._geoarrow.ops.centroid import WeightedCentroid, weighted_centroid
+from lonboard._geoarrow.ops import (
+    Bbox,
+    WeightedCentroid,
+    reproject_table,
+    total_bounds,
+    weighted_centroid,
+)
 from lonboard._geoarrow.ops.coord_layout import make_geometry_interleaved
 from lonboard._geoarrow.parse_wkb import parse_serialized_table
 from lonboard._geoarrow.row_index import add_positional_row_index
 from lonboard._serialization import infer_rows_per_chunk
 from lonboard._utils import auto_downcast as _auto_downcast
 from lonboard._utils import get_geometry_column_index, remove_extension_kwargs
-from lonboard.traits import (
-    ArrowTableTrait,
-    VariableLengthTuple,
-)
+from lonboard.traits import ArrowTableTrait, VariableLengthTuple
 
 if TYPE_CHECKING:
     import sys
-    from collections.abc import Sequence
+    from collections.abc import Generator, Sequence
 
     import duckdb
     import geopandas as gpd
@@ -311,6 +312,17 @@ class BaseArrowLayer(BaseLayer):
     # The following traitlets **are** serialized to JS
 
     table: ArrowTableTrait
+
+    def _repr_keys(self) -> Generator[str, Any, None]:
+        # Avoid rendering `table` in the string repr
+        #
+        # By default, `_repr_mimebundle_` creates the rich HTML content **and** a plain
+        # text repr to show in environments that don't support rendering HTML. We want
+        # to avoid generating a str repr of any large values.
+        # https://github.com/developmentseed/lonboard/issues/1014
+        for key in super()._repr_keys():
+            if key != "table":
+                yield key
 
     def __init__(
         self,

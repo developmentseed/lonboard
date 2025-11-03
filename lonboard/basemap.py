@@ -160,8 +160,6 @@ class MaplibreBasemap(BaseWidget):
 
         The reverse-controlled mode renders deck.gl above the MapLibre container and blocks any interaction to the base map.
 
-        If you need to have multiple views, you should use this option.
-
     **Default**: `"overlaid"`
     """
 

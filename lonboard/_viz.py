@@ -6,7 +6,7 @@ from __future__ import annotations
 
 import json
 from textwrap import dedent
-from typing import TYPE_CHECKING, Any, Protocol, TypeAlias, cast
+from typing import TYPE_CHECKING, Any, Literal, Protocol, TypeAlias, cast
 
 import numpy as np
 from arro3.core import Array, ChunkedArray, Schema, Table, struct_field
@@ -26,6 +26,7 @@ from lonboard._utils import (
 )
 from lonboard.basemap import CartoStyle, MaplibreBasemap
 from lonboard.layer import PathLayer, PolygonLayer, ScatterplotLayer
+from lonboard.view import BaseView, GlobeView
 
 if TYPE_CHECKING:
     import duckdb
@@ -81,13 +82,14 @@ COLOR_COUNTER = 0
 DEFAULT_POLYGON_LINE_COLOR = [0, 0, 0, 200]
 
 
-def viz(
+def viz(  # noqa: PLR0913
     data: VizDataInput | list[VizDataInput] | tuple[VizDataInput, ...],
     *,
     scatterplot_kwargs: ScatterplotLayerKwargs | None = None,
     path_kwargs: PathLayerKwargs | None = None,
     polygon_kwargs: PolygonLayerKwargs | None = None,
     map_kwargs: MapKwargs | None = None,
+    view: BaseView | Literal["globe"] | None = None,
 ) -> Map:
     """Plot your data easily.
 
@@ -165,6 +167,7 @@ def viz(
             [`PolygonLayer`][lonboard.PolygonLayer]s.
         map_kwargs: a `dict` of parameters to pass down to the generated
             [`Map`][lonboard.Map].
+        view: a [view instance][lonboard.view.BaseView] to use for the map view, or the string "globe".
 
     For more control over rendering, construct [`Map`][lonboard.Map] and `Layer` objects
     directly.
@@ -200,8 +203,26 @@ def viz(
 
     map_kwargs = map_kwargs if map_kwargs else {}
 
+    if "view" not in map_kwargs and view is not None:
+        if view == "globe":
+            map_kwargs["view"] = GlobeView()
+        else:
+            map_kwargs["view"] = view
+
     if "basemap_style" not in map_kwargs and "basemap" not in map_kwargs:
-        map_kwargs["basemap"] = MaplibreBasemap(style=CartoStyle.DarkMatter)
+        map_kwargs["basemap"] = MaplibreBasemap(
+            mode="interleaved",
+            style=CartoStyle.DarkMatter,
+        )
+
+    # If we're using a known style that has labels, set layers to be below labels
+    if map_kwargs["basemap"].style in [
+        CartoStyle.DarkMatter,
+        CartoStyle.Positron,
+        CartoStyle.Voyager,
+    ]:
+        for layer in layers:
+            layer.before_id = "watername_ocean"
 
     return Map(layers=layers, **map_kwargs)
 
