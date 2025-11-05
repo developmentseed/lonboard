@@ -260,13 +260,13 @@ def create_layers_from_data_input(
 
     # duckdb DuckDBPyRelation
     if (
-        data.__class__.__module__.startswith("duckdb")
+        "duckdb" in data.__class__.__module__
         and data.__class__.__name__ == "DuckDBPyRelation"
     ):
         return _viz_duckdb_relation(data, **kwargs)  # type: ignore
 
     if (
-        data.__class__.__module__.startswith("duckdb")
+        "duckdb" in data.__class__.__module__
         and data.__class__.__name__ == "DuckDBPyConnection"
     ):
         raise TypeError(DUCKDB_PY_CONN_ERROR)
