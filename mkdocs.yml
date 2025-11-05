@@ -151,8 +151,6 @@ theme:
     text: Roboto
     code: Roboto Mono
 
-  # logo: img/geopolars_logo.svg
-
   features:
     - content.code.annotate
     - content.code.copy

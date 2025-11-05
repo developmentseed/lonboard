@@ -72,6 +72,16 @@ m = Map(layer, basemap=basemap)
 
 ## Map controls: scale, fullscreen, navigation
 
+Common UI elements that we call "Controls" are now supported in Lonboard maps. In this release, this includes three types of controls:
+
+- Scale control: shows a scale bar on the map
+- Fullscreen control: button to toggle fullscreen mode
+- Navigation control: zoom in/out buttons and a compass
+
+These three controls are rendered on the map by default, but can be customized via the [`Map.controls`][lonboard.Map.controls] attribute. See [`lonboard.controls`][] for more information.
+
+![](../../assets/controls-example.jpg)
+
 ## Performance improvements
 
 First and foremost, I learned there was _severe bug_ in which the string representation (aka `repr`) of the [`table` attribute][lonboard.BaseArrowLayer.table] was being generated during map display. In conjunction with [an upstream issue](https://github.com/kylebarron/arro3/issues/432), this made it _very slow_ to render a map for datasets with many coordinates in a single row (such as polygons representing administrative boundaries). https://github.com/developmentseed/lonboard/pull/1015 **improved the Python-side of rendering by 99% in this case**, from 12 seconds to 5 milliseconds.

@@ -229,7 +229,10 @@ class Map(BaseAnyWidget):
         sync=True,
         **ipywidgets.widget_serialization,
     )
-    """One or more map controls to display on this map."""
+    """One or more map controls to display on this map.
+
+    See [`lonboard.controls`][] for available controls.
+    """
 
     view: t.Instance[BaseView | None] = t.Instance(BaseView, allow_none=True).tag(
         sync=True,
@@ -239,7 +242,7 @@ class Map(BaseAnyWidget):
 
     Views represent the "camera(s)" (essentially viewport dimensions and projection matrices) that you look at your data with. deck.gl offers multiple view types for both geospatial and non-geospatial use cases. Read the [Views and Projections](https://deck.gl/docs/developer-guide/views) guide for the concept and examples.
 
-    See [`lonboard.view`][lonboard.view] for available view types.
+    See [`lonboard.view`][] for available view types.
     """
 
     @t.validate("view")
