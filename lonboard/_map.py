@@ -1,11 +1,11 @@
 from __future__ import annotations
 
 import warnings
+from dataclasses import replace
 from pathlib import Path
 from typing import IO, TYPE_CHECKING, Any, TextIO, overload
 
 import ipywidgets
-import traitlets
 import traitlets as t
 from ipywidgets import CallbackDispatcher
 
@@ -19,10 +19,10 @@ from lonboard.controls import (
     NavigationControl,
     ScaleControl,
 )
+from lonboard.experimental.view import BaseView, GlobeView, MapView
 from lonboard.layer import BaseLayer
-from lonboard.traits import HeightTrait, VariableLengthTuple, ViewStateTrait
-from lonboard.traits._map import DEFAULT_INITIAL_VIEW_STATE
-from lonboard.view import BaseView
+from lonboard.traits import MapHeightTrait, VariableLengthTuple, ViewStateTrait
+from lonboard.view_state import BaseViewState, GlobeViewState, MapViewState
 
 if TYPE_CHECKING:
     import sys
@@ -30,7 +30,13 @@ if TYPE_CHECKING:
 
     from IPython.display import HTML  # type: ignore
 
+    from lonboard._validators.types import TraitProposal
     from lonboard.types.map import MapKwargs
+
+    if sys.version_info >= (3, 11):
+        from typing import Self
+    else:
+        from typing_extensions import Self
 
     if sys.version_info >= (3, 12):
         from typing import Unpack
@@ -43,7 +49,7 @@ bundler_output_dir = Path(__file__).parent / "static"
 
 
 class Map(BaseAnyWidget):
-    """The top-level class used to display a map in a Jupyter Widget.
+    """An interactive Map.
 
     **Example:**
 
@@ -89,7 +95,7 @@ class Map(BaseAnyWidget):
 
                 Various styles are provided in [`lonboard.basemap`](https://developmentseed.org/lonboard/latest/api/basemap/).
 
-            kwargs: Passed on to class variables.
+            kwargs: Passed on to class variables. For example, you can pass `height=600` to pass that value on to the [`height`][lonboard.Map.height] attribute.
 
         Returns:
             A Map object.
@@ -154,13 +160,13 @@ class Map(BaseAnyWidget):
     _esm = bundler_output_dir / "index.js"
     _css = bundler_output_dir / "index.css"
 
-    # TODO: change this view state to allow non-map view states if we have non-map views
-    # Also allow a list/tuple of view states for multiple views
-    view_state = ViewStateTrait()
+    view_state: BaseViewState | None = ViewStateTrait()  # type: ignore
     """
     The view state of the map.
 
-    - Type: [`ViewState`][lonboard.models.ViewState]
+    - Type: A subclass of [`BaseViewState`][lonboard.view_state.BaseViewState], such as
+        [`MapViewState`][lonboard.view_state.MapViewState] or
+        [`GlobeViewState`][lonboard.view_state.GlobeViewState].
     - Default: Automatically inferred from the data passed to the map.
 
     You can initialize the map to a specific view state using this property:
@@ -185,17 +191,20 @@ class Map(BaseAnyWidget):
     Indicates if a click handler has been registered.
     """
 
-    height = HeightTrait().tag(sync=True)
+    height = MapHeightTrait().tag(sync=True)
     """Height of the map in pixels, or valid CSS height property.
 
-    This API is not yet stabilized and may change in the future.
+    For example, it can be `600` (pixels) or `"75vh"` (75% of the viewport height).
+
+    - Type: `int` or `str`
+    - Default: full height of the containing cell.
     """
 
     layers = VariableLengthTuple(t.Instance(BaseLayer)).tag(
         sync=True,
         **ipywidgets.widget_serialization,
     )
-    """One or more `Layer` objects to display on this map.
+    """One or more [`Layer`][lonboard.BaseLayer] objects to display on this map.
     """
 
     controls = VariableLengthTuple(
@@ -209,16 +218,38 @@ class Map(BaseAnyWidget):
         sync=True,
         **ipywidgets.widget_serialization,
     )
-    """One or more map controls to display on this map."""
+    """One or more map controls to display on this map.
 
-    views: t.Instance[BaseView | None] = t.Instance(BaseView, allow_none=True).tag(
+    See [`lonboard.controls`][] for available controls.
+    """
+
+    view: t.Instance[BaseView | None] = t.Instance(BaseView, allow_none=True).tag(
         sync=True,
         **ipywidgets.widget_serialization,
     )
-    """A View instance.
+    """The view to use for this map.
 
     Views represent the "camera(s)" (essentially viewport dimensions and projection matrices) that you look at your data with. deck.gl offers multiple view types for both geospatial and non-geospatial use cases. Read the [Views and Projections](https://deck.gl/docs/developer-guide/views) guide for the concept and examples.
+
+    See [`lonboard.experimental.view`][] for available view types.
     """
+
+    @t.validate("view")
+    def _validate_view(
+        self,
+        proposal: TraitProposal[t.Instance[BaseView | None], BaseView, Self],
+    ) -> BaseView:
+        # if proposed view is a globe view, ensure that basemap is interleaved
+        if (
+            isinstance(proposal["value"], GlobeView)
+            and self.basemap is not None
+            and self.basemap.mode != "interleaved"
+        ):
+            raise t.TraitError(
+                "GlobeView requires the basemap mode to be 'interleaved'. Please set `basemap.mode='interleaved'`.",
+            )
+
+        return proposal["value"]
 
     show_tooltip = t.Bool(default_value=False).tag(sync=True)
     """
@@ -263,6 +294,27 @@ class Map(BaseAnyWidget):
 
     Pass `None` to disable rendering a basemap.
     """
+
+    @t.validate("basemap")
+    def _validate_basemap(
+        self,
+        proposal: TraitProposal[
+            t.Instance[MaplibreBasemap | None],
+            MaplibreBasemap,
+            Self,
+        ],
+    ) -> MaplibreBasemap | None:
+        # If proposed basemap is not interleaved, ensure current view is not globe view
+        if (
+            proposal["value"] is not None
+            and proposal["value"].mode != "interleaved"
+            and isinstance(self.view, GlobeView)
+        ):
+            raise t.TraitError(
+                "GlobeView requires the basemap mode to be 'interleaved'. Please set `basemap.mode='interleaved'`.",
+            )
+
+        return proposal["value"]
 
     @property
     def basemap_style(self) -> str | None:
@@ -359,10 +411,7 @@ class Map(BaseAnyWidget):
     parameters = t.Any(allow_none=True, default_value=None).tag(sync=True)
     """GPU parameters to pass to deck.gl.
 
-    **This is an advanced API. The vast majority of users should not need to touch this
-    setting.**
-
-    !!! Note
+    !!! Note "This is an advanced API. The vast majority of users should not need to touch this setting."
 
         The docstring below is copied from upstream deck.gl documentation. Any usage of
         `GL` refers to the constants defined in [`@luma.gl/constants`
@@ -492,8 +541,9 @@ class Map(BaseAnyWidget):
         elif reset_zoom:
             self.view_state = compute_view(self.layers)  # type: ignore
 
-    def set_view_state(
+    def set_view_state(  # noqa: PLR0913
         self,
+        view_state: BaseViewState | None = None,
         *,
         longitude: float | None = None,
         latitude: float | None = None,
@@ -505,6 +555,9 @@ class Map(BaseAnyWidget):
 
         Any parameters that are unset will not be changed.
 
+        Args:
+            view_state: A complete view state object to set on the map.
+
         Keyword Args:
             longitude: the new longitude to set on the map. Defaults to None.
             latitude: the new latitude to set on the map. Defaults to None.
@@ -513,24 +566,38 @@ class Map(BaseAnyWidget):
             bearing: the new bearing to set on the map. Defaults to None.
 
         """
-        view_state = (
-            self.view_state._asdict()  # type: ignore
-            if self.view_state is not None
-            else DEFAULT_INITIAL_VIEW_STATE
-        )
+        if view_state is not None:
+            self.view_state = view_state
+            return
 
+        current_view_state = self.view_state
+
+        changes = {}
         if longitude is not None:
-            view_state["longitude"] = longitude
+            changes["longitude"] = longitude
         if latitude is not None:
-            view_state["latitude"] = latitude
+            changes["latitude"] = latitude
         if zoom is not None:
-            view_state["zoom"] = zoom
-        if pitch is not None:
-            view_state["pitch"] = pitch
-        if bearing is not None:
-            view_state["bearing"] = bearing
+            changes["zoom"] = zoom
 
-        self.view_state = view_state
+        # Only params allowed by globe view state
+        if isinstance(current_view_state, GlobeViewState):
+            self.view_state = replace(current_view_state, **changes)
+            return
+
+        # Add more params allowed by map view state
+        if pitch is not None:
+            changes["pitch"] = pitch
+        if bearing is not None:
+            changes["bearing"] = bearing
+
+        if isinstance(current_view_state, MapViewState):
+            self.view_state = replace(current_view_state, **changes)
+            return
+
+        raise TypeError(
+            "Can only set MapViewState or GlobeViewState parameters individually via set_view_state.\nFor other view state types, pass a complete view_state object.",
+        )
 
     def fly_to(  # noqa: PLR0913
         self,
@@ -654,6 +721,9 @@ class Map(BaseAnyWidget):
 
         return HTML(self.to_html())
 
-    @traitlets.default("view_state")
+    @t.default("view_state")
     def _default_initial_view_state(self) -> dict[str, Any]:
-        return compute_view(self.layers)  # type: ignore
+        if self.view is None or isinstance(self.view, (MapView, GlobeView)):
+            return compute_view(self.layers)  # type: ignore
+
+        return {}

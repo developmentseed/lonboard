@@ -74,14 +74,10 @@ def compute_view(layers: Sequence[BaseLayer]) -> dict[str, Any]:
             "longitude": center.x or 0,
             "latitude": center.y or 0,
             "zoom": 0,
-            "pitch": 0,
-            "bearing": 0,
         }
     else:
         return {
             "longitude": center.x,
             "latitude": center.y,
             "zoom": zoom,
-            "pitch": 0,
-            "bearing": 0,
         }

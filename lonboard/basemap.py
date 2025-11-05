@@ -123,7 +123,7 @@ class CartoBasemap(str, Enum):
 
 
 class MaplibreBasemap(BaseWidget):
-    """A MapLibre GL JS basemap."""
+    """A [MapLibre GL JS](https://maplibre.org/maplibre-gl-js/docs/) basemap."""
 
     def __init__(
         self,
@@ -148,30 +148,43 @@ class MaplibreBasemap(BaseWidget):
     ).tag(sync=True)
     """The basemap integration mode.
 
+    This determines how deck.gl and MapLibre are rendered together.
+
     - **`"interleaved"`**:
 
-        The interleaved mode renders deck.gl layers into the same context created by MapLibre. If you need to mix deck.gl layers with MapLibre layers, e.g. having deck.gl surfaces below text labels, or objects occluding each other correctly in 3D, then you have to use this option.
+        The interleaved mode renders deck.gl layers into the same context created by
+        MapLibre.
+
+        If you need to mix deck.gl layers with MapLibre layers, e.g. having deck.gl
+        surfaces below text labels, or objects occluding each other correctly in 3D,
+        then you have to use this option.
+
+        See [BaseLayer.before_id][lonboard.BaseLayer.before_id] for more information on
+        how to interleave deck.gl layers into the Maplibre layer stack.
 
     - **`"overlaid"`**:
 
-        The overlaid mode renders deck.gl in a separate canvas inside the MapLibre's controls container. If your use case does not require interleaving, but you still want to use certain features of maplibre-gl, such as globe view, then you should use this option.
+        The overlaid mode renders deck.gl in a separate canvas inside the MapLibre's controls container.
+
+        If your use case does not require interleaving, but you still want to use
+        certain features of maplibre-gl, such as Maplibre-based controls, then you
+        should use this option.
 
     - **`"reverse-controlled"`**:
 
         The reverse-controlled mode renders deck.gl above the MapLibre container and blocks any interaction to the base map.
 
-        If you need to have multiple views, you should use this option.
+        This is the mode that Lonboard has historically used.
 
     **Default**: `"overlaid"`
     """
 
     style = BasemapUrl(CartoStyle.PositronNoLabels).tag(sync=True)
     """
-    A URL to a MapLibre-compatible basemap style.
+    A MapLibre-compatible basemap style.
 
-    Various styles are provided in [`lonboard.basemap`](https://developmentseed.org/lonboard/latest/api/basemap/).
+    Various styles are provided in [`CartoStyle`][lonboard.basemap.CartoStyle].
 
     - Type: `str`, holding a URL hosting a basemap style.
-    - Default
-      [`lonboard.basemap.CartoStyle.PositronNoLabels`][lonboard.basemap.CartoStyle.PositronNoLabels]
+    - Default: [`CartoStyle.PositronNoLabels`][lonboard.basemap.CartoStyle.PositronNoLabels]
     """

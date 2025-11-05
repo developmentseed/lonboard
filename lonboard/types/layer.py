@@ -49,6 +49,20 @@ FloatAccessorInput = Union[
     ArrowArrayExportable,
     ArrowStreamExportable,
 ]
+H3AccessorInput = Union[
+    NDArray[np.object_],
+    NDArray[np.str_],
+    NDArray[np.uint64],
+    "pd.Series",
+    "pa.StringArray",
+    "pa.LargeStringArray",
+    "pa.StringViewArray",
+    "pa.UInt64Array",
+    "pa.ChunkedArray",
+    ArrowArrayExportable,
+    ArrowStreamExportable,
+]
+A5AccessorInput = H3AccessorInput
 NormalAccessorInput = Union[
     list[int],
     tuple[int, int, int],
@@ -192,6 +206,22 @@ class PolygonLayerKwargs(BaseLayerKwargs, total=False):
     get_line_color: ColorAccessorInput
     get_line_width: FloatAccessorInput
     get_elevation: FloatAccessorInput
+
+
+class H3HexagonLayerKwargs(PolygonLayerKwargs, total=False):
+    high_precision: bool
+
+
+class A5LayerKwargs(PolygonLayerKwargs, total=False):
+    pass
+
+
+class S2LayerKwargs(PolygonLayerKwargs, total=False):
+    pass
+
+
+class GeohashLayerKwargs(PolygonLayerKwargs, total=False):
+    pass
 
 
 class ScatterplotLayerKwargs(BaseLayerKwargs, total=False):

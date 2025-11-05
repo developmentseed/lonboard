@@ -1,6 +1,6 @@
 [project]
 name = "lonboard"
-version = "0.13.0-beta.1"
+version = "0.13.0"
 description = "Fast, interactive geospatial data visualization in Jupyter."
 authors = [{ name = "Kyle Barron", email = "kyle@developmentseed.org" }]
 license = "MIT"
@@ -18,7 +18,7 @@ dependencies = [
     "numpy>=1.14",
     # The same version pin as geopandas
     "pyproj>=3.3",
-    "typing-extensions>=4.6.0; python_version < '3.12'",
+    "typing-extensions>=4.12.0",
     "geoarrow-rust-core>=0.5.2",
 ]
 keywords = [
@@ -77,6 +77,7 @@ dev = [
     "geoarrow-rust-core>=0.4.0",
     "geoarrow-rust-io>=0.4.1",
     "geodatasets>=2024.8.0",
+    "h3>=4.3.1",
     "jupyterlab>=4.3.3",
     "matplotlib>=3.7.5",
     "movingpandas>=0.20.0",
@@ -86,6 +87,7 @@ dev = [
     "pyarrow>=21.0.0",
     "pyogrio>=0.9.0",
     "pytest>=8.3.4",
+    "pytest-ipywidgets>=1.54.0",
     "rasterio>=1.4.3",
     "ruff>=0.13.0",
     "sidecar>=0.7.0",
@@ -119,11 +121,12 @@ artifacts = ["lonboard/static/*.js", "lonboard/static/*.css"]
 
 [[tool.mypy.overrides]]
 module = [
-    "pyogrio.*",
-    "pyarrow.*",
-    "geodatasets.*",
-    "ipywidgets.*",
     "geoarrow.pyarrow.*",
+    "geodatasets.*",
+    "h3.*",
+    "ipywidgets.*",
+    "pyarrow.*",
+    "pyogrio.*",
 ]
 ignore_missing_imports = true
 

@@ -55,7 +55,7 @@ def apply_colormap(
     cmap: dict[int, tuple[int, int, int] | tuple[int, int, int, int]],
 ) -> NDArray[np.uint8]:
     """Apply rasterio colormap to single-band array."""
-    lut = np.zeros((max(cmap.keys()), 4), dtype=np.uint8)
+    lut = np.zeros((max(cmap.keys()) + 1, 4), dtype=np.uint8)
     for k, v in cmap.items():
         lut[k] = v
 
