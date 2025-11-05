@@ -48,7 +48,7 @@ nav:
       - examples/migration.ipynb
       - examples/data-filter-extension.ipynb
       - examples/column-layer.ipynb
-      - examples/interleaved-maplibre-labels.ipynb
+      - examples/interleaved-labels.ipynb
       - examples/linked-maps.ipynb
       - examples/clicked-point.ipynb
       - NYC Taxi Trips: examples/marimo/nyc_taxi_trips.md
