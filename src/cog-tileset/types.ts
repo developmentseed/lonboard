@@ -1,4 +1,5 @@
 import type { GeoTIFF } from "geotiff";
+import type { Converter } from "proj4";
 
 export type ZRange = [minZ: number, maxZ: number];
 
@@ -170,6 +171,8 @@ export type COGMetadata = {
   projection: string | null;
   overviews: COGOverview[];
   image: GeoTIFF; // GeoTIFF reference
+  projectToWgs84: Converter;
+  projectTo3857: Converter;
 };
 
 /**

@@ -212,6 +212,9 @@ class COGTileNode {
     const tileMaxX = tileMinX + tileGeoWidth;
     const tileMaxY = tileMinY + tileGeoHeight;
 
+    console.log("Tile bounding box:");
+    console.log(tileMinX, tileMinY, tileMaxX, tileMaxY);
+
     if (project) {
       assert(false, "TODO: check bounding volume implementation in Globe view");
 
@@ -240,7 +243,24 @@ class COGTileNode {
       // return makeOrientedBoundingBoxFromPoints(refPointPositions);
     }
 
-    assert(false, "bounding volume of web mercator is probably wrong");
+    // Reproject tile bounds to Web Mercator for bounding volume
+    const ll = this.cogMetadata.projectTo3857.forward([tileMinX, tileMinY]);
+    const lr = this.cogMetadata.projectTo3857.forward([tileMaxX, tileMinY]);
+    const ur = this.cogMetadata.projectTo3857.forward([tileMaxX, tileMaxY]);
+    const ul = this.cogMetadata.projectTo3857.forward([tileMinX, tileMaxY]);
+
+    const webMercatorMinX = Math.min(ll[0], lr[0], ur[0], ul[0]);
+    const webMercatorMaxX = Math.max(ll[0], lr[0], ur[0], ul[0]);
+    const webMercatorMinY = Math.min(ll[1], lr[1], ur[1], ul[1]);
+    const webMercatorMaxY = Math.max(ll[1], lr[1], ur[1], ul[1]);
+
+    console.log("Tile Web Mercator bounds:");
+    console.log(
+      webMercatorMinX,
+      webMercatorMinY,
+      webMercatorMaxX,
+      webMercatorMaxY,
+    );
 
     // Web Mercator projection
     // Assuming COG is already in Web Mercator (EPSG:3857)
@@ -248,12 +268,17 @@ class COGTileNode {
     const WORLD_SIZE = 512; // deck.gl's world size
     const METERS_PER_WORLD = 40075017; // Earth circumference at equator
 
-    const worldMinX = (tileMinX / METERS_PER_WORLD) * WORLD_SIZE;
-    const worldMaxX = (tileMaxX / METERS_PER_WORLD) * WORLD_SIZE;
+    const worldMinX = (webMercatorMinX / METERS_PER_WORLD) * WORLD_SIZE;
+    const worldMaxX = (webMercatorMaxX / METERS_PER_WORLD) * WORLD_SIZE;
 
     // Y is flipped in deck.gl's common space
-    const worldMinY = WORLD_SIZE - (tileMaxY / METERS_PER_WORLD) * WORLD_SIZE;
-    const worldMaxY = WORLD_SIZE - (tileMinY / METERS_PER_WORLD) * WORLD_SIZE;
+    const worldMinY =
+      WORLD_SIZE - (webMercatorMaxY / METERS_PER_WORLD) * WORLD_SIZE;
+    const worldMaxY =
+      WORLD_SIZE - (webMercatorMinY / METERS_PER_WORLD) * WORLD_SIZE;
+
+    console.log("Tile world bounds:");
+    console.log(worldMinX, worldMinY, worldMaxX, worldMaxY);
 
     return new AxisAlignedBoundingBox(
       [worldMinX, worldMinY, zRange[0]],
@@ -266,11 +291,7 @@ class COGTileNode {
    * This is a placeholder - needs proper projection library (proj4js)
    */
   private cogCoordsToLngLat([x, y]: [number, number]): number[] {
-    // For Web Mercator (EPSG:3857)
-    const R = 6378137; // Earth radius
-    const lng = (x / R) * (180 / Math.PI);
-    const lat =
-      (Math.PI / 2 - 2 * Math.atan(Math.exp(-y / R))) * (180 / Math.PI);
+    const [lng, lat] = this.cogMetadata.projectToWgs84.forward([x, y]);
     return [lng, lat, 0];
   }
 }
