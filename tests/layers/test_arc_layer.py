@@ -1,10 +1,9 @@
 import numpy as np
 import pyarrow as pa
-from arro3.core import Table
+from arro3.core import ChunkedArray, Table
 from geoarrow.rust.core import point, points
 
-from lonboard import Map
-from lonboard.experimental import ArcLayer
+from lonboard import ArcLayer, Map
 
 
 def test_arc_layer_geoarrow_interleaved():
@@ -41,3 +40,18 @@ def test_arc_layer_geoarrow_separated():
     )
     m = Map(layer)
     assert isinstance(m.layers[0], ArcLayer)
+
+
+def test_arc_layer_numpy():
+    data = {
+        "source": ["London", "Manchester", "Bristol"],
+        "target": ["Manchester", "Bristol", "London"],
+    }
+
+    source = np.array([(51.5072, 0.1276), (53.4808, 2.2426), (51.4545, 2.5879)])
+    target = np.array([(53.4808, 2.2426), (51.4545, 2.5879), (51.5072, 0.1276)])
+
+    table = pa.table(data)
+
+    layer = ArcLayer(table, get_source_position=source, get_target_position=target)
+    assert isinstance(layer.get_source_position, ChunkedArray)

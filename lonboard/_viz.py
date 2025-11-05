@@ -1,11 +1,10 @@
 """High-level, super-simple API for visualizing GeoDataFrames."""
 
-# ruff: noqa: C901, PLR0911, PLR0912, PLR0913, PLR0915
+# ruff: noqa: C901, PLR0911, PLR0912, PLR0915
 
 from __future__ import annotations
 
 import json
-import warnings
 from textwrap import dedent
 from typing import TYPE_CHECKING, Any, Protocol, TypeAlias, cast
 
@@ -19,7 +18,6 @@ from lonboard._geoarrow.extension_types import construct_geometry_array
 from lonboard._geoarrow.geopandas_interop import geopandas_to_geoarrow
 from lonboard._geoarrow.parse_wkb import parse_serialized_table
 from lonboard._geoarrow.row_index import add_positional_row_index
-from lonboard._layer import PathLayer, PolygonLayer, ScatterplotLayer
 from lonboard._map import Map
 from lonboard._utils import (
     get_geometry_column_index,
@@ -27,6 +25,7 @@ from lonboard._utils import (
     split_mixed_shapely_array,
 )
 from lonboard.basemap import CartoStyle, MaplibreBasemap
+from lonboard.layer import PathLayer, PolygonLayer, ScatterplotLayer
 
 if TYPE_CHECKING:
     import duckdb
@@ -89,22 +88,22 @@ def viz(
     path_kwargs: PathLayerKwargs | None = None,
     polygon_kwargs: PolygonLayerKwargs | None = None,
     map_kwargs: MapKwargs | None = None,
-    con: duckdb.DuckDBPyConnection | None = None,
 ) -> Map:
     """Plot your data easily.
 
     The goal of this function is to make it simple to get _something_ showing on a map.
-    For more control over rendering, construct `Map` and `Layer` objects directly.
+    For more control over rendering, construct [`Map`][lonboard.Map] and
+    [`Layer`][lonboard.BaseLayer] objects directly.
 
     This function accepts a variety of geospatial inputs:
 
-    - GeoPandas `GeoDataFrame`.
-    - GeoPandas `GeoSeries`.
+    - GeoPandas [`GeoDataFrame`][geopandas.GeoDataFrame].
+    - GeoPandas [`GeoSeries`][geopandas.GeoSeries].
     - numpy array of Shapely objects.
     - Single Shapely object.
     - A DuckDB query with a spatial column from DuckDB Spatial.
 
-        !!! warning
+        !!! info
 
             The DuckDB query must be run with
             [`duckdb.sql()`](https://duckdb.org/docs/api/python/reference/#duckdb.sql)
@@ -134,7 +133,7 @@ def viz(
             viz(con.table("spatial_table"))
             ```
 
-        !!! warning
+        !!! info
 
             DuckDB Spatial does not currently expose coordinate reference system
             information, so the user must ensure that data has been reprojected to
@@ -143,16 +142,16 @@ def viz(
     - Any Python class with a `__geo_interface__` property conforming to the
         [Geo Interface protocol](https://gist.github.com/sgillies/2217756).
     - `dict` holding GeoJSON-like data.
-    - pyarrow `Table` with a geometry column marked with a
+    - pyarrow [`Table`][pyarrow.Table] with a geometry column marked with a
         [GeoArrow](https://geoarrow.org/) extension type.
-    - pyarrow `Array` or `ChunkedArray` marked with a [GeoArrow extension type defined by geoarrow-pyarrow](https://geoarrow.org/geoarrow-python/main/pyarrow.html#geoarrow.pyarrow.GeometryExtensionType).
-    - Arrow-compatible Array, ChunkedArray, Table, or RecordBatch objects that have associated GeoArrow metadata. An object is "Arrow-compatible" if it implements the [Arrow PyCapsule Interface](https://arrow.apache.org/docs/format/CDataInterface/PyCapsuleInterface.html) and has either an `__arrow_c_array__` or `__arrow_c_stream__` method. The provided Arrow data must be or have a geometry column marked with a GeoArrow extension type.
+    - pyarrow [`Array`][pyarrow.Array] or [`ChunkedArray`][pyarrow.ChunkedArray] marked with a [GeoArrow extension type defined by geoarrow-pyarrow][geoarrow.pyarrow.GeometryExtensionType].
+    - Arrow-compatible Array, ChunkedArray, Table, or RecordBatch objects that have associated GeoArrow metadata. An object is "Arrow-compatible" if it has either an `__arrow_c_array__` or `__arrow_c_stream__` method, that is, it implements the [Arrow PyCapsule Interface](https://arrow.apache.org/docs/format/CDataInterface/PyCapsuleInterface.html). The provided Arrow data must be or have a geometry column marked with a GeoArrow extension type.
 
-        Some examples of these sources include pyogrio's [`open_arrow`][pyogrio.open_arrow], DuckDB Spatial, [GeoArrow-Rust's Python bindings](https://geoarrow.org/geoarrow-rs/python/latest/), [GeoDataFusion database connections](https://github.com/datafusion-contrib/datafusion-geo), and, soon, [GeoPolars DataFrames](https://github.com/geopolars/geopolars).
+        Some examples of these sources include pyogrio's [`open_arrow`][pyogrio.open_arrow], DuckDB Spatial, [GeoArrow-Rust's Python bindings](https://geoarrow.org/geoarrow-rs/python/latest/), [Sedona DB sessions](https://github.com/apache/sedona-db), [GeoDataFusion database connections](https://github.com/datafusion-contrib/datafusion-geo), and, soon, [GeoPolars DataFrames](https://github.com/geopolars/geopolars).
 
     Alternatively, you can pass a `list` or `tuple` of any of the above inputs.
 
-    If you want to easily add more data, to an existing map, you can pass the output of
+    If you want to easily add more data to an existing map, you can pass the output of
     `viz` into [`Map.add_layer`][lonboard.Map.add_layer].
 
     Args:
@@ -167,8 +166,6 @@ def viz(
             [`PolygonLayer`][lonboard.PolygonLayer]s.
         map_kwargs: a `dict` of parameters to pass down to the generated
             [`Map`][lonboard.Map].
-        con: Deprecated: the active DuckDB connection. This argument has no effect and
-            might be removed in the future.
 
     For more control over rendering, construct [`Map`][lonboard.Map] and `Layer` objects
     directly.
@@ -178,14 +175,6 @@ def viz(
 
     """
     global COLOR_COUNTER  # noqa: PLW0603 Using the global statement to update `COLOR_COUNTER` is discouraged
-
-    if con is not None:
-        warnings.warn(
-            "The 'con' argument is deprecated and may be removed in a future version. "
-            "It has no effect.",
-            category=DeprecationWarning,
-            stacklevel=2,
-        )
 
     if isinstance(data, (list, tuple)):
         layers: list[ScatterplotLayer | PathLayer | PolygonLayer] = []
@@ -213,7 +202,19 @@ def viz(
     map_kwargs = map_kwargs if map_kwargs else {}
 
     if "basemap_style" not in map_kwargs and "basemap" not in map_kwargs:
-        map_kwargs["basemap"] = MaplibreBasemap(style=CartoStyle.DarkMatter)
+        map_kwargs["basemap"] = MaplibreBasemap(
+            mode="interleaved",
+            style=CartoStyle.DarkMatter,
+        )
+
+    # If we're using a known style that has labels, set layers to be below labels
+    if map_kwargs["basemap"].style in [
+        CartoStyle.DarkMatter,
+        CartoStyle.Positron,
+        CartoStyle.Voyager,
+    ]:
+        for layer in layers:
+            layer.before_id = "watername_ocean"
 
     return Map(layers=layers, **map_kwargs)
 
@@ -250,13 +251,13 @@ def create_layers_from_data_input(
 
     # duckdb DuckDBPyRelation
     if (
-        data.__class__.__module__.startswith("duckdb")
+        "duckdb" in data.__class__.__module__
         and data.__class__.__name__ == "DuckDBPyRelation"
     ):
         return _viz_duckdb_relation(data, **kwargs)  # type: ignore
 
     if (
-        data.__class__.__module__.startswith("duckdb")
+        "duckdb" in data.__class__.__module__
         and data.__class__.__name__ == "DuckDBPyConnection"
     ):
         raise TypeError(DUCKDB_PY_CONN_ERROR)

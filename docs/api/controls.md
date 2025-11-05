@@ -1,3 +1,3 @@
 # lonboard.controls
 
-::: lonboard.controls.MultiRangeSlider
+::: lonboard.controls

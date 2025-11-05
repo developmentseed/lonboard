@@ -25,7 +25,7 @@ jobs:
 
       # Note: this should stay synced with the volta-pinned version in
       # package.json
-      - uses: actions/setup-node@v5
+      - uses: actions/setup-node@v6
         with:
           node-version: "18"
 
@@ -58,6 +58,10 @@ jobs:
       - name: Build JS bundle
         run: |
           npm run build
+
+      - name: Install Playwright browsers
+        run: |
+          uv run playwright install chromium
 
       - name: Run tests
         run: uv run pytest

@@ -88,3 +88,60 @@ Note that the `jupyter-mkdocs` plugin is only turned on when the `CI` env variab
 ```
 CI=true uv run --group docs mkdocs serve
 ```
+
+## Developing Jupyter Notebook examples
+
+We use `juv` to store dependencies for each notebook as metadata of the notebook itself.
+
+To run an example notebook with a local version of lonboard, first ensure that you have built the JavaScript bundle:
+
+```bash
+npm run build:watch
+```
+
+then use:
+
+```bash
+ANYWIDGET_HMR=1 uvx juv run --with="../" examples/air-traffic-control.ipynb
+```
+
+Note that the path in `--with` is relative to the notebook itself.
+
+## Profiling
+
+### Python
+
+I've come to really like [pyinstrument](https://pyinstrument.readthedocs.io/). pyinstrument is already included in the `dev` dependencies, or you can install it with pip. Then, inside a Jupyter notebook, load it with
+
+```py
+%load_ext pyinstrument
+```
+
+Then you can profile any cell with
+
+```py
+%%pyinstrument
+# code to profile
+m = Map(...)
+```
+
+It will print out a nice report right in the notebook.
+
+### Widget display in Python
+
+Sometimes the map _display_ is slow on the Python side. I.e. sometimes the map object generation `m = Map(...)` is fast, but then rendering with `m` in its own cell is slow before reaching JavaScript.
+
+In this case, you can still use `pyinstrument` but you need to opt-in to the _explicit_ display:
+
+```py
+from IPython.display import display
+
+%%pyinstrument
+display(m)
+```
+
+Otherwise, pyinstrument won't be able to hook into the display process.
+
+### JavaScript rendering
+
+Chrome's native performance profiler is the best tool I've used for this so far.

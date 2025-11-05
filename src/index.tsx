@@ -2,21 +2,22 @@ import { createRender, useModel, useModelState } from "@anywidget/react";
 import type { Initialize, Render } from "@anywidget/types";
 import { MapViewState, PickingInfo } from "@deck.gl/core";
 import { DeckGLRef } from "@deck.gl/react";
-import type { IWidgetManager, WidgetModel } from "@jupyter-widgets/base";
+import type { IWidgetManager } from "@jupyter-widgets/base";
 import { NextUIProvider } from "@nextui-org/react";
+import debounce from "lodash.debounce";
 import throttle from "lodash.throttle";
 import * as React from "react";
 import { useCallback, useEffect, useRef, useState } from "react";
 import { v4 as uuidv4 } from "uuid";
 
 import { flyTo } from "./actions/fly-to.js";
-import { DEFAULT_MAP_STYLE, MaplibreBasemapModel } from "./model/basemap.js";
 import {
-  initializeLayer,
-  type BaseLayerModel,
-  initializeChildModels,
-} from "./model/index.js";
-import { loadModel } from "./model/initialize.js";
+  useBasemapState,
+  useControlsState,
+  useLayersState,
+  useViewsState,
+} from "./hooks/index.js";
+import { DEFAULT_MAP_STYLE } from "./model/basemap.js";
 import { initParquetWasm } from "./parquet.js";
 import DeckFirstRenderer from "./renderers/deck-first.js";
 import OverlayRenderer from "./renderers/overlay.js";
@@ -30,7 +31,7 @@ import { useViewStateDebounced } from "./state";
 import Toolbar from "./toolbar.js";
 import { getTooltip } from "./tooltip/index.js";
 import { Message } from "./types.js";
-import { isDefined } from "./util.js";
+import { isDefined, isGlobeView, sanitizeViewState } from "./util.js";
 import { MachineContext, MachineProvider } from "./xstate";
 import * as selectors from "./xstate/selectors";
 
@@ -38,14 +39,6 @@ import "maplibre-gl/dist/maplibre-gl.css";
 import "./globals.css";
 
 await initParquetWasm();
-
-const DEFAULT_INITIAL_VIEW_STATE = {
-  latitude: 10,
-  longitude: 0,
-  zoom: 0.5,
-  bearing: 0,
-  pitch: 0,
-};
 
 function App() {
   const actorRef = MachineContext.useActorRef();
@@ -69,8 +62,8 @@ function App() {
 
   const [justClicked, setJustClicked] = useState<boolean>(false);
 
-  // Expose DeckGL instance on window for Playwright e2e tests
   const deckRef = useRef<DeckGLRef | null>(null);
+  // Expose deck instance on window for debugging
   useEffect(() => {
     if (deckRef.current && typeof window !== "undefined") {
       (window as unknown as Record<string, unknown>).__deck =
@@ -90,6 +83,14 @@ function App() {
   );
   const [parameters] = useModelState<object>("parameters");
   const [customAttribution] = useModelState<string>("custom_attribution");
+  const [mapId] = useState(uuidv4());
+  const [childLayerIds] = useModelState<string[]>("layers");
+  const [viewIds] = useModelState<string | string[] | null>("view");
+  const [controlsIds] = useModelState<string[]>("controls");
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
+  const [_selectedBounds, setSelectedBounds] = useModelState<number[] | null>(
+    "selected_bounds",
+  );
 
   // initialViewState is the value of view_state on the Python side. This is
   // called `initial` here because it gets passed in to deck's
@@ -115,81 +116,36 @@ function App() {
     }
   });
 
-  const [mapId] = useState(uuidv4());
-  const [layersState, setLayersState] = useState<
-    Record<string, BaseLayerModel>
-  >({});
-
-  const [childLayerIds] = useModelState<string[]>("layers");
-
-  const [basemapState, setBasemapState] = useState<MaplibreBasemapModel | null>(
-    null,
-  );
-
   // Fake state just to get react to re-render when a model callback is called
   // eslint-disable-next-line @typescript-eslint/no-unused-vars
   const [stateCounter, setStateCounter] = useState<Date>(new Date());
   const updateStateCallback = () => setStateCounter(new Date());
 
-  useEffect(() => {
-    const loadBasemap = async () => {
-      try {
-        if (!basemapModelId) {
-          setBasemapState(null);
-          return;
-        }
+  const basemapState = useBasemapState(
+    basemapModelId,
+    model.widget_manager as IWidgetManager,
+    updateStateCallback,
+  );
 
-        const basemapModel = await loadModel(
-          model.widget_manager as IWidgetManager,
-          basemapModelId,
-        );
-        const basemap = new MaplibreBasemapModel(
-          basemapModel,
-          updateStateCallback,
-        );
-        setBasemapState(basemap);
-      } catch (error) {
-        console.error("Error loading basemap model:", error);
-      }
-    };
+  const controls = useControlsState(
+    controlsIds,
+    model.widget_manager as IWidgetManager,
+    updateStateCallback,
+  );
 
-    loadBasemap();
-  }, [basemapModelId]);
+  const layers = useLayersState(
+    childLayerIds,
+    model.widget_manager as IWidgetManager,
+    updateStateCallback,
+    bboxSelectBounds,
+    isDrawingBBoxSelection,
+    setSelectedBounds,
+  );
 
-  useEffect(() => {
-    const loadAndUpdateLayers = async () => {
-      try {
-        const layerModels = await initializeChildModels<BaseLayerModel>(
-          model.widget_manager as IWidgetManager,
-          childLayerIds,
-          layersState,
-          async (model: WidgetModel) =>
-            initializeLayer(model, updateStateCallback),
-        );
-
-        setLayersState(layerModels);
-
-        if (!isDrawingBBoxSelection) {
-          // Note: selected_bounds is a property of the **Map**. In the future,
-          // when we use deck.gl to perform picking, we'll have
-          // `selected_indices` as a property of each individual layer.
-          model.set("selected_bounds", bboxSelectBounds);
-          model.save_changes();
-          // childModels.forEach((layer) => {
-          //   layer.set("selected_bounds", bboxSelectBounds);
-          //   layer.save_changes();
-          // });
-        }
-      } catch (error) {
-        console.error("Error loading child models or setting bounds:", error);
-      }
-    };
-
-    loadAndUpdateLayers();
-  }, [childLayerIds, bboxSelectBounds, isDrawingBBoxSelection]);
-
-  const layers = Object.values(layersState).flatMap((layerModel) =>
-    layerModel.render(),
+  const views = useViewsState(
+    viewIds,
+    model.widget_manager as IWidgetManager,
+    updateStateCallback,
   );
 
   const onMapClickHandler = useCallback((info: PickingInfo) => {
@@ -228,11 +184,7 @@ function App() {
     mapStyle: basemapState?.style || DEFAULT_MAP_STYLE,
     customAttribution,
     deckRef,
-    initialViewState: ["longitude", "latitude", "zoom"].every((key) =>
-      Object.keys(initialViewState).includes(key),
-    )
-      ? initialViewState
-      : DEFAULT_INITIAL_VIEW_STATE,
+    initialViewState,
     layers: bboxSelectPolygonLayer
       ? layers.concat(bboxSelectPolygonLayer)
       : layers,
@@ -241,26 +193,18 @@ function App() {
     pickingRadius: pickingRadius,
     onClick: onMapClickHandler,
     onHover: onMapHoverHandler,
-    // @ts-expect-error useDevicePixels should allow number
-    // https://github.com/visgl/deck.gl/pull/9826
-    useDevicePixels: isDefined(useDevicePixels) ? useDevicePixels : true,
+    ...(isDefined(useDevicePixels) && { useDevicePixels }),
+    // This is a hack to force a react re-render when the canvas is resized
+    // https://github.com/developmentseed/lonboard/issues/994
+    // until the upstream is resolved:
+    // https://github.com/visgl/deck.gl/issues/9666
+    onResize: debounce(updateStateCallback, 100),
     onViewStateChange: (event) => {
-      const { viewState } = event;
-
-      // This condition is necessary to confirm that the viewState is
-      // of type MapViewState.
-      if ("latitude" in viewState) {
-        const { longitude, latitude, zoom, pitch, bearing } = viewState;
-        setViewState({
-          longitude,
-          latitude,
-          zoom,
-          pitch,
-          bearing,
-        });
-      }
+      setViewState(sanitizeViewState(views, event.viewState));
     },
     parameters: parameters || {},
+    views,
+    controls,
   };
 
   const overlayRenderProps: OverlayRendererProps = {
@@ -283,7 +227,16 @@ function App() {
       <div
         id={`map-${mapId}`}
         className="flex"
-        style={{ width: "100%", height: "100%" }}
+        style={{
+          width: "100%",
+          height: "100%",
+          // Use a dark background when in globe view so the globe is easier to
+          // delineate
+          // In the future we may want to allow the user to customize this
+          ...(isGlobeView(views) && {
+            background: "linear-gradient(0, #000, #223)",
+          }),
+        }}
       >
         <Toolbar />
 

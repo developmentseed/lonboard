@@ -18,7 +18,7 @@ from lonboard._geoarrow.ops.centroid import WeightedCentroid
 if TYPE_CHECKING:
     from collections.abc import Sequence
 
-    from lonboard._layer import BaseLayer
+    from lonboard.layer import BaseLayer
 
 
 def get_bbox_center(layers: Sequence[BaseLayer]) -> tuple[Bbox, WeightedCentroid]:
@@ -74,14 +74,10 @@ def compute_view(layers: Sequence[BaseLayer]) -> dict[str, Any]:
             "longitude": center.x or 0,
             "latitude": center.y or 0,
             "zoom": 0,
-            "pitch": 0,
-            "bearing": 0,
         }
     else:
         return {
             "longitude": center.x,
             "latitude": center.y,
             "zoom": zoom,
-            "pitch": 0,
-            "bearing": 0,
         }
