@@ -8,6 +8,7 @@
 - [Overture Maps buildings ![](../assets/overture.jpg)](../examples/overture-maps) using [`PolygonLayer`](../api/layers/polygon-layer)
 - [Air Traffic Control animation ![](../assets/air-traffic-control.gif)](../examples/air-traffic-control) using [`TripsLayer`](../api/layers/trips-layer)
 - [Global boundaries ![](../assets/boundaries.png)](../examples/global-boundaries) using [`PolygonLayer`](../api/layers/polygon-layer)
+- [H3 Population Data ![](../assets/kontur-h3.jpg)](../examples/kontur_pop) using [`H3HexagonLayer`](../api/layers/h3-hexagon-layer)
 - [U.S. County-to-County Migration ![](../assets/arc-layer-migration-example.gif)](../examples/migration) using [`ArcLayer`](../api/layers/arc-layer) and [`BrushingExtension`](../api/layer-extensions/brushing-extension)
 - [Scatterplot with GPU data filtering ![](../assets/data-filter-extension.gif)](../examples/data-filter-extension) using [`ScatterplotLayer`](../api/layers/scatterplot-layer) and [`DataFilterExtension`](../api/layer-extensions/data-filter-extension)
 -  [Motor Vehicle Crashes in NYC ![](../assets/motor-vehicle-crashes-nyc.jpg)](../examples/map_challenge/1-points) using [`ScatterplotLayer`](../api/layers/scatterplot-layer)
