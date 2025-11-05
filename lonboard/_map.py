@@ -19,9 +19,9 @@ from lonboard.controls import (
     NavigationControl,
     ScaleControl,
 )
+from lonboard.experimental.view import BaseView, GlobeView, MapView
 from lonboard.layer import BaseLayer
 from lonboard.traits import MapHeightTrait, VariableLengthTuple, ViewStateTrait
-from lonboard.view import BaseView, GlobeView, MapView
 from lonboard.view_state import BaseViewState, GlobeViewState, MapViewState
 
 if TYPE_CHECKING:
@@ -72,17 +72,6 @@ class Map(BaseAnyWidget):
     )
 
     m = Map([point_layer, polygon_layer])
-    ```
-
-    **Example:** Creating a Map with GlobeView:
-
-    ```py
-    import geopandas as gpd
-    from lonboard import Map
-    from lonboard.view import GlobeView
-
-    # Continuing from above example
-    m = Map([point_layer, polygon_layer], view=GlobeView())
     ```
     """
 
@@ -229,7 +218,10 @@ class Map(BaseAnyWidget):
         sync=True,
         **ipywidgets.widget_serialization,
     )
-    """One or more map controls to display on this map."""
+    """One or more map controls to display on this map.
+
+    See [`lonboard.controls`][] for available controls.
+    """
 
     view: t.Instance[BaseView | None] = t.Instance(BaseView, allow_none=True).tag(
         sync=True,
@@ -239,7 +231,7 @@ class Map(BaseAnyWidget):
 
     Views represent the "camera(s)" (essentially viewport dimensions and projection matrices) that you look at your data with. deck.gl offers multiple view types for both geospatial and non-geospatial use cases. Read the [Views and Projections](https://deck.gl/docs/developer-guide/views) guide for the concept and examples.
 
-    See [`lonboard.view`][lonboard.view] for available view types.
+    See [`lonboard.experimental.view`][] for available view types.
     """
 
     @t.validate("view")
