@@ -73,17 +73,6 @@ class Map(BaseAnyWidget):
 
     m = Map([point_layer, polygon_layer])
     ```
-
-    **Example:** Creating a Map with GlobeView:
-
-    ```py
-    import geopandas as gpd
-    from lonboard import Map
-    from lonboard.view import GlobeView
-
-    # Continuing from above example
-    m = Map([point_layer, polygon_layer], view=GlobeView())
-    ```
     """
 
     def __init__(
