@@ -57,6 +57,8 @@ nav:
       - 30 Day Map Challenge:
           - "Day 1: Points": examples/map_challenge/1-points.ipynb
           - "Day 6: Asia": examples/map_challenge/6-asia.ipynb
+  - Blog:
+      - blog/index.md
   - API Reference:
       - api/viz.md
       - api/map.md
@@ -158,6 +160,7 @@ theme:
     - search.share
 
 plugins:
+  - blog
   - search
   - social
   - mike:
@@ -241,6 +244,9 @@ markdown_extensions:
   - pymdownx.magiclink:
       hide_protocol: true
       repo_url_shortener: true
+      repo_url_shorthand: true
+      repo: lonboard
+      user: developmentseed
   - pymdownx.smartsymbols
   - pymdownx.superfences
   - pymdownx.tasklist:
