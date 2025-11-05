@@ -10,7 +10,7 @@ else:
 
 if TYPE_CHECKING:
     from lonboard.basemap import MaplibreBasemap
-    from lonboard.view import BaseView
+    from lonboard.experimental.view import BaseView
     from lonboard.view_state import BaseViewState
 
 
