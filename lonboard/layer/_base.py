@@ -265,7 +265,7 @@ class BaseLayer(BaseWidget):
     So if you pass `before_id="background"`, you won't see your deck.gl layer because it
     will be rendered below **all** layers in the Maplibre basemap.
 
-    A common choice for Carto-based styles is to use `before_id="waterway-label"` so
+    A common choice for Carto-based styles is to use `before_id="watername_ocean"` so
     that your deck.gl layer is rendered above the core basemap elements but below all
     text labels.
 
@@ -326,6 +326,12 @@ class BaseArrowLayer(BaseLayer):
     # The following traitlets **are** serialized to JS
 
     table: ArrowTableTrait
+    """An Arrow table with data for this layer.
+
+    Some downstream layers will require this table to have a geospatial column. Other
+    layers, such as the [`H3HexagonLayer`][lonboard.layer.H3HexagonLayer] will accept
+    non-geospatial data in conjunction with other accessors.
+    """
 
     def _repr_keys(self) -> Generator[str, Any, None]:
         # Avoid rendering `table` in the string repr

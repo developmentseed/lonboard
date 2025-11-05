@@ -44,10 +44,13 @@ nav:
       - examples/overture-geoparquet.ipynb
       - examples/air-traffic-control.ipynb
       - examples/global-boundaries.ipynb
+      - examples/kontur_pop.ipynb
       - examples/migration.ipynb
       - examples/data-filter-extension.ipynb
       - examples/column-layer.ipynb
+      - examples/interleaved-labels.ipynb
       - examples/linked-maps.ipynb
+      - examples/clicked-point.ipynb
       - NYC Taxi Trips: examples/marimo/nyc_taxi_trips.md
       - Integrations:
           - examples/duckdb.ipynb
@@ -57,6 +60,8 @@ nav:
       - 30 Day Map Challenge:
           - "Day 1: Points": examples/map_challenge/1-points.ipynb
           - "Day 6: Asia": examples/map_challenge/6-asia.ipynb
+  - Blog:
+      - blog/index.md
   - API Reference:
       - api/viz.md
       - api/map.md
@@ -146,8 +151,6 @@ theme:
     text: Roboto
     code: Roboto Mono
 
-  # logo: img/geopolars_logo.svg
-
   features:
     - content.code.annotate
     - content.code.copy
@@ -158,6 +161,9 @@ theme:
     - search.share
 
 plugins:
+  - autorefs:
+      resolve_closest: true
+  - blog
   - search
   - social
   - mike:
@@ -241,6 +247,9 @@ markdown_extensions:
   - pymdownx.magiclink:
       hide_protocol: true
       repo_url_shortener: true
+      repo_url_shorthand: true
+      repo: lonboard
+      user: developmentseed
   - pymdownx.smartsymbols
   - pymdownx.superfences
   - pymdownx.tasklist:
