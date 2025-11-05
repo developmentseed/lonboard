@@ -22,7 +22,7 @@ class MultiRangeSlider(VBox):
     If you have only a single filter, use an ipywidgets
     [FloatRangeSlider][ipywidgets.widgets.widget_float.FloatRangeSlider] directly.
 
-    # Example
+    **Example:**
 
     ```py
     from ipywidgets import FloatRangeSlider
@@ -106,58 +106,88 @@ class BaseControl(BaseWidget):
         default_value=None,
     ).tag(sync=True)
     """Position of the control in the map.
+
+    One of `"top-left"`, `"top-right"`, `"bottom-left"`, or `"bottom-right"`.
     """
 
 
 class FullscreenControl(BaseControl):
-    """A deck.gl FullscreenControl."""
+    """A deck.gl FullscreenControl.
+
+    Passing this to [`Map.controls`][lonboard.Map.controls] will add a button to the map
+    that allows for toggling fullscreen mode.
+    """
 
     _control_type = t.Unicode("fullscreen").tag(sync=True)
 
 
 class NavigationControl(BaseControl):
-    """A deck.gl NavigationControl."""
+    """A deck.gl NavigationControl.
+
+    Passing this to [`Map.controls`][lonboard.Map.controls] will add zoom and compass
+    buttons to the map.
+    """
 
     _control_type = t.Unicode("navigation").tag(sync=True)
 
     show_compass = t.Bool(allow_none=True, default_value=None).tag(sync=True)
     """Whether to show the compass button.
 
-    Default `true`.
+    Default `True`.
     """
 
     show_zoom = t.Bool(allow_none=True, default_value=None).tag(sync=True)
     """Whether to show the zoom buttons.
 
-    Default `true`.
+    Default `True`.
     """
 
     visualize_pitch = t.Bool(allow_none=True, default_value=None).tag(sync=True)
     """Whether to enable pitch visualization.
 
-    Default `true`.
+    This only has effect for Maplibre-driven maps (i.e. where
+    [`MaplibreBasemap.mode`][lonboard.basemap.MaplibreBasemap.mode] is "overlaid" or
+    "interleaved").
+
+    Default `True`.
     """
 
     visualize_roll = t.Bool(allow_none=True, default_value=None).tag(sync=True)
     """Whether to enable roll visualization.
 
-    Default `false`.
+    This only has effect for Maplibre-driven maps (i.e. where
+    [`MaplibreBasemap.mode`][lonboard.basemap.MaplibreBasemap.mode] is "overlaid" or
+    "interleaved").
+
+    Default `False`.
     """
 
 
 class ScaleControl(BaseControl):
-    """A deck.gl ScaleControl."""
+    """A deck.gl ScaleControl.
+
+    Passing this to [`Map.controls`][lonboard.Map.controls] will add a scale bar to the
+    map.
+    """
 
     _control_type = t.Unicode("scale").tag(sync=True)
 
     max_width = t.Int(allow_none=True, default_value=None).tag(sync=True)
     """The maximum width of the scale control in pixels.
 
+    This only has effect for Maplibre-driven maps (i.e. where
+    [`MaplibreBasemap.mode`][lonboard.basemap.MaplibreBasemap.mode] is "overlaid" or
+    "interleaved").
+
     Default `100`.
     """
 
     unit = t.Unicode(allow_none=True, default_value=None).tag(sync=True)
     """The unit of the scale.
+
+    This only has effect for Maplibre-driven maps (i.e. where
+    [`MaplibreBasemap.mode`][lonboard.basemap.MaplibreBasemap.mode] is "overlaid" or
+    "interleaved").
 
     One of `'metric'`, `'imperial'`, or `'nautical'`. Default is `'metric'`.
     """

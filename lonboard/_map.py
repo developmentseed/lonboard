@@ -95,7 +95,7 @@ class Map(BaseAnyWidget):
 
                 Various styles are provided in [`lonboard.basemap`](https://developmentseed.org/lonboard/latest/api/basemap/).
 
-            kwargs: Passed on to class variables.
+            kwargs: Passed on to class variables. For example, you can pass `height=600` to pass that value on to [`height`][lonboard.Map.height].
 
         Returns:
             A Map object.
@@ -194,14 +194,17 @@ class Map(BaseAnyWidget):
     height = HeightTrait().tag(sync=True)
     """Height of the map in pixels, or valid CSS height property.
 
-    This API is not yet stabilized and may change in the future.
+    For example, it can be `600` (pixels) or `"75vh"` (75% of the viewport height).
+
+    - Type: `int` or `str`
+    - Default: full height of the containing cell.
     """
 
     layers = VariableLengthTuple(t.Instance(BaseLayer)).tag(
         sync=True,
         **ipywidgets.widget_serialization,
     )
-    """One or more `Layer` objects to display on this map.
+    """One or more [`Layer`][lonboard.BaseLayer] objects to display on this map.
     """
 
     controls = VariableLengthTuple(
