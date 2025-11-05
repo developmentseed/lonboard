@@ -11,7 +11,7 @@ links:
 
 # Releasing lonboard 0.13!
 
-Lonboard is
+Lonboard is a Python library for fast, interactive geospatial vector data visualization in Jupyter.
 
 This post gives an overview of what's new in Lonboard version 0.13.
 
@@ -51,7 +51,7 @@ It's now possible to render Lonboard data layers interleaved in the Maplibre lay
 
 To do this:
 
-- Set [`before_id`][lonboard.layer.BaseLayer.before_id] on your layer as the value of the Maplibre layer `id` you want the Lonboard layer to be under. See [`before_id`][lonboard.layer.BaseLayer.before_id] for more information.
+- Set [`before_id`](../../../../../api/layers/base-layer#lonboard.BaseLayer.before_id) on your layer as the value of the Maplibre layer `id` you want the Lonboard layer to be under. See [`before_id`](../../../../../api/layers/base-layer#lonboard.BaseLayer.before_id) for more information.
 - Create a new basemap [set to `interleaved` mode][lonboard.basemap.MaplibreBasemap.mode]:
 - Pass the basemap to the `Map` constructor.
 

@@ -161,6 +161,8 @@ theme:
     - search.share
 
 plugins:
+  - autorefs:
+      resolve_closest: true
   - blog
   - search
   - social
