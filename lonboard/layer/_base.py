@@ -254,11 +254,25 @@ class BaseLayer(BaseWidget):
     """
 
     before_id = t.Unicode(None, allow_none=True).tag(sync=True)
-    """The ID of a layer in the Maplibre basemap layer stack. This deck.gl layer will be
-    rendered just before the layer with the given ID.
+    """The identifier of a layer in the Maplibre basemap layer stack.
 
-    This only has an effect when the map's `basemap` is a `MaplibreBasemap`, and the map
-    is rendering in `"interleaved"` mode.
+    This deck.gl layer will be rendered just before the layer with the given identifier. You can find such an identifier by inspecting the basemap style JSON.
+
+    For example, in the [Carto Positron style][lonboard.basemap.CartoStyle.Positron], if
+    you look at the [raw JSON
+    data](https://basemaps.cartocdn.com/gl/positron-gl-style/style.json), each layer has
+    an `"id"` property. The first layer in the basemap stack has `"id": "background"`.
+    So if you pass `before_id="background"`, you won't see your deck.gl layer because it
+    will be rendered below **all** layers in the Maplibre basemap.
+
+    A common choice for Carto-based styles is to use `before_id="waterway-label"` so
+    that your deck.gl layer is rendered above the core basemap elements but below all
+    text labels.
+
+    !!! info
+        This only has an effect when the map's [`basemap`][lonboard.Map.basemap] is a
+        [`MaplibreBasemap`][lonboard.basemap.MaplibreBasemap], and the map is rendering
+        in [`"interleaved"` mode][lonboard.basemap.MaplibreBasemap.mode].
     """
 
 

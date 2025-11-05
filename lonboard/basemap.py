@@ -152,11 +152,15 @@ class MaplibreBasemap(BaseWidget):
 
     - **`"interleaved"`**:
 
-        The interleaved mode renders deck.gl layers into the same context created by MapLibre.
+        The interleaved mode renders deck.gl layers into the same context created by
+        MapLibre.
 
         If you need to mix deck.gl layers with MapLibre layers, e.g. having deck.gl
         surfaces below text labels, or objects occluding each other correctly in 3D,
         then you have to use this option.
+
+        See [BaseLayer.before_id][lonboard.BaseLayer.before_id] for more information on
+        how to interleave deck.gl layers into the Maplibre layer stack.
 
     - **`"overlaid"`**:
 
