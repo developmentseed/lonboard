@@ -1,5 +1,5 @@
-# lonboard.view
+# lonboard.experimental.view
 
-::: lonboard.view
+::: lonboard.experimental.view
     options:
         members_order: source
