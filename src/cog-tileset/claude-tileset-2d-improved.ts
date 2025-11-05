@@ -5,7 +5,7 @@
  * following the pattern from deck.gl's OSM tile indexing.
  */
 
-import { Viewport, _GlobeViewport } from "@deck.gl/core";
+import { Viewport } from "@deck.gl/core";
 import { _Tileset2D as Tileset2D } from "@deck.gl/geo-layers";
 import type { Tileset2DProps } from "@deck.gl/geo-layers/dist/tileset-2d";
 import type { ZRange } from "@deck.gl/geo-layers/dist/tileset-2d/types";
