@@ -19,11 +19,6 @@ This post gives an overview of what's new in Lonboard version 0.13.
 
 Refer to the [changelog] for all updates.
 
-It should have globe view, new layer types (h3, s2, geohash, a5, fixed heatmap layer), interleaved rendering with maplibre (so you can render data underneath basemap labels), map controls like scale/fullscreen/navigation, performance improvements,
-
-
-## Globe view
-
 ## New layer types: H3, S2, Geohash, A5
 
 Lonboard supports new layer types for [H3][h3], [S2][s2], [Geohash][geohash], and [A5][a5] data.
