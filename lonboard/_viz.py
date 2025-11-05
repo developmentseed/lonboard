@@ -94,17 +94,18 @@ def viz(  # noqa: PLR0913
     """Plot your data easily.
 
     The goal of this function is to make it simple to get _something_ showing on a map.
-    For more control over rendering, construct `Map` and `Layer` objects directly.
+    For more control over rendering, construct [`Map`][lonboard.Map] and
+    [`Layer`][lonboard.BaseLayer] objects directly.
 
     This function accepts a variety of geospatial inputs:
 
-    - GeoPandas `GeoDataFrame`.
-    - GeoPandas `GeoSeries`.
+    - GeoPandas [`GeoDataFrame`][geopandas.GeoDataFrame].
+    - GeoPandas [`GeoSeries`][geopandas.GeoSeries].
     - numpy array of Shapely objects.
     - Single Shapely object.
     - A DuckDB query with a spatial column from DuckDB Spatial.
 
-        !!! warning
+        !!! info
 
             The DuckDB query must be run with
             [`duckdb.sql()`](https://duckdb.org/docs/api/python/reference/#duckdb.sql)
@@ -134,7 +135,7 @@ def viz(  # noqa: PLR0913
             viz(con.table("spatial_table"))
             ```
 
-        !!! warning
+        !!! info
 
             DuckDB Spatial does not currently expose coordinate reference system
             information, so the user must ensure that data has been reprojected to
@@ -143,16 +144,16 @@ def viz(  # noqa: PLR0913
     - Any Python class with a `__geo_interface__` property conforming to the
         [Geo Interface protocol](https://gist.github.com/sgillies/2217756).
     - `dict` holding GeoJSON-like data.
-    - pyarrow `Table` with a geometry column marked with a
+    - pyarrow [`Table`][pyarrow.Table] with a geometry column marked with a
         [GeoArrow](https://geoarrow.org/) extension type.
-    - pyarrow `Array` or `ChunkedArray` marked with a [GeoArrow extension type defined by geoarrow-pyarrow](https://geoarrow.org/geoarrow-python/main/pyarrow.html#geoarrow.pyarrow.GeometryExtensionType).
-    - Arrow-compatible Array, ChunkedArray, Table, or RecordBatch objects that have associated GeoArrow metadata. An object is "Arrow-compatible" if it implements the [Arrow PyCapsule Interface](https://arrow.apache.org/docs/format/CDataInterface/PyCapsuleInterface.html) and has either an `__arrow_c_array__` or `__arrow_c_stream__` method. The provided Arrow data must be or have a geometry column marked with a GeoArrow extension type.
+    - pyarrow [`Array`][pyarrow.Array] or [`ChunkedArray`][pyarrow.ChunkedArray] marked with a [GeoArrow extension type defined by geoarrow-pyarrow][geoarrow.pyarrow.GeometryExtensionType].
+    - Arrow-compatible Array, ChunkedArray, Table, or RecordBatch objects that have associated GeoArrow metadata. An object is "Arrow-compatible" if it has either an `__arrow_c_array__` or `__arrow_c_stream__` method, that is, it implements the [Arrow PyCapsule Interface](https://arrow.apache.org/docs/format/CDataInterface/PyCapsuleInterface.html). The provided Arrow data must be or have a geometry column marked with a GeoArrow extension type.
 
-        Some examples of these sources include pyogrio's [`open_arrow`][pyogrio.open_arrow], DuckDB Spatial, [GeoArrow-Rust's Python bindings](https://geoarrow.org/geoarrow-rs/python/latest/), [GeoDataFusion database connections](https://github.com/datafusion-contrib/datafusion-geo), and, soon, [GeoPolars DataFrames](https://github.com/geopolars/geopolars).
+        Some examples of these sources include pyogrio's [`open_arrow`][pyogrio.open_arrow], DuckDB Spatial, [GeoArrow-Rust's Python bindings](https://geoarrow.org/geoarrow-rs/python/latest/), [Sedona DB sessions](https://github.com/apache/sedona-db), [GeoDataFusion database connections](https://github.com/datafusion-contrib/datafusion-geo), and, soon, [GeoPolars DataFrames](https://github.com/geopolars/geopolars).
 
     Alternatively, you can pass a `list` or `tuple` of any of the above inputs.
 
-    If you want to easily add more data, to an existing map, you can pass the output of
+    If you want to easily add more data to an existing map, you can pass the output of
     `viz` into [`Map.add_layer`][lonboard.Map.add_layer].
 
     Args:
