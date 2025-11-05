@@ -89,6 +89,24 @@ Note that the `jupyter-mkdocs` plugin is only turned on when the `CI` env variab
 CI=true uv run --group docs mkdocs serve
 ```
 
+## Developing Jupyter Notebook examples
+
+We use `juv` to store dependencies for each notebook as metadata of the notebook itself.
+
+To run an example notebook with a local version of lonboard, first ensure that you have built the JavaScript bundle:
+
+```bash
+npm run build:watch
+```
+
+then use:
+
+```bash
+ANYWIDGET_HMR=1 uvx juv run --with="../" examples/air-traffic-control.ipynb
+```
+
+Note that the path in `--with` is relative to the notebook itself.
+
 ## Profiling
 
 ### Python
