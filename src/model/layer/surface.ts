@@ -1,4 +1,5 @@
 import { TileLayer, TileLayerProps } from "@deck.gl/geo-layers";
+import type { Tileset2DProps } from "@deck.gl/geo-layers/dist/tileset-2d";
 import { SimpleMeshLayer, SimpleMeshLayerProps } from "@deck.gl/mesh-layers";
 import type { WidgetModel } from "@jupyter-widgets/base";
 import * as arrow from "apache-arrow";
@@ -159,9 +160,24 @@ export class COGTileModel extends BaseLayerModel {
   }
 
   layerProps(): TileLayerProps {
+    // Create a factory class that wraps COGTileset2D with the metadata
+    if (!this.cogMetadata) {
+      throw new Error("COG metadata not loaded. Call asyncInit first.");
+    }
+
+    // Capture cogMetadata in closure with proper type
+    const cogMetadata: COGMetadata = this.cogMetadata;
+
+    class COGTilesetWrapper extends COGTileset2D {
+      constructor(opts: Tileset2DProps) {
+        super(cogMetadata, opts);
+      }
+    }
+
     return {
       id: this.model.model_id,
       data: this.data,
+      TilesetClass: COGTilesetWrapper,
       ...(isDefined(this.tileSize) && { tileSize: this.tileSize }),
       ...(isDefined(this.zoomOffset) && { zoomOffset: this.zoomOffset }),
       ...(isDefined(this.maxZoom) && { maxZoom: this.maxZoom }),
