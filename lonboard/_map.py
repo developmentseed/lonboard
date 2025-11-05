@@ -49,7 +49,7 @@ bundler_output_dir = Path(__file__).parent / "static"
 
 
 class Map(BaseAnyWidget):
-    """The top-level class used to display a map in a Jupyter Widget.
+    """An interactive Map.
 
     **Example:**
 
