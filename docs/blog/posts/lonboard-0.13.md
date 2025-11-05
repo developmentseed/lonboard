@@ -33,10 +33,10 @@ Lonboard supports new layer types for [H3][h3], [S2][s2], [Geohash][geohash], an
 [s2]: http://s2geometry.io/
 [geohash]: https://en.wikipedia.org/wiki/Geohash
 
-- [`H3HexagonLayer`][lonboard.H3HexagonLayer]
-- [`S2Layer`][lonboard.S2Layer]
-- [`A5Layer`][lonboard.A5Layer]
-- [`GeohashLayer`][lonboard.GeohashLayer]
+- [`H3HexagonLayer`][lonboard.H3HexagonLayer]: render hexagons from the [H3][h3] geospatial indexing system
+- [`S2Layer`][lonboard.S2Layer]: render polygons based on the [S2][s2] geospatial indexing system.
+- [`A5Layer`][lonboard.A5Layer]: render polygons based on the [A5][a5] geospatial indexing system.
+- [`GeohashLayer`][lonboard.GeohashLayer]: render polygons based on the [Geohash][geohash] geospatial indexing system.
 
 ![](../../assets/kontur-h3.jpg)
 

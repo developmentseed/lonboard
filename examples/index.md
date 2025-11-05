@@ -14,7 +14,7 @@
 -  [Motor Vehicle Crashes in NYC ![](../assets/motor-vehicle-crashes-nyc.jpg)](../examples/map_challenge/1-points) using [`ScatterplotLayer`][lonboard.ScatterplotLayer]
 -  [Rivers in Asia ![](../assets/rivers-asia.jpg)](../examples/map_challenge/6-asia/) using [`PathLayer`][lonboard.PathLayer]
 -  [Inflation Reduction Act Projects ![](../assets/column-layer.jpg)](../examples/column-layer/) using [`ColumnLayer`][lonboard.ColumnLayer]
--  [Interleaved Maplibre Labels ![](../assets/interleaved-labels.png)](../examples/interleaved-labels/) using [`BitmapLayer`][lonboard.BitmapLayer] and [`MaplibreBasemap`][lonboard.basemap.MaplibreBasemap]
+-  [Interleaved Maplibre Labels ![](../assets/interleaved-labels.jpg)](../examples/interleaved-labels/) using [`BitmapLayer`][lonboard.BitmapLayer] and [`MaplibreBasemap`][lonboard.basemap.MaplibreBasemap]
 -  [Linked Maps ![](../assets/linked-maps.gif)](../examples/linked-maps/)
 -  [Clicked Point ![](../assets/clicked-point.png)](../examples/clicked-point/)
 </div>
