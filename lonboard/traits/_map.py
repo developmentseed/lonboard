@@ -42,7 +42,7 @@ class BasemapUrl(traitlets.Unicode):
         return value
 
 
-class HeightTrait(FixedErrorTraitType):
+class MapHeightTrait(FixedErrorTraitType):
     """Trait to validate map height input."""
 
     allow_none = True

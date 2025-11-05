@@ -10,7 +10,7 @@ from ._color import ColorAccessor
 from ._extensions import DashArrayAccessor, FilterValueAccessor
 from ._float import FloatAccessor
 from ._h3 import H3Accessor
-from ._map import BasemapUrl, HeightTrait, ViewStateTrait
+from ._map import BasemapUrl, MapHeightTrait, ViewStateTrait
 from ._normal import NormalAccessor
 from ._point import PointAccessor
 from ._table import ArrowTableTrait
@@ -27,7 +27,7 @@ __all__ = [
     "FixedErrorTraitType",
     "FloatAccessor",
     "H3Accessor",
-    "HeightTrait",
+    "MapHeightTrait",
     "NormalAccessor",
     "PointAccessor",
     "TextAccessor",

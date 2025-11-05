@@ -20,7 +20,7 @@ from lonboard.controls import (
     ScaleControl,
 )
 from lonboard.layer import BaseLayer
-from lonboard.traits import HeightTrait, VariableLengthTuple, ViewStateTrait
+from lonboard.traits import MapHeightTrait, VariableLengthTuple, ViewStateTrait
 from lonboard.view import BaseView, GlobeView, MapView
 from lonboard.view_state import BaseViewState, GlobeViewState, MapViewState
 
@@ -191,7 +191,7 @@ class Map(BaseAnyWidget):
     Indicates if a click handler has been registered.
     """
 
-    height = HeightTrait().tag(sync=True)
+    height = MapHeightTrait().tag(sync=True)
     """Height of the map in pixels, or valid CSS height property.
 
     For example, it can be `600` (pixels) or `"75vh"` (75% of the viewport height).

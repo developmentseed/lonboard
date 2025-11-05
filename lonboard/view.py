@@ -12,10 +12,11 @@ from lonboard.view_state import (
 
 
 class BaseView(BaseWidget):
-    """A deck.gl View.
+    """A deck.gl [View][deck-view].
 
-    The `View` class and its subclasses are used to specify where and how your deck.gl layers should be rendered. Applications typically instantiate at least one `View` subclass.
+    [deck-view]: https://deck.gl/docs/api-reference/core/view
 
+    The `BaseView` class and its subclasses are used to specify where and how your deck.gl layers should be rendered. Applications typically instantiate at least one `BaseView` subclass.
     """
 
     _view_state_type: type[BaseViewState] = BaseViewState
@@ -105,7 +106,9 @@ class FirstPersonView(BaseView):
 class GlobeView(BaseView):
     """A deck.gl GlobeView.
 
-    The `GlobeView` class is a subclass of `View`. This view projects the earth into a 3D globe.
+    [deck-globe-view]: https://deck.gl/docs/api-reference/core/globe-view
+
+    The `GlobeView` projects the earth into a 3D globe.
     """
 
     _view_type = t.Unicode("globe-view").tag(sync=True)
@@ -132,9 +135,13 @@ class GlobeView(BaseView):
 
 
 class MapView(BaseView):
-    """A deck.gl MapView.
+    """A deck.gl [MapView][deck-map-view].
 
-    The `MapView` class is a subclass of `View`. This viewport creates a camera that looks at a geospatial location on a map from a certain direction. The behavior of `MapView` is generally modeled after that of Mapbox GL JS.
+    [deck-map-view]: https://deck.gl/docs/api-reference/core/map-view
+
+    The `MapView` creates a camera that looks at a geospatial location on a map from a certain direction. The behavior of `MapView` is generally modeled after that of Mapbox GL JS.
+
+    Most geospatial applications will use this view with the default parameters.
     """
 
     _view_type = t.Unicode("map-view").tag(sync=True)
