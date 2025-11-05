@@ -1,6 +1,6 @@
 [project]
 name = "lonboard"
-version = "0.13.0-beta.1"
+version = "0.13.0"
 description = "Fast, interactive geospatial data visualization in Jupyter."
 authors = [{ name = "Kyle Barron", email = "kyle@developmentseed.org" }]
 license = "MIT"
