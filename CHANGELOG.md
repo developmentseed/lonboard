@@ -1,5 +1,63 @@
 # Changelog
 
+## [0.13.0] - 2025-11-05
+
+### New Features :sparkles:
+
+- feat: Suppress JupyterLab context menu on Map right click by @kylebarron in https://github.com/developmentseed/lonboard/pull/889
+- feat: Support two render modes: Standard/deck.gl-first and MapboxOverlay by @kylebarron in https://github.com/developmentseed/lonboard/pull/921
+- feat: Create richer `Basemap` class and deprecate `basemap_style` arg by @kylebarron in https://github.com/developmentseed/lonboard/pull/935
+- feat: Support globe view by @kylebarron in https://github.com/developmentseed/lonboard/pull/908
+- feat: Move `TripsLayer` and `ArcLayer` out of experimental by @kylebarron in https://github.com/developmentseed/lonboard/pull/983
+- feat: Support for map controls by @kylebarron in https://github.com/developmentseed/lonboard/pull/924
+- feat: Provide default controls for Map by @kylebarron in https://github.com/developmentseed/lonboard/pull/992
+- feat: Switch basemap default to overlaid (maplibre-controlled) by @kylebarron in https://github.com/developmentseed/lonboard/pull/993
+- feat: H3 layer by @kylebarron in https://github.com/developmentseed/lonboard/pull/917
+- feat: Add A5Layer by @kylebarron in https://github.com/developmentseed/lonboard/pull/1001
+- feat: Add geohash and s2 layers by @kylebarron in https://github.com/developmentseed/lonboard/pull/1007
+- feat: Implement view state validation for non map-view states by @kylebarron in https://github.com/developmentseed/lonboard/pull/1008
+- feat: Validate that GlobeView is only used with interleaved basemap mode by @kylebarron in https://github.com/developmentseed/lonboard/pull/1012
+- feat: Add view parameter to viz by @kylebarron in https://github.com/developmentseed/lonboard/pull/1013
+
+### Performance improvements :zap:
+
+- perf: use ThreadPoolExecutor for Parquet serialization and bounds computation by @kylebarron in https://github.com/developmentseed/lonboard/pull/902
+- perf: Define top-level earcut worker pool by @kylebarron in https://github.com/developmentseed/lonboard/pull/954
+- perf: Call np.mean once across axis instead of once per column by @kylebarron in https://github.com/developmentseed/lonboard/pull/995
+- perf: Remove typedArrayManager settings override by @kylebarron in https://github.com/developmentseed/lonboard/pull/1003
+- perf: Avoid generating str repr of `table` during rendering by @kylebarron in https://github.com/developmentseed/lonboard/pull/1015
+
+### Bug fixes :bug:
+
+- fix: Fix HeatmapLayer by bumping deck.gl to 9.2 by @kylebarron in https://github.com/developmentseed/lonboard/pull/910
+- fix: Add `pyarrow` to `geopandas` extra in `pyproject.toml` by @kylebarron in https://github.com/developmentseed/lonboard/pull/970
+- fix: Fix "fuzziness" of path layers by removing `useDevicePixels` default by @kylebarron in https://github.com/developmentseed/lonboard/pull/969
+- fix: Ensure that the default value of `Map.basemap` is `MaplibreBasemap` if no value of `basemap` was passed. by @kylebarron in https://github.com/developmentseed/lonboard/pull/963
+- fix: Restore DataFilterExtension functionality with vectorized accessor input by @kylebarron in https://github.com/developmentseed/lonboard/pull/977
+- fix: Fix ArcLayer with numpy coords input by @kylebarron in https://github.com/developmentseed/lonboard/pull/989
+- fix: Ensure view state is updated in Python with a maplibre map renderer by @kylebarron in https://github.com/developmentseed/lonboard/pull/1017
+- fix: Hack a react re-render on canvas resize by @kylebarron in https://github.com/developmentseed/lonboard/pull/1022
+
+### Documentation :book:
+
+- docs: Fix list rendering in `Map.add_layer` API Docs by @kylebarron in https://github.com/developmentseed/lonboard/pull/952
+- docs: Add developer docs about code profiling by @kylebarron in https://github.com/developmentseed/lonboard/pull/1016
+
+### Breaking changes :hammer:
+
+- chore!: Remove deprecated `con` parameter to `viz` by @kylebarron in https://github.com/developmentseed/lonboard/pull/953
+
+### Other changes
+
+- feat: automated UI testing with Playwright by @vgeorge in https://github.com/developmentseed/lonboard/pull/906
+- chore: Add eslint import ordering to CI by @kylebarron in https://github.com/developmentseed/lonboard/pull/931
+- test: add bbox selection overlay mode e2e test by @vgeorge in https://github.com/developmentseed/lonboard/pull/933
+- refactor: Refactor HTML map export by @kylebarron in https://github.com/developmentseed/lonboard/pull/934
+- refactor: Refactor model initialization logic by @kylebarron in https://github.com/developmentseed/lonboard/pull/923
+- test: add pytest-ipywidgets bbox testing, remove playwright by @vgeorge in https://github.com/developmentseed/lonboard/pull/999
+
+**Full Changelog**: https://github.com/developmentseed/lonboard/compare/v0.12.1...v0.13.0
+
 ## [0.12.1] - 2025-09-18
 
 ### New Features :sparkles:

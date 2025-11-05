@@ -46,7 +46,7 @@ class TextAccessor(FixedErrorTraitType):
         super().__init__(*args, **kwargs)
         self.tag(sync=True, **ACCESSOR_SERIALIZATION)
 
-    def pandas_to_arrow(self, obj: BaseArrowLayer, value: pd.Series) -> ChunkedArray:
+    def _pandas_to_arrow(self, obj: BaseArrowLayer, value: pd.Series) -> ChunkedArray:
         """Cast pandas Series to arrow array."""
         try:
             import pyarrow as pa
@@ -75,7 +75,7 @@ class TextAccessor(FixedErrorTraitType):
             value.__class__.__module__.startswith("pandas")
             and value.__class__.__name__ == "Series"
         ):
-            value = self.pandas_to_arrow(obj, value)
+            value = self._pandas_to_arrow(obj, value)
         elif isinstance(value, np.ndarray):
             value = self._numpy_to_arrow(obj, value)
         elif hasattr(value, "__arrow_c_array__"):

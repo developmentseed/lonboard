@@ -61,15 +61,21 @@ nav:
       - api/viz.md
       - api/map.md
       - Layers:
+          - api/layers/a5-layer.md
+          - api/layers/arc-layer.md
           - api/layers/bitmap-layer.md
           - api/layers/bitmap-tile-layer.md
           - api/layers/column-layer.md
+          - api/layers/geohash-layer.md
+          - api/layers/h3-hexagon-layer.md
           - api/layers/heatmap-layer.md
           - api/layers/path-layer.md
           - api/layers/point-cloud-layer.md
           - api/layers/polygon-layer.md
+          - api/layers/s2-layer.md
           - api/layers/scatterplot-layer.md
           - api/layers/solid-polygon-layer.md
+          - api/layers/trips-layer.md
           - api/layers/base-layer.md
       - Layer Extensions:
           - api/layer-extensions/index.md
@@ -85,9 +91,7 @@ nav:
       - api/view_state.md
       - Experimental:
           - Layers:
-              - api/layers/arc-layer.md
               - api/layers/text-layer.md
-              - api/layers/trips-layer.md
   - cli.md
   - Ecosystem:
       - ecosystem/index.md
@@ -188,6 +192,7 @@ plugins:
             - https://docs.python.org/3/objects.inv
             - https://duckdb.org/docs/stable/clients/python/reference/objects.inv
             - https://fiona.readthedocs.io/en/stable/objects.inv
+            - https://geoarrow.org/geoarrow-python/main/objects.inv
             - https://geoarrow.github.io/geoarrow-rs/python/latest/objects.inv
             - https://geopandas.org/en/stable/objects.inv
             - https://geopy.readthedocs.io/en/stable/objects.inv

@@ -20,7 +20,7 @@ from lonboard.controls import (
     ScaleControl,
 )
 from lonboard.layer import BaseLayer
-from lonboard.traits import HeightTrait, VariableLengthTuple, ViewStateTrait
+from lonboard.traits import MapHeightTrait, VariableLengthTuple, ViewStateTrait
 from lonboard.view import BaseView, GlobeView, MapView
 from lonboard.view_state import BaseViewState, GlobeViewState, MapViewState
 
@@ -49,7 +49,7 @@ bundler_output_dir = Path(__file__).parent / "static"
 
 
 class Map(BaseAnyWidget):
-    """The top-level class used to display a map in a Jupyter Widget.
+    """An interactive Map.
 
     **Example:**
 
@@ -73,6 +73,17 @@ class Map(BaseAnyWidget):
 
     m = Map([point_layer, polygon_layer])
     ```
+
+    **Example:** Creating a Map with GlobeView:
+
+    ```py
+    import geopandas as gpd
+    from lonboard import Map
+    from lonboard.view import GlobeView
+
+    # Continuing from above example
+    m = Map([point_layer, polygon_layer], view=GlobeView())
+    ```
     """
 
     def __init__(
@@ -95,7 +106,7 @@ class Map(BaseAnyWidget):
 
                 Various styles are provided in [`lonboard.basemap`](https://developmentseed.org/lonboard/latest/api/basemap/).
 
-            kwargs: Passed on to class variables.
+            kwargs: Passed on to class variables. For example, you can pass `height=600` to pass that value on to the [`height`][lonboard.Map.height] attribute.
 
         Returns:
             A Map object.
@@ -191,17 +202,20 @@ class Map(BaseAnyWidget):
     Indicates if a click handler has been registered.
     """
 
-    height = HeightTrait().tag(sync=True)
+    height = MapHeightTrait().tag(sync=True)
     """Height of the map in pixels, or valid CSS height property.
 
-    This API is not yet stabilized and may change in the future.
+    For example, it can be `600` (pixels) or `"75vh"` (75% of the viewport height).
+
+    - Type: `int` or `str`
+    - Default: full height of the containing cell.
     """
 
     layers = VariableLengthTuple(t.Instance(BaseLayer)).tag(
         sync=True,
         **ipywidgets.widget_serialization,
     )
-    """One or more `Layer` objects to display on this map.
+    """One or more [`Layer`][lonboard.BaseLayer] objects to display on this map.
     """
 
     controls = VariableLengthTuple(
@@ -221,9 +235,11 @@ class Map(BaseAnyWidget):
         sync=True,
         **ipywidgets.widget_serialization,
     )
-    """A View instance.
+    """The view to use for this map.
 
     Views represent the "camera(s)" (essentially viewport dimensions and projection matrices) that you look at your data with. deck.gl offers multiple view types for both geospatial and non-geospatial use cases. Read the [Views and Projections](https://deck.gl/docs/developer-guide/views) guide for the concept and examples.
+
+    See [`lonboard.view`][lonboard.view] for available view types.
     """
 
     @t.validate("view")
@@ -403,10 +419,7 @@ class Map(BaseAnyWidget):
     parameters = t.Any(allow_none=True, default_value=None).tag(sync=True)
     """GPU parameters to pass to deck.gl.
 
-    **This is an advanced API. The vast majority of users should not need to touch this
-    setting.**
-
-    !!! Note
+    !!! Note "This is an advanced API. The vast majority of users should not need to touch this setting."
 
         The docstring below is copied from upstream deck.gl documentation. Any usage of
         `GL` refers to the constants defined in [`@luma.gl/constants`
