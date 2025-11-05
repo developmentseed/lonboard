@@ -9,7 +9,7 @@ class BaseViewState:
 
 @dataclass(frozen=True)
 class MapViewState(BaseViewState):
-    """State of a [MapView][lonboard.view.MapView]."""
+    """State of a [MapView][lonboard.experimental.view.MapView]."""
 
     longitude: float = 0
     """longitude at the map center"""
@@ -41,7 +41,7 @@ class MapViewState(BaseViewState):
 
 @dataclass(frozen=True)
 class GlobeViewState(BaseViewState):
-    """State of a [GlobeView][lonboard.view.GlobeView]."""
+    """State of a [GlobeView][lonboard.experimental.view.GlobeView]."""
 
     longitude: float
     """longitude at the viewport center."""
@@ -61,7 +61,7 @@ class GlobeViewState(BaseViewState):
 
 @dataclass(frozen=True)
 class FirstPersonViewState(BaseViewState):
-    """State of a [FirstPersonView][lonboard.view.FirstPersonView]."""
+    """State of a [FirstPersonView][lonboard.experimental.view.FirstPersonView]."""
 
     longitude: float
     """longitude of the camera position."""
@@ -87,7 +87,7 @@ class FirstPersonViewState(BaseViewState):
 
 @dataclass(frozen=True)
 class OrthographicViewState(BaseViewState):
-    """State of an [OrthographicView][lonboard.view.OrthographicView]."""
+    """State of an [OrthographicView][lonboard.experimental.view.OrthographicView]."""
 
     target: tuple[float, float, float] = (0.0, 0.0, 0.0)
     """The world position at the center of the viewport."""
@@ -111,7 +111,7 @@ class OrthographicViewState(BaseViewState):
 
 @dataclass(frozen=True)
 class OrbitViewState(BaseViewState):
-    """State of an [OrbitView][lonboard.view.OrbitView]."""
+    """State of an [OrbitView][lonboard.experimental.view.OrbitView]."""
 
     target: tuple[float, float, float] = (0.0, 0.0, 0.0)
     """The world position at the center of the viewport."""

@@ -92,9 +92,9 @@ nav:
       - api/colormap.md
       - api/controls.md
       - api/traits.md
-      - api/view.md
       - api/view_state.md
       - Experimental:
+          - api/view.md
           - Layers:
               - api/layers/text-layer.md
   - cli.md
