@@ -7,7 +7,6 @@
 - feat: Suppress JupyterLab context menu on Map right click by @kylebarron in https://github.com/developmentseed/lonboard/pull/889
 - feat: Support two render modes: Standard/deck.gl-first and MapboxOverlay by @kylebarron in https://github.com/developmentseed/lonboard/pull/921
 - feat: Create richer `Basemap` class and deprecate `basemap_style` arg by @kylebarron in https://github.com/developmentseed/lonboard/pull/935
-- feat: Support globe view by @kylebarron in https://github.com/developmentseed/lonboard/pull/908
 - feat: Move `TripsLayer` and `ArcLayer` out of experimental by @kylebarron in https://github.com/developmentseed/lonboard/pull/983
 - feat: Support for map controls by @kylebarron in https://github.com/developmentseed/lonboard/pull/924
 - feat: Provide default controls for Map by @kylebarron in https://github.com/developmentseed/lonboard/pull/992
@@ -16,7 +15,6 @@
 - feat: Add A5Layer by @kylebarron in https://github.com/developmentseed/lonboard/pull/1001
 - feat: Add geohash and s2 layers by @kylebarron in https://github.com/developmentseed/lonboard/pull/1007
 - feat: Implement view state validation for non map-view states by @kylebarron in https://github.com/developmentseed/lonboard/pull/1008
-- feat: Validate that GlobeView is only used with interleaved basemap mode by @kylebarron in https://github.com/developmentseed/lonboard/pull/1012
 - feat: Add view parameter to viz by @kylebarron in https://github.com/developmentseed/lonboard/pull/1013
 
 ### Performance improvements :zap:
