@@ -240,12 +240,27 @@ export class COGTileset2D extends Tileset2D {
   }
 
   getTileMetadata(index: COGTileIndex): Record<string, unknown> {
-    const overview = this.cogMetadata.overviews[index.z];
+    const { x, y, z } = index;
+    const { bbox, overviews, tileWidth, tileHeight } = this.cogMetadata;
+    const overview = overviews[z];
+
+    const cogWidth = bbox[2] - bbox[0];
+    const cogHeight = bbox[3] - bbox[1];
+
+    const tileGeoWidth = cogWidth / overview.tilesX;
+    const tileGeoHeight = cogHeight / overview.tilesY;
+
+    const bounds: Bounds = [
+      bbox[0] + x * tileGeoWidth,
+      bbox[1] + y * tileGeoHeight,
+      bbox[0] + (x + 1) * tileGeoWidth,
+      bbox[1] + (y + 1) * tileGeoHeight,
+    ];
+
     return {
-      bounds: index.bounds,
-      level: index.level,
-      tileWidth: this.cogMetadata.tileWidth,
-      tileHeight: this.cogMetadata.tileHeight,
+      bounds,
+      tileWidth,
+      tileHeight,
       overview,
     };
   }

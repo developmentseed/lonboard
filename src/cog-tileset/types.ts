@@ -184,9 +184,6 @@ export type COGTileIndex = {
   x: number;
   y: number;
   z: number; // TileMatrixSet/OSM zoom (0 = coarsest, higher = finer)
-  level: number; // Same as z in TileMatrixSet ordering
-  geoTiffIndex?: number; // Index in GeoTIFF file (for reading tiles)
-  bounds?: Bounds;
 };
 
 ////////////////

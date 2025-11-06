@@ -376,33 +376,5 @@ export function getTileIndices(
     root.getSelected(selectedNodes);
   }
 
-  // TODO: remove this from here
-  // Instead, move it to `getTileMetadata` in the tileset class
-  // Convert to tile indices with bounds
-  return selectedNodes.map((node) => {
-    const overview = cogMetadata.overviews[node.z];
-    const { bbox } = cogMetadata;
-
-    const cogWidth = bbox[2] - bbox[0];
-    const cogHeight = bbox[3] - bbox[1];
-
-    // TODO: use tileWidth/tileHeight from cogMetadata instead?
-    const tileGeoWidth = cogWidth / overview.tilesX;
-    const tileGeoHeight = cogHeight / overview.tilesY;
-
-    const bounds: Bounds = [
-      bbox[0] + node.x * tileGeoWidth,
-      bbox[1] + node.y * tileGeoHeight,
-      bbox[0] + (node.x + 1) * tileGeoWidth,
-      bbox[1] + (node.y + 1) * tileGeoHeight,
-    ];
-
-    return {
-      x: node.x,
-      y: node.y,
-      z: node.z,
-      level: node.z,
-      bounds,
-    };
-  });
+  return selectedNodes;
 }
