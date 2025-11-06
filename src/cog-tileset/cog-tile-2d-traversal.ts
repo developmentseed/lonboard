@@ -292,7 +292,9 @@ export class COGTileNode {
 
     // Sample reference points across the tile surface
     const refPoints = REF_POINTS_9;
-    const refPointPositions: number[][] = [];
+
+    /** Reference points positions in image CRS */
+    const refPointPositionsImage: number[][] = [];
 
     for (const [pX, pY] of refPoints) {
       // pX, pY are in [0, 1] range
@@ -304,64 +306,37 @@ export class COGTileNode {
       const geoX = a * col + b * row + c;
       const geoY = d * col + e * row + f;
 
-      refPointPositions.push([geoX, geoY]);
+      refPointPositionsImage.push([geoX, geoY]);
+    }
+
+    if (project) {
+      assert(
+        false,
+        "TODO: implement bounding volume implementation in Globe view",
+      );
+      // Reproject positions to wgs84 instead, then pass them into `project`
+      // return makeOrientedBoundingBoxFromPoints(refPointPositions);
+    }
+
+    /** Reference points positions in EPSG 3857 */
+    const refPointPositionsProjected: number[][] = [];
+
+    for (const [pX, pY] of refPointPositionsImage) {
+      // Reproject to Web Mercator (EPSG 3857)
+      const projected = this.cogMetadata.projectTo3857.forward([pX, pY]);
+      refPointPositionsProjected.push(projected);
     }
 
     // Calculate bounding box for debugging
-    const tileMinX = Math.min(...refPointPositions.map((p) => p[0]));
-    const tileMaxX = Math.max(...refPointPositions.map((p) => p[0]));
-    const tileMinY = Math.min(...refPointPositions.map((p) => p[1]));
-    const tileMaxY = Math.max(...refPointPositions.map((p) => p[1]));
+    const tileMinX = Math.min(...refPointPositionsImage.map((p) => p[0]));
+    const tileMaxX = Math.max(...refPointPositionsImage.map((p) => p[0]));
+    const tileMinY = Math.min(...refPointPositionsImage.map((p) => p[1]));
+    const tileMaxY = Math.max(...refPointPositionsImage.map((p) => p[1]));
 
     console.log("Tile bounding box:");
     console.log(tileMinX, tileMinY, tileMaxX, tileMaxY);
 
-    if (project) {
-      assert(false, "TODO: check bounding volume implementation in Globe view");
-
-      // Custom projection (e.g., GlobeView)
-      // Estimate bounding box from sample points
-      // TODO: switch to higher ref points at lowest zoom levels, like upstream
-      // const refPoints = REF_POINTS_5;
-
-      // const refPointPositions: number[][] = [];
-      // for (const [fx, fy] of refPoints) {
-      //   const geoX = tileMinX + fx * tileGeoWidth;
-      //   const geoY = tileMinY + fy * tileGeoHeight;
-
-      //   // Convert from COG coordinates to lng/lat
-      //   // This assumes COG is in Web Mercator - adjust for other projections
-      //   const lngLat = this.cogCoordsToLngLat([geoX, geoY]);
-      //   lngLat[2] = zRange[0];
-      //   refPointPositions.push(project(lngLat));
-
-      //   if (zRange[0] !== zRange[1]) {
-      //     lngLat[2] = zRange[1];
-      //     refPointPositions.push(project(lngLat));
-      //   }
-      // }
-
-      // return makeOrientedBoundingBoxFromPoints(refPointPositions);
-    }
-
-    // Reproject tile bounds to Web Mercator for bounding volume
-    const ll = this.cogMetadata.projectTo3857.forward([tileMinX, tileMinY]);
-    const lr = this.cogMetadata.projectTo3857.forward([tileMaxX, tileMinY]);
-    const ur = this.cogMetadata.projectTo3857.forward([tileMaxX, tileMaxY]);
-    const ul = this.cogMetadata.projectTo3857.forward([tileMinX, tileMaxY]);
-
-    const webMercatorMinX = Math.min(ll[0], lr[0], ur[0], ul[0]);
-    const webMercatorMaxX = Math.max(ll[0], lr[0], ur[0], ul[0]);
-    const webMercatorMinY = Math.min(ll[1], lr[1], ur[1], ul[1]);
-    const webMercatorMaxY = Math.max(ll[1], lr[1], ur[1], ul[1]);
-
-    console.log("Tile Web Mercator bounds:");
-    console.log(
-      webMercatorMinX,
-      webMercatorMinY,
-      webMercatorMaxX,
-      webMercatorMaxY,
-    );
+    // return makeOrientedBoundingBoxFromPoints(refPointPositions);
 
     // Web Mercator projection
     // Convert from Web Mercator meters to deck.gl's common space (world units)
