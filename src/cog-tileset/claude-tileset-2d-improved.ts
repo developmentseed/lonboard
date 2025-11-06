@@ -5,7 +5,7 @@
  * following the pattern from deck.gl's OSM tile indexing.
  */
 
-import { Viewport } from "@deck.gl/core";
+import { Viewport, WebMercatorViewport } from "@deck.gl/core";
 import { _Tileset2D as Tileset2D } from "@deck.gl/geo-layers";
 import type { Tileset2DProps } from "@deck.gl/geo-layers/dist/tileset-2d";
 import type { ZRange } from "@deck.gl/geo-layers/dist/tileset-2d/types";
@@ -252,6 +252,14 @@ async function getProjjson(projectionCode: number | null) {
   return data;
 }
 
+const viewport = new WebMercatorViewport({
+  height: 500,
+  width: 845,
+  latitude: 40.88775942857086,
+  longitude: -73.20197979318772,
+  zoom: 11.294596276534985,
+});
+
 /**
  * COGTileset2D with proper frustum culling
  */
@@ -277,13 +285,19 @@ export class COGTileset2D extends Tileset2D {
     modelMatrix?: Matrix4;
     modelMatrixInverse?: Matrix4;
   }): COGTileIndex[] {
-    console.log("Getting tile indices with COGTileset2D");
-    console.log(opts);
+    console.log("Called getTileIndices", opts);
     const tileIndices = getTileIndices(this.cogMetadata, opts);
-    console.log("Visible tile indices:");
-    console.log(tileIndices);
+    console.log("Visible tile indices:", tileIndices);
 
-    return [{ x: 0, y: 0, z: 0 }]; // Temporary override for testing
+    // return [
+    //   { x: 0, y: 0, z: 0 },
+    //   { x: 0, y: 0, z: 1 },
+    //   { x: 1, y: 1, z: 2 },
+    //   { x: 1, y: 2, z: 3 },
+    //   { x: 2, y: 1, z: 3 },
+    //   { x: 2, y: 2, z: 3 },
+    //   { x: 3, y: 1, z: 3 },
+    // ]; // Temporary override for testing
     return tileIndices;
   }
 

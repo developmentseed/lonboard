@@ -14,7 +14,12 @@
  * cover the visible area with appropriate detail.
  */
 
-import { _GlobeViewport, assert, Viewport } from "@deck.gl/core";
+import {
+  _GlobeViewport,
+  assert,
+  Viewport,
+  WebMercatorViewport,
+} from "@deck.gl/core";
 import {
   CullingVolume,
   Plane,
@@ -196,7 +201,38 @@ export class COGTileNode {
     //   return false;
     // }
 
-    // Check if tile is visible in frustum
+    console.log("=== FRUSTUM CULLING DEBUG ===");
+    console.log(`Tile: ${this.x}, ${this.y}, ${this.z}`);
+    console.log("Bounding volume center:", boundingVolume.center);
+    console.log("Bounding volume halfSize:", boundingVolume.halfSize);
+    console.log("Viewport cameraPosition:", viewport.cameraPosition);
+    console.log(
+      "Viewport pitch:",
+      viewport instanceof WebMercatorViewport ? viewport.pitch : "N/A",
+    );
+
+    for (let i = 0; i < cullingVolume.planes.length; i++) {
+      const plane = cullingVolume.planes[i];
+      const result = boundingVolume.intersectPlane(plane);
+      const planeNames = ["left", "right", "bottom", "top", "near", "far"];
+
+      // Calculate signed distance from OBB center to plane
+      const centerDist =
+        plane.normal.x * boundingVolume.center.x +
+        plane.normal.y * boundingVolume.center.y +
+        plane.normal.z * boundingVolume.center.z +
+        plane.distance;
+
+      console.log(
+        `Plane ${i} (${planeNames[i]}): normal=[${plane.normal.x.toFixed(3)}, ${plane.normal.y.toFixed(3)}, ${plane.normal.z.toFixed(3)}], ` +
+          `distance=${plane.distance.toFixed(3)}, centerDist=${centerDist.toFixed(3)}, result=${result} (${result === 1 ? "INSIDE" : result === 0 ? "INTERSECT" : "OUTSIDE"})`,
+      );
+    }
+    console.log("=== END FRUSTUM DEBUG ===");
+
+    // Frustum culling
+    // Test if tile's bounding volume intersects the camera frustum
+    // Returns: <0 if outside, 0 if intersecting, >0 if fully inside
     const isInside = cullingVolume.computeVisibility(boundingVolume);
     console.log(
       `Tile ${this.x},${this.y},${this.z} frustum check: ${isInside} (${isInside < 0 ? "CULLED" : "VISIBLE"})`,
@@ -205,22 +241,26 @@ export class COGTileNode {
       return false;
     }
 
-    // Avoid loading overlapping tiles
+    // LOD (Level of Detail) selection
+    // Only select this tile if no child is visible (prevents overlapping tiles)
     if (!this.childVisible) {
       let { z } = this;
 
       if (z < maxZ && z >= minZ) {
-        // Adjust LOD based on distance from camera
-        // If tile is far from camera, accept coarser resolution (lower z)
+        // Compute distance-based LOD adjustment
+        // Tiles farther from camera can use lower zoom levels (larger tiles)
+        // Distance is normalized by viewport height to be resolution-independent
         const distance =
           (boundingVolume.distanceTo(viewport.cameraPosition) *
             viewport.scale) /
           viewport.height;
+        // Increase effective zoom level based on log2(distance)
+        // e.g., if distance=4, accept tiles 2 levels lower than maxZ
         z += Math.floor(Math.log2(distance));
       }
 
       if (z >= maxZ) {
-        // LOD is acceptable
+        // This tile's LOD is sufficient for its distance - select it for rendering
         this.selected = true;
         return true;
       }
@@ -230,18 +270,21 @@ export class COGTileNode {
     this.selected = false;
     this.childVisible = true;
 
-    const children = this.children;
-    // NOTE: this deviates from upstream; we could move to the upstream code if
-    // we pass in maxZ correctly I think
-    if (children.length === 0) {
-      // No children available (at finest resolution), select this tile
-      this.selected = true;
-      return true;
-    }
-
-    for (const child of children) {
+    for (const child of this.children) {
       child.update(params);
     }
+
+    // // NOTE: this deviates from upstream; we could move to the upstream code if
+    // // we pass in maxZ correctly I think
+    // if (children.length === 0) {
+    //   // No children available (at finest resolution), select this tile
+    //   this.selected = true;
+    //   return true;
+    // }
+
+    // for (const child of children) {
+    //   child.update(params);
+    // }
     return true;
   }
 
@@ -291,6 +334,8 @@ export class COGTileNode {
     // Sample reference points across the tile surface
     const refPoints = REF_POINTS_9;
 
+    console.log("refPoints", refPoints);
+
     /** Reference points positions in image CRS */
     const refPointPositionsImage: number[][] = [];
 
@@ -306,6 +351,9 @@ export class COGTileNode {
 
       refPointPositionsImage.push([geoX, geoY]);
     }
+
+    console.log("refPointPositionsImage (image CRS):", refPointPositionsImage);
+    console.log("Geotransform [a,b,c,d,e,f]:", [a, b, c, d, e, f]);
 
     if (project) {
       assert(
@@ -323,7 +371,13 @@ export class COGTileNode {
       // Reproject to Web Mercator (EPSG 3857)
       const projected = this.cogMetadata.projectTo3857.forward([pX, pY]);
       refPointPositionsProjected.push(projected);
+
+      // Also log WGS84 for comparison
+      const wgs84 = this.cogMetadata.projectToWgs84.forward([pX, pY]);
+      console.log(`Image [${pX.toFixed(2)}, ${pY.toFixed(2)}] -> WGS84 [${wgs84[0].toFixed(6)}, ${wgs84[1].toFixed(6)}] -> WebMerc [${projected[0].toFixed(2)}, ${projected[1].toFixed(2)}]`);
     }
+
+    console.log("refPointPositionsProjected (EPSG:3857):", refPointPositionsProjected);
 
     // Convert from Web Mercator meters to deck.gl's common space (world units)
     // Web Mercator range: [-20037508.34, 20037508.34] meters
@@ -338,10 +392,12 @@ export class COGTileNode {
       const worldX =
         ((mercX + WEB_MERCATOR_MAX) / (2 * WEB_MERCATOR_MAX)) * WORLD_SIZE;
 
-      // Y: same transformation, but flipped (deck.gl Y increases downward)
+      // Y: same transformation WITHOUT flip
+      // Testing hypothesis: Y-flip might be incorrect since geotransform already handles orientation
       const worldY =
-        WORLD_SIZE -
         ((mercY + WEB_MERCATOR_MAX) / (2 * WEB_MERCATOR_MAX)) * WORLD_SIZE;
+
+      console.log(`WebMerc [${mercX.toFixed(2)}, ${mercY.toFixed(2)}] -> World [${worldX.toFixed(4)}, ${worldY.toFixed(4)}]`);
 
       // Add z-range minimum
       refPointPositionsWorld.push([worldX, worldY, zRange[0]]);
@@ -360,9 +416,14 @@ export class COGTileNode {
       }
     }
 
-    console.log("Tile world bounds (first point):", refPointPositionsWorld[0]);
+    console.log("refPointPositionsWorld", refPointPositionsWorld);
+    console.log("zRange used:", zRange);
 
-    return makeOrientedBoundingBoxFromPoints(refPointPositionsWorld);
+    const obb = makeOrientedBoundingBoxFromPoints(refPointPositionsWorld);
+    console.log("Created OBB center:", obb.center);
+    console.log("Created OBB halfAxes:", obb.halfAxes);
+
+    return obb;
   }
 
   /**
@@ -385,8 +446,7 @@ export function getTileIndices(
   cogMetadata: COGMetadata,
   opts: {
     viewport: Viewport;
-    maxZ?: number;
-    // minZ?: number;
+    maxZ: number;
     zRange: ZRange | null;
   },
 ): COGTileIndex[] {
@@ -414,25 +474,17 @@ export function getTileIndices(
   const elevationMin = (zRange && zRange[0] * unitsPerMeter) || 0;
   const elevationMax = (zRange && zRange[1] * unitsPerMeter) || 0;
 
-  // // Always load at the current zoom level if pitch is small
-  // const minZ =
-  //   viewport instanceof WebMercatorViewport && viewport.pitch <= 60 ? maxZ : 0;
-
-  // // Map maxZoom/minZoom to COG overview levels
-  // // In COG: level 0 = full resolution (finest), higher levels = coarser
-  // // In deck.gl zoom: higher = finer
-  // // So we need to invert: maxZoom (finest) → minLevel (level 0)
-  // const minLevel = 0; // Always allow full resolution
-  // const maxLevel = Math.min(
-  //   cogMetadata.overviews.length - 1,
-  //   Math.max(0, cogMetadata.overviews.length - 1 - (maxZ || 0)),
-  // );
+  // Optimization: For low-pitch views, only consider tiles at maxZ level
+  // At low pitch (top-down view), all tiles are roughly the same distance,
+  // so we don't need the LOD pyramid - just use the finest level
+  const minZ =
+    viewport instanceof WebMercatorViewport && viewport.pitch <= 60 ? maxZ : 0;
 
   // Start from coarsest overview
   const coarsestOverview = cogMetadata.overviews[0];
 
   // Create root tiles at coarsest level
-  // In contrary to OSM tiling, we usually have more than one tile at the
+  // In contrary to OSM tiling, we might have more than one tile at the
   // coarsest level (z=0)
   const roots: COGTileNode[] = [];
   for (let y = 0; y < coarsestOverview.tilesY; y++) {
@@ -447,7 +499,7 @@ export function getTileIndices(
     project,
     cullingVolume,
     elevationBounds: [elevationMin, elevationMax] as ZRange,
-    minZ: 0,
+    minZ,
     maxZ,
   };
   console.log("Traversal params:", traversalParams);
