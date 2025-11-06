@@ -1,3 +1,19 @@
+/**
+ * This file implements tile traversal for generic 2D tilesets defined by COG
+ * tile layouts.
+ *
+ * The main algorithm works as follows:
+ * 1. Start at the root tile(s) (z=0, covers the entire image, but not
+ *    necessarily the whole world)
+ * 2. Test if each tile is visible using viewport frustum culling
+ * 3. For visible tiles, compute distance-based LOD (Level of Detail)
+ * 4. If LOD is insufficient, recursively subdivide into 4 child tiles
+ * 5. Select tiles at appropriate zoom levels based on distance from camera
+ *
+ * The result is a set of tiles at varying zoom levels that efficiently
+ * cover the visible area with appropriate detail.
+ */
+
 import { _GlobeViewport, assert, Viewport } from "@deck.gl/core";
 import { AxisAlignedBoundingBox, CullingVolume, Plane } from "@math.gl/culling";
 
@@ -9,22 +25,62 @@ import type {
   ZRange,
 } from "./types";
 
-// for calculating bounding volume of a tile in a non-web-mercator viewport
-// const REF_POINTS_5 = [
-//   [0.5, 0.5],
-//   [0, 0],
-//   [0, 1],
-//   [1, 0],
-//   [1, 1],
-// ]; // 4 corners and center
+/**
+ * The size of the entire world in deck.gl's common coordinate space.
+ *
+ * The world always spans [0, 512] in both X and Y in Web Mercator common space.
+ *
+ * The origin (0,0) is at the top-left corner, and (512,512) is at the
+ * bottom-right.
+ */
+const WORLD_SIZE = 512;
+
+// Reference points used to sample tile boundaries for bounding volume
+// calculation.
+//
+// In upstream deck.gl code, such reference points are only used in non-Web
+// Mercator projections because the OSM tiling scheme is designed for Web
+// Mercator and the OSM tile extents are already in Web Mercator projection. So
+// using Axis-Aligned bounding boxes based on tile extents is sufficient for
+// frustum culling in Web Mercator viewports.
+//
+// In upstream code these reference points are used for Globe View where the OSM
+// tile indices _projected into longitude-latitude bounds in Globe View space_
+// are no longer axis-aligned, and oriented bounding boxes must be used instead.
+//
+// In the context of generic tiling grids which are often not in Web Mercator
+// projection, we must use the reference points approach because the grid tiles
+// will never be exact axis aligned boxes in Web Mercator space.
+
+// For most tiles: sample 4 corners and center (5 points total)
+const REF_POINTS_5 = [
+  [0.5, 0.5], // center
+  [0, 0], // top-left
+  [0, 1], // bottom-left
+  [1, 0], // top-right
+  [1, 1], // bottom-right
+];
+
+// For higher detail: add 4 edge midpoints (9 points total)
+const REF_POINTS_9 = REF_POINTS_5.concat([
+  [0, 0.5], // left edge
+  [0.5, 0], // top edge
+  [1, 0.5], // right edge
+  [0.5, 1], // bottom edge
+]);
 
 /**
- * COG Tile Node - similar to OSMNode but for COG's tile structure
+ * COG Tile Node - similar to OSMNode but for COG's tile structure.
  *
- * Uses TileMatrixSet ordering where: index 0 = coarsest, higher = finer.
- * In this ordering, z === level (both increase with detail).
+ * Represents a single tile in the COG internal tiling pyramid.
+ *
+ * COG tile nodes use the following coordinate system:
+ *
+ * - x: tile column (0 to COGOverview.tilesX, left to right)
+ * - y: tile row (0 to COGOverview.tilesY, top to bottom)
+ * - z: overview level. This uses TileMatrixSet ordering where: 0 = coarsest, higher = finer
  */
-class COGTileNode {
+export class COGTileNode {
   /** Index across a row */
   x: number;
   /** Index down a column */
@@ -34,8 +90,21 @@ class COGTileNode {
 
   private cogMetadata: COGMetadata;
 
+  /**
+   * Flag indicating whether any descendant of this tile is visible.
+   *
+   * Used to prevent loading parent tiles when children are visible (avoids
+   * overdraw).
+   */
   private childVisible?: boolean;
+
+  /**
+   * Flag indicating this tile should be rendered
+   *
+   * Set to `true` when this is the appropriate LOD for its distance from camera.
+   */
   private selected?: boolean;
+
   /** A cache of the children of this node. */
   private _children?: COGTileNode[];
 
@@ -131,6 +200,9 @@ class COGTileNode {
 
     // Check if tile is visible in frustum
     const isInside = cullingVolume.computeVisibility(boundingVolume);
+    console.log(
+      `Tile ${this.x},${this.y},${this.z} frustum check: ${isInside} (${isInside < 0 ? "CULLED" : "VISIBLE"})`,
+    );
     if (isInside < 0) {
       return false;
     }
@@ -176,7 +248,11 @@ class COGTileNode {
   }
 
   /**
-   * Collect all selected tiles
+   * Collect all tiles marked as selected in the tree.
+   * Recursively traverses the entire tree and gathers tiles where selected=true.
+   *
+   * @param result - Accumulator array for selected tiles
+   * @returns Array of selected OSMNode tiles
    */
   getSelected(result: COGTileNode[] = []): COGTileNode[] {
     if (this.selected) {
@@ -191,7 +267,9 @@ class COGTileNode {
   }
 
   /**
-   * Calculate bounding volume for frustum culling
+   * Calculate the 3D bounding volume for this tile in deck.gl's common
+   * coordinate space for frustum culling.
+   *
    */
   getBoundingVolume(
     zRange: ZRange,
@@ -199,6 +277,15 @@ class COGTileNode {
   ) {
     const overview = this.overview;
     const { bbox } = this.cogMetadata;
+
+    const refPoints = REF_POINTS_9;
+
+    // Sample points across the tile surface and project to common space
+    const refPointPositions: number[][] = [];
+    for (const [pX, pY] of refPoints) {
+      // Convert tile-relative coordinates [0-1] to geographic coordinates in
+      // the COG's CRS
+    }
 
     // TODO: use tileWidth/tileHeight from cogMetadata instead?
     const cogWidth = bbox[2] - bbox[0];
@@ -263,20 +350,31 @@ class COGTileNode {
     );
 
     // Web Mercator projection
-    // Assuming COG is already in Web Mercator (EPSG:3857)
-    // Convert from meters to deck.gl's common space (world units)
+    // Convert from Web Mercator meters to deck.gl's common space (world units)
+    // Web Mercator range: [-20037508.34, 20037508.34] meters
+    // deck.gl world space: [0, 512]
     const WORLD_SIZE = 512; // deck.gl's world size
-    const METERS_PER_WORLD = 40075017; // Earth circumference at equator
+    const WEB_MERCATOR_MAX = 20037508.342789244; // Half Earth circumference
 
-    const worldMinX = (webMercatorMinX / METERS_PER_WORLD) * WORLD_SIZE;
-    const worldMaxX = (webMercatorMaxX / METERS_PER_WORLD) * WORLD_SIZE;
+    // Offset from [-20M, 20M] to [0, 40M], then normalize to [0, 512]
+    const worldMinX =
+      ((webMercatorMinX + WEB_MERCATOR_MAX) / (2 * WEB_MERCATOR_MAX)) *
+      WORLD_SIZE;
+    const worldMaxX =
+      ((webMercatorMaxX + WEB_MERCATOR_MAX) / (2 * WEB_MERCATOR_MAX)) *
+      WORLD_SIZE;
 
     // Y is flipped in deck.gl's common space
     const worldMinY =
-      WORLD_SIZE - (webMercatorMaxY / METERS_PER_WORLD) * WORLD_SIZE;
+      WORLD_SIZE -
+      ((webMercatorMaxY + WEB_MERCATOR_MAX) / (2 * WEB_MERCATOR_MAX)) *
+        WORLD_SIZE;
     const worldMaxY =
-      WORLD_SIZE - (webMercatorMinY / METERS_PER_WORLD) * WORLD_SIZE;
+      WORLD_SIZE -
+      ((webMercatorMinY + WEB_MERCATOR_MAX) / (2 * WEB_MERCATOR_MAX)) *
+        WORLD_SIZE;
 
+    console.log("Tile world X bounds:");
     console.log("Tile world bounds:");
     console.log(worldMinX, worldMinY, worldMaxX, worldMaxY);
 
@@ -312,6 +410,12 @@ export function getTileIndices(
   },
 ): COGTileIndex[] {
   const { viewport, maxZ, zRange } = opts;
+
+  // console.log("=== getTileIndices called ===");
+  // console.log("Viewport:", viewport);
+  // console.log("maxZ:", maxZ);
+  // console.log("COG metadata overviews count:", cogMetadata.overviews.length);
+  // console.log("COG bbox:", cogMetadata.bbox);
 
   const project: ((xyz: number[]) => number[]) | null =
     viewport instanceof _GlobeViewport && viewport.resolution
@@ -365,10 +469,12 @@ export function getTileIndices(
     minZ: 0,
     maxZ,
   };
+  console.log("Traversal params:", traversalParams);
 
   for (const root of roots) {
     root.update(traversalParams);
   }
+  console.log("roots", roots);
 
   // Collect selected tiles
   const selectedNodes: COGTileNode[] = [];
