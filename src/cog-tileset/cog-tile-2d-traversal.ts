@@ -15,15 +15,13 @@
  */
 
 import { _GlobeViewport, assert, Viewport } from "@deck.gl/core";
-import { AxisAlignedBoundingBox, CullingVolume, Plane } from "@math.gl/culling";
+import {
+  CullingVolume,
+  Plane,
+  makeOrientedBoundingBoxFromPoints,
+} from "@math.gl/culling";
 
-import type {
-  Bounds,
-  COGMetadata,
-  COGOverview,
-  COGTileIndex,
-  ZRange,
-} from "./types";
+import type { COGMetadata, COGOverview, COGTileIndex, ZRange } from "./types";
 
 /**
  * The size of the entire world in deck.gl's common coordinate space.
@@ -327,50 +325,44 @@ export class COGTileNode {
       refPointPositionsProjected.push(projected);
     }
 
-    // Calculate bounding box for debugging
-    const tileMinX = Math.min(...refPointPositionsImage.map((p) => p[0]));
-    const tileMaxX = Math.max(...refPointPositionsImage.map((p) => p[0]));
-    const tileMinY = Math.min(...refPointPositionsImage.map((p) => p[1]));
-    const tileMaxY = Math.max(...refPointPositionsImage.map((p) => p[1]));
-
-    console.log("Tile bounding box:");
-    console.log(tileMinX, tileMinY, tileMaxX, tileMaxY);
-
-    // return makeOrientedBoundingBoxFromPoints(refPointPositions);
-
-    // Web Mercator projection
     // Convert from Web Mercator meters to deck.gl's common space (world units)
     // Web Mercator range: [-20037508.34, 20037508.34] meters
     // deck.gl world space: [0, 512]
-    const WORLD_SIZE = 512; // deck.gl's world size
     const WEB_MERCATOR_MAX = 20037508.342789244; // Half Earth circumference
 
-    // Offset from [-20M, 20M] to [0, 40M], then normalize to [0, 512]
-    const worldMinX =
-      ((webMercatorMinX + WEB_MERCATOR_MAX) / (2 * WEB_MERCATOR_MAX)) *
-      WORLD_SIZE;
-    const worldMaxX =
-      ((webMercatorMaxX + WEB_MERCATOR_MAX) / (2 * WEB_MERCATOR_MAX)) *
-      WORLD_SIZE;
+    /** Reference points positions in deck.gl world space */
+    const refPointPositionsWorld: number[][] = [];
 
-    // Y is flipped in deck.gl's common space
-    const worldMinY =
-      WORLD_SIZE -
-      ((webMercatorMaxY + WEB_MERCATOR_MAX) / (2 * WEB_MERCATOR_MAX)) *
-        WORLD_SIZE;
-    const worldMaxY =
-      WORLD_SIZE -
-      ((webMercatorMinY + WEB_MERCATOR_MAX) / (2 * WEB_MERCATOR_MAX)) *
-        WORLD_SIZE;
+    for (const [mercX, mercY] of refPointPositionsProjected) {
+      // X: offset from [-20M, 20M] to [0, 40M], then normalize to [0, 512]
+      const worldX =
+        ((mercX + WEB_MERCATOR_MAX) / (2 * WEB_MERCATOR_MAX)) * WORLD_SIZE;
 
-    console.log("Tile world X bounds:");
-    console.log("Tile world bounds:");
-    console.log(worldMinX, worldMinY, worldMaxX, worldMaxY);
+      // Y: same transformation, but flipped (deck.gl Y increases downward)
+      const worldY =
+        WORLD_SIZE -
+        ((mercY + WEB_MERCATOR_MAX) / (2 * WEB_MERCATOR_MAX)) * WORLD_SIZE;
 
-    return new AxisAlignedBoundingBox(
-      [worldMinX, worldMinY, zRange[0]],
-      [worldMaxX, worldMaxY, zRange[1]],
-    );
+      // Add z-range minimum
+      refPointPositionsWorld.push([worldX, worldY, zRange[0]]);
+    }
+
+    // Add top z-range if elevation varies
+    if (zRange[0] !== zRange[1]) {
+      for (const [mercX, mercY] of refPointPositionsProjected) {
+        const worldX =
+          ((mercX + WEB_MERCATOR_MAX) / (2 * WEB_MERCATOR_MAX)) * WORLD_SIZE;
+        const worldY =
+          WORLD_SIZE -
+          ((mercY + WEB_MERCATOR_MAX) / (2 * WEB_MERCATOR_MAX)) * WORLD_SIZE;
+
+        refPointPositionsWorld.push([worldX, worldY, zRange[1]]);
+      }
+    }
+
+    console.log("Tile world bounds (first point):", refPointPositionsWorld[0]);
+
+    return makeOrientedBoundingBoxFromPoints(refPointPositionsWorld);
   }
 
   /**

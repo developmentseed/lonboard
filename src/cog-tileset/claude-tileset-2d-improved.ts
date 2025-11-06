@@ -282,6 +282,8 @@ export class COGTileset2D extends Tileset2D {
     const tileIndices = getTileIndices(this.cogMetadata, opts);
     console.log("Visible tile indices:");
     console.log(tileIndices);
+
+    return [{ x: 0, y: 0, z: 0 }]; // Temporary override for testing
     return tileIndices;
   }
 
@@ -314,24 +316,59 @@ export class COGTileset2D extends Tileset2D {
 
   getTileMetadata(index: COGTileIndex): Record<string, unknown> {
     const { x, y, z } = index;
-    const { bbox, overviews, tileWidth, tileHeight } = this.cogMetadata;
+    const { overviews, tileWidth, tileHeight } = this.cogMetadata;
     const overview = overviews[z];
 
-    const cogWidth = bbox[2] - bbox[0];
-    const cogHeight = bbox[3] - bbox[1];
+    // Use geotransform to calculate tile bounds
+    // geotransform: [a, b, c, d, e, f] where:
+    // x_geo = a * col + b * row + c
+    // y_geo = d * col + e * row + f
+    const [a, b, c, d, e, f] = overview.geotransform;
 
-    const tileGeoWidth = cogWidth / overview.tilesX;
-    const tileGeoHeight = cogHeight / overview.tilesY;
+    // Calculate pixel coordinates for this tile's extent
+    const pixelMinCol = x * tileWidth;
+    const pixelMinRow = y * tileHeight;
+    const pixelMaxCol = (x + 1) * tileWidth;
+    const pixelMaxRow = (y + 1) * tileHeight;
 
+    // Calculate the four corners of the tile in geographic coordinates
+    const topLeft = [
+      a * pixelMinCol + b * pixelMinRow + c,
+      d * pixelMinCol + e * pixelMinRow + f,
+    ];
+    const topRight = [
+      a * pixelMaxCol + b * pixelMinRow + c,
+      d * pixelMaxCol + e * pixelMinRow + f,
+    ];
+    const bottomLeft = [
+      a * pixelMinCol + b * pixelMaxRow + c,
+      d * pixelMinCol + e * pixelMaxRow + f,
+    ];
+    const bottomRight = [
+      a * pixelMaxCol + b * pixelMaxRow + c,
+      d * pixelMaxCol + e * pixelMaxRow + f,
+    ];
+
+    // Return the projected bounds as four corners
+    // This preserves rotation/skew information
+    const projectedBounds = {
+      topLeft,
+      topRight,
+      bottomLeft,
+      bottomRight,
+    };
+
+    // Also compute axis-aligned bounding box for compatibility
     const bounds: Bounds = [
-      bbox[0] + x * tileGeoWidth,
-      bbox[1] + y * tileGeoHeight,
-      bbox[0] + (x + 1) * tileGeoWidth,
-      bbox[1] + (y + 1) * tileGeoHeight,
+      Math.min(topLeft[0], topRight[0], bottomLeft[0], bottomRight[0]),
+      Math.min(topLeft[1], topRight[1], bottomLeft[1], bottomRight[1]),
+      Math.max(topLeft[0], topRight[0], bottomLeft[0], bottomRight[0]),
+      Math.max(topLeft[1], topRight[1], bottomLeft[1], bottomRight[1]),
     ];
 
     return {
       bounds,
+      projectedBounds,
       tileWidth,
       tileHeight,
       overview,

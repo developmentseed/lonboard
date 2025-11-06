@@ -1,5 +1,6 @@
 import { TileLayer, TileLayerProps } from "@deck.gl/geo-layers";
 import type { Tileset2DProps } from "@deck.gl/geo-layers/dist/tileset-2d";
+import { PathLayer } from "@deck.gl/layers";
 import { SimpleMeshLayer, SimpleMeshLayerProps } from "@deck.gl/mesh-layers";
 import type { WidgetModel } from "@jupyter-widgets/base";
 import * as arrow from "apache-arrow";
@@ -148,6 +149,7 @@ export class COGTileModel extends BaseLayerModel {
   }
 
   async asyncInit() {
+    console.log("Loading COG from URL:", this.data);
     const tiff = await fromUrl(this.data);
     const metadata = await extractCOGMetadata(tiff);
 
@@ -195,15 +197,57 @@ export class COGTileModel extends BaseLayerModel {
   }
 
   render(): TileLayer[] {
+    // Capture cogMetadata in closure
+    const metadata = this.cogMetadata;
+
     const layer = new TileLayer({
       ...this.baseLayerProps(),
       ...this.layerProps(),
 
       renderSubLayers: (props) => {
-        // const [min, max] = props.tile.boundingBox;
+        const { tile } = props;
+        console.log("Rendering COG tile with props:");
         console.log(props);
 
-        return [];
+        // Get projected bounds from tile data
+        // getTileMetadata returns data that includes projectedBounds
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        const projectedBounds = (tile as any)?.projectedBounds;
+
+        if (!projectedBounds || !metadata) {
+          return [];
+        }
+
+        // Project bounds from image CRS to WGS84
+        const { topLeft, topRight, bottomLeft, bottomRight } = projectedBounds;
+
+        const topLeftWgs84 = metadata.projectToWgs84.forward(topLeft);
+        const topRightWgs84 = metadata.projectToWgs84.forward(topRight);
+        const bottomRightWgs84 = metadata.projectToWgs84.forward(bottomRight);
+        const bottomLeftWgs84 = metadata.projectToWgs84.forward(bottomLeft);
+
+        // Create a closed path around the tile bounds
+        const path = [
+          topLeftWgs84,
+          topRightWgs84,
+          bottomRightWgs84,
+          bottomLeftWgs84,
+          topLeftWgs84, // Close the path
+        ];
+
+        console.log("Tile bounds path (WGS84):", path);
+
+        return [
+          new PathLayer({
+            id: `${tile.id}-bounds`,
+            data: [{ path }],
+            getPath: (d) => d.path,
+            getColor: [255, 0, 0, 255], // Red
+            getWidth: 2,
+            widthUnits: "pixels",
+            pickable: false,
+          }),
+        ];
       },
     });
     return [layer];
