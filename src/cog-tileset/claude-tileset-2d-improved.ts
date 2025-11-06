@@ -10,11 +10,11 @@ import { _Tileset2D as Tileset2D } from "@deck.gl/geo-layers";
 import type { Tileset2DProps } from "@deck.gl/geo-layers/dist/tileset-2d";
 import type { ZRange } from "@deck.gl/geo-layers/dist/tileset-2d/types";
 import { Matrix4 } from "@math.gl/core";
-import { GeoTIFF } from "geotiff";
+import { GeoTIFF, GeoTIFFImage } from "geotiff";
 import proj4 from "proj4";
 
 import { getTileIndices } from "./cog-tile-2d-traversal";
-import type { COGMetadata, COGTileIndex, COGOverview } from "./types";
+import type { COGMetadata, COGTileIndex, COGOverview, Bounds } from "./types";
 
 const OGC_84 = {
   $schema: "https://proj.org/schemas/v0.7/projjson.schema.json",
@@ -89,6 +89,53 @@ const OGC_84 = {
 };
 
 /**
+ * Extract affine geotransform from a GeoTIFF image.
+ *
+ * Returns a 6-element array in Python `affine` package ordering:
+ * [a, b, c, d, e, f] where:
+ * - x_geo = a * col + b * row + c
+ * - y_geo = d * col + e * row + f
+ *
+ * This is NOT GDAL ordering, which is [c, a, b, f, d, e].
+ */
+function extractGeotransform(
+  image: GeoTIFFImage,
+): [number, number, number, number, number, number] {
+  const origin = image.getOrigin();
+  const resolution = image.getResolution();
+
+  // origin: [x, y, z]
+  // resolution: [x_res, y_res, z_res]
+
+  // Check for rotation/skew in the file directory
+  const fileDirectory = image.getFileDirectory();
+  const modelTransformation = fileDirectory.ModelTransformation;
+
+  let b = 0; // row rotation
+  let d = 0; // column rotation
+
+  if (modelTransformation && modelTransformation.length >= 16) {
+    // ModelTransformation is a 4x4 matrix in row-major order
+    // [0  1  2  3 ]   [a  b  0  c]
+    // [4  5  6  7 ] = [d  e  0  f]
+    // [8  9  10 11]   [0  0  1  0]
+    // [12 13 14 15]   [0  0  0  1]
+    b = modelTransformation[1];
+    d = modelTransformation[4];
+  }
+
+  // Return in affine package ordering: [a, b, c, d, e, f]
+  return [
+    resolution[0], // a: pixel width
+    b, // b: row rotation
+    origin[0], // c: x origin
+    d, // d: column rotation
+    resolution[1], // e: pixel height (often negative)
+    origin[1], // f: y origin
+  ];
+}
+
+/**
  * Extract COG metadata
  */
 export async function extractCOGMetadata(tiff: GeoTIFF): Promise<COGMetadata> {
@@ -108,6 +155,10 @@ export async function extractCOGMetadata(tiff: GeoTIFF): Promise<COGMetadata> {
     geoKeys.ProjectedCSTypeGeoKey || geoKeys.GeographicTypeGeoKey || null;
   const projection = projectionCode ? `EPSG:${projectionCode}` : null;
 
+  // Extract geotransform from full-resolution image
+  // Only the top-level IFD has geo keys, so we'll derive overviews from this
+  const baseGeotransform = extractGeotransform(image);
+
   // Overviews **in COG order**, from finest to coarsest (we'll reverse the
   // array later)
   const overviews: COGOverview[] = [];
@@ -121,6 +172,7 @@ export async function extractCOGMetadata(tiff: GeoTIFF): Promise<COGMetadata> {
     tilesX,
     tilesY,
     scaleFactor: 1,
+    geotransform: baseGeotransform,
     // TODO: combine these two properties into one
     level: imageCount - 1, // Coarsest level number
     z: imageCount - 1,
@@ -133,13 +185,34 @@ export async function extractCOGMetadata(tiff: GeoTIFF): Promise<COGMetadata> {
     const overviewTileWidth = overview.getTileWidth();
     const overviewTileHeight = overview.getTileHeight();
 
+    const scaleFactor = Math.round(width / overviewWidth);
+
+    // Derive geotransform for this overview by scaling pixel size
+    // [a, b, c, d, e, f] where a and e are pixel dimensions
+    const overviewGeotransform: [
+      number,
+      number,
+      number,
+      number,
+      number,
+      number,
+    ] = [
+      baseGeotransform[0] * scaleFactor, // a: scaled pixel width
+      baseGeotransform[1] * scaleFactor, // b: scaled row rotation
+      baseGeotransform[2], // c: same x origin
+      baseGeotransform[3] * scaleFactor, // d: scaled column rotation
+      baseGeotransform[4] * scaleFactor, // e: scaled pixel height (typically negative)
+      baseGeotransform[5], // f: same y origin
+    ];
+
     overviews.push({
       geoTiffIndex: i,
       width: overviewWidth,
       height: overviewHeight,
       tilesX: Math.ceil(overviewWidth / overviewTileWidth),
       tilesY: Math.ceil(overviewHeight / overviewTileHeight),
-      scaleFactor: Math.round(width / overviewWidth),
+      scaleFactor,
+      geotransform: overviewGeotransform,
       // TODO: combine these two properties into one
       level: imageCount - 1 - i,
       z: imageCount - 1 - i,

@@ -276,28 +276,42 @@ export class COGTileNode {
     project: ((xyz: number[]) => number[]) | null,
   ) {
     const overview = this.overview;
-    const { bbox } = this.cogMetadata;
+    const { tileWidth, tileHeight } = this.cogMetadata;
 
+    // Use geotransform to calculate tile bounds
+    // geotransform: [a, b, c, d, e, f] where:
+    // x_geo = a * col + b * row + c
+    // y_geo = d * col + e * row + f
+    const [a, b, c, d, e, f] = overview.geotransform;
+
+    // Calculate pixel coordinates for this tile's extent
+    const pixelMinCol = this.x * tileWidth;
+    const pixelMinRow = this.y * tileHeight;
+    const pixelMaxCol = (this.x + 1) * tileWidth;
+    const pixelMaxRow = (this.y + 1) * tileHeight;
+
+    // Sample reference points across the tile surface
     const refPoints = REF_POINTS_9;
-
-    // Sample points across the tile surface and project to common space
     const refPointPositions: number[][] = [];
+
     for (const [pX, pY] of refPoints) {
-      // Convert tile-relative coordinates [0-1] to geographic coordinates in
-      // the COG's CRS
+      // pX, pY are in [0, 1] range
+      // Interpolate pixel coordinates within the tile
+      const col = pixelMinCol + pX * (pixelMaxCol - pixelMinCol);
+      const row = pixelMinRow + pY * (pixelMaxRow - pixelMinRow);
+
+      // Convert pixel coordinates to geographic coordinates using geotransform
+      const geoX = a * col + b * row + c;
+      const geoY = d * col + e * row + f;
+
+      refPointPositions.push([geoX, geoY]);
     }
 
-    // TODO: use tileWidth/tileHeight from cogMetadata instead?
-    const cogWidth = bbox[2] - bbox[0];
-    const cogHeight = bbox[3] - bbox[1];
-
-    const tileGeoWidth = cogWidth / overview.tilesX;
-    const tileGeoHeight = cogHeight / overview.tilesY;
-
-    const tileMinX = bbox[0] + this.x * tileGeoWidth;
-    const tileMinY = bbox[1] + this.y * tileGeoHeight;
-    const tileMaxX = tileMinX + tileGeoWidth;
-    const tileMaxY = tileMinY + tileGeoHeight;
+    // Calculate bounding box for debugging
+    const tileMinX = Math.min(...refPointPositions.map((p) => p[0]));
+    const tileMaxX = Math.max(...refPointPositions.map((p) => p[0]));
+    const tileMinY = Math.min(...refPointPositions.map((p) => p[1]));
+    const tileMaxY = Math.max(...refPointPositions.map((p) => p[1]));
 
     console.log("Tile bounding box:");
     console.log(tileMinX, tileMinY, tileMaxX, tileMaxY);

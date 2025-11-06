@@ -155,6 +155,30 @@ export type COGOverview = {
    * level: 3, geoTiffIndex: 0  // Finest (GeoTIFF main image)
    */
   geoTiffIndex: number;
+
+  /**
+   * Affine geotransform for this overview level.
+   *
+   * Uses Python `affine` package ordering (NOT GDAL ordering):
+   * [a, b, c, d, e, f] where:
+   * - x_geo = a * col + b * row + c
+   * - y_geo = d * col + e * row + f
+   *
+   * Parameters:
+   * - a: pixel width (x resolution)
+   * - b: row rotation (typically 0)
+   * - c: x-coordinate of upper-left corner of the upper-left pixel
+   * - d: column rotation (typically 0)
+   * - e: pixel height (y resolution, typically negative)
+   * - f: y-coordinate of upper-left corner of the upper-left pixel
+   *
+   * @example
+   * // For a UTM image with 30m pixels:
+   * [30, 0, 440720, 0, -30, 3751320]
+   * // x_geo = 30 * col + 440720
+   * // y_geo = -30 * row + 3751320
+   */
+  geotransform: [number, number, number, number, number, number];
 };
 
 /**
@@ -163,6 +187,7 @@ export type COGOverview = {
 export type COGMetadata = {
   width: number;
   height: number;
+  /** Number of pixels wide for each tile */
   tileWidth: number;
   tileHeight: number;
   tilesX: number;
