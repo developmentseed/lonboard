@@ -2,25 +2,25 @@ import { Button, ButtonGroup, Tooltip } from "@nextui-org/react";
 import React from "react";
 
 import { SquareIcon, XMarkIcon } from "./icons";
-import { MachineContext } from "./xstate";
-import * as selectors from "./xstate/selectors";
+import { useStore } from "./store";
 
 const Toolbar: React.FC = () => {
-  const actorRef = MachineContext.useActorRef();
-  const isDrawingBBoxSelection = MachineContext.useSelector(
-    selectors.isDrawingBBoxSelection,
-  );
-  const isBboxDefined = MachineContext.useSelector(
-    (state) => state.context.bboxSelectStart && state.context.bboxSelectEnd,
-  );
+  const isDrawingBbox = useStore((state) => state.isDrawingBbox);
+  const bboxSelectStart = useStore((state) => state.bboxSelectStart);
+  const bboxSelectEnd = useStore((state) => state.bboxSelectEnd);
+  const startBboxSelection = useStore((state) => state.startBboxSelection);
+  const cancelBboxSelection = useStore((state) => state.cancelBboxSelection);
+  const clearBboxSelection = useStore((state) => state.clearBboxSelection);
+
+  const isBboxDefined = bboxSelectStart && bboxSelectEnd;
 
   const handleButtonClick = () => {
-    if (isDrawingBBoxSelection) {
-      actorRef.send({ type: "Cancel BBox draw" });
+    if (isDrawingBbox) {
+      cancelBboxSelection();
     } else if (isBboxDefined) {
-      actorRef.send({ type: "Clear BBox" });
+      clearBboxSelection();
     } else {
-      actorRef.send({ type: "BBox select button clicked" });
+      startBboxSelection();
     }
   };
 
@@ -44,7 +44,7 @@ const Toolbar: React.FC = () => {
       <ButtonGroup variant="flat">
         <Tooltip
           content={
-            isDrawingBBoxSelection
+            isDrawingBbox
               ? "Cancel drawing"
               : isBboxDefined
                 ? "Clear bounding box"
@@ -55,14 +55,14 @@ const Toolbar: React.FC = () => {
           <Button
             isIconOnly
             aria-label={
-              isDrawingBBoxSelection
+              isDrawingBbox
                 ? "Cancel drawing"
                 : isBboxDefined
                   ? "Clear bounding box"
                   : "Select BBox"
             }
             color={
-              isDrawingBBoxSelection
+              isDrawingBbox
                 ? "warning"
                 : isBboxDefined
                   ? "danger"
@@ -70,7 +70,7 @@ const Toolbar: React.FC = () => {
             }
             onClick={handleButtonClick}
           >
-            {isDrawingBBoxSelection || isBboxDefined ? (
+            {isDrawingBbox || isBboxDefined ? (
               <XMarkIcon />
             ) : (
               <SquareIcon />

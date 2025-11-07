@@ -11,7 +11,6 @@
     "@geoarrow/deck.gl-layers": "^0.4.0-beta.6",
     "@geoarrow/geoarrow-js": "^0.3.2",
     "@nextui-org/react": "^2.4.8",
-    "@xstate/react": "^6.0.0",
     "apache-arrow": "^21.1.0",
     "esbuild-sass-plugin": "^3.3.1",
     "framer-motion": "^12.23.19",
@@ -25,7 +24,7 @@
     "react-map-gl": "^8.1.0",
     "threads": "1.7.0",
     "uuid": "^13.0.0",
-    "xstate": "^5.22.0"
+    "zustand": "^5.0.2"
   },
   "type": "module",
   "devDependencies": {

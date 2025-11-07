@@ -1,14 +1,16 @@
 import { createRender, useModel, useModelState } from "@anywidget/react";
 import type { Initialize, Render } from "@anywidget/types";
 import { MapViewState, PickingInfo } from "@deck.gl/core";
+import { GeoArrowPickingInfo } from "@geoarrow/deck.gl-layers";
 import { DeckGLRef } from "@deck.gl/react";
 import type { IWidgetManager } from "@jupyter-widgets/base";
 import { NextUIProvider } from "@nextui-org/react";
 import debounce from "lodash.debounce";
 import throttle from "lodash.throttle";
 import * as React from "react";
-import { useCallback, useEffect, useRef, useState } from "react";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { v4 as uuidv4 } from "uuid";
+import { PolygonLayer, PolygonLayerProps } from "@deck.gl/layers";
 
 import { flyTo } from "./actions/fly-to.js";
 import {
@@ -32,8 +34,7 @@ import Toolbar from "./toolbar.js";
 import { getTooltip } from "./tooltip/index.js";
 import { Message } from "./types.js";
 import { isDefined, isGlobeView, sanitizeViewState } from "./util.js";
-import { MachineContext, MachineProvider } from "./xstate";
-import * as selectors from "./xstate/selectors";
+import { useStore } from "./store";
 
 import "maplibre-gl/dist/maplibre-gl.css";
 import "./globals.css";
@@ -41,24 +42,63 @@ import "./globals.css";
 await initParquetWasm();
 
 function App() {
-  const actorRef = MachineContext.useActorRef();
-  const isDrawingBBoxSelection = MachineContext.useSelector(
-    selectors.isDrawingBBoxSelection,
-  );
-  const isOnMapHoverEventEnabled = MachineContext.useSelector(
-    selectors.isOnMapHoverEventEnabled,
-  );
-
-  const highlightedFeature = MachineContext.useSelector(
-    (s) => s.context.highlightedFeature,
-  );
-
-  const bboxSelectPolygonLayer = MachineContext.useSelector(
-    selectors.getBboxSelectPolygonLayer,
-  );
-  const bboxSelectBounds = MachineContext.useSelector(
-    selectors.getBboxSelectBounds,
-  );
+  const highlightedFeature = useStore((state) => state.highlightedFeature);
+  const setHighlightedFeature = useStore((state) => state.setHighlightedFeature);
+  
+  const isDrawingBbox = useStore((state) => state.isDrawingBbox);
+  const bboxSelectStart = useStore((state) => state.bboxSelectStart);
+  const bboxSelectEnd = useStore((state) => state.bboxSelectEnd);
+  const setBboxStart = useStore((state) => state.setBboxStart);
+  const setBboxEnd = useStore((state) => state.setBboxEnd);
+  const setBboxHover = useStore((state) => state.setBboxHover);
+  
+  // isOnMapHoverEventEnabled: hover is enabled when we're drawing and have a start point
+  const isOnMapHoverEventEnabled = isDrawingBbox && bboxSelectStart !== undefined;
+  
+  // Calculate bboxSelectBounds
+  const bboxSelectBounds = useMemo(() => {
+    if (bboxSelectStart && bboxSelectEnd) {
+      const [x0, y0] = bboxSelectStart;
+      const [x1, y1] = bboxSelectEnd;
+      return [
+        Math.min(x0, x1),
+        Math.min(y0, y1),
+        Math.max(x0, x1),
+        Math.max(y0, y1),
+      ];
+    }
+    return null;
+  }, [bboxSelectStart, bboxSelectEnd]);
+  
+  // Create bboxSelectPolygonLayer
+  const bboxSelectPolygonLayer = useMemo(() => {
+    if (bboxSelectStart && bboxSelectEnd) {
+      const bboxProps: PolygonLayerProps = {
+        id: "bbox-select-polygon",
+        data: [
+          [
+            [bboxSelectStart[0], bboxSelectStart[1]],
+            [bboxSelectEnd[0], bboxSelectStart[1]],
+            [bboxSelectEnd[0], bboxSelectEnd[1]],
+            [bboxSelectStart[0], bboxSelectEnd[1]],
+          ],
+        ],
+        getPolygon: (d) => d,
+        getFillColor: [0, 0, 0, 50],
+        getLineColor: [0, 0, 0, 130],
+        stroked: true,
+        getLineWidth: 2,
+        lineWidthUnits: "pixels",
+      };
+      if (isDrawingBbox) {
+        bboxProps.getFillColor = [255, 255, 0, 120];
+        bboxProps.getLineColor = [211, 211, 38, 200];
+        bboxProps.getLineWidth = 2;
+      }
+      return new PolygonLayer(bboxProps);
+    }
+    return null;
+  }, [bboxSelectStart, bboxSelectEnd, isDrawingBbox]);
 
   const [justClicked, setJustClicked] = useState<boolean>(false);
 
@@ -138,7 +178,7 @@ function App() {
     model.widget_manager as IWidgetManager,
     updateStateCallback,
     bboxSelectBounds,
-    isDrawingBBoxSelection,
+    isDrawingBbox,
     setSelectedBounds,
   );
 
@@ -157,27 +197,41 @@ function App() {
       }
     }
     setJustClicked(true);
-    actorRef.send({
-      type: "Map click event",
-      data: info,
-    });
+    
+    // Handle feature highlighting with Zustand
+    const clickedObject = info.object;
+    if (typeof clickedObject !== "undefined") {
+      setHighlightedFeature(info as GeoArrowPickingInfo);
+    } else {
+      setHighlightedFeature(undefined);
+    }
+    
+    // Handle bbox selection with Zustand
+    if (isDrawingBbox && info.coordinate) {
+      if (bboxSelectStart === undefined) {
+        // First click: set start point
+        setBboxStart(info.coordinate);
+      } else {
+        // Second click: set end point and finish
+        setBboxEnd(info.coordinate);
+      }
+    }
+    
     setTimeout(() => {
       setJustClicked(false);
     }, 100);
-  }, []);
+  }, [setHighlightedFeature, isDrawingBbox, bboxSelectStart, setBboxStart, setBboxEnd]);
 
   const onMapHoverHandler = useCallback(
     throttle(
-      (info: PickingInfo) =>
-        isOnMapHoverEventEnabled &&
-        !justClicked &&
-        actorRef.send({
-          type: "Map hover event",
-          data: info,
-        }),
+      (info: PickingInfo) => {
+        if (isOnMapHoverEventEnabled && !justClicked && info.coordinate) {
+          setBboxHover(info.coordinate);
+        }
+      },
       100,
     ),
-    [isOnMapHoverEventEnabled, justClicked],
+    [isOnMapHoverEventEnabled, justClicked, setBboxHover],
   );
 
   const mapRenderProps: MapRendererProps = {
@@ -189,7 +243,7 @@ function App() {
       ? layers.concat(bboxSelectPolygonLayer)
       : layers,
     getTooltip: (showTooltip && getTooltip) || undefined,
-    getCursor: () => (isDrawingBBoxSelection ? "crosshair" : "grab"),
+    getCursor: () => (isDrawingBbox ? "crosshair" : "grab"),
     pickingRadius: pickingRadius,
     onClick: onMapClickHandler,
     onHover: onMapHoverHandler,
@@ -243,7 +297,7 @@ function App() {
         {showSidePanel && highlightedFeature && (
           <SidePanel
             info={highlightedFeature}
-            onClose={() => actorRef.send({ type: "Close side panel" })}
+            onClose={() => setHighlightedFeature(undefined)}
           />
         )}
         <div className="bg-transparent h-full w-full relative">
@@ -261,9 +315,7 @@ function App() {
 
 const WrappedApp = () => (
   <NextUIProvider>
-    <MachineProvider>
-      <App />
-    </MachineProvider>
+    <App />
   </NextUIProvider>
 );
 
