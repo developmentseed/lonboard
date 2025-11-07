@@ -17,10 +17,14 @@ class TestBboxSelectionWorkflow:
     """Test bbox selection workflow."""
 
     def test_complete_bbox_workflow(self, page_session, sample_map):
-        canvas = setup_map_widget(page_session, sample_map)
+        setup_map_widget(page_session, sample_map)
 
         # Initial state
-        select_button = wait_for_button(page_session, "select", TestConstants.TIMEOUT_BUTTON_CLICK)
+        select_button = wait_for_button(
+            page_session,
+            "select",
+            TestConstants.TIMEOUT_BUTTON_CLICK,
+        )
         assert select_button.count() > 0
 
         # Start selection
@@ -61,7 +65,7 @@ class TestBboxSelectionWorkflow:
         assert verify_bbox_cleared(sample_map)
 
     def test_bbox_clear_after_completion(self, page_session, sample_map):
-        canvas = setup_map_widget(page_session, sample_map)
+        setup_map_widget(page_session, sample_map)
 
         start_bbox_selection(page_session)
         draw_bbox_on_canvas(page_session)
@@ -111,10 +115,14 @@ class TestToolbarStates:
     """Test toolbar button states."""
 
     def test_button_state_transitions(self, page_session, sample_map):
-        canvas = setup_map_widget(page_session, sample_map)
+        setup_map_widget(page_session, sample_map)
 
         # Initial state
-        select_button = wait_for_button(page_session, "select", TestConstants.TIMEOUT_BUTTON_CLICK)
+        select_button = wait_for_button(
+            page_session,
+            "select",
+            TestConstants.TIMEOUT_BUTTON_CLICK,
+        )
         assert select_button.count() > 0
 
         # Selection mode
@@ -132,4 +140,3 @@ class TestToolbarStates:
         page_session.wait_for_timeout(TestConstants.TIMEOUT_AFTER_CLICK)
         select_button = wait_for_button(page_session, "select")
         assert select_button.count() > 0
-

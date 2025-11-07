@@ -1,8 +1,9 @@
 import { createRender, useModel, useModelState } from "@anywidget/react";
 import type { Initialize, Render } from "@anywidget/types";
 import { MapViewState, PickingInfo } from "@deck.gl/core";
-import { GeoArrowPickingInfo } from "@geoarrow/deck.gl-layers";
+import { PolygonLayer, PolygonLayerProps } from "@deck.gl/layers";
 import { DeckGLRef } from "@deck.gl/react";
+import { GeoArrowPickingInfo } from "@geoarrow/deck.gl-layers";
 import type { IWidgetManager } from "@jupyter-widgets/base";
 import { NextUIProvider } from "@nextui-org/react";
 import debounce from "lodash.debounce";
@@ -10,7 +11,6 @@ import throttle from "lodash.throttle";
 import * as React from "react";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { v4 as uuidv4 } from "uuid";
-import { PolygonLayer, PolygonLayerProps } from "@deck.gl/layers";
 
 import { flyTo } from "./actions/fly-to.js";
 import {
@@ -30,11 +30,11 @@ import {
 } from "./renderers/types.js";
 import SidePanel from "./sidepanel/index";
 import { useViewStateDebounced } from "./state";
+import { useStore } from "./store";
 import Toolbar from "./toolbar.js";
 import { getTooltip } from "./tooltip/index.js";
 import { Message } from "./types.js";
 import { isDefined, isGlobeView, sanitizeViewState } from "./util.js";
-import { useStore } from "./store";
 
 import "maplibre-gl/dist/maplibre-gl.css";
 import "./globals.css";
@@ -43,19 +43,20 @@ await initParquetWasm();
 
 function App() {
   const highlightedFeature = useStore((state) => state.highlightedFeature);
-  const setHighlightedFeature = useStore((state) => state.setHighlightedFeature);
-  
+  const setHighlightedFeature = useStore(
+    (state) => state.setHighlightedFeature,
+  );
+
   const isDrawingBbox = useStore((state) => state.isDrawingBbox);
   const bboxSelectStart = useStore((state) => state.bboxSelectStart);
   const bboxSelectEnd = useStore((state) => state.bboxSelectEnd);
   const setBboxStart = useStore((state) => state.setBboxStart);
   const setBboxEnd = useStore((state) => state.setBboxEnd);
   const setBboxHover = useStore((state) => state.setBboxHover);
-  
-  // isOnMapHoverEventEnabled: hover is enabled when we're drawing and have a start point
-  const isOnMapHoverEventEnabled = isDrawingBbox && bboxSelectStart !== undefined;
-  
-  // Calculate bboxSelectBounds
+
+  const isOnMapHoverEventEnabled =
+    isDrawingBbox && bboxSelectStart !== undefined;
+
   const bboxSelectBounds = useMemo(() => {
     if (bboxSelectStart && bboxSelectEnd) {
       const [x0, y0] = bboxSelectStart;
@@ -69,8 +70,7 @@ function App() {
     }
     return null;
   }, [bboxSelectStart, bboxSelectEnd]);
-  
-  // Create bboxSelectPolygonLayer
+
   const bboxSelectPolygonLayer = useMemo(() => {
     if (bboxSelectStart && bboxSelectEnd) {
       const bboxProps: PolygonLayerProps = {
@@ -188,49 +188,51 @@ function App() {
     updateStateCallback,
   );
 
-  const onMapClickHandler = useCallback((info: PickingInfo) => {
-    // We added this flag to prevent the hover event from firing after a
-    // click event.
-    if (typeof info.coordinate !== "undefined") {
-      if (model.get("_has_click_handlers")) {
-        model.send({ kind: "on-click", coordinate: info.coordinate });
+  const onMapClickHandler = useCallback(
+    (info: PickingInfo) => {
+      // We added this flag to prevent the hover event from firing after a
+      // click event.
+      if (typeof info.coordinate !== "undefined") {
+        if (model.get("_has_click_handlers")) {
+          model.send({ kind: "on-click", coordinate: info.coordinate });
+        }
       }
-    }
-    setJustClicked(true);
-    
-    // Handle feature highlighting with Zustand
-    const clickedObject = info.object;
-    if (typeof clickedObject !== "undefined") {
-      setHighlightedFeature(info as GeoArrowPickingInfo);
-    } else {
-      setHighlightedFeature(undefined);
-    }
-    
-    // Handle bbox selection with Zustand
-    if (isDrawingBbox && info.coordinate) {
-      if (bboxSelectStart === undefined) {
-        // First click: set start point
-        setBboxStart(info.coordinate);
+      setJustClicked(true);
+
+      const clickedObject = info.object;
+      if (typeof clickedObject !== "undefined") {
+        setHighlightedFeature(info as GeoArrowPickingInfo);
       } else {
-        // Second click: set end point and finish
-        setBboxEnd(info.coordinate);
+        setHighlightedFeature(undefined);
       }
-    }
-    
-    setTimeout(() => {
-      setJustClicked(false);
-    }, 100);
-  }, [setHighlightedFeature, isDrawingBbox, bboxSelectStart, setBboxStart, setBboxEnd]);
+
+      if (isDrawingBbox && info.coordinate) {
+        if (bboxSelectStart === undefined) {
+          setBboxStart(info.coordinate);
+        } else {
+          setBboxEnd(info.coordinate);
+        }
+      }
+
+      setTimeout(() => {
+        setJustClicked(false);
+      }, 100);
+    },
+    [
+      setHighlightedFeature,
+      isDrawingBbox,
+      bboxSelectStart,
+      setBboxStart,
+      setBboxEnd,
+    ],
+  );
 
   const onMapHoverHandler = useCallback(
-    throttle(
-      (info: PickingInfo) => {
-        if (isOnMapHoverEventEnabled && !justClicked && info.coordinate) {
-          setBboxHover(info.coordinate);
-        }
-      },
-      100,
-    ),
+    throttle((info: PickingInfo) => {
+      if (isOnMapHoverEventEnabled && !justClicked && info.coordinate) {
+        setBboxHover(info.coordinate);
+      }
+    }, 100),
     [isOnMapHoverEventEnabled, justClicked, setBboxHover],
   );
 

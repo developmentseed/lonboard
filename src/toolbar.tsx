@@ -62,19 +62,11 @@ const Toolbar: React.FC = () => {
                   : "Select BBox"
             }
             color={
-              isDrawingBbox
-                ? "warning"
-                : isBboxDefined
-                  ? "danger"
-                  : "default"
+              isDrawingBbox ? "warning" : isBboxDefined ? "danger" : "default"
             }
             onClick={handleButtonClick}
           >
-            {isDrawingBbox || isBboxDefined ? (
-              <XMarkIcon />
-            ) : (
-              <SquareIcon />
-            )}
+            {isDrawingBbox || isBboxDefined ? <XMarkIcon /> : <SquareIcon />}
           </Button>
         </Tooltip>
       </ButtonGroup>

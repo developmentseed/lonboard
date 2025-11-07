@@ -1,13 +1,14 @@
 """Test utilities and constants."""
 
 import re
+from typing import ClassVar
 
 
 class TestConstants:
-    CANVAS_START_POS = {"x": 25, "y": 25}
-    CANVAS_END_POS = {"x": 75, "y": 75}
-    CANVAS_CENTER_POS = {"x": 400, "y": 300}
-    CANVAS_EMPTY_POS = {"x": 100, "y": 100}
+    CANVAS_START_POS: ClassVar[dict[str, int]] = {"x": 25, "y": 25}
+    CANVAS_END_POS: ClassVar[dict[str, int]] = {"x": 75, "y": 75}
+    CANVAS_CENTER_POS: ClassVar[dict[str, int]] = {"x": 400, "y": 300}
+    CANVAS_EMPTY_POS: ClassVar[dict[str, int]] = {"x": 100, "y": 100}
     TIMEOUT_WIDGET_LOAD = 30000
     TIMEOUT_BUTTON_CLICK = 10000
     TIMEOUT_BUTTON_STATE = 5000
@@ -27,12 +28,12 @@ def validate_geographic_bounds(bounds):
         return True
 
     return (
-        -180 <= min_lon <= 180 and
-        -180 <= max_lon <= 180 and
-        -90 <= min_lat <= 90 and
-        -90 <= max_lat <= 90 and
-        min_lon < max_lon and
-        min_lat < max_lat
+        -180 <= min_lon <= 180
+        and -180 <= max_lon <= 180
+        and -90 <= min_lat <= 90
+        and -90 <= max_lat <= 90
+        and min_lon < max_lon
+        and min_lat < max_lat
     )
 
 
@@ -50,9 +51,12 @@ def validate_geographic_data(data_text: str | None):
 
     min_lon, min_lat, max_lon, max_lat = map(float, data_match.groups())
     assert all(coord != 0 for coord in (min_lon, min_lat, max_lon, max_lat))
-    assert min_lon < max_lon and min_lat < max_lat
-    assert -180 <= min_lon <= 180 and -180 <= max_lon <= 180
-    assert -90 <= min_lat <= 90 and -90 <= max_lat <= 90
+    assert min_lon < max_lon
+    assert min_lat < max_lat
+    assert -180 <= min_lon <= 180
+    assert -180 <= max_lon <= 180
+    assert -90 <= min_lat <= 90
+    assert -90 <= max_lat <= 90
 
 
 def draw_bbox_on_canvas(page_session, start_pos=None, end_pos=None):
@@ -95,9 +99,9 @@ def verify_bbox_cleared(sample_map):
 def get_button(page_session, button_type: str):
     """Get toolbar button by type."""
     button_selectors = {
-        'select': 'button[aria-label*="Select"]',
-        'cancel': 'button[aria-label*="Cancel"]',
-        'clear': 'button[aria-label*="Clear"]',
+        "select": 'button[aria-label*="Select"]',
+        "cancel": 'button[aria-label*="Cancel"]',
+        "clear": 'button[aria-label*="Clear"]',
     }
 
     if button_type not in button_selectors:

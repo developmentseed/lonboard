@@ -37,7 +37,11 @@ class TestFeatureHighlighting:
             assert canvas.count() > 0
             page_session.wait_for_timeout(200)
 
-    def test_feature_highlighting_with_bbox_mode(self, page_session, sample_map_with_side_panel):
+    def test_feature_highlighting_with_bbox_mode(
+        self,
+        page_session,
+        sample_map_with_side_panel,
+    ):
         canvas = setup_map_widget(page_session, sample_map_with_side_panel)
 
         # Start bbox mode
@@ -56,4 +60,3 @@ class TestFeatureHighlighting:
         # Verify return to normal
         select_button = wait_for_button(page_session, "select")
         assert select_button.count() > 0
-

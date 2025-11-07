@@ -2,7 +2,6 @@
 
 import pytest
 from IPython.display import display
-
 from test_utils import (
     TestConstants,
     draw_bbox_on_canvas,

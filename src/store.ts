@@ -1,5 +1,5 @@
-import { create } from "zustand";
 import { GeoArrowPickingInfo } from "@geoarrow/deck.gl-layers";
+import { create } from "zustand";
 
 interface AppState {
   highlightedFeature: GeoArrowPickingInfo | undefined;
@@ -15,16 +15,24 @@ interface AppState {
   setBboxHover: (coordinate: number[]) => void;
 }
 
-export const useStore = create<AppState>((set, get) => ({
+export const useStore = create<AppState>((set) => ({
   highlightedFeature: undefined,
   setHighlightedFeature: (feature) => set({ highlightedFeature: feature }),
   bboxSelectStart: undefined,
   bboxSelectEnd: undefined,
   isDrawingBbox: false,
   startBboxSelection: () =>
-    set({ isDrawingBbox: true, bboxSelectStart: undefined, bboxSelectEnd: undefined }),
+    set({
+      isDrawingBbox: true,
+      bboxSelectStart: undefined,
+      bboxSelectEnd: undefined,
+    }),
   cancelBboxSelection: () =>
-    set({ isDrawingBbox: false, bboxSelectStart: undefined, bboxSelectEnd: undefined }),
+    set({
+      isDrawingBbox: false,
+      bboxSelectStart: undefined,
+      bboxSelectEnd: undefined,
+    }),
   clearBboxSelection: () =>
     set({ bboxSelectStart: undefined, bboxSelectEnd: undefined }),
   setBboxStart: (coordinate) => set({ bboxSelectStart: coordinate }),
@@ -45,4 +53,3 @@ export const useStore = create<AppState>((set, get) => ({
       return {};
     }),
 }));
-

@@ -47,4 +47,3 @@ def sample_map(sample_layer):
 def sample_map_with_side_panel(sample_layer):
     """Lonboard map with side panel enabled for testing."""
     return Map(sample_layer, show_side_panel=True)
-
