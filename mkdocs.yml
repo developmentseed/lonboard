@@ -47,6 +47,7 @@ nav:
       - examples/kontur_pop.ipynb
       - examples/migration.ipynb
       - examples/data-filter-extension.ipynb
+      - examples/data-filter-extension-categorical.ipynb
       - examples/column-layer.ipynb
       - examples/interleaved-labels.ipynb
       - examples/linked-maps.ipynb
