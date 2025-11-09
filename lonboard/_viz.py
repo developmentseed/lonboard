@@ -6,7 +6,7 @@ from __future__ import annotations
 
 import json
 from textwrap import dedent
-from typing import TYPE_CHECKING, Any, Literal, Protocol, TypeAlias, cast
+from typing import TYPE_CHECKING, Any, Protocol, TypeAlias, cast
 
 import numpy as np
 from arro3.core import Array, ChunkedArray, Schema, Table, struct_field
@@ -26,7 +26,6 @@ from lonboard._utils import (
 )
 from lonboard.basemap import CartoStyle, MaplibreBasemap
 from lonboard.layer import PathLayer, PolygonLayer, ScatterplotLayer
-from lonboard.view import BaseView, GlobeView
 
 if TYPE_CHECKING:
     import duckdb
@@ -82,29 +81,29 @@ COLOR_COUNTER = 0
 DEFAULT_POLYGON_LINE_COLOR = [0, 0, 0, 200]
 
 
-def viz(  # noqa: PLR0913
+def viz(
     data: VizDataInput | list[VizDataInput] | tuple[VizDataInput, ...],
     *,
     scatterplot_kwargs: ScatterplotLayerKwargs | None = None,
     path_kwargs: PathLayerKwargs | None = None,
     polygon_kwargs: PolygonLayerKwargs | None = None,
     map_kwargs: MapKwargs | None = None,
-    view: BaseView | Literal["globe"] | None = None,
 ) -> Map:
     """Plot your data easily.
 
     The goal of this function is to make it simple to get _something_ showing on a map.
-    For more control over rendering, construct `Map` and `Layer` objects directly.
+    For more control over rendering, construct [`Map`][lonboard.Map] and
+    [`Layer`][lonboard.BaseLayer] objects directly.
 
     This function accepts a variety of geospatial inputs:
 
-    - GeoPandas `GeoDataFrame`.
-    - GeoPandas `GeoSeries`.
+    - GeoPandas [`GeoDataFrame`][geopandas.GeoDataFrame].
+    - GeoPandas [`GeoSeries`][geopandas.GeoSeries].
     - numpy array of Shapely objects.
     - Single Shapely object.
     - A DuckDB query with a spatial column from DuckDB Spatial.
 
-        !!! warning
+        !!! info
 
             The DuckDB query must be run with
             [`duckdb.sql()`](https://duckdb.org/docs/api/python/reference/#duckdb.sql)
@@ -134,7 +133,7 @@ def viz(  # noqa: PLR0913
             viz(con.table("spatial_table"))
             ```
 
-        !!! warning
+        !!! info
 
             DuckDB Spatial does not currently expose coordinate reference system
             information, so the user must ensure that data has been reprojected to
@@ -143,16 +142,16 @@ def viz(  # noqa: PLR0913
     - Any Python class with a `__geo_interface__` property conforming to the
         [Geo Interface protocol](https://gist.github.com/sgillies/2217756).
     - `dict` holding GeoJSON-like data.
-    - pyarrow `Table` with a geometry column marked with a
+    - pyarrow [`Table`][pyarrow.Table] with a geometry column marked with a
         [GeoArrow](https://geoarrow.org/) extension type.
-    - pyarrow `Array` or `ChunkedArray` marked with a [GeoArrow extension type defined by geoarrow-pyarrow](https://geoarrow.org/geoarrow-python/main/pyarrow.html#geoarrow.pyarrow.GeometryExtensionType).
-    - Arrow-compatible Array, ChunkedArray, Table, or RecordBatch objects that have associated GeoArrow metadata. An object is "Arrow-compatible" if it implements the [Arrow PyCapsule Interface](https://arrow.apache.org/docs/format/CDataInterface/PyCapsuleInterface.html) and has either an `__arrow_c_array__` or `__arrow_c_stream__` method. The provided Arrow data must be or have a geometry column marked with a GeoArrow extension type.
+    - pyarrow [`Array`][pyarrow.Array] or [`ChunkedArray`][pyarrow.ChunkedArray] marked with a [GeoArrow extension type defined by geoarrow-pyarrow][geoarrow.pyarrow.GeometryExtensionType].
+    - Arrow-compatible Array, ChunkedArray, Table, or RecordBatch objects that have associated GeoArrow metadata. An object is "Arrow-compatible" if it has either an `__arrow_c_array__` or `__arrow_c_stream__` method, that is, it implements the [Arrow PyCapsule Interface](https://arrow.apache.org/docs/format/CDataInterface/PyCapsuleInterface.html). The provided Arrow data must be or have a geometry column marked with a GeoArrow extension type.
 
-        Some examples of these sources include pyogrio's [`open_arrow`][pyogrio.open_arrow], DuckDB Spatial, [GeoArrow-Rust's Python bindings](https://geoarrow.org/geoarrow-rs/python/latest/), [GeoDataFusion database connections](https://github.com/datafusion-contrib/datafusion-geo), and, soon, [GeoPolars DataFrames](https://github.com/geopolars/geopolars).
+        Some examples of these sources include pyogrio's [`open_arrow`][pyogrio.open_arrow], DuckDB Spatial, [GeoArrow-Rust's Python bindings](https://geoarrow.org/geoarrow-rs/python/latest/), [Sedona DB sessions](https://github.com/apache/sedona-db), [GeoDataFusion database connections](https://github.com/datafusion-contrib/datafusion-geo), and, soon, [GeoPolars DataFrames](https://github.com/geopolars/geopolars).
 
     Alternatively, you can pass a `list` or `tuple` of any of the above inputs.
 
-    If you want to easily add more data, to an existing map, you can pass the output of
+    If you want to easily add more data to an existing map, you can pass the output of
     `viz` into [`Map.add_layer`][lonboard.Map.add_layer].
 
     Args:
@@ -167,7 +166,6 @@ def viz(  # noqa: PLR0913
             [`PolygonLayer`][lonboard.PolygonLayer]s.
         map_kwargs: a `dict` of parameters to pass down to the generated
             [`Map`][lonboard.Map].
-        view: a [view instance][lonboard.view.BaseView] to use for the map view, or the string "globe".
 
     For more control over rendering, construct [`Map`][lonboard.Map] and `Layer` objects
     directly.
@@ -202,12 +200,6 @@ def viz(  # noqa: PLR0913
         COLOR_COUNTER += 1
 
     map_kwargs = map_kwargs if map_kwargs else {}
-
-    if "view" not in map_kwargs and view is not None:
-        if view == "globe":
-            map_kwargs["view"] = GlobeView()
-        else:
-            map_kwargs["view"] = view
 
     if "basemap_style" not in map_kwargs and "basemap" not in map_kwargs:
         map_kwargs["basemap"] = MaplibreBasemap(
@@ -259,13 +251,13 @@ def create_layers_from_data_input(
 
     # duckdb DuckDBPyRelation
     if (
-        data.__class__.__module__.startswith("duckdb")
+        "duckdb" in data.__class__.__module__
         and data.__class__.__name__ == "DuckDBPyRelation"
     ):
         return _viz_duckdb_relation(data, **kwargs)  # type: ignore
 
     if (
-        data.__class__.__module__.startswith("duckdb")
+        "duckdb" in data.__class__.__module__
         and data.__class__.__name__ == "DuckDBPyConnection"
     ):
         raise TypeError(DUCKDB_PY_CONN_ERROR)

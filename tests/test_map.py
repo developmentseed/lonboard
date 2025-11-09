@@ -5,7 +5,7 @@ from traitlets import TraitError
 
 from lonboard import Map, ScatterplotLayer, SolidPolygonLayer, viz
 from lonboard.basemap import MaplibreBasemap
-from lonboard.view import FirstPersonView, GlobeView, OrthographicView
+from lonboard.experimental.view import FirstPersonView, GlobeView, OrthographicView
 from lonboard.view_state import (
     FirstPersonViewState,
     GlobeViewState,
