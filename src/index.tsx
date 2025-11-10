@@ -29,8 +29,7 @@ import {
   OverlayRendererProps,
 } from "./renderers/types.js";
 import SidePanel from "./sidepanel/index";
-import { useViewStateDebounced } from "./state";
-import { useStore } from "./store";
+import { useStore, useViewStateDebounced } from "./state";
 import Toolbar from "./toolbar.js";
 import { getTooltip } from "./tooltip/index.js";
 import { Message } from "./types.js";
@@ -42,11 +41,19 @@ import "./globals.css";
 await initParquetWasm();
 
 function App() {
+  // =========================================================================
+  // Client-Side State (Zustand)
+  // UI-only state that never syncs with Python
+  // See: src/state/store.ts
+  // =========================================================================
+
+  // Feature highlighting
   const highlightedFeature = useStore((state) => state.highlightedFeature);
   const setHighlightedFeature = useStore(
     (state) => state.setHighlightedFeature,
   );
 
+  // Bounding box selection
   const isDrawingBbox = useStore((state) => state.isDrawingBbox);
   const bboxSelectStart = useStore((state) => state.bboxSelectStart);
   const bboxSelectEnd = useStore((state) => state.bboxSelectEnd);
@@ -113,15 +120,24 @@ function App() {
 
   const model = useModel();
 
+  // ============================================================================
+  // Python-Synced State (Backbone models)
+  // ============================================================================
+  // State that bidirectionally syncs with Python via Jupyter widgets
+  // See: src/state/python-sync.ts
+
+  // Map configuration
   const [basemapModelId] = useModelState<string | null>("basemap");
   const [mapHeight] = useModelState<string>("height");
-  const [showTooltip] = useModelState<boolean>("show_tooltip");
-  const [showSidePanel] = useModelState<boolean>("show_side_panel");
-  const [pickingRadius] = useModelState<number>("picking_radius");
   const [useDevicePixels] = useModelState<number | boolean>(
     "use_device_pixels",
   );
   const [parameters] = useModelState<object>("parameters");
+
+  // UI settings
+  const [showTooltip] = useModelState<boolean>("show_tooltip");
+  const [showSidePanel] = useModelState<boolean>("show_side_panel");
+  const [pickingRadius] = useModelState<number>("picking_radius");
   const [customAttribution] = useModelState<string>("custom_attribution");
   const [mapId] = useState(uuidv4());
   const [childLayerIds] = useModelState<string[]>("layers");
