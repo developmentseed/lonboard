@@ -149,3 +149,63 @@ def click_feature_position(page_session, position_type: str = "center"):
     canvas = page_session.locator("canvas").first
     canvas.click(position=positions[position_type])
     page_session.wait_for_timeout(TestConstants.TIMEOUT_AFTER_CLICK)
+
+
+def hover_feature_position(page_session, position_type: str = "center"):
+    """Hover on predefined canvas position."""
+    positions = {
+        "center": TestConstants.CANVAS_CENTER_POS,
+        "empty": TestConstants.CANVAS_EMPTY_POS,
+        "start": TestConstants.CANVAS_START_POS,
+        "end": TestConstants.CANVAS_END_POS,
+    }
+
+    if position_type not in positions:
+        raise ValueError(f"Unknown position type: {position_type}")
+
+    canvas = page_session.locator("canvas").first
+    canvas.hover(position=positions[position_type])
+    page_session.wait_for_timeout(TestConstants.TIMEOUT_INTERACTION)
+
+
+def check_tooltip_visibility(page_session, *, should_be_visible: bool = True):
+    """Check if tooltip is visible in the DOM."""
+    # Look for tooltip element with the specific CSS class
+    tooltip = page_session.locator(".lonboard-tooltip")
+
+    if should_be_visible:
+        # Wait for tooltip to appear and be visible
+        try:
+            tooltip.wait_for(timeout=2000, state="visible")
+            return tooltip.count() > 0 and tooltip.is_visible()
+        except (TimeoutError, AssertionError):
+            return False
+    else:
+        # Check that tooltip is not visible or doesn't exist
+        # We just need to check current state, not wait for it to become hidden
+        count = tooltip.count()
+        if count == 0:
+            return True  # No tooltip exists, which is correct
+        return not tooltip.is_visible()  # Tooltip exists but is hidden
+
+
+def get_tooltip_content(page_session):
+    """Get tooltip content if visible."""
+    tooltip = page_session.locator(".lonboard-tooltip")
+    if tooltip.count() > 0 and tooltip.is_visible():
+        return tooltip.inner_text()
+    return None
+
+
+def get_tooltip_position(page_session):
+    """Get tooltip bounding box if visible."""
+    tooltip = page_session.locator(".lonboard-tooltip")
+    if tooltip.count() > 0 and tooltip.is_visible():
+        bbox = tooltip.bounding_box()
+        return {
+            "x": bbox["x"],
+            "y": bbox["y"],
+            "width": bbox["width"],
+            "height": bbox["height"],
+        }
+    return None

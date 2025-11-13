@@ -47,3 +47,21 @@ def sample_map(sample_layer):
 def sample_map_with_side_panel(sample_layer):
     """Lonboard map with side panel enabled for testing."""
     return Map(sample_layer, show_side_panel=True)
+
+
+@pytest.fixture
+def sample_map_with_tooltip(sample_layer):
+    """Lonboard map with tooltip enabled for testing."""
+    return Map(sample_layer, show_tooltip=True, show_side_panel=False)
+
+
+@pytest.fixture
+def sample_map_with_tooltip_and_panel(sample_layer):
+    """Lonboard map with both tooltip and side panel enabled for testing."""
+    return Map(sample_layer, show_tooltip=True, show_side_panel=True)
+
+
+@pytest.fixture
+def sample_map_with_no_tooltip_or_panel(sample_layer):
+    """Lonboard map with both tooltip and side panel disabled for testing."""
+    return Map(sample_layer, show_tooltip=False, show_side_panel=False)
