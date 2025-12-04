@@ -8,7 +8,6 @@ import {
 } from "@deck.gl/core";
 
 import { MapRendererProps } from "./renderers";
-import { isMap } from "lodash";
 
 // https://stackoverflow.com/a/52097445
 export function isDefined<T>(value: T | undefined | null): value is T {
