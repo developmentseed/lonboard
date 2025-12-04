@@ -8,6 +8,7 @@ import {
 } from "@deck.gl/core";
 
 import { MapRendererProps } from "./renderers";
+import { isMap } from "lodash";
 
 // https://stackoverflow.com/a/52097445
 export function isDefined<T>(value: T | undefined | null): value is T {
@@ -47,6 +48,14 @@ export function sanitizeViewState(
           maxZoom: viewState.maxZoom,
         }
       : 0),
+
+    // Only include pitch & bearing if defined in ViewState
+    ...("pitch" in viewState && Number.isFinite(viewState.pitch)
+      ? { pitch: viewState.pitch }
+      : {}),
+    ...("bearing" in viewState && Number.isFinite(viewState.bearing)
+      ? { bearing: viewState.bearing }
+      : {}),
   };
   return sanitized;
 }
