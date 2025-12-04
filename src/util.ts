@@ -47,14 +47,16 @@ export function sanitizeViewState(
           maxZoom: viewState.maxZoom,
         }
       : 0),
-
-    // Only include pitch & bearing if defined in ViewState
-    ...("pitch" in viewState && Number.isFinite(viewState.pitch)
-      ? { pitch: viewState.pitch }
-      : {}),
-    ...("bearing" in viewState && Number.isFinite(viewState.bearing)
-      ? { bearing: viewState.bearing }
-      : {}),
+    ...(Number.isFinite(viewState.pitch)
+      ? { 
+          pitch: viewState.pitch 
+        }
+      : 0),
+    ...(Number.isFinite(viewState.bearing)
+      ? { 
+          bearing: viewState.bearing 
+        }
+      : 0),
   };
   return sanitized;
 }
