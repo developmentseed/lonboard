@@ -24,6 +24,7 @@ def click_and_drag_canvas(
     Start and end positions are 0-100 percentages of the canvas size.
     """
     canvas = page_session.locator("canvas").first
+    canvas.wait_for(state="visible", timeout=5000)
     bbox = canvas.bounding_box()
 
     # Convert relative coords to absolute pixels
