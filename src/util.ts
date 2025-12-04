@@ -48,13 +48,13 @@ export function sanitizeViewState(
         }
       : 0),
     ...(Number.isFinite(viewState.pitch)
-      ? { 
-          pitch: viewState.pitch 
+      ? {
+          pitch: viewState.pitch
         }
       : 0),
     ...(Number.isFinite(viewState.bearing)
-      ? { 
-          bearing: viewState.bearing 
+      ? {
+          bearing: viewState.bearing
         }
       : 0),
   };
