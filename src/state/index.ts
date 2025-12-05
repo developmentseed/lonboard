@@ -2,8 +2,8 @@
  * State management for Lonboard.
  *
  * Two types of state:
- * - Client-only: UI state that never syncs with Python (Zustand)
- * - Python-synced: State that bidirectionally syncs with Python (Backbone)
+ * - Client-only: UI state that never syncs with Python (Zustand). See `store.ts`
+ * - Python-synced: State that bidirectionally syncs with Python (Backbone). See `python-sync.ts`
  */
 
 export { useStore } from "./store.js";
