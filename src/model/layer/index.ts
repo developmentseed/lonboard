@@ -4,6 +4,7 @@ import { ArcModel } from "./arc.js";
 import { BaseLayerModel } from "./base.js";
 import { BitmapModel, BitmapTileModel } from "./bitmap.js";
 import { ColumnModel } from "./column.js";
+import { GeotiffModel } from "./geotiff.js";
 import { HeatmapModel } from "./heatmap.js";
 import { PathModel } from "./path.js";
 import { PointCloudModel } from "./point-cloud.js";
@@ -66,6 +67,10 @@ export async function initializeLayer(
 
     case GeohashModel.layerType:
       layerModel = new GeohashModel(model, updateStateCallback);
+      break;
+
+    case GeotiffModel.layerType:
+      layerModel = new GeotiffModel(model, updateStateCallback);
       break;
 
     case H3HexagonModel.layerType:
