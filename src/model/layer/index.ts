@@ -16,7 +16,7 @@ import {
   SolidPolygonModel,
 } from "./polygon.js";
 import { ScatterplotModel } from "./scatterplot.js";
-import { SurfaceModel } from "./surface.js";
+import { COGTileModel, SurfaceModel } from "./surface.js";
 import { TextModel } from "./text.js";
 import { TripsModel } from "./trips.js";
 
@@ -33,7 +33,7 @@ export {
   SolidPolygonModel,
 } from "./polygon.js";
 export { ScatterplotModel } from "./scatterplot.js";
-export { SurfaceModel } from "./surface.js";
+export { COGTileModel, SurfaceModel } from "./surface.js";
 export { TextModel } from "./text.js";
 export { TripsModel } from "./trips.js";
 
@@ -58,6 +58,10 @@ export async function initializeLayer(
 
     case BitmapTileModel.layerType:
       layerModel = new BitmapTileModel(model, updateStateCallback);
+      break;
+
+    case COGTileModel.layerType:
+      layerModel = new COGTileModel(model, updateStateCallback);
       break;
 
     case ColumnModel.layerType:

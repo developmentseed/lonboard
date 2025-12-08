@@ -228,3 +228,11 @@ class SurfaceLayer(BaseLayer):
     - Type: `bool`, optional
     - Default: `False`
     """
+
+
+class COGTileLayer(BaseLayer):
+    """COGTileLayer."""
+
+    _layer_type = t.Unicode("cog-tile").tag(sync=True)
+
+    data = t.Unicode().tag(sync=True)

@@ -1,8 +1,17 @@
+import { TileLayer, TileLayerProps } from "@deck.gl/geo-layers";
+import type { Tileset2DProps } from "@deck.gl/geo-layers/dist/tileset-2d";
+import { PathLayer } from "@deck.gl/layers";
 import { SimpleMeshLayer, SimpleMeshLayerProps } from "@deck.gl/mesh-layers";
 import type { WidgetModel } from "@jupyter-widgets/base";
 import * as arrow from "apache-arrow";
+import GeoTIFF, { fromUrl } from "geotiff";
 
 import { BaseLayerModel } from "./base.js";
+import {
+  COGTileset2D,
+  extractCOGMetadata,
+} from "../../cog-tileset/claude-tileset-2d-improved.js";
+import { COGMetadata } from "../../cog-tileset/types.js";
 import { isDefined } from "../../util.js";
 
 export class SurfaceModel extends BaseLayerModel {
@@ -103,5 +112,144 @@ export class SurfaceModel extends BaseLayerModel {
       ...this.baseLayerProps(),
       ...this.layerProps(),
     });
+  }
+}
+
+export class COGTileModel extends BaseLayerModel {
+  static layerType = "cog-tile";
+
+  protected data!: string;
+  protected tileSize: TileLayerProps["tileSize"];
+  protected zoomOffset: TileLayerProps["zoomOffset"];
+  protected maxZoom: TileLayerProps["maxZoom"];
+  protected minZoom: TileLayerProps["minZoom"];
+  protected extent: TileLayerProps["extent"];
+  protected maxCacheSize: TileLayerProps["maxCacheSize"];
+  protected maxCacheByteSize: TileLayerProps["maxCacheByteSize"];
+  protected refinementStrategy: TileLayerProps["refinementStrategy"];
+  protected maxRequests: TileLayerProps["maxRequests"];
+
+  protected tiff?: GeoTIFF;
+  protected cogMetadata?: COGMetadata;
+
+  constructor(model: WidgetModel, updateStateCallback: () => void) {
+    super(model, updateStateCallback);
+
+    this.initRegularAttribute("data", "data");
+
+    this.initRegularAttribute("tile_size", "tileSize");
+    this.initRegularAttribute("zoom_offset", "zoomOffset");
+    this.initRegularAttribute("max_zoom", "maxZoom");
+    this.initRegularAttribute("min_zoom", "minZoom");
+    this.initRegularAttribute("extent", "extent");
+    this.initRegularAttribute("max_cache_size", "maxCacheSize");
+    this.initRegularAttribute("max_cache_byte_size", "maxCacheByteSize");
+    this.initRegularAttribute("refinement_strategy", "refinementStrategy");
+    this.initRegularAttribute("max_requests", "maxRequests");
+  }
+
+  async asyncInit() {
+    console.log("Loading COG from URL:", this.data);
+    const tiff = await fromUrl(this.data);
+    const metadata = await extractCOGMetadata(tiff);
+
+    this.tiff = tiff;
+    this.cogMetadata = metadata;
+  }
+
+  async loadSubModels() {
+    await this.asyncInit();
+  }
+
+  layerProps(): TileLayerProps {
+    // Create a factory class that wraps COGTileset2D with the metadata
+    if (!this.cogMetadata) {
+      throw new Error("COG metadata not loaded. Call asyncInit first.");
+    }
+
+    // Capture cogMetadata in closure with proper type
+    const cogMetadata: COGMetadata = this.cogMetadata;
+
+    class COGTilesetWrapper extends COGTileset2D {
+      constructor(opts: Tileset2DProps) {
+        super(cogMetadata, opts);
+      }
+    }
+
+    return {
+      id: this.model.model_id,
+      data: this.data,
+      TilesetClass: COGTilesetWrapper,
+      ...(isDefined(this.tileSize) && { tileSize: this.tileSize }),
+      ...(isDefined(this.zoomOffset) && { zoomOffset: this.zoomOffset }),
+      ...(isDefined(this.maxZoom) && { maxZoom: this.maxZoom }),
+      ...(isDefined(this.minZoom) && { minZoom: this.minZoom }),
+      ...(isDefined(this.extent) && { extent: this.extent }),
+      ...(isDefined(this.maxCacheSize) && { maxCacheSize: this.maxCacheSize }),
+      ...(isDefined(this.maxCacheByteSize) && {
+        maxCacheByteSize: this.maxCacheByteSize,
+      }),
+      ...(isDefined(this.refinementStrategy) && {
+        refinementStrategy: this.refinementStrategy,
+      }),
+      ...(isDefined(this.maxRequests) && { maxRequests: this.maxRequests }),
+    };
+  }
+
+  render(): TileLayer[] {
+    // Capture cogMetadata in closure
+    const metadata = this.cogMetadata;
+
+    const layer = new TileLayer({
+      ...this.baseLayerProps(),
+      ...this.layerProps(),
+
+      renderSubLayers: (props) => {
+        const { tile } = props;
+        console.log("Rendering COG tile with props:");
+        console.log(props);
+
+        // Get projected bounds from tile data
+        // getTileMetadata returns data that includes projectedBounds
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        const projectedBounds = (tile as any)?.projectedBounds;
+
+        if (!projectedBounds || !metadata) {
+          return [];
+        }
+
+        // Project bounds from image CRS to WGS84
+        const { topLeft, topRight, bottomLeft, bottomRight } = projectedBounds;
+
+        const topLeftWgs84 = metadata.projectToWgs84.forward(topLeft);
+        const topRightWgs84 = metadata.projectToWgs84.forward(topRight);
+        const bottomRightWgs84 = metadata.projectToWgs84.forward(bottomRight);
+        const bottomLeftWgs84 = metadata.projectToWgs84.forward(bottomLeft);
+
+        // Create a closed path around the tile bounds
+        const path = [
+          topLeftWgs84,
+          topRightWgs84,
+          bottomRightWgs84,
+          bottomLeftWgs84,
+          topLeftWgs84, // Close the path
+        ];
+
+        console.log("Tile bounds path (WGS84):", path);
+
+        return [
+          new PathLayer({
+            id: `${tile.id}-bounds`,
+            data: [{ path }],
+            getPath: (d) => d.path,
+            getColor: [255, 0, 0, 255], // Red
+            getWidth: 2,
+            widthUnits: "pixels",
+            pickable: false,
+          }),
+        ];
+      },
+    });
+    return [layer];
   }
 }
