@@ -4,6 +4,7 @@ import re
 from typing import TYPE_CHECKING, Any
 from urllib.parse import urlparse
 
+import numpy as np
 import traitlets
 
 from lonboard._environment import DEFAULT_HEIGHT
@@ -58,7 +59,7 @@ class MapHeightTrait(FixedErrorTraitType):
         self.tag(sync=True)
 
     def validate(self, obj: Any, value: Any) -> str:
-        if isinstance(value, int):
+        if isinstance(value, (int, np.integer)):
             return f"{value}px"
 
         if isinstance(value, str):
