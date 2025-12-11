@@ -67,8 +67,6 @@ All models on the TypeScript side are combined into a single entry point, which 
 
 Anywidget and its dependency ipywidgets handles the serialization from Python into JS, automatically keeping each side in sync.
 
-State management is implemented using [XState](https://stately.ai/docs/xstate). The app is instrumented with [Stately Inspector](https://stately.ai/docs/inspector), and the use of the [VS Code extension](https://stately.ai/docs/xstate-vscode-extension) is highly recommended.
-
 ## Publishing
 
 Push a new tag to the main branch of the format `v*`. A new version will be published to PyPI automatically.
