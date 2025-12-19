@@ -6,6 +6,7 @@ from pathlib import Path
 from typing import IO, TYPE_CHECKING, Any, TextIO, overload
 
 import ipywidgets
+import numpy as np
 import traitlets as t
 from ipywidgets import CallbackDispatcher
 
@@ -632,17 +633,17 @@ class Map(BaseAnyWidget):
                 specified speed is ignored.
 
         """  # noqa: D210
-        if not isinstance(longitude, (int, float)):
+        if not isinstance(longitude, (int, float, np.number)):
             raise TypeError(
                 f"Expected longitude to be an int or float, got {type(longitude)}",
             )
 
-        if not isinstance(latitude, (int, float)):
+        if not isinstance(latitude, (int, float, np.number)):
             raise TypeError(
                 f"Expected latitude to be an int or float, got {type(latitude)}",
             )
 
-        if not isinstance(zoom, (int, float)):
+        if not isinstance(zoom, (int, float, np.number)):
             raise TypeError(f"Expected zoom to be an int or float, got {type(zoom)}")
 
         data = {
