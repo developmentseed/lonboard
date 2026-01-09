@@ -28,25 +28,39 @@ def load_arr_and_transform(
     src: DatasetReader,
     *,
     downscale: int | None,
+    out_shape: tuple[int, ...] | None = None,
 ) -> tuple[NDArray[np.uint8], Affine]:
     """Load array and transform from rasterio source."""
-    if downscale is None:
+    from rasterio.transform import from_bounds
+
+    if downscale is None and out_shape is None:
         return src.read(), src.transform
 
-    # Read overview array from src
-    overview_height = int(src.height / downscale)
-    overview_width = int(src.width / downscale)
-    overview_shape = (src.count, overview_height, overview_width)
+    if out_shape is None:
+        # Read overview array from src
+        overview_height = int(src.height / downscale)
+        overview_width = int(src.width / downscale)
+        out_shape = (src.count, overview_height, overview_width)
 
-    arr: np.ndarray = src.read(out_shape=overview_shape)
-    overview_transform = Affine(
-        src.transform.a * downscale,  # pixel width
-        src.transform.b,  # rotation/skew x
-        src.transform.c,  # top-left x
-        src.transform.d,  # rotation/skew y
-        src.transform.e * downscale,  # pixel height (usually negative)
-        src.transform.f,  # top-left y
-    )
+    arr: np.ndarray = src.read(out_shape=out_shape)
+    if downscale:
+        overview_transform = Affine(
+            src.transform.a * downscale,  # pixel width
+            src.transform.b,  # rotation/skew x
+            src.transform.c,  # top-left x
+            src.transform.d,  # rotation/skew y
+            src.transform.e * downscale,  # pixel height (usually negative)
+            src.transform.f,  # top-left y
+        )
+    elif out_shape:
+        overview_transform = from_bounds(
+            *src.bounds,
+            width=out_shape[-1],
+            height=out_shape[-2],
+        )
+    else:
+        raise ValueError("either downscale or out_shape expected")
+
     return arr, overview_transform
 
 
@@ -143,11 +157,16 @@ class SurfaceLayer(BaseLayer):
         downscale: int | None = None,
         mesh_n_rows: int = 50,
         mesh_n_cols: int = 50,
+        out_shape: tuple[int, ...] | None = None,
         **kwargs: Any,
     ) -> Self:
         import rasterio.plot
 
-        arr, transform = load_arr_and_transform(src, downscale=downscale)
+        arr, transform = load_arr_and_transform(
+            src,
+            downscale=downscale,
+            out_shape=out_shape,
+        )
 
         if arr.shape[0] == 1 and src.colormap(1) is not None:
             image_arr = apply_colormap(arr[0], src.colormap(1))
