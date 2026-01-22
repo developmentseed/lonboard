@@ -7,7 +7,7 @@ import {
 } from "@deck.gl/extensions";
 import type { WidgetModel } from "@jupyter-widgets/base";
 
-import type { BaseLayerModel } from "./base-layer.js";
+import type { BaseLayerModel } from "./layer/base.js";
 import { BaseModel } from "./base.js";
 import { isDefined } from "../util.js";
 
