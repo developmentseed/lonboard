@@ -3,6 +3,7 @@ import { WidgetModel } from "@jupyter-widgets/base";
 import { ArcModel } from "./arc.js";
 import { BaseLayerModel } from "./base.js";
 import { BitmapModel, BitmapTileModel } from "./bitmap.js";
+import { COGModel } from "./cog.js";
 import { ColumnModel } from "./column.js";
 import { HeatmapModel } from "./heatmap.js";
 import { PathModel } from "./path.js";
@@ -30,7 +31,7 @@ export {
   A5Model,
   H3HexagonModel,
   PolygonModel,
-  SolidPolygonModel,
+  SolidPolygonModel
 } from "./polygon.js";
 export { ScatterplotModel } from "./scatterplot.js";
 export { SurfaceModel } from "./surface.js";
@@ -58,6 +59,10 @@ export async function initializeLayer(
 
     case BitmapTileModel.layerType:
       layerModel = new BitmapTileModel(model, updateStateCallback);
+      break;
+
+    case COGModel.layerType:
+      layerModel = new COGModel(model, updateStateCallback);
       break;
 
     case ColumnModel.layerType:
