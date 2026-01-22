@@ -13,13 +13,8 @@ export class COGModel extends BaseLayerModel {
   }
 
   getTileData: TileLayerProps["getTileData"] = async (tile) => {
+    const {index, id, bbox} = tile;
     const { signal } = tile;
-    const signals: AbortSignal[] = [AbortSignal.timeout(10_000)];
-    if (signal !== undefined) {
-      signals.push(signal);
-    }
-
-    const compositeSignal = AbortSignal.any(signals);
     console.log("in getTileData");
 
     console.log("calling invoke");
@@ -29,23 +24,19 @@ export class COGModel extends BaseLayerModel {
       {
         tile_id: tile.id,
       },
-      { signal: compositeSignal },
+      "cog-get-tile-data",
+      { signal, timeout: 10000 },
     );
 
-    if (compositeSignal.aborted) {
+    console.log("returned from invoke, message and buffer received", message, buffer);
+
+    if (signal?.aborted) {
       return null;
     }
 
-    if (buffer.length === 0) {
-      return null;
-    }
 
     console.log("returned from invoke");
     console.log(message);
-    console.log(buffer.length);
-    console.log(buffer[0]);
-    console.log(buffer[0].byteLength);
-    console.log(tile);
 
     return null;
   };
@@ -63,8 +54,6 @@ export class COGModel extends BaseLayerModel {
       ...this.layerProps(),
       getTileData: this.getTileData?.bind(this),
       renderSubLayers: (props) => {
-        console.log("in renderSubLayers");
-        console.log(props);
         return null;
       }
     })

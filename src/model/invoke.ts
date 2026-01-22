@@ -19,11 +19,12 @@ type InvokeOptions = {
   timeout?: number;
 };
 
-export async function invoke<T>(
+export async function invoke<ResponseT>(
   model: WidgetModel,
   msg: JSONValue,
+  kind: string = "lonboard-command",
   options: InvokeOptions = {},
-): Promise<[T, DataView[]]> {
+): Promise<[ResponseT, DataView[]]> {
   // crypto.randomUUID() is not available in non-secure contexts (i.e., http://)
   // so we use simple (non-secure) polyfill.
 
@@ -59,7 +60,7 @@ export async function invoke<T>(
     signal.addEventListener("abort", abortHandler);
 
     function handler(
-      msg: { id: string; kind: "anywidget-command-response"; response: T },
+      msg: { id: string; kind: `${string}-response`; response: ResponseT },
       buffers: DataView[],
     ) {
       // ID mismatches are expected because we have many concurrent invocations.
@@ -78,7 +79,7 @@ export async function invoke<T>(
 
     model.on("msg:custom", handler);
     model.send(
-      { id, kind: "anywidget-command", msg },
+      { id, kind, msg },
       undefined,
       options.buffers ?? [],
     );
