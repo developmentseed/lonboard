@@ -9,7 +9,8 @@
 //
 // https://github.com/manzt/anywidget/blob/41a1aff623e844efb62cc4bb706c58b2dc3b32b1/packages/anywidget/src/widget.js#L267-L306
 
-import type { AnyModel } from "@anywidget/types";
+import type { WidgetModel } from "@jupyter-widgets/base";
+import type { JSONValue } from "@lumino/coreutils";
 import * as uuid from "uuid";
 
 type InvokeOptions = {
@@ -18,8 +19,8 @@ type InvokeOptions = {
 };
 
 export async function invoke<T>(
-  model: AnyModel,
-  msg: object,
+  model: WidgetModel,
+  msg: JSONValue,
   options: InvokeOptions = {},
 ): Promise<[T, DataView[]]> {
   // crypto.randomUUID() is not available in non-secure contexts (i.e., http://)
