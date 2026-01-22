@@ -1,9 +1,15 @@
+# ruff: noqa: SLF001
+
 from __future__ import annotations
 
+import aiohttp
+import asyncio
+import traceback
 from typing import TYPE_CHECKING, Any
 
 import traitlets as t
 from ipywidgets import Output
+
 
 from lonboard.layer._base import BaseLayer
 
@@ -21,23 +27,59 @@ def handle_anywidget_dispatch(
     msg: str | list | dict,
     buffers: list[bytes],
 ) -> None:
-    # TODO: wrap in try/except and send error back to frontend
-
     if not isinstance(msg, dict) or msg.get("kind") != MSG_KIND:
         return
 
-    with output:
-        print(f"Received anywidget-command: {msg}")
+    # Schedule the async handler on the event loop
+    task = asyncio.create_task(_handle_tile_request(widget, msg, buffers))
+    widget._pending_tasks.add(task)
+    task.add_done_callback(widget._pending_tasks.discard)
 
-    response = "helloworld from init"
-    widget.send(
-        {
-            "id": msg["id"],
-            "kind": f"{MSG_KIND}-response",
-            "response": response,
-        },
-        [],
-    )
+
+async def _handle_tile_request(
+    widget: COGLayer,
+    msg: dict,
+    buffers: list[bytes],
+) -> None:
+    """Async handler for tile data requests from the frontend."""
+    try:
+        with output:
+            print(f"Received tile request: {msg}")
+
+        content = msg["msg"]
+        tile_id = content["tile_id"]
+
+        # Parse tile coordinates from tile_id (format: "x-y-z")
+        # TODO: implement actual tile fetching from widget.tiff
+        response = f"tile data for {tile_id}"
+
+        async with (
+            aiohttp.ClientSession() as session,
+            session.get("https://example.com") as resp,
+        ):
+            text = await resp.text()
+
+        widget.send(
+            {
+                "id": msg["id"],
+                "kind": f"{MSG_KIND}-response",
+                "response": text,
+            },
+            [],
+        )
+    except Exception:
+        error_msg = traceback.format_exc()
+        with output:
+            print(f"Error handling tile request: {error_msg}")
+
+        widget.send(
+            {
+                "id": msg["id"],
+                "kind": f"{MSG_KIND}-response",
+                "response": {"error": error_msg},
+            },
+            [],
+        )
 
     # try:
     #     print("handling COG tile request")
@@ -74,7 +116,7 @@ def handle_anywidget_dispatch(
     #         },
     #         buffers,
     #     )
-    # except:  # noqa: E722
+    # except:
     #     response = traceback.format_exc()
     #     widget.send(
     #         {
@@ -92,12 +134,17 @@ class COGLayer(BaseLayer):
     # Note: not serialized to frontend directly.
     tiff: TIFF
 
+    # Prevent garbage collection of async tasks before they complete.
+    # Tasks are removed automatically via add_done_callback when they finish.
+    _pending_tasks: set[asyncio.Task[None]]
+
     def __init__(
         self,
         tiff: TIFF,
         **kwargs: Any,
     ) -> None:
         self.tiff = tiff
+        self._pending_tasks = set()
         self.on_msg(handle_anywidget_dispatch)
         super().__init__(**kwargs)  # type: ignore
 
