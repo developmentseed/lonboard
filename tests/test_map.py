@@ -118,14 +118,20 @@ def test_view_state_orthographic_view_empty():
 
 def test_set_view_state_map_view_kwargs():
     m = Map([])
-    set_state = {"longitude": -100, "latitude": 40, "zoom": 5}
+    set_state = {
+        "longitude": -100,
+        "latitude": 40,
+        "zoom": 5,
+        "pitch": 30,
+        "bearing": 45,
+    }
     m.set_view_state(**set_state)
     assert m.view_state == MapViewState(**set_state)
 
 
 def test_set_view_state_map_view_instance():
     m = Map([])
-    set_state = MapViewState(longitude=-100, latitude=40, zoom=5)
+    set_state = MapViewState(longitude=-100, latitude=40, zoom=5, pitch=30, bearing=45)
     m.set_view_state(set_state)
     assert m.view_state == set_state
 
