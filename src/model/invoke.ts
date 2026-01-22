@@ -16,6 +16,7 @@ import * as uuid from "uuid";
 type InvokeOptions = {
   buffers?: DataView[];
   signal?: AbortSignal;
+  timeout?: number;
 };
 
 export async function invoke<T>(
@@ -25,28 +26,56 @@ export async function invoke<T>(
 ): Promise<[T, DataView[]]> {
   // crypto.randomUUID() is not available in non-secure contexts (i.e., http://)
   // so we use simple (non-secure) polyfill.
-  const id = uuid.v4();
-  const signal = options.signal ?? AbortSignal.timeout(3000);
 
+  // We need a stable ID per invocation because we'll have many concurrent tile
+  // fetches.
+  const id = uuid.v4();
+
+  // Default 5-second timeout; tile fetching shouldn't take too long.
+  const signal = options.signal ?? AbortSignal.timeout(options.timeout ?? 5000);
+
+  // Return a promise that resolves when we get a response message with the
+  // correct ID, or rejects if the signal is aborted.
   return new Promise((resolve, reject) => {
+    // We need to track whether we've already resolved/rejected to avoid
+    // multiple calls to resolve/reject.
+    let settled = false;
+
     if (signal.aborted) {
-      console.log("signal already aborted");
       reject(signal.reason);
+      return;
     }
-    signal.addEventListener("abort", () => {
-      console.log("aborting from signal again");
+
+    const abortHandler = () => {
+      if (settled) {
+        return
+      };
+      settled = true;
+
       model.off("msg:custom", handler);
       reject(signal.reason);
-    });
+    };
+
+    signal.addEventListener("abort", abortHandler);
 
     function handler(
       msg: { id: string; kind: "anywidget-command-response"; response: T },
       buffers: DataView[],
     ) {
-      if (!(msg.id === id)) return;
-      resolve([msg.response, buffers]);
+      // ID mismatches are expected because we have many concurrent invocations.
+      if (!(msg.id === id)) {
+        return;
+      }
+
+      if (settled) {
+        return
+      };
+      settled = true;
+
       model.off("msg:custom", handler);
+      resolve([msg.response, buffers]);
     }
+
     model.on("msg:custom", handler);
     model.send(
       { id, kind: "anywidget-command", msg },
