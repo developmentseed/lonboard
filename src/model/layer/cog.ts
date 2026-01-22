@@ -4,6 +4,9 @@ import {TileLayer, TileLayerProps} from "@deck.gl/geo-layers"
 import {  BaseLayerModel } from "./base.js";
 import { invoke } from "../invoke.js";
 
+// This must be kept in sync with lonboard/layer/_cog.py
+const MSG_KIND = "cog-get-tile-data";
+
 export class COGModel extends BaseLayerModel {
   static layerType = "cog";
 
@@ -24,7 +27,7 @@ export class COGModel extends BaseLayerModel {
       {
         tile_id: tile.id,
       },
-      "cog-get-tile-data",
+      MSG_KIND,
       { signal, timeout: 10000 },
     );
 

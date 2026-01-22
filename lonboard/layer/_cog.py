@@ -1,18 +1,19 @@
 from __future__ import annotations
 
-import traceback
 from typing import TYPE_CHECKING, Any
 
 import traitlets as t
+from ipywidgets import Output
 
 from lonboard.layer._base import BaseLayer
-from ipywidgets import Output
 
 if TYPE_CHECKING:
     from async_tiff import TIFF
 
-
 output = Output()
+
+# This must be kept in sync with src/model/layer/cog.ts
+MSG_KIND = "cog-get-tile-data"
 
 
 def handle_anywidget_dispatch(
@@ -21,11 +22,9 @@ def handle_anywidget_dispatch(
     buffers: list[bytes],
 ) -> None:
     # TODO: wrap in try/except and send error back to frontend
-    with output:
-        print(msg)
 
-    if not isinstance(msg, dict) or msg.get("kind") != "anywidget-command":
-        return None
+    if not isinstance(msg, dict) or msg.get("kind") != MSG_KIND:
+        return
 
     with output:
         print(f"Received anywidget-command: {msg}")
@@ -34,7 +33,7 @@ def handle_anywidget_dispatch(
     widget.send(
         {
             "id": msg["id"],
-            "kind": "anywidget-command-response",
+            "kind": f"{MSG_KIND}-response",
             "response": response,
         },
         [],
@@ -90,11 +89,15 @@ def handle_anywidget_dispatch(
 class COGLayer(BaseLayer):
     """The COGLayer renders imagery from a Cloud-Optimized GeoTIFF."""
 
+    # Note: not serialized to frontend directly.
+    tiff: TIFF
+
     def __init__(
         self,
-        # tiff: TIFF,
+        tiff: TIFF,
         **kwargs: Any,
     ) -> None:
+        self.tiff = tiff
         self.on_msg(handle_anywidget_dispatch)
         super().__init__(**kwargs)  # type: ignore
 
