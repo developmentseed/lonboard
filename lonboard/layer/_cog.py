@@ -2,14 +2,16 @@
 
 from __future__ import annotations
 
-import aiohttp
 import asyncio
 import traceback
-from typing import TYPE_CHECKING, Any
+from typing import TYPE_CHECKING, Any, Protocol
 
+import aiohttp
+import numpy as np
 import traitlets as t
 from ipywidgets import Output
-
+from numpy.typing import NDArray
+from typing_extensions import Buffer
 
 from lonboard.layer._base import BaseLayer
 
@@ -52,6 +54,14 @@ async def _handle_tile_request(
         # Parse tile coordinates from tile_id (format: "x-y-z")
         # TODO: implement actual tile fetching from widget.tiff
         response = f"tile data for {tile_id}"
+        x, y, z = tile_id.split("-")
+        x, y, z = int(x), int(y), int(z)
+
+        tiff = widget.tiff
+        tile = await tiff.fetch_tile(x, y, z)
+        buffer = await tile.decode_async()
+        rendered = widget.render(buffer)
+        rendered.tobytes("C")
 
         async with (
             aiohttp.ClientSession() as session,
@@ -128,6 +138,22 @@ async def _handle_tile_request(
     #     )
 
 
+class Render(Protocol):
+    """Protocol for user-defined render function."""
+
+    def __call__(self, tile: Buffer) -> NDArray[np.uint8]:
+        """Render a tile.
+
+        Args:
+            tile: A dictionary with tile information.
+
+        Returns:
+            An RGBA numpy array representing the rendered tile.
+
+        """
+        ...
+
+
 class COGLayer(BaseLayer):
     """The COGLayer renders imagery from a Cloud-Optimized GeoTIFF."""
 
@@ -138,13 +164,17 @@ class COGLayer(BaseLayer):
     # Tasks are removed automatically via add_done_callback when they finish.
     _pending_tasks: set[asyncio.Task[None]]
 
+    render: Render
+
     def __init__(
         self,
         tiff: TIFF,
+        render: Render,
         **kwargs: Any,
     ) -> None:
         self.tiff = tiff
         self._pending_tasks = set()
+        self.render = render
         self.on_msg(handle_anywidget_dispatch)
         super().__init__(**kwargs)  # type: ignore
 
