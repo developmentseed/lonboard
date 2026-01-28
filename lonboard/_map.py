@@ -136,6 +136,8 @@ class Map(BaseAnyWidget):
         self._error_output = ErrorOutput(name=self.__class__.__name__)
 
     def _repr_mimebundle_(self, **kwargs: Any) -> tuple[dict, dict] | None:
+        # Insert a display Output after the map for rendering exceptions from callbacks
+        # and from JS code
         error_outputs = [layer._error_output for layer in self.layers]  # noqa: SLF001
         error_vbox = VBox(
             [self._error_output, *error_outputs],
