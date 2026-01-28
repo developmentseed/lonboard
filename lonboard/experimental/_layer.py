@@ -11,7 +11,7 @@ from typing import TYPE_CHECKING
 
 import ipywidgets
 import traitlets
-import traitlets as t
+import traitlets.traitlets as t
 from arro3.core import DataType, Scalar
 
 from lonboard._constants import EXTENSION_NAME, MIN_INTEGER_FLOAT32

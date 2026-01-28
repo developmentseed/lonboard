@@ -1,6 +1,6 @@
 from typing import ClassVar
 
-import traitlets as t
+import traitlets.traitlets as t
 
 from lonboard._base import BaseExtension
 from lonboard.traits import (

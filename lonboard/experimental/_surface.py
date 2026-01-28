@@ -4,7 +4,7 @@ from typing import TYPE_CHECKING
 
 import numpy as np
 import pyproj
-import traitlets as t
+import traitlets.traitlets as t
 from affine import Affine
 from arro3.core import DataType
 
