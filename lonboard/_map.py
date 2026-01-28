@@ -7,9 +7,10 @@ from typing import IO, TYPE_CHECKING, Any, TextIO, overload
 
 import ipywidgets
 import traitlets as t
-from ipywidgets import CallbackDispatcher
+from ipywidgets import CallbackDispatcher, VBox
 
 from lonboard._base import BaseAnyWidget
+from lonboard._exception_display import ErrorOutput
 from lonboard._html_export import map_to_html
 from lonboard._viewport import compute_view
 from lonboard.basemap import CartoStyle, MaplibreBasemap
@@ -131,6 +132,13 @@ class Map(BaseAnyWidget):
         self.on_msg(_handle_anywidget_dispatch)
         self.layout.height = "100%"
         self.layout.width = "100%"
+
+        self._error_output = ErrorOutput(name=self.__class__.__name__)
+
+    def _repr_mimebundle_(self, **kwargs: Any) -> tuple[dict, dict] | None:
+        error_outputs = [layer._error_output for layer in self.layers]  # noqa: SLF001
+        container = VBox([self, self._error_output, *error_outputs])
+        return container._repr_mimebundle_(**kwargs)
 
     def on_click(self, callback: Callable, *, remove: bool = False) -> None:
         """Register a callback to execute when the map is clicked.

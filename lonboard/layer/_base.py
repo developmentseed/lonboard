@@ -11,6 +11,7 @@ from arro3.core import ChunkedArray, Schema, Table
 
 from lonboard._base import BaseExtension, BaseWidget
 from lonboard._constants import OGC_84
+from lonboard._exception_display import ErrorOutput
 from lonboard._geoarrow._duckdb import from_duckdb as _from_duckdb
 from lonboard._geoarrow.c_stream_import import import_arrow_c_stream
 from lonboard._geoarrow.geopandas_interop import geopandas_to_geoarrow
@@ -55,6 +56,7 @@ class BaseLayer(BaseWidget):
     # Note: these class attributes are **not** serialized to JS
     _bbox = Bbox()
     _weighted_centroid = WeightedCentroid()
+    _error_output: ErrorOutput
 
     # The following traitlets **are** serialized to JS
 
@@ -82,6 +84,8 @@ class BaseLayer(BaseWidget):
             added_names.append(prop_name)
 
         self.send_state(added_names)
+
+        self._error_output = ErrorOutput(name=self.__class__.__name__)
 
     # TODO: validate that only one extension per type is included. E.g. you can't have
     # two data filter extensions.
