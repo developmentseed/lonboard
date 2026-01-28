@@ -137,7 +137,11 @@ class Map(BaseAnyWidget):
 
     def _repr_mimebundle_(self, **kwargs: Any) -> tuple[dict, dict] | None:
         error_outputs = [layer._error_output for layer in self.layers]  # noqa: SLF001
-        container = VBox([self, self._error_output, *error_outputs])
+        error_vbox = VBox(
+            [self._error_output, *error_outputs],
+            layout={"max_height": "200px", "overflow": "auto"},
+        )
+        container = VBox([self, error_vbox])
         return container._repr_mimebundle_(**kwargs)
 
     def on_click(self, callback: Callable, *, remove: bool = False) -> None:
