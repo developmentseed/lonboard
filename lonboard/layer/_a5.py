@@ -2,7 +2,7 @@ from __future__ import annotations
 
 from typing import TYPE_CHECKING
 
-import traitlets as t
+import traitlets.traitlets as t
 
 from lonboard._utils import auto_downcast as _auto_downcast
 

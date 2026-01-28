@@ -2,7 +2,7 @@ from __future__ import annotations
 
 from typing import TYPE_CHECKING
 
-import traitlets as t
+import traitlets.traitlets as t
 
 from lonboard._constants import EXTENSION_NAME
 from lonboard.layer._base import BaseArrowLayer

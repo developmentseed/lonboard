@@ -4,7 +4,7 @@ import warnings
 from typing import TYPE_CHECKING
 
 import numpy as np
-import traitlets as t
+import traitlets.traitlets as t
 
 from lonboard._geoarrow.ops import Bbox, WeightedCentroid
 from lonboard._utils import auto_downcast as _auto_downcast

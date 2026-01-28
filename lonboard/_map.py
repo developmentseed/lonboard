@@ -6,7 +6,7 @@ from pathlib import Path
 from typing import IO, TYPE_CHECKING, Any, TextIO, overload
 
 import ipywidgets
-import traitlets as t
+import traitlets.traitlets as t
 from ipywidgets import CallbackDispatcher, VBox
 
 from lonboard._base import BaseAnyWidget

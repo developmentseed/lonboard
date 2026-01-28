@@ -6,7 +6,7 @@ from typing import TYPE_CHECKING, Any
 
 import ipywidgets
 import traitlets
-import traitlets as t
+import traitlets.traitlets as t
 from arro3.core import ChunkedArray, Schema, Table
 
 from lonboard._base import BaseExtension, BaseWidget

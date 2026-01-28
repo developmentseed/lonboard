@@ -2,7 +2,7 @@ from __future__ import annotations
 
 from typing import TYPE_CHECKING
 
-import traitlets as t
+import traitlets.traitlets as t
 from arro3.core import Table
 
 from lonboard._constants import EXTENSION_NAME
