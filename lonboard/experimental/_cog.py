@@ -9,14 +9,18 @@ from typing import TYPE_CHECKING, Any, Protocol
 import aiohttp
 import numpy as np
 import traitlets as t
+from async_geotiff.tms import generate_tms
 from ipywidgets import Output
 from numpy.typing import NDArray
+from traitlets.traitlets import Dict
 from typing_extensions import Buffer
 
 from lonboard.layer._base import BaseLayer
 
 if TYPE_CHECKING:
+    from async_geotiff import GeoTIFF
     from async_tiff import TIFF
+    from morecantile.models import TileMatrixSet
 
 output = Output()
 
@@ -168,14 +172,28 @@ class COGLayer(BaseLayer):
 
     def __init__(
         self,
-        tiff: TIFF,
+        tms: TileMatrixSet,
         render: Render,
         **kwargs: Any,
     ) -> None:
-        self.tiff = tiff
         self._pending_tasks = set()
         self.render = render
         self.on_msg(handle_anywidget_dispatch)
-        super().__init__(**kwargs)  # type: ignore
+        super().__init__(tm=tms, **kwargs)  # type: ignore
+
+    @classmethod
+    def from_async_geotiff(
+        cls,
+        tiff: GeoTIFF,
+        /,
+        *,
+        render: Render,
+        **kwargs: Any,
+    ) -> COGLayer:
+        """Create a COGLayer from a GeoTIFF instance from async-geotiff."""
+        tms = generate_tms(tiff)
+        return cls(tms=tms, render=render, **kwargs)
 
     _layer_type = t.Unicode("cog").tag(sync=True)
+
+    _tms = Dict().tag(sync=True)
