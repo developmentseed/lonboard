@@ -1,52 +1,12 @@
-# Notes:
-#
-# - See module docstring of lonboard.layer for note on passing None as default value.
-
-# ruff: noqa
+# ruff: noqa: ERA001
 
 from __future__ import annotations
 
-from datetime import datetime, timedelta
-from typing import TYPE_CHECKING
-
-import ipywidgets
-import traitlets
 import traitlets.traitlets as t
-from arro3.core import DataType, Scalar
 
-from lonboard._constants import EXTENSION_NAME, MIN_INTEGER_FLOAT32
+from lonboard._constants import EXTENSION_NAME
 from lonboard.layer._base import BaseArrowLayer
-from lonboard._utils import timestamp_max_physical_value, timestamp_start_offset
-from lonboard.traits import (
-    TimestampAccessor,
-    ArrowTableTrait,
-    ColorAccessor,
-    FloatAccessor,
-    PointAccessor,
-    TextAccessor,
-)
-from lonboard.types.layer import ArcLayerKwargs, PointAccessorInput
-
-if TYPE_CHECKING:
-    import sys
-
-    import duckdb
-    import geopandas as gpd
-    import pyproj
-    from arro3.core.types import ArrowStreamExportable
-    from movingpandas import TrajectoryCollection
-
-    from lonboard.types.layer import TripsLayerKwargs
-
-    if sys.version_info >= (3, 11):
-        from typing import Self
-    else:
-        from typing_extensions import Self
-
-    if sys.version_info >= (3, 12):
-        from typing import Unpack
-    else:
-        from typing_extensions import Unpack
+from lonboard.traits import ArrowTableTrait, ColorAccessor, FloatAccessor, TextAccessor
 
 
 class TextLayer(BaseArrowLayer):
