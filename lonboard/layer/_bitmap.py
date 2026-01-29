@@ -13,19 +13,7 @@ from lonboard.traits import (
 )
 
 if TYPE_CHECKING:
-    import sys
-
     from lonboard.types.layer import BitmapLayerKwargs, BitmapTileLayerKwargs
-
-    if sys.version_info >= (3, 11):
-        pass
-    else:
-        pass
-
-    if sys.version_info >= (3, 12):
-        pass
-    else:
-        pass
 
 
 class BitmapLayer(BaseLayer):
