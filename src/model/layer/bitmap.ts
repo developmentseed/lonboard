@@ -115,8 +115,8 @@ export class BitmapTileModel extends BaseLayerModel {
     };
   }
 
-  render(): TileLayer[] {
-    const layer = new TileLayer({
+  render(): TileLayer {
+    return new TileLayer({
       ...this.baseLayerProps(),
       ...this.layerProps(),
 
@@ -131,6 +131,5 @@ export class BitmapTileModel extends BaseLayerModel {
         });
       },
     });
-    return [layer];
   }
 }
