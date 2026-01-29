@@ -19,11 +19,6 @@ if TYPE_CHECKING:
 
     from lonboard.types.layer import ArcLayerKwargs, PointAccessorInput
 
-    if sys.version_info >= (3, 11):
-        pass
-    else:
-        pass
-
     if sys.version_info >= (3, 12):
         from typing import Unpack
     else:

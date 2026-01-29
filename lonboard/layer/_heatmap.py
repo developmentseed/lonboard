@@ -15,6 +15,7 @@ from lonboard.traits import (
 
 if TYPE_CHECKING:
     import sys
+    from typing import Self
 
     import duckdb
     import geopandas as gpd
@@ -22,11 +23,6 @@ if TYPE_CHECKING:
     from arro3.core.types import ArrowStreamExportable
 
     from lonboard.types.layer import HeatmapLayerKwargs
-
-    if sys.version_info >= (3, 11):
-        from typing import Self
-    else:
-        from typing_extensions import Self
 
     if sys.version_info >= (3, 12):
         from typing import Unpack

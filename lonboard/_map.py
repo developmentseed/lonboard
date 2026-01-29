@@ -28,16 +28,12 @@ from lonboard.view_state import BaseViewState, GlobeViewState, MapViewState
 if TYPE_CHECKING:
     import sys
     from collections.abc import Callable, Sequence
+    from typing import Self
 
     from IPython.display import HTML  # type: ignore
 
     from lonboard._validators.types import TraitProposal
     from lonboard.types.map import MapKwargs
-
-    if sys.version_info >= (3, 11):
-        from typing import Self
-    else:
-        from typing_extensions import Self
 
     if sys.version_info >= (3, 12):
         from typing import Unpack
