@@ -2,7 +2,7 @@ from collections.abc import Sequence
 from functools import partial
 from typing import Any
 
-import traitlets as t
+import traitlets.traitlets as t
 from ipywidgets import FloatRangeSlider
 from ipywidgets.widgets.trait_types import TypedTuple
 

@@ -4,7 +4,7 @@ from typing import TYPE_CHECKING
 
 import numpy as np
 import pyproj
-import traitlets as t
+import traitlets.traitlets as t
 from affine import Affine
 from arro3.core import DataType
 
@@ -12,16 +12,10 @@ from lonboard.experimental.traits import MeshAccessor, TextureTrait
 from lonboard.layer import BaseLayer
 
 if TYPE_CHECKING:
-    import sys
-    from typing import Any
+    from typing import Any, Self
 
     from numpy.typing import NDArray
     from rasterio.io import DatasetReader
-
-    if sys.version_info >= (3, 11):
-        from typing import Self
-    else:
-        from typing_extensions import Self
 
 
 def load_arr_and_transform(

@@ -4,7 +4,7 @@ from __future__ import annotations
 
 from typing import TYPE_CHECKING
 
-import traitlets as t
+import traitlets.traitlets as t
 
 from lonboard._geoarrow.ops import Bbox, WeightedCentroid
 from lonboard.layer._base import BaseLayer
@@ -13,19 +13,7 @@ from lonboard.traits import (
 )
 
 if TYPE_CHECKING:
-    import sys
-
     from lonboard.types.layer import BitmapLayerKwargs, BitmapTileLayerKwargs
-
-    if sys.version_info >= (3, 11):
-        pass
-    else:
-        pass
-
-    if sys.version_info >= (3, 12):
-        pass
-    else:
-        pass
 
 
 class BitmapLayer(BaseLayer):
