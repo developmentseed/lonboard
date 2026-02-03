@@ -8,19 +8,17 @@ from typing import TYPE_CHECKING, Any, Protocol
 
 import aiohttp
 import numpy as np
-import traitlets as t
+import traitlets.traitlets as t
 from async_geotiff.tms import generate_tms
 from ipywidgets import Output
-from numpy.typing import NDArray
 from traitlets.traitlets import Dict
-from typing_extensions import Buffer
 
 from lonboard.layer._base import BaseLayer
 
 if TYPE_CHECKING:
-    from async_geotiff import GeoTIFF
-    from async_tiff import TIFF
+    from async_geotiff import GeoTIFF, Tile
     from morecantile.models import TileMatrixSet
+    from numpy.typing import NDArray
 
 output = Output()
 
@@ -42,6 +40,26 @@ def handle_anywidget_dispatch(
     task.add_done_callback(widget._pending_tasks.discard)
 
 
+# https://github.com/rasterio/rasterio/blob/2d79e5f3a00e919ecaa9573adba34a78274ce48c/rasterio/plot.py#L227-L241
+def reshape_as_image(arr: NDArray) -> NDArray:
+    """Return the source array reshaped image axis order.
+
+    This order is expected by image processing and visualization software (matplotlib,
+    scikit-image, etc) by swapping the axes order from
+    ```
+    (bands, rows, columns)
+    ```
+    to
+    ```
+    (rows, columns, bands)
+    ```
+    """
+    # swap the axes order from (bands, rows, columns) to (rows, columns, bands)
+    return np.transpose(arr, [1, 2, 0])
+    # Or, if we use masked arrays in the future:
+    # np.ma.transpose(arr, [1, 2, 0]) # noqa: ERA001
+
+
 async def _handle_tile_request(
     widget: COGLayer,
     msg: dict,
@@ -61,8 +79,9 @@ async def _handle_tile_request(
         x, y, z = tile_id.split("-")
         x, y, z = int(x), int(y), int(z)
 
-        tiff = widget.tiff
-        tile = await tiff.fetch_tile(x, y, z)
+        # TODO: access correct IFD based on zoom level z
+        geotiff = widget.geotiff
+        tile = await geotiff.fetch_tile(x, y)
         buffer = await tile.decode_async()
         rendered = widget.render(buffer)
         rendered.tobytes("C")
@@ -145,7 +164,7 @@ async def _handle_tile_request(
 class Render(Protocol):
     """Protocol for user-defined render function."""
 
-    def __call__(self, tile: Buffer) -> NDArray[np.uint8]:
+    def __call__(self, tile: Tile) -> NDArray[np.uint8]:
         """Render a tile.
 
         Args:
@@ -162,7 +181,7 @@ class COGLayer(BaseLayer):
     """The COGLayer renders imagery from a Cloud-Optimized GeoTIFF."""
 
     # Note: not serialized to frontend directly.
-    tiff: TIFF
+    geotiff: GeoTIFF
 
     # Prevent garbage collection of async tasks before they complete.
     # Tasks are removed automatically via add_done_callback when they finish.
@@ -184,14 +203,14 @@ class COGLayer(BaseLayer):
     @classmethod
     def from_async_geotiff(
         cls,
-        tiff: GeoTIFF,
+        geotiff: GeoTIFF,
         /,
         *,
         render: Render,
         **kwargs: Any,
     ) -> COGLayer:
         """Create a COGLayer from a GeoTIFF instance from async-geotiff."""
-        tms = generate_tms(tiff)
+        tms = generate_tms(geotiff)
         return cls(tms=tms, render=render, **kwargs)
 
     _layer_type = t.Unicode("cog").tag(sync=True)
