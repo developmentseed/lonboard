@@ -5,7 +5,7 @@ from __future__ import annotations
 from enum import Enum
 from typing import TYPE_CHECKING
 
-import traitlets as t
+import traitlets.traitlets as t
 from typing_extensions import deprecated
 
 from lonboard._base import BaseWidget

@@ -2,7 +2,7 @@ from __future__ import annotations
 
 from typing import TYPE_CHECKING
 
-import traitlets as t
+import traitlets.traitlets as t
 
 from lonboard._constants import EXTENSION_NAME
 from lonboard.layer._base import BaseArrowLayer
@@ -14,6 +14,7 @@ from lonboard.traits import (
 
 if TYPE_CHECKING:
     import sys
+    from typing import Self
 
     import duckdb
     import geopandas as gpd
@@ -21,11 +22,6 @@ if TYPE_CHECKING:
     from arro3.core.types import ArrowStreamExportable
 
     from lonboard.types.layer import PolygonLayerKwargs, SolidPolygonLayerKwargs
-
-    if sys.version_info >= (3, 11):
-        from typing import Self
-    else:
-        from typing_extensions import Self
 
     if sys.version_info >= (3, 12):
         from typing import Unpack

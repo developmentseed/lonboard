@@ -141,7 +141,7 @@ class FilterValueAccessor(FixedErrorTraitType):
         assert len(data_filter_extension) == 1
         filter_size = data_filter_extension[0].filter_size  # type: ignore
 
-        if isinstance(value, (int, float)):
+        if isinstance(value, (int, float, np.number)):
             if filter_size != 1:
                 self.error(obj, value, info="filter_size==1 with scalar value")
 

@@ -6,7 +6,8 @@ from pathlib import Path
 from typing import IO, TYPE_CHECKING, Any, TextIO, overload
 
 import ipywidgets
-import traitlets as t
+import numpy as np
+import traitlets.traitlets as t
 from ipywidgets import CallbackDispatcher, VBox
 
 from lonboard._base import BaseAnyWidget
@@ -28,16 +29,12 @@ from lonboard.view_state import BaseViewState, GlobeViewState, MapViewState
 if TYPE_CHECKING:
     import sys
     from collections.abc import Callable, Sequence
+    from typing import Self
 
     from IPython.display import HTML  # type: ignore
 
     from lonboard._validators.types import TraitProposal
     from lonboard.types.map import MapKwargs
-
-    if sys.version_info >= (3, 11):
-        from typing import Self
-    else:
-        from typing_extensions import Self
 
     if sys.version_info >= (3, 12):
         from typing import Unpack
@@ -646,17 +643,17 @@ class Map(BaseAnyWidget):
                 specified speed is ignored.
 
         """  # noqa: D210
-        if not isinstance(longitude, (int, float)):
+        if not isinstance(longitude, (int, float, np.number)):
             raise TypeError(
                 f"Expected longitude to be an int or float, got {type(longitude)}",
             )
 
-        if not isinstance(latitude, (int, float)):
+        if not isinstance(latitude, (int, float, np.number)):
             raise TypeError(
                 f"Expected latitude to be an int or float, got {type(latitude)}",
             )
 
-        if not isinstance(zoom, (int, float)):
+        if not isinstance(zoom, (int, float, np.number)):
             raise TypeError(f"Expected zoom to be an int or float, got {type(zoom)}")
 
         data = {
