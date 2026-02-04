@@ -18,6 +18,7 @@ from ._heatmap import HeatmapLayer
 from ._path import PathLayer
 from ._point_cloud import PointCloudLayer
 from ._polygon import PolygonLayer, SolidPolygonLayer
+from ._raster import RasterLayer
 from ._s2 import S2Layer
 from ._scatterplot import ScatterplotLayer
 from ._trips import TripsLayer
@@ -36,6 +37,7 @@ __all__ = [
     "PathLayer",
     "PointCloudLayer",
     "PolygonLayer",
+    "RasterLayer",
     "S2Layer",
     "ScatterplotLayer",
     "SolidPolygonLayer",

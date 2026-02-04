@@ -15,6 +15,7 @@ import {
   S2Model,
   SolidPolygonModel,
 } from "./polygon.js";
+import { RasterModel } from "./raster.js";
 import { ScatterplotModel } from "./scatterplot.js";
 import { SurfaceModel } from "./surface.js";
 import { TextModel } from "./text.js";
@@ -86,6 +87,10 @@ export async function initializeLayer(
 
     case PolygonModel.layerType:
       layerModel = new PolygonModel(model, updateStateCallback);
+      break;
+
+    case RasterModel.layerType:
+      layerModel = new RasterModel(model, updateStateCallback);
       break;
 
     case S2Model.layerType:
