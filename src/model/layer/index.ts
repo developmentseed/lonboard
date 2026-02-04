@@ -31,7 +31,7 @@ export {
   A5Model,
   H3HexagonModel,
   PolygonModel,
-  SolidPolygonModel
+  SolidPolygonModel,
 } from "./polygon.js";
 export { ScatterplotModel } from "./scatterplot.js";
 export { SurfaceModel } from "./surface.js";

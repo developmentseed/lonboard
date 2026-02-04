@@ -54,8 +54,8 @@ export async function invoke<ResponseT>(
 
     const abortHandler = () => {
       if (settled) {
-        return
-      };
+        return;
+      }
       settled = true;
 
       model.off("msg:custom", handler);
@@ -74,8 +74,8 @@ export async function invoke<ResponseT>(
       }
 
       if (settled) {
-        return
-      };
+        return;
+      }
       settled = true;
 
       model.off("msg:custom", handler);
@@ -83,10 +83,6 @@ export async function invoke<ResponseT>(
     }
 
     model.on("msg:custom", handler);
-    model.send(
-      { id, model_id, kind, msg },
-      undefined,
-      options.buffers ?? [],
-    );
+    model.send({ id, model_id, kind, msg }, undefined, options.buffers ?? []);
   });
 }

@@ -1,4 +1,4 @@
-# ruff: noqa: SLF001, ERA001, T201
+# ruff: noqa: SLF001, ERA001
 
 from __future__ import annotations
 
@@ -99,15 +99,18 @@ async def _handle_tile_request(
     output = widget._error_output
 
     try:
-        with output:
-            print(f"Received tile request: {msg}")
+        if widget.debug:
+            output.append_stdout(f"Received tile request: {msg}")
 
         content = msg["msg"]
-        tile_id = content["tile_id"]
+        tile = content["tile"]
+        index = tile["index"]
+        x = index["x"]
+        y = index["y"]
+        z = index["z"]
 
-        # Parse tile coordinates from tile_id (format: "x-y-z")
-        x, y, z = tile_id.split("-")
-        x, y, z = int(x), int(y), int(z)
+        if widget.debug:
+            output.append_stdout(f"Fetching tile at x={x}, y={y}, z={z}\n")
 
         tile = await widget.fetch_tile(x=x, y=y, z=z)
         # TODO: put rendering in thread pool?
@@ -124,8 +127,7 @@ async def _handle_tile_request(
         )
     except Exception:  # noqa: BLE001
         error_msg = traceback.format_exc()
-        with output:
-            print(f"Error handling tile request: {error_msg}")
+        output.append_stderr(f"Error handling tile request: {error_msg}\n")
 
         widget.send(
             {
@@ -135,52 +137,6 @@ async def _handle_tile_request(
             },
             [],
         )
-
-    # try:
-    #     print("handling COG tile request")
-    #     content = msg["msg"]
-    #     tile_id = content["tile_id"]
-    #     tile_x, tile_y, tile_z = tile_id.split("-")
-    #     tile_x = int(tile_x)
-    #     tile_y = int(tile_y)
-    #     tile_z = int(tile_z)
-
-    #     response = "helloworld from init"
-    #     return widget.send(
-    #         {
-    #             "id": msg["id"],
-    #             "kind": "anywidget-command-response",
-    #             "response": response,
-    #         },
-    #         [],
-    #     )
-
-    #     image_data = widget.reader.tile(int(tile_x), int(tile_y), int(tile_z))
-
-    #     # test.evolve
-    #     # rio_tiler.
-    #     image_buf = image_data.render(add_mask=True)
-    #     buffers = [image_buf]
-
-    #     response = "helloworld from init"
-    #     widget.send(
-    #         {
-    #             "id": msg["id"],
-    #             "kind": "anywidget-command-response",
-    #             "response": response,
-    #         },
-    #         buffers,
-    #     )
-    # except:
-    #     response = traceback.format_exc()
-    #     widget.send(
-    #         {
-    #             "id": msg["id"],
-    #             "kind": "anywidget-command-response",
-    #             "response": response,
-    #         },
-    #         buffers,
-    #     )
 
 
 class RasterLayer(BaseLayer):
@@ -205,11 +161,13 @@ class RasterLayer(BaseLayer):
         *,
         fetch_tile: FetchTile,
         render: RenderTile,
+        debug: bool = True,
         **kwargs: Any,
     ) -> None:
         self._pending_tasks = set()
         self.fetch_tile = fetch_tile
         self.render = render
+        self.debug = debug
         self.on_msg(handle_anywidget_dispatch)
         super().__init__(**kwargs)  # type: ignore
 
