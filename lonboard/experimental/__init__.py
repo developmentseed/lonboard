@@ -8,10 +8,8 @@ unexpected behavior when using them.
 #
 # - See module docstring of lonboard.layer for note on passing None as default value.
 
-from ._cog import COGLayer
 from ._text import TextLayer
 
 __all__ = [
-    "COGLayer",
     "TextLayer",
 ]
