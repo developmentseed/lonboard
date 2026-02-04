@@ -32,6 +32,9 @@ export async function invoke<ResponseT>(
   // fetches.
   const id = uuid.v4();
 
+  // We send the model
+  const model_id = model.model_id;
+
   // Default 5-second timeout; tile fetching shouldn't take too long.
   const signal = options.signal ?? AbortSignal.timeout(options.timeout ?? 5000);
 
