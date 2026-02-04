@@ -2,7 +2,7 @@ from __future__ import annotations
 
 from typing import TYPE_CHECKING
 
-import traitlets as t
+import traitlets.traitlets as t
 
 from lonboard.layer._base import BaseArrowLayer
 from lonboard.traits import (
@@ -18,11 +18,6 @@ if TYPE_CHECKING:
     from arro3.core.types import ArrowStreamExportable
 
     from lonboard.types.layer import ArcLayerKwargs, PointAccessorInput
-
-    if sys.version_info >= (3, 11):
-        pass
-    else:
-        pass
 
     if sys.version_info >= (3, 12):
         from typing import Unpack

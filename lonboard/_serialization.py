@@ -18,7 +18,7 @@ from arro3.core import (
     list_flatten,
     list_offsets,
 )
-from traitlets import TraitError
+from traitlets.traitlets import TraitError
 
 from lonboard._utils import timestamp_start_offset
 

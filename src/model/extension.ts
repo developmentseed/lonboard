@@ -7,9 +7,9 @@ import {
 } from "@deck.gl/extensions";
 import type { WidgetModel } from "@jupyter-widgets/base";
 
-import type { BaseLayerModel } from "./base-layer.js";
 import { BaseModel } from "./base.js";
 import { isDefined } from "../util.js";
+import type { BaseLayerModel } from "./layer/base.js";
 
 export abstract class BaseExtensionModel extends BaseModel {
   static extensionType: string;

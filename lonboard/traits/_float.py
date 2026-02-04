@@ -65,7 +65,7 @@ class FloatAccessor(FixedErrorTraitType):
         return ChunkedArray([value.astype(np.float32)])
 
     def validate(self, obj: BaseArrowLayer, value: Any) -> float | ChunkedArray:
-        if isinstance(value, (int, float)):
+        if isinstance(value, (int, float, np.number)):
             return float(value)
 
         # pandas Series

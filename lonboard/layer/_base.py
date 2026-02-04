@@ -6,11 +6,12 @@ from typing import TYPE_CHECKING, Any
 
 import ipywidgets
 import traitlets
-import traitlets as t
+import traitlets.traitlets as t
 from arro3.core import ChunkedArray, Schema, Table
 
 from lonboard._base import BaseExtension, BaseWidget
 from lonboard._constants import OGC_84
+from lonboard._exception_display import ErrorOutput
 from lonboard._geoarrow._duckdb import from_duckdb as _from_duckdb
 from lonboard._geoarrow.c_stream_import import import_arrow_c_stream
 from lonboard._geoarrow.geopandas_interop import geopandas_to_geoarrow
@@ -32,6 +33,7 @@ from lonboard.traits import ArrowTableTrait, VariableLengthTuple
 if TYPE_CHECKING:
     import sys
     from collections.abc import Generator, Sequence
+    from typing import Self
 
     import duckdb
     import geopandas as gpd
@@ -39,11 +41,6 @@ if TYPE_CHECKING:
     from arro3.core.types import ArrowStreamExportable
 
     from lonboard.types.layer import BaseLayerKwargs
-
-    if sys.version_info >= (3, 11):
-        from typing import Self
-    else:
-        from typing_extensions import Self
 
     if sys.version_info >= (3, 12):
         from typing import Unpack
@@ -55,6 +52,7 @@ class BaseLayer(BaseWidget):
     # Note: these class attributes are **not** serialized to JS
     _bbox = Bbox()
     _weighted_centroid = WeightedCentroid()
+    _error_output: ErrorOutput
 
     # The following traitlets **are** serialized to JS
 
@@ -82,6 +80,8 @@ class BaseLayer(BaseWidget):
             added_names.append(prop_name)
 
         self.send_state(added_names)
+
+        self._error_output = ErrorOutput(name=self.__class__.__name__)
 
     # TODO: validate that only one extension per type is included. E.g. you can't have
     # two data filter extensions.
