@@ -1,9 +1,9 @@
-import type { WidgetModel } from "@jupyter-widgets/base";
 import { TileLayer, TileLayerProps } from "@deck.gl/geo-layers";
+import { BitmapLayer } from "@deck.gl/layers";
+import type { WidgetModel } from "@jupyter-widgets/base";
 
 import { BaseLayerModel } from "./base.js";
 import { invoke } from "../dispatch.js";
-import { BitmapLayer } from "@deck.gl/layers";
 
 // This must be kept in sync with lonboard/layer/_raster.py
 const MSG_KIND = "raster-get-tile-data";
@@ -67,7 +67,7 @@ export class RasterModel extends BaseLayerModel {
       renderSubLayers: (props) => {
         const { tile } = props;
         const { boundingBox } = tile;
-        const { buffers, message, image } = props.data;
+        const { image } = props.data;
         console.log("in renderSubLayers");
         console.log(props);
 

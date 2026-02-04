@@ -3,7 +3,6 @@ import { WidgetModel } from "@jupyter-widgets/base";
 import { ArcModel } from "./arc.js";
 import { BaseLayerModel } from "./base.js";
 import { BitmapModel, BitmapTileModel } from "./bitmap.js";
-import { RasterModel } from "./raster.js";
 import { ColumnModel } from "./column.js";
 import { HeatmapModel } from "./heatmap.js";
 import { PathModel } from "./path.js";
@@ -16,6 +15,7 @@ import {
   S2Model,
   SolidPolygonModel,
 } from "./polygon.js";
+import { RasterModel } from "./raster.js";
 import { ScatterplotModel } from "./scatterplot.js";
 import { SurfaceModel } from "./surface.js";
 import { TextModel } from "./text.js";
