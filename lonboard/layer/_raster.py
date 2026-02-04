@@ -8,7 +8,6 @@ from typing import TYPE_CHECKING, Any, Protocol
 
 import numpy as np
 import traitlets.traitlets as t
-from async_geotiff.tms import generate_tms
 
 from lonboard.layer._base import BaseLayer
 
@@ -183,6 +182,8 @@ class RasterLayer(BaseLayer):
         # Ideally, in a typed context, render should receive the correct tile type
     ) -> RasterLayer:
         """Create a RasterLayer from a GeoTIFF instance from async-geotiff."""
+        from async_geotiff.tms import generate_tms
+
         tms = generate_tms(geotiff)
 
         # This should create a closure for fetching tiles from the geotiff. So the user
