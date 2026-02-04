@@ -6,7 +6,6 @@ import asyncio
 import traceback
 from typing import TYPE_CHECKING, Any, Protocol
 
-import aiohttp
 import numpy as np
 import traitlets.traitlets as t
 from async_geotiff.tms import generate_tms
@@ -25,7 +24,7 @@ MSG_KIND = "raster-get-tile-data"
 class RenderTile(Protocol):
     """Protocol for user-defined render function."""
 
-    def __call__(self, tile: Tile) -> NDArray[np.uint8]:
+    def __call__(self, tile: Tile) -> bytes:  # EncodedImage:
         """Render a tile.
 
         Args:
@@ -94,7 +93,7 @@ def reshape_as_image(arr: NDArray) -> NDArray:
 async def _handle_tile_request(
     widget: RasterLayer,
     msg: dict,
-    buffers: list[bytes],  # noqa: ARG001
+    buffers: list[bytes],
 ) -> None:
     """Async handler for tile data requests from the frontend."""
     output = widget._error_output
@@ -111,22 +110,17 @@ async def _handle_tile_request(
         x, y, z = int(x), int(y), int(z)
 
         tile = await widget.fetch_tile(x=x, y=y, z=z)
-        # TODO: put in thread pool?
+        # TODO: put rendering in thread pool?
         rendered = widget.render(tile)
-
-        async with (
-            aiohttp.ClientSession() as session,
-            session.get("https://example.com") as resp,
-        ):
-            text = await resp.text()
+        buffers = [rendered]
 
         widget.send(
             {
                 "id": msg["id"],
                 "kind": f"{MSG_KIND}-response",
-                "response": text,
+                "response": {},  # {"format": rendered.format},
             },
-            [rendered.tobytes("C")],
+            buffers,
         )
     except Exception:  # noqa: BLE001
         error_msg = traceback.format_exc()
@@ -198,6 +192,8 @@ class RasterLayer(BaseLayer):
 
     # Prevent garbage collection of async tasks before they complete.
     # Tasks are removed automatically via add_done_callback when they finish.
+    #
+    # TODO: ensure JS AbortSignal propagates to cancel these tasks
     _pending_tasks: set[asyncio.Task[None]]
 
     fetch_tile: FetchTile
@@ -246,7 +242,7 @@ class RasterLayer(BaseLayer):
 
         return cls(tms=tms, fetch_tile=geotiff_fetch_tile, render=render, **kwargs)
 
-    _layer_type = t.Unicode("cog").tag(sync=True)
+    _layer_type = t.Unicode("raster").tag(sync=True)
 
     # TODO: Restore TMS generic tile traversal. For now, for simplicity, we're only rendering standard web mercator tiles.
     # _tms = Dict().tag(sync=True)
