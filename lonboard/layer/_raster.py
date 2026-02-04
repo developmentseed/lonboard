@@ -135,7 +135,6 @@ async def _handle_tile_request(
                 "kind": f"{MSG_KIND}-response",
                 "response": {"error": error_msg},
             },
-            [],
         )
 
 
