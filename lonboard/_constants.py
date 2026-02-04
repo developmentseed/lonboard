@@ -1,4 +1,4 @@
-from enum import Enum
+from enum import Enum, StrEnum
 
 import pyproj
 
@@ -110,7 +110,7 @@ class EXTENSION_NAME(bytes, Enum):  # noqa: N801
         return self.value.decode()
 
 
-class Environment(str, Enum):
+class Environment(StrEnum):
     Azure = "azure"
     """Azure notebook"""
 
