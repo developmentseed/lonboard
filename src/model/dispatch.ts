@@ -32,11 +32,6 @@ export async function invoke<ResponseT>(
   // fetches.
   const id = uuid.v4();
 
-  // We send the model ID so that in BaseLayer we can easily check whether a
-  // given message is intended for that layer.
-  // This matches the Python `model_id`
-  const model_id = model.model_id;
-
   // Default 5-second timeout; tile fetching shouldn't take too long.
   const signal = options.signal ?? AbortSignal.timeout(options.timeout ?? 5000);
 
@@ -83,6 +78,6 @@ export async function invoke<ResponseT>(
     }
 
     model.on("msg:custom", handler);
-    model.send({ id, model_id, kind, msg }, undefined, options.buffers ?? []);
+    model.send({ id, kind, msg }, undefined, options.buffers ?? []);
   });
 }

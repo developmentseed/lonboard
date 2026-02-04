@@ -32,7 +32,7 @@ from lonboard.traits import ArrowTableTrait, VariableLengthTuple
 
 if TYPE_CHECKING:
     import sys
-    from collections.abc import Callable, Generator, Sequence
+    from collections.abc import Generator, Sequence
     from typing import Self
 
     import duckdb
@@ -53,9 +53,6 @@ class BaseLayer(BaseWidget):
     _bbox = Bbox()
     _weighted_centroid = WeightedCentroid()
     _error_output: ErrorOutput
-    _dispatch_callback: (
-        Callable[[BaseWidget, str | list | dict, list[bytes]], None] | None
-    ) = None
 
     # The following traitlets **are** serialized to JS
 
@@ -84,21 +81,7 @@ class BaseLayer(BaseWidget):
 
         self.send_state(added_names)
 
-        self.on_msg(self._handle_anywidget_dispatch)
         self._error_output = ErrorOutput(name=self.__class__.__name__)
-
-    def _handle_anywidget_dispatch(
-        self,
-        msg: str | list | dict,
-        buffers: list[bytes],
-    ) -> None:
-        """Handle any dispatched messages from the frontend."""
-        # Ignore any messages not intended for this layer by checking the model_id
-        if not isinstance(msg, dict) or msg.get("model_id") != self.model_id:
-            return
-
-        if hasattr(self, "_dispatch_callback") and callable(self._dispatch_callback):
-            self._dispatch_callback(self, msg, buffers)
 
     # TODO: validate that only one extension per type is included. E.g. you can't have
     # two data filter extensions.
