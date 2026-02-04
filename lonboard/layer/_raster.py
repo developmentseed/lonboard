@@ -22,12 +22,12 @@ if TYPE_CHECKING:
 
 output = Output()
 
-# This must be kept in sync with src/model/layer/cog.ts
-MSG_KIND = "cog-get-tile-data"
+# This must be kept in sync with src/model/layer/raster.ts
+MSG_KIND = "raster-get-tile-data"
 
 
 def handle_anywidget_dispatch(
-    widget: COGLayer,
+    widget: RasterLayer,
     msg: str | list | dict,
     buffers: list[bytes],
 ) -> None:
@@ -61,7 +61,7 @@ def reshape_as_image(arr: NDArray) -> NDArray:
 
 
 async def _handle_tile_request(
-    widget: COGLayer,
+    widget: RasterLayer,
     msg: dict,
     buffers: list[bytes],
 ) -> None:
@@ -177,11 +177,12 @@ class Render(Protocol):
         ...
 
 
-class COGLayer(BaseLayer):
-    """The COGLayer renders imagery from a Cloud-Optimized GeoTIFF."""
+class RasterLayer(BaseLayer):
+    """The RasterLayer renders raster imagery.
 
-    # Note: not serialized to frontend directly.
-    geotiff: GeoTIFF
+    This layer expects input such as Cloud-Optimized GeoTIFFs (COGs) that can be
+    efficiently accessed by internal tiles.
+    """
 
     # Prevent garbage collection of async tasks before they complete.
     # Tasks are removed automatically via add_done_callback when they finish.
@@ -208,8 +209,8 @@ class COGLayer(BaseLayer):
         *,
         render: Render,
         **kwargs: Any,
-    ) -> COGLayer:
-        """Create a COGLayer from a GeoTIFF instance from async-geotiff."""
+    ) -> RasterLayer:
+        """Create a RasterLayer from a GeoTIFF instance from async-geotiff."""
         tms = generate_tms(geotiff)
         return cls(tms=tms, render=render, **kwargs)
 

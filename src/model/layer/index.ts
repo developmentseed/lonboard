@@ -3,7 +3,7 @@ import { WidgetModel } from "@jupyter-widgets/base";
 import { ArcModel } from "./arc.js";
 import { BaseLayerModel } from "./base.js";
 import { BitmapModel, BitmapTileModel } from "./bitmap.js";
-import { COGModel } from "./cog.js";
+import { RasterModel } from "./raster.js";
 import { ColumnModel } from "./column.js";
 import { HeatmapModel } from "./heatmap.js";
 import { PathModel } from "./path.js";
@@ -61,10 +61,6 @@ export async function initializeLayer(
       layerModel = new BitmapTileModel(model, updateStateCallback);
       break;
 
-    case COGModel.layerType:
-      layerModel = new COGModel(model, updateStateCallback);
-      break;
-
     case ColumnModel.layerType:
       layerModel = new ColumnModel(model, updateStateCallback);
       break;
@@ -91,6 +87,10 @@ export async function initializeLayer(
 
     case PolygonModel.layerType:
       layerModel = new PolygonModel(model, updateStateCallback);
+      break;
+
+    case RasterModel.layerType:
+      layerModel = new RasterModel(model, updateStateCallback);
       break;
 
     case S2Model.layerType:

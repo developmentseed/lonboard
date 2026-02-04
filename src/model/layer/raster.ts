@@ -4,11 +4,11 @@ import {TileLayer, TileLayerProps} from "@deck.gl/geo-layers"
 import {  BaseLayerModel } from "./base.js";
 import { invoke } from "../invoke.js";
 
-// This must be kept in sync with lonboard/layer/_cog.py
-const MSG_KIND = "cog-get-tile-data";
+// This must be kept in sync with lonboard/layer/_raster.py
+const MSG_KIND = "raster-get-tile-data";
 
-export class COGModel extends BaseLayerModel {
-  static layerType = "cog";
+export class RasterModel extends BaseLayerModel {
+  static layerType = "raster";
 
   constructor(model: WidgetModel, updateStateCallback: () => void) {
     super(model, updateStateCallback);
