@@ -1,5 +1,5 @@
-import * as arrow from "apache-arrow";
-import { useState, useEffect } from "react";
+import type * as arrow from "apache-arrow";
+import { useEffect, useState } from "react";
 
 import { parseParquetBuffers } from "./parquet.js";
 

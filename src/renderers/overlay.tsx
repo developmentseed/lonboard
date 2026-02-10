@@ -1,9 +1,10 @@
-import { MapboxOverlay, MapboxOverlayProps } from "@deck.gl/mapbox";
-import React from "react";
-import Map, { useControl, ViewStateChangeEvent } from "react-map-gl/maplibre";
-
-import type { MapRendererProps, OverlayRendererProps } from "./types";
+import type { MapboxOverlayProps } from "@deck.gl/mapbox";
+import { MapboxOverlay } from "@deck.gl/mapbox";
+import type React from "react";
+import type { ViewStateChangeEvent } from "react-map-gl/maplibre";
+import Map, { useControl } from "react-map-gl/maplibre";
 import { isGlobeView } from "../util";
+import type { MapRendererProps, OverlayRendererProps } from "./types";
 
 /**
  * DeckGLOverlay component that integrates deck.gl with react-map-gl

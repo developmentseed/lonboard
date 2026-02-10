@@ -3,7 +3,8 @@ import type { IWidgetManager, WidgetModel } from "@jupyter-widgets/base";
 import { useEffect, useState } from "react";
 
 import { initializeChildModels } from "../model/index.js";
-import { BaseViewModel, initializeView } from "../model/view.js";
+import type { BaseViewModel } from "../model/view.js";
+import { initializeView } from "../model/view.js";
 
 /**
  * Hook to manage views state loading and initialization

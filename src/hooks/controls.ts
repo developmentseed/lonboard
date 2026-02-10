@@ -1,7 +1,7 @@
 import type { IWidgetManager, WidgetModel } from "@jupyter-widgets/base";
 import { useEffect, useState } from "react";
 
-import { BaseMapControlModel } from "../model";
+import type { BaseMapControlModel } from "../model";
 import { initializeChildModels } from "../model/index.js";
 import { initializeControl } from "../model/map-control";
 

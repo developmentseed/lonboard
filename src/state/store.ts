@@ -4,7 +4,7 @@
  * Manages ephemeral UI state that never syncs with Python. For Python-synced state,
  * use Backbone models via `useViewStateDebounced()` from `./python-sync.ts`.
  */
-import { GeoArrowPickingInfo } from "@geoarrow/deck.gl-layers";
+import type { GeoArrowPickingInfo } from "@geoarrow/deck.gl-layers";
 import { create } from "zustand";
 
 /** Shape of the client-side UI state. All properties are UI-only. */

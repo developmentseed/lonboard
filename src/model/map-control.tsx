@@ -5,7 +5,7 @@ import {
   ZoomWidget,
 } from "@deck.gl/react";
 import type { WidgetModel } from "@jupyter-widgets/base";
-import React from "react";
+import type React from "react";
 import {
   FullscreenControl,
   NavigationControl,

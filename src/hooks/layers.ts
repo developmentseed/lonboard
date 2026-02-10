@@ -1,12 +1,8 @@
 import type { Layer } from "@deck.gl/core";
 import type { IWidgetManager, WidgetModel } from "@jupyter-widgets/base";
 import { useEffect, useState } from "react";
-
-import {
-  BaseLayerModel,
-  initializeChildModels,
-  initializeLayer,
-} from "../model/index.js";
+import type { BaseLayerModel } from "../model/index.js";
+import { initializeChildModels, initializeLayer } from "../model/index.js";
 
 /**
  * Hook to manage layers state loading and initialization

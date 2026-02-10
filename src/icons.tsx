@@ -1,4 +1,4 @@
-import React from "react";
+import type React from "react";
 
 // SVG elements are from Collecticons
 // https://collecticons.io/

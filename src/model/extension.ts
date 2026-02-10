@@ -1,4 +1,4 @@
-import { LayerExtension } from "@deck.gl/core";
+import type { LayerExtension } from "@deck.gl/core";
 import {
   BrushingExtension as _BrushingExtension,
   CollisionFilterExtension as _CollisionFilterExtension,
@@ -6,9 +6,8 @@ import {
   PathStyleExtension as _PathStyleExtension,
 } from "@deck.gl/extensions";
 import type { WidgetModel } from "@jupyter-widgets/base";
-
-import { BaseModel } from "./base.js";
 import { isDefined } from "../util.js";
+import { BaseModel } from "./base.js";
 import type { BaseLayerModel } from "./layer/base.js";
 
 export abstract class BaseExtensionModel extends BaseModel {

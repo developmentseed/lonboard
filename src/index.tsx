@@ -1,9 +1,10 @@
 import { createRender, useModel, useModelState } from "@anywidget/react";
 import type { Initialize, Render } from "@anywidget/types";
-import { MapViewState, PickingInfo } from "@deck.gl/core";
-import { PolygonLayer, PolygonLayerProps } from "@deck.gl/layers";
-import { DeckGLRef } from "@deck.gl/react";
-import { GeoArrowPickingInfo } from "@geoarrow/deck.gl-layers";
+import type { MapViewState, PickingInfo } from "@deck.gl/core";
+import type { PolygonLayerProps } from "@deck.gl/layers";
+import { PolygonLayer } from "@deck.gl/layers";
+import type { DeckGLRef } from "@deck.gl/react";
+import type { GeoArrowPickingInfo } from "@geoarrow/deck.gl-layers";
 import type { IWidgetManager } from "@jupyter-widgets/base";
 import { NextUIProvider } from "@nextui-org/react";
 import debounce from "lodash.debounce";
@@ -23,7 +24,7 @@ import { DEFAULT_MAP_STYLE } from "./model/basemap.js";
 import { initParquetWasm } from "./parquet.js";
 import DeckFirstRenderer from "./renderers/deck-first.js";
 import OverlayRenderer from "./renderers/overlay.js";
-import {
+import type {
   DeckFirstRendererProps,
   MapRendererProps,
   OverlayRendererProps,
@@ -32,7 +33,7 @@ import SidePanel from "./sidepanel/index";
 import { useStore, useViewStateDebounced } from "./state";
 import Toolbar from "./toolbar.js";
 import { getTooltip } from "./tooltip/index.js";
-import { Message } from "./types.js";
+import type { Message } from "./types.js";
 import { isDefined, isGlobeView, sanitizeViewState } from "./util.js";
 
 import "maplibre-gl/dist/maplibre-gl.css";

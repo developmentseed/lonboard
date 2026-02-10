@@ -1,13 +1,9 @@
 /** Check for null and undefined */
 
-import {
-  _GlobeView as GlobeView,
-  GlobeViewState,
-  MapView,
-  MapViewState,
-} from "@deck.gl/core";
+import type { GlobeViewState, MapViewState } from "@deck.gl/core";
+import { _GlobeView as GlobeView, MapView } from "@deck.gl/core";
 
-import { MapRendererProps } from "./renderers";
+import type { MapRendererProps } from "./renderers";
 
 // https://stackoverflow.com/a/52097445
 export function isDefined<T>(value: T | undefined | null): value is T {

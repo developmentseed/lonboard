@@ -1,5 +1,5 @@
 import DeckGL from "@deck.gl/react";
-import React from "react";
+import type React from "react";
 import Map from "react-map-gl/maplibre";
 
 import type { DeckFirstRendererProps, MapRendererProps } from "./types";
