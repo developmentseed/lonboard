@@ -1,6 +1,6 @@
 import type { View } from "@deck.gl/core";
 import type { IWidgetManager, WidgetModel } from "@jupyter-widgets/base";
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 
 import { initializeChildModels } from "../model/index.js";
 import type { BaseViewModel } from "../model/view.js";
@@ -23,6 +23,8 @@ export function useViewsState(
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     Record<string, BaseViewModel<any>>
   >({});
+  const viewsStateRef = useRef(viewsState);
+  viewsStateRef.current = viewsState;
 
   useEffect(() => {
     const loadAndUpdateViews = async () => {
@@ -36,7 +38,7 @@ export function useViewsState(
         const viewsModels = await initializeChildModels<BaseViewModel<any>>(
           widgetManager,
           typeof viewIds === "string" ? [viewIds] : viewIds,
-          viewsState,
+          viewsStateRef.current,
           async (model: WidgetModel) =>
             initializeView(model, updateStateCallback),
         );
@@ -48,7 +50,7 @@ export function useViewsState(
     };
 
     loadAndUpdateViews();
-  }, [viewIds, widgetManager, updateStateCallback, viewsState]);
+  }, [viewIds, widgetManager, updateStateCallback]);
 
   const views = Object.values(viewsState).map((viewModel) => viewModel.build());
 

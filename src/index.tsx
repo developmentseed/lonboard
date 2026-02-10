@@ -175,7 +175,10 @@ function App() {
   // Fake state just to get react to re-render when a model callback is called
   // eslint-disable-next-line @typescript-eslint/no-unused-vars
   const [_stateCounter, setStateCounter] = useState<Date>(new Date());
-  const updateStateCallback = () => setStateCounter(new Date());
+  const updateStateCallback = useCallback(
+    () => setStateCounter(new Date()),
+    [],
+  );
 
   const basemapState = useBasemapState(
     basemapModelId,
@@ -245,14 +248,22 @@ function App() {
     ],
   );
 
-  const onMapHoverHandler = useCallback(
+  const isOnMapHoverEventEnabledRef = useRef(isOnMapHoverEventEnabled);
+  isOnMapHoverEventEnabledRef.current = isOnMapHoverEventEnabled;
+  const justClickedRef = useRef(justClicked);
+  justClickedRef.current = justClicked;
+
+  const onMapHoverHandler = useRef(
     throttle((info: PickingInfo) => {
-      if (isOnMapHoverEventEnabled && !justClicked && info.coordinate) {
+      if (
+        isOnMapHoverEventEnabledRef.current &&
+        !justClickedRef.current &&
+        info.coordinate
+      ) {
         setBboxHover(info.coordinate);
       }
     }, 100),
-    [],
-  );
+  ).current;
 
   const mapRenderProps: MapRendererProps = {
     mapStyle: basemapState?.style || DEFAULT_MAP_STYLE,

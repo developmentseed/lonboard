@@ -1,6 +1,6 @@
 import type { Layer } from "@deck.gl/core";
 import type { IWidgetManager, WidgetModel } from "@jupyter-widgets/base";
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import type { BaseLayerModel } from "../model/index.js";
 import { initializeChildModels, initializeLayer } from "../model/index.js";
 
@@ -26,6 +26,8 @@ export function useLayersState(
   const [layersState, setLayersState] = useState<
     Record<string, BaseLayerModel>
   >({});
+  const layersStateRef = useRef(layersState);
+  layersStateRef.current = layersState;
 
   useEffect(() => {
     const loadAndUpdateLayers = async () => {
@@ -33,7 +35,7 @@ export function useLayersState(
         const layerModels = await initializeChildModels<BaseLayerModel>(
           widgetManager,
           layerIds,
-          layersState,
+          layersStateRef.current,
           async (model: WidgetModel) =>
             initializeLayer(model, updateStateCallback),
         );
@@ -56,10 +58,6 @@ export function useLayersState(
     layerIds,
     bboxSelectBounds,
     isDrawingBBoxSelection,
-    layersState,
-    // Note: selected_bounds is a property of the **Map**. In the future,
-    // when we use deck.gl to perform picking, we'll have
-    // `selected_indices` as a property of each individual layer.
     setSelectedBounds,
     updateStateCallback,
     widgetManager,
