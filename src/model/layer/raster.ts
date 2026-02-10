@@ -9,6 +9,10 @@ import { BaseLayerModel } from "./base.js";
 // This must be kept in sync with lonboard/layer/_raster.py
 const MSG_KIND = "raster-get-tile-data";
 
+type TileResponse =
+  | { type: "encoded-image"; mime_type: string }
+  | { error: string };
+
 export class RasterModel extends BaseLayerModel {
   static layerType = "raster";
 
@@ -36,11 +40,8 @@ export class RasterModel extends BaseLayerModel {
     const { index } = tile;
     const { signal } = tile;
     const { x, y, z } = index;
-    console.log("in getTileData");
 
-    console.log("calling invoke");
-    console.log(tile);
-    const [message, buffers] = await invoke(
+    const [message, buffers] = await invoke<TileResponse>(
       this.model,
       {
         tile: {
@@ -51,20 +52,16 @@ export class RasterModel extends BaseLayerModel {
       { signal, timeout: 10000 },
     );
 
-    console.log(
-      "returned from invoke, message and buffer received",
-      message,
-      buffers,
-    );
+    if ("error" in message) {
+      console.error("Error fetching tile data:", message.error);
+      return null;
+    }
 
     if (signal?.aborted) {
       return null;
     }
 
-    const image = await dataViewToImageBitmap(buffers[0]);
-
-    console.log("returned from invoke");
-    console.log(message);
+    const image = await dataViewToImageBitmap(buffers[0], message.mime_type);
 
     return { message, buffers, image };
   };
@@ -91,12 +88,18 @@ export class RasterModel extends BaseLayerModel {
       renderSubLayers: (props) => {
         const { tile } = props;
         const { boundingBox } = tile;
+
+        if (!props.data) {
+          return null;
+        }
+
+        console.log("props.data");
+        console.log(props.data);
         const { image } = props.data;
         console.log("in renderSubLayers");
         console.log(props);
 
         return new BitmapLayer(props, {
-          data: null,
           image,
           bounds: [
             boundingBox[0][0],
@@ -110,7 +113,10 @@ export class RasterModel extends BaseLayerModel {
   }
 }
 
-async function dataViewToImageBitmap(dataView: DataView): Promise<ImageBitmap> {
+async function dataViewToImageBitmap(
+  dataView: DataView,
+  mimeType: string,
+): Promise<ImageBitmap> {
   const { buffer, byteOffset, byteLength } = dataView;
 
   if (!(buffer instanceof ArrayBuffer)) {
@@ -118,6 +124,6 @@ async function dataViewToImageBitmap(dataView: DataView): Promise<ImageBitmap> {
   }
 
   const bytes = new Uint8Array(buffer, byteOffset, byteLength);
-  const blob = new Blob([bytes], { type: "image/png" });
+  const blob = new Blob([bytes], { type: mimeType });
   return createImageBitmap(blob);
 }

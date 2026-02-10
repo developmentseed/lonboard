@@ -182,7 +182,7 @@ class RasterLayer(BaseLayer, Generic[T]):
         *,
         fetch_tile: FetchTile[T],
         render: RenderTile[T],
-        debug: bool = True,
+        debug: bool = False,
         _bounds: Bbox | None = None,
         _center: tuple[float, float] | None = None,
         **kwargs: Unpack[RasterLayerKwargs],
@@ -211,6 +211,7 @@ class RasterLayer(BaseLayer, Generic[T]):
     def from_pmtiles(
         cls,
         reader: PMTilesReader,
+        **kwargs: Unpack[RasterLayerKwargs],
     ) -> RasterLayer[Buffer]:
         """Create a RasterLayer from a PMTiles URL."""
         from pmtiles.tile import TileType
@@ -248,6 +249,11 @@ class RasterLayer(BaseLayer, Generic[T]):
             """Render a tile using the user-provided render function."""
             return EncodedImage(data=tile, mime_type=mime_type)
 
+        # Remove the kwargs that we override
+        kwargs.pop("min_zoom", None)
+        kwargs.pop("max_zoom", None)
+        kwargs.pop("extent", None)
+
         return RasterLayer(
             fetch_tile=fetch_tile,
             render=render,
@@ -256,6 +262,7 @@ class RasterLayer(BaseLayer, Generic[T]):
             extent=reader.bounds,
             _bounds=Bbox(*reader.bounds),
             _center=reader.center[:2],
+            **kwargs,  # type: ignore
         )
 
     @classmethod
