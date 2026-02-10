@@ -9,7 +9,6 @@ import type { IWidgetManager } from "@jupyter-widgets/base";
 import { NextUIProvider } from "@nextui-org/react";
 import debounce from "lodash.debounce";
 import throttle from "lodash.throttle";
-import * as React from "react";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { v4 as uuidv4 } from "uuid";
 
@@ -117,7 +116,7 @@ function App() {
       (window as unknown as Record<string, unknown>).__deck =
         deckRef.current.deck;
     }
-  }, [deckRef.current]);
+  }, []);
 
   const model = useModel();
 
@@ -175,7 +174,7 @@ function App() {
 
   // Fake state just to get react to re-render when a model callback is called
   // eslint-disable-next-line @typescript-eslint/no-unused-vars
-  const [stateCounter, setStateCounter] = useState<Date>(new Date());
+  const [_stateCounter, setStateCounter] = useState<Date>(new Date());
   const updateStateCallback = () => setStateCounter(new Date());
 
   const basemapState = useBasemapState(
@@ -241,6 +240,8 @@ function App() {
       bboxSelectStart,
       setBboxStart,
       setBboxEnd,
+      model.get,
+      model.send,
     ],
   );
 
@@ -250,7 +251,7 @@ function App() {
         setBboxHover(info.coordinate);
       }
     }, 100),
-    [isOnMapHoverEventEnabled, justClicked, setBboxHover],
+    [],
   );
 
   const mapRenderProps: MapRendererProps = {
