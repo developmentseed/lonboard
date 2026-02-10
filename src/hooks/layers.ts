@@ -52,7 +52,18 @@ export function useLayersState(
     };
 
     loadAndUpdateLayers();
-  }, [layerIds, bboxSelectBounds, isDrawingBBoxSelection]);
+  }, [
+    layerIds,
+    bboxSelectBounds,
+    isDrawingBBoxSelection,
+    layersState,
+    // Note: selected_bounds is a property of the **Map**. In the future,
+    // when we use deck.gl to perform picking, we'll have
+    // `selected_indices` as a property of each individual layer.
+    setSelectedBounds,
+    updateStateCallback,
+    widgetManager,
+  ]);
 
   return Object.values(layersState).flatMap((layerModel) =>
     layerModel.render(),

@@ -32,6 +32,11 @@
       "trailingCommas": "all"
     }
   },
+  "css": {
+    "linter": {
+      "enabled": true
+    }
+  },
   "linter": {
     "enabled": true,
     "rules": {
@@ -46,7 +51,8 @@
         }
       },
       "suspicious": {
-        "noExplicitAny": "off"
+        "noExplicitAny": "off",
+        "noUnknownAtRules": "off"
       }
     }
   },

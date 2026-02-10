@@ -49,10 +49,6 @@ export abstract class BaseMapControlModel extends BaseModel {
 export class FullscreenControlModel extends BaseMapControlModel {
   static controlType = "fullscreen";
 
-  constructor(model: WidgetModel, updateStateCallback: () => void) {
-    super(model, updateStateCallback);
-  }
-
   renderDeck() {
     const { placement, ...otherProps } = this.baseDeckProps();
     const props = { placement: placement || "top-right", ...otherProps };

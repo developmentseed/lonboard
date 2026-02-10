@@ -35,7 +35,7 @@ export function useControlsState(
     };
 
     loadMapControls();
-  }, [controlsIds]);
+  }, [controlsIds, controlsState, updateStateCallback, widgetManager]);
 
   return Object.values(controlsState);
 }

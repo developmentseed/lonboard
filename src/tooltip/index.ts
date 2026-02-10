@@ -44,7 +44,7 @@ export function getTooltip({ object }: GeoArrowPickingInfo): TooltipContent {
       return null;
     }
 
-    delete jsonObj["geometry"];
+    delete jsonObj.geometry;
 
     if (Object.keys(jsonObj).length === 0) {
       return null;

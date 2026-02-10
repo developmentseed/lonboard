@@ -39,7 +39,7 @@ export function useAccessorState(
   useEffect(() => {
     const callback = () => {
       setAccessorValue(
-        accessorRaw instanceof Array && accessorRaw?.[0] instanceof DataView
+        Array.isArray(accessorRaw) && accessorRaw?.[0] instanceof DataView
           ? wasmReady && accessorRaw?.[0].byteLength > 0
             ? parseParquetBuffers(accessorRaw).getChildAt(0)
             : null
@@ -53,7 +53,7 @@ export function useAccessorState(
 }
 
 export function parseAccessor(accessorRaw: AccessorRaw): arrow.Vector | null {
-  return accessorRaw instanceof Array && accessorRaw?.[0] instanceof DataView
+  return Array.isArray(accessorRaw) && accessorRaw?.[0] instanceof DataView
     ? accessorRaw?.[0].byteLength > 0
       ? parseParquetBuffers(accessorRaw).getChildAt(0)
       : null

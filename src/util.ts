@@ -25,7 +25,7 @@ export function isMapView(views: MapRendererProps["views"]) {
 }
 
 export function sanitizeViewState(
-  views: MapRendererProps["views"],
+  _views: MapRendererProps["views"],
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   viewState: (MapViewState | GlobeViewState) & Record<string, any>,
 ): MapViewState | GlobeViewState {

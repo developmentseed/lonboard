@@ -13,10 +13,6 @@ import type { BaseLayerModel } from "./layer/base.js";
 export abstract class BaseExtensionModel extends BaseModel {
   static extensionType: string;
 
-  constructor(model: WidgetModel, updateStateCallback: () => void) {
-    super(model, updateStateCallback);
-  }
-
   abstract extensionInstance(): LayerExtension | null;
 }
 

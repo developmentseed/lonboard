@@ -183,10 +183,6 @@ export abstract class BasePolygonModel extends BaseArrowLayerModel {
 export class PolygonModel extends BasePolygonModel {
   static layerType = "polygon";
 
-  constructor(model: WidgetModel, updateStateCallback: () => void) {
-    super(model, updateStateCallback);
-  }
-
   layerProps(batchIndex: number): GeoArrowPolygonLayerProps {
     return this.basePolygonLayerProps(batchIndex);
   }

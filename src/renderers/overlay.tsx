@@ -2,7 +2,7 @@ import type { MapboxOverlayProps } from "@deck.gl/mapbox";
 import { MapboxOverlay } from "@deck.gl/mapbox";
 import type React from "react";
 import type { ViewStateChangeEvent } from "react-map-gl/maplibre";
-import Map, { useControl } from "react-map-gl/maplibre";
+import MapGL, { useControl } from "react-map-gl/maplibre";
 import { isGlobeView } from "../util";
 import type { MapRendererProps, OverlayRendererProps } from "./types";
 
@@ -52,7 +52,7 @@ const OverlayRenderer: React.FC<MapRendererProps & OverlayRendererProps> = (
       }
     : undefined;
   return (
-    <Map
+    <MapGL
       reuseMaps
       initialViewState={initialViewState}
       mapStyle={mapStyle}
@@ -63,7 +63,7 @@ const OverlayRenderer: React.FC<MapRendererProps & OverlayRendererProps> = (
     >
       {controls.map((control) => control.renderMaplibre())}
       <DeckGLOverlay {...deckProps} />
-    </Map>
+    </MapGL>
   );
 };
 
