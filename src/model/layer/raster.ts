@@ -10,6 +10,7 @@ import { BaseLayerModel } from "./base.js";
 const MSG_KIND = "raster-get-tile-data";
 
 type TileResponse =
+  | { type: "empty" }
   | { type: "encoded-image"; mime_type: string }
   | { error: string };
 
@@ -51,6 +52,12 @@ export class RasterModel extends BaseLayerModel {
       MSG_KIND,
       { signal, timeout: 10000 },
     );
+
+    // A tile intentionally out of bounds may return an "empty" message, which
+    // is not an error.
+    if ("type" in message && message.type === "empty") {
+      return null;
+    }
 
     if ("error" in message) {
       console.error("Error fetching tile data:", message.error);

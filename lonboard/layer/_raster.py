@@ -57,7 +57,7 @@ class FetchTile(Protocol[Tile_co]):
 class RenderTile(Protocol[Tile_contra]):
     """Protocol for user-defined render function."""
 
-    def __call__(self, tile: Tile_contra) -> EncodedImage:
+    def __call__(self, tile: Tile_contra) -> EncodedImage | None:
         """Render a tile.
 
         Args:
@@ -132,6 +132,18 @@ async def _handle_tile_request(
         tile = await widget.fetch_tile(x=x, y=y, z=z)
         # TODO: put rendering in thread pool?
         rendered = widget.render(tile)
+        if rendered is None:
+            widget.send(
+                {
+                    "id": msg["id"],
+                    "kind": f"{MSG_KIND}-response",
+                    "response": {
+                        "type": "empty",
+                    },
+                },
+            )
+            return
+
         response_buffers = [rendered.data]
 
         widget.send(
@@ -212,7 +224,7 @@ class RasterLayer(BaseLayer, Generic[T]):
         cls,
         reader: PMTilesReader,
         **kwargs: Unpack[RasterLayerKwargs],
-    ) -> RasterLayer[Buffer]:
+    ) -> RasterLayer[Buffer | None]:
         """Create a RasterLayer from a PMTiles URL."""
         from pmtiles.tile import TileType
 
@@ -237,16 +249,19 @@ class RasterLayer(BaseLayer, Generic[T]):
             x: int,
             y: int,
             z: int,
-        ) -> Buffer:
+        ) -> Buffer | None:
             """Fetch a specific tile from the PMTiles archive."""
             buffer = await reader.get_tile(x=x, y=y, z=z)
             if buffer is None:
-                raise ValueError(f"Tile at x={x}, y={y}, z={z} not found in PMTiles.")
+                return None
 
             return buffer
 
-        def render(tile: Buffer) -> EncodedImage:
+        def render(tile: Buffer | None) -> EncodedImage | None:
             """Render a tile using the user-provided render function."""
+            if tile is None:
+                return None
+
             return EncodedImage(data=tile, mime_type=mime_type)
 
         # Remove the kwargs that we override
