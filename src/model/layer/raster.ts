@@ -1,6 +1,8 @@
 import type { TileLayerProps } from "@deck.gl/geo-layers";
 import { TileLayer } from "@deck.gl/geo-layers";
 import { BitmapLayer } from "@deck.gl/layers";
+import type { WidgetModel } from "@jupyter-widgets/base";
+import { isDefined } from "../../util.js";
 import { invoke } from "../dispatch.js";
 import { BaseLayerModel } from "./base.js";
 
@@ -9,6 +11,26 @@ const MSG_KIND = "raster-get-tile-data";
 
 export class RasterModel extends BaseLayerModel {
   static layerType = "raster";
+
+  protected tileSize: TileLayerProps["tileSize"];
+  protected zoomOffset: TileLayerProps["zoomOffset"];
+  protected maxZoom: TileLayerProps["maxZoom"];
+  protected minZoom: TileLayerProps["minZoom"];
+  protected extent: TileLayerProps["extent"];
+  protected maxCacheSize: TileLayerProps["maxCacheSize"];
+  protected debounceTime: TileLayerProps["debounceTime"];
+
+  constructor(model: WidgetModel, updateStateCallback: () => void) {
+    super(model, updateStateCallback);
+
+    this.initRegularAttribute("tile_size", "tileSize");
+    this.initRegularAttribute("zoom_offset", "zoomOffset");
+    this.initRegularAttribute("max_zoom", "maxZoom");
+    this.initRegularAttribute("min_zoom", "minZoom");
+    this.initRegularAttribute("extent", "extent");
+    this.initRegularAttribute("max_cache_size", "maxCacheSize");
+    this.initRegularAttribute("debounce_time", "debounceTime");
+  }
 
   getTileData: TileLayerProps["getTileData"] = async (tile) => {
     const { index } = tile;
@@ -51,6 +73,13 @@ export class RasterModel extends BaseLayerModel {
     return {
       id: `${this.model.model_id}`,
       data: null,
+      ...(isDefined(this.tileSize) && { tileSize: this.tileSize }),
+      ...(isDefined(this.zoomOffset) && { zoomOffset: this.zoomOffset }),
+      ...(isDefined(this.maxZoom) && { maxZoom: this.maxZoom }),
+      ...(isDefined(this.minZoom) && { minZoom: this.minZoom }),
+      ...(isDefined(this.extent) && { extent: this.extent }),
+      ...(isDefined(this.maxCacheSize) && { maxCacheSize: this.maxCacheSize }),
+      ...(isDefined(this.debounceTime) && { debounceTime: this.debounceTime }),
     };
   }
 

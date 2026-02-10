@@ -224,6 +224,16 @@ class GeohashLayerKwargs(PolygonLayerKwargs, total=False):
     pass
 
 
+class RasterLayerKwargs(BaseLayerKwargs, total=False):
+    tile_size: int
+    zoom_offset: int
+    max_zoom: int
+    min_zoom: int
+    extent: tuple[IntFloat, IntFloat, IntFloat, IntFloat]
+    max_cache_size: int
+    debounce_time: int
+
+
 class ScatterplotLayerKwargs(BaseLayerKwargs, total=False):
     radius_units: Units
     radius_scale: IntFloat

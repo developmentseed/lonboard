@@ -4,7 +4,7 @@ from __future__ import annotations
 
 import asyncio
 import traceback
-from typing import TYPE_CHECKING, Any, Generic, Protocol, TypeVar
+from typing import TYPE_CHECKING, Any, Generic, Protocol, TypeVar, Unpack
 
 import numpy as np
 import traitlets.traitlets as t
@@ -19,6 +19,8 @@ if TYPE_CHECKING:
     from async_geotiff import GeoTIFF
     from async_pmtiles import PMTilesReader
     from numpy.typing import NDArray
+
+    from lonboard.types.layer import RasterLayerKwargs
 
     if sys.version_info >= (3, 12):
         from collections.abc import Buffer
@@ -108,7 +110,7 @@ def reshape_as_image(arr: NDArray) -> NDArray:
 async def _handle_tile_request(
     widget: RasterLayer,
     msg: dict,
-    buffers: list[bytes],
+    buffers: list[bytes],  # noqa: ARG001
 ) -> None:
     """Async handler for tile data requests from the frontend."""
     output = widget._error_output
@@ -130,7 +132,7 @@ async def _handle_tile_request(
         tile = await widget.fetch_tile(x=x, y=y, z=z)
         # TODO: put rendering in thread pool?
         rendered = widget.render(tile)
-        buffers = [rendered.data]
+        response_buffers = [rendered.data]
 
         widget.send(
             {
@@ -141,7 +143,7 @@ async def _handle_tile_request(
                     "mime_type": rendered.mime_type,
                 },
             },
-            buffers,
+            response_buffers,
         )
     except Exception:  # noqa: BLE001
         error_msg = traceback.format_exc()
@@ -183,7 +185,7 @@ class RasterLayer(BaseLayer, Generic[T]):
         debug: bool = True,
         _bounds: Bbox | None = None,
         _center: tuple[float, float] | None = None,
-        **kwargs: Any,
+        **kwargs: Unpack[RasterLayerKwargs],
     ) -> None:
         self._pending_tasks = set()
         self.fetch_tile = fetch_tile
@@ -249,6 +251,9 @@ class RasterLayer(BaseLayer, Generic[T]):
         return RasterLayer(
             fetch_tile=fetch_tile,
             render=render,
+            min_zoom=reader.minzoom,
+            max_zoom=reader.maxzoom,
+            extent=reader.bounds,
             _bounds=Bbox(*reader.bounds),
             _center=reader.center[:2],
         )
@@ -293,3 +298,77 @@ class RasterLayer(BaseLayer, Generic[T]):
 
     # TODO: Restore TMS generic tile traversal. For now, for simplicity, we're only rendering standard web mercator tiles.
     # _tms = Dict().tag(sync=True)
+
+    tile_size = t.Int(512).tag(sync=True)
+    """The pixel dimension of the tiles, usually a power of 2.
+
+    For geospatial viewports, tile size represents the target pixel width and height of each tile when rendered. Smaller tile sizes display the content at higher resolution, while the layer needs to load more tiles to fill the same viewport.
+
+    For non-geospatial viewports, the tile size should correspond to the true pixel size of the tiles.
+
+    - Default: `512`
+    """
+
+    zoom_offset = t.Int(0).tag(sync=True)
+    """This offset changes the zoom level at which the tiles are fetched.  Needs to be an integer.
+
+    - Default: `0`
+    """
+
+    max_zoom = t.Int(allow_none=True, default_value=None).tag(sync=True)
+    """The max zoom level of the layer's data.
+
+    When overzoomed (i.e. `zoom > maxZoom`), tiles from this level will be displayed.
+
+    - Default: `null`
+    """
+
+    min_zoom = t.Int(0).tag(sync=True)
+    """The min zoom level of the layer's data.
+
+    When underzoomed (i.e. `zoom < minZoom`), the layer will not display any tiles
+    unless `extent` is defined, to avoid issuing too many tile requests.
+
+    - Default: 0
+    """
+
+    extent = t.List(
+        t.Float(),
+        allow_none=True,
+        default_value=None,
+        minlen=4,
+        maxlen=4,
+    ).tag(sync=True)
+    """The bounding box of the layer's data, in the form of `[minX, minY, maxX, maxY]`.
+
+    If provided, the layer will only load and render the tiles that are needed to fill
+    this box.
+
+    - Default: `null`
+    """
+
+    max_cache_size = t.Int(allow_none=True, default_value=None).tag(sync=True)
+    """The maximum number of tiles that can be cached.
+
+    The tile cache keeps loaded tiles in memory even if they are no longer visible. It
+    reduces the need to re-download the same data over and over again when the user
+    pan/zooms around the map, providing a smoother experience.
+
+    If not supplied, the `max_cache_size` is calculated as `5` times the number of tiles
+    in the current viewport.
+
+    - Default: `null`
+    """
+
+    # max_requests = t.Int(6).tag(sync=True)
+    """Maximum number of concurrent getTileData calls. Default: 6."""
+
+    debounce_time = t.Int(0).tag(sync=True)
+    """Queue tile requests until no new tiles have been added for at least `debounceTime` milliseconds.
+
+    If `debounceTime == 0`, tile requests are issued as quickly as the `maxRequests` concurrent request limit allows.
+
+    If `debounceTime > 0`, tile requests are queued until a period of at least `debounceTime` milliseconds has passed without any new tiles being added to the queue. May reduce bandwidth usage and total loading time during interactive view transitions.
+
+    - Default: `0`
+    """
