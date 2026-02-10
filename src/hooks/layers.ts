@@ -1,12 +1,8 @@
 import type { Layer } from "@deck.gl/core";
 import type { IWidgetManager, WidgetModel } from "@jupyter-widgets/base";
-import { useEffect, useState } from "react";
-
-import {
-  BaseLayerModel,
-  initializeChildModels,
-  initializeLayer,
-} from "../model/index.js";
+import { useEffect, useRef, useState } from "react";
+import type { BaseLayerModel } from "../model/index.js";
+import { initializeChildModels, initializeLayer } from "../model/index.js";
 
 /**
  * Hook to manage layers state loading and initialization
@@ -30,6 +26,8 @@ export function useLayersState(
   const [layersState, setLayersState] = useState<
     Record<string, BaseLayerModel>
   >({});
+  const layersStateRef = useRef(layersState);
+  layersStateRef.current = layersState;
 
   useEffect(() => {
     const loadAndUpdateLayers = async () => {
@@ -37,7 +35,7 @@ export function useLayersState(
         const layerModels = await initializeChildModels<BaseLayerModel>(
           widgetManager,
           layerIds,
-          layersState,
+          layersStateRef.current,
           async (model: WidgetModel) =>
             initializeLayer(model, updateStateCallback),
         );
@@ -56,7 +54,14 @@ export function useLayersState(
     };
 
     loadAndUpdateLayers();
-  }, [layerIds, bboxSelectBounds, isDrawingBBoxSelection]);
+  }, [
+    layerIds,
+    bboxSelectBounds,
+    isDrawingBBoxSelection,
+    setSelectedBounds,
+    updateStateCallback,
+    widgetManager,
+  ]);
 
   return Object.values(layersState).flatMap((layerModel) =>
     layerModel.render(),

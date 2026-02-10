@@ -6,5 +6,5 @@
  * - Python-synced: State that bidirectionally syncs with Python (Backbone). See `python-sync.ts`
  */
 
-export { useStore } from "./store.js";
 export { useViewStateDebounced } from "./python-sync.js";
+export { useStore } from "./store.js";

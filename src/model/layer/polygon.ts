@@ -15,16 +15,12 @@ import {
   GeoArrowSolidPolygonLayer,
 } from "@geoarrow/deck.gl-layers";
 import type { WidgetModel } from "@jupyter-widgets/base";
-import * as arrow from "apache-arrow";
+import type * as arrow from "apache-arrow";
 
 import { isDefined } from "../../util.js";
 import { EARCUT_WORKER_POOL } from "../earcut-pool.js";
-import {
-  ColorAccessorInput,
-  FloatAccessorInput,
-  accessColorData,
-  accessFloatData,
-} from "../types.js";
+import type { ColorAccessorInput, FloatAccessorInput } from "../types.js";
+import { accessColorData, accessFloatData } from "../types.js";
 import { BaseArrowLayerModel } from "./base.js";
 
 export class SolidPolygonModel extends BaseArrowLayerModel {
@@ -186,10 +182,6 @@ export abstract class BasePolygonModel extends BaseArrowLayerModel {
 
 export class PolygonModel extends BasePolygonModel {
   static layerType = "polygon";
-
-  constructor(model: WidgetModel, updateStateCallback: () => void) {
-    super(model, updateStateCallback);
-  }
 
   layerProps(batchIndex: number): GeoArrowPolygonLayerProps {
     return this.basePolygonLayerProps(batchIndex);

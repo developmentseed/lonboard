@@ -1,16 +1,14 @@
-import { GeoArrowArcLayer } from "@geoarrow/deck.gl-layers";
 import type { GeoArrowArcLayerProps } from "@geoarrow/deck.gl-layers";
+import { GeoArrowArcLayer } from "@geoarrow/deck.gl-layers";
 import type { WidgetModel } from "@jupyter-widgets/base";
-
-import { BaseArrowLayerModel } from "./base.js";
 import { isDefined } from "../../util.js";
-import {
-  PointVector,
+import type {
   ColorAccessorInput,
   FloatAccessorInput,
-  accessColorData,
-  accessFloatData,
+  PointVector,
 } from "../types.js";
+import { accessColorData, accessFloatData } from "../types.js";
+import { BaseArrowLayerModel } from "./base.js";
 
 export class ArcModel extends BaseArrowLayerModel {
   static layerType = "arc";

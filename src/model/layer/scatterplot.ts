@@ -1,14 +1,10 @@
-import { GeoArrowScatterplotLayer } from "@geoarrow/deck.gl-layers";
 import type { GeoArrowScatterplotLayerProps } from "@geoarrow/deck.gl-layers";
+import { GeoArrowScatterplotLayer } from "@geoarrow/deck.gl-layers";
 import type { WidgetModel } from "@jupyter-widgets/base";
 
 import { isDefined } from "../../util.js";
-import {
-  ColorAccessorInput,
-  FloatAccessorInput,
-  accessColorData,
-  accessFloatData,
-} from "../types.js";
+import type { ColorAccessorInput, FloatAccessorInput } from "../types.js";
+import { accessColorData, accessFloatData } from "../types.js";
 import { BaseArrowLayerModel } from "./base.js";
 
 export class ScatterplotModel extends BaseArrowLayerModel {

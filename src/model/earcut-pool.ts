@@ -2,7 +2,7 @@
 // This is fine because we're only loading this as text to create a worker
 import earcutWorkerText from "@geoarrow/geoarrow-js/earcut.worker.min.js";
 import type { FunctionThread } from "threads";
-import { spawn, BlobWorker, Pool } from "threads";
+import { BlobWorker, Pool, spawn } from "threads";
 
 const DEFAULT_POOL_SIZE = 8;
 

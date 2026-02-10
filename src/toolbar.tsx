@@ -1,5 +1,5 @@
 import { Button, ButtonGroup, Tooltip } from "@nextui-org/react";
-import React from "react";
+import type React from "react";
 
 import { SquareIcon, XMarkIcon } from "./icons";
 import { useStore } from "./state";

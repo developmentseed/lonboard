@@ -30,7 +30,7 @@
   "type": "module",
   "devDependencies": {
     "@anywidget/types": "^0.2.0",
-    "@eslint/js": "^9.36.0",
+    "@biomejs/biome": "2.3.10",
     "@jupyter-widgets/base": "^6.0.10",
     "@statelyai/inspect": "^0.4.0",
     "@tailwindcss/postcss": "^4.1.14",
@@ -41,19 +41,12 @@
     "autoprefixer": "^10.4.20",
     "dotenv": "^17.2.2",
     "esbuild": "^0.25.10",
-    "eslint": "^9.36.0",
-    "eslint-config-prettier": "^10.1.8",
-    "eslint-plugin-import": "^2.32.0",
-    "eslint-plugin-react": "^7.37.2",
-    "globals": "^16.4.0",
     "nodemon": "^3.1.7",
     "postcss": "^8.4.49",
     "postcss-modules": "^6.0.1",
     "postcss-preset-env": "^10.1.1",
-    "prettier": "^3.4.1",
     "tailwindcss": "^3.4.15",
-    "typescript": "^5.7.2",
-    "typescript-eslint": "^8.16.0"
+    "typescript": "^5.7.2"
   },
   "overrides": {
     "@deck.gl/aggregation-layers": "^9.2.6",
@@ -73,10 +66,12 @@
     "build": "node ./build.mjs",
     "build:dev": "NODE_ENV=development node ./build.mjs",
     "build:watch": "nodemon --watch src/ --exec \"npm run build:dev\" --ext js,json,ts,tsx,css",
-    "prettier:check": "prettier './src/**/*.{ts,tsx,css}' --check",
-    "prettier": "prettier './src/**/*.{ts,tsx,css}' --write",
-    "lint": "eslint src",
-    "lint-fix": "eslint src --fix"
+    "format": "biome format .",
+    "format:fix": "biome format --write .",
+    "lint": "biome lint .",
+    "lint:fix": "biome lint --write .",
+    "check": "biome check .",
+    "check:fix": "biome check --write ."
   },
   "volta": {
     "node": "22.20.0",

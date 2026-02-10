@@ -1,4 +1,4 @@
-import React from "react";
+import type React from "react";
 
 // SVG elements are from Collecticons
 // https://collecticons.io/
@@ -30,6 +30,7 @@ export const XMarkIcon: React.FC<IconProps> = ({
       viewBox="0 0 16 16"
       fill={filled ? fill : "none"}
       xmlns="http://www.w3.org/2000/svg"
+      role="img"
       aria-label={label}
       {...props}
     >
@@ -59,6 +60,7 @@ export const SquareIcon: React.FC<IconProps> = ({
       viewBox="0 0 24 24"
       fill={filled ? fill : "none"}
       xmlns="http://www.w3.org/2000/svg"
+      role="img"
       aria-label={label}
       {...props}
     >
