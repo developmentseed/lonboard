@@ -50,8 +50,14 @@ if TYPE_CHECKING:
 
 class BaseLayer(BaseWidget):
     # Note: these class attributes are **not** serialized to JS
-    _bbox = Bbox()
-    _weighted_centroid = WeightedCentroid()
+    @property
+    def _bbox(self) -> Bbox:
+        return Bbox()
+
+    @property
+    def _weighted_centroid(self) -> WeightedCentroid:
+        return WeightedCentroid()
+
     _error_output: ErrorOutput
 
     # The following traitlets **are** serialized to JS

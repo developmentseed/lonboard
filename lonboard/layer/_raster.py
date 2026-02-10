@@ -4,43 +4,40 @@ from __future__ import annotations
 
 import asyncio
 import traceback
-from typing import TYPE_CHECKING, Any, Protocol
+from typing import TYPE_CHECKING, Any, Generic, Protocol, TypeVar
 
 import numpy as np
 import traitlets.traitlets as t
 
+from lonboard._geoarrow.ops import Bbox, WeightedCentroid
 from lonboard.layer._base import BaseLayer
+from lonboard.raster import IMAGE_MIME_TYPES, EncodedImage
 
 if TYPE_CHECKING:
-    from async_geotiff import GeoTIFF, Tile
+    import sys
+
+    from async_geotiff import GeoTIFF
+    from async_pmtiles import PMTilesReader
     from numpy.typing import NDArray
+
+    if sys.version_info >= (3, 12):
+        from collections.abc import Buffer
+    else:
+        from typing_extensions import Buffer
 
 
 # This must be kept in sync with src/model/layer/raster.ts
 MSG_KIND = "raster-get-tile-data"
 
-
-class RenderTile(Protocol):
-    """Protocol for user-defined render function."""
-
-    def __call__(self, tile: Tile) -> bytes:  # EncodedImage:
-        """Render a tile.
-
-        Args:
-            tile: A dictionary with tile information.
-
-        Returns:
-            An RGBA numpy array representing the rendered tile.
-
-        """
-        ...
+Tile_co = TypeVar("Tile_co", covariant=True)
+Tile_contra = TypeVar("Tile_contra", contravariant=True)
+T = TypeVar("T")
 
 
-# TODO: make this a generic Protocol that returns a Tile of a specific type
-class FetchTile(Protocol):
+class FetchTile(Protocol[Tile_co]):
     """Protocol for user-defined fetch_tile function."""
 
-    async def __call__(self, x: int, y: int, z: int) -> Tile:
+    async def __call__(self, *, x: int, y: int, z: int) -> Tile_co:
         """Fetch a tile asynchronously.
 
         Args:
@@ -53,6 +50,25 @@ class FetchTile(Protocol):
 
         """
         ...
+
+
+class RenderTile(Protocol[Tile_contra]):
+    """Protocol for user-defined render function."""
+
+    def __call__(self, tile: Tile_contra) -> EncodedImage:
+        """Render a tile.
+
+        Args:
+            tile: A tile object returned by FetchTile.
+
+        Returns:
+            An RGBA numpy array representing the rendered tile.
+
+        """
+        ...
+
+
+# class FrontendTileRequest(TypedDict):
 
 
 def handle_anywidget_dispatch(
@@ -114,13 +130,16 @@ async def _handle_tile_request(
         tile = await widget.fetch_tile(x=x, y=y, z=z)
         # TODO: put rendering in thread pool?
         rendered = widget.render(tile)
-        buffers = [rendered]
+        buffers = [rendered.data]
 
         widget.send(
             {
                 "id": msg["id"],
                 "kind": f"{MSG_KIND}-response",
-                "response": {},  # {"format": rendered.format},
+                "response": {
+                    "type": "encoded-image",
+                    "mime_type": rendered.mime_type,
+                },
             },
             buffers,
         )
@@ -137,7 +156,7 @@ async def _handle_tile_request(
         )
 
 
-class RasterLayer(BaseLayer):
+class RasterLayer(BaseLayer, Generic[T]):
     """The RasterLayer renders raster imagery.
 
     This layer expects input such as Cloud-Optimized GeoTIFFs (COGs) that can be
@@ -150,16 +169,20 @@ class RasterLayer(BaseLayer):
     # TODO: ensure JS AbortSignal propagates to cancel these tasks
     _pending_tasks: set[asyncio.Task[None]]
 
-    fetch_tile: FetchTile
-    render: RenderTile
+    fetch_tile: FetchTile[T]
+    render: RenderTile[T]
+    _bounds: Bbox | None
+    _center: tuple[float, float] | None
 
     def __init__(
         self,
         # tms: TileMatrixSet,
         *,
-        fetch_tile: FetchTile,
-        render: RenderTile,
+        fetch_tile: FetchTile[T],
+        render: RenderTile[T],
         debug: bool = True,
+        _bounds: Bbox | None = None,
+        _center: tuple[float, float] | None = None,
         **kwargs: Any,
     ) -> None:
         self._pending_tasks = set()
@@ -167,7 +190,68 @@ class RasterLayer(BaseLayer):
         self.render = render
         self.debug = debug
         self.on_msg(handle_anywidget_dispatch)
+        self._bounds = _bounds
+        self._center = _center
         super().__init__(**kwargs)  # type: ignore
+
+    @property
+    def _bbox(self) -> Bbox:
+        # TODO: compute bounds from TMS if not explicitly set
+        assert self._bounds is not None
+        return self._bounds
+
+    @property
+    def _weighted_centroid(self) -> WeightedCentroid:
+        assert self._center is not None
+        return WeightedCentroid(x=self._center[0], y=self._center[1], num_items=100)
+
+    @classmethod
+    def from_pmtiles(
+        cls,
+        reader: PMTilesReader,
+    ) -> RasterLayer[Buffer]:
+        """Create a RasterLayer from a PMTiles URL."""
+        from pmtiles.tile import TileType
+
+        mime_type: IMAGE_MIME_TYPES
+        match reader.tile_type:
+            case TileType.PNG:
+                mime_type = "image/png"
+            case TileType.JPEG:
+                mime_type = "image/jpeg"
+            case TileType.WEBP:
+                mime_type = "image/webp"
+            case TileType.AVIF:
+                mime_type = "image/avif"
+            case _:
+                raise ValueError(
+                    f"PMTiles tile type {reader.tile_type} is not supported by RasterLayer. "
+                    "Only raster tile types are supported.",
+                )
+
+        async def fetch_tile(
+            *,
+            x: int,
+            y: int,
+            z: int,
+        ) -> Buffer:
+            """Fetch a specific tile from the PMTiles archive."""
+            buffer = await reader.get_tile(x=x, y=y, z=z)
+            if buffer is None:
+                raise ValueError(f"Tile at x={x}, y={y}, z={z} not found in PMTiles.")
+
+            return buffer
+
+        def render(tile: Buffer) -> EncodedImage:
+            """Render a tile using the user-provided render function."""
+            return EncodedImage(data=tile, mime_type=mime_type)
+
+        return RasterLayer(
+            fetch_tile=fetch_tile,
+            render=render,
+            _bounds=Bbox(*reader.bounds),
+            _center=reader.center[:2],
+        )
 
     @classmethod
     def from_async_geotiff(
@@ -175,12 +259,12 @@ class RasterLayer(BaseLayer):
         geotiff: GeoTIFF,
         /,
         *,
-        render: RenderTile,
+        render: RenderTile[Any],
         **kwargs: Any,
         # TODO: can this return type specify RasterLayer[T] where T is the type of the
         # GeoTIFF?
         # Ideally, in a typed context, render should receive the correct tile type
-    ) -> RasterLayer:
+    ) -> RasterLayer[Any]:
         """Create a RasterLayer from a GeoTIFF instance from async-geotiff."""
         from async_geotiff.tms import generate_tms
 
@@ -193,12 +277,17 @@ class RasterLayer(BaseLayer):
             x: int,
             y: int,
             z: int,  # noqa: ARG001
-        ) -> Tile:
+        ) -> Any:
             """Fetch a specific tile from the GeoTIFF."""
             # TODO: select correct IFD
             return await geotiff.fetch_tile(x, y)
 
-        return cls(tms=tms, fetch_tile=geotiff_fetch_tile, render=render, **kwargs)
+        return RasterLayer(
+            tms=tms,
+            fetch_tile=geotiff_fetch_tile,
+            render=render,
+            **kwargs,
+        )  # type: ignore[call-arg]
 
     _layer_type = t.Unicode("raster").tag(sync=True)
 
