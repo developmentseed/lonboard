@@ -92,7 +92,7 @@ dev = [
     "movingpandas>=0.20.0",
     "obstore>=0.8.2",
     "palettable>=3.3.3",
-    "pandas<3",
+    "pandas",
     "pandas-stubs>=2.2.2.240807",
     "pre-commit>=3.5.0",
     "pyarrow>=21.0.0",
