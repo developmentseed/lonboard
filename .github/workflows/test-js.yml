@@ -16,7 +16,7 @@ jobs:
 
     steps:
       - name: Checkout
-        uses: actions/checkout@v5
+        uses: actions/checkout@v6
 
       - name: Set up Volta
         uses: volta-cli/action@v4
@@ -26,7 +26,7 @@ jobs:
         shell: bash
         run: echo "dir=$(npm config get cache)" >> ${GITHUB_OUTPUT}
 
-      - uses: actions/cache@v4
+      - uses: actions/cache@v5
         id: npm-cache # use this to check for `cache-hit` ==> if: steps.npm-cache.outputs.cache-hit != 'true'
         with:
           path: ${{ steps.npm-cache-dir.outputs.dir }}
@@ -37,8 +37,5 @@ jobs:
       - name: Install
         run: npm ci
 
-      - name: Prettier check
-        run: npm run prettier:check
-
-      - name: Lint check
-        run: npm run lint
+      - name: Biome check
+        run: npm run check

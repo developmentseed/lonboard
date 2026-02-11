@@ -12,10 +12,10 @@ jobs:
     runs-on: ubuntu-latest
     strategy:
       matrix:
-        python-version: ["3.10", "3.11", "3.12", "3.13"]
+        python-version: ["3.11", "3.12", "3.13"]
 
     steps:
-      - uses: actions/checkout@v5
+      - uses: actions/checkout@v6
 
       - name: Set up Python ${{ matrix.python-version }}
         id: setup-python
@@ -30,7 +30,7 @@ jobs:
           node-version: "18"
 
       - name: Cache NPM dependencies
-        uses: actions/cache@v4
+        uses: actions/cache@v5
         with:
           path: ~/.npm
           # Note: this does **not** depend on the Python version in the cache
@@ -80,7 +80,7 @@ jobs:
       - uses: astral-sh/ruff-action@v3
 
       - name: Cache pre-commit virtualenvs
-        uses: actions/cache@v4
+        uses: actions/cache@v5
         if: "${{ matrix.python-version == 3.11 }}"
         with:
           path: ~/.cache/pre-commit

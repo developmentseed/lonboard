@@ -19,6 +19,7 @@ from lonboard.traits import (
 
 if TYPE_CHECKING:
     import sys
+    from typing import Self
 
     import duckdb
     import geopandas as gpd
@@ -27,11 +28,6 @@ if TYPE_CHECKING:
     from movingpandas import TrajectoryCollection
 
     from lonboard.types.layer import TripsLayerKwargs
-
-    if sys.version_info >= (3, 11):
-        from typing import Self
-    else:
-        from typing_extensions import Self
 
     if sys.version_info >= (3, 12):
         from typing import Unpack

@@ -199,7 +199,7 @@ def viz(
         )
         COLOR_COUNTER += 1
 
-    map_kwargs = map_kwargs if map_kwargs else {}
+    map_kwargs = map_kwargs or {}
 
     if "basemap_style" not in map_kwargs and "basemap" not in map_kwargs:
         map_kwargs["basemap"] = MaplibreBasemap(
@@ -484,7 +484,7 @@ def _viz_geoarrow_table(
     geometry_ext_type = geometry_field.metadata.get(b"ARROW:extension:name")
 
     if geometry_ext_type in [EXTENSION_NAME.POINT, EXTENSION_NAME.MULTIPOINT]:
-        scatterplot_kwargs = scatterplot_kwargs if scatterplot_kwargs else {}
+        scatterplot_kwargs = scatterplot_kwargs or {}
 
         if "get_fill_color" not in scatterplot_kwargs:
             scatterplot_kwargs["get_fill_color"] = _viz_color
@@ -513,7 +513,7 @@ def _viz_geoarrow_table(
         EXTENSION_NAME.LINESTRING,
         EXTENSION_NAME.MULTILINESTRING,
     ]:
-        path_kwargs = path_kwargs if path_kwargs else {}
+        path_kwargs = path_kwargs or {}
 
         if "get_color" not in path_kwargs:
             path_kwargs["get_color"] = _viz_color
@@ -543,7 +543,7 @@ def _viz_geoarrow_table(
         EXTENSION_NAME.MULTIPOLYGON,
         EXTENSION_NAME.BOX,
     ]:
-        polygon_kwargs = polygon_kwargs if polygon_kwargs else {}
+        polygon_kwargs = polygon_kwargs or {}
 
         if "get_fill_color" not in polygon_kwargs:
             polygon_kwargs["get_fill_color"] = _viz_color

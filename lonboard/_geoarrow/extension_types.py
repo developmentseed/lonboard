@@ -1,7 +1,7 @@
 from __future__ import annotations
 
 import json
-from enum import Enum
+from enum import StrEnum
 from typing import TYPE_CHECKING
 
 import numpy as np
@@ -16,7 +16,7 @@ if TYPE_CHECKING:
     from pyproj import CRS
 
 
-class CoordinateDimension(str, Enum):
+class CoordinateDimension(StrEnum):
     XY = "xy"
     XYZ = "xyz"
     XYM = "xym"

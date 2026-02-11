@@ -1,6 +1,7 @@
-import { FlyToInterpolator, MapViewState } from "@deck.gl/core";
+import type { MapViewState } from "@deck.gl/core";
+import { FlyToInterpolator } from "@deck.gl/core";
 
-import { FlyToMessage } from "../types";
+import type { FlyToMessage } from "../types";
 import { isDefined } from "../util";
 
 export function flyTo(
