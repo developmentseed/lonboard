@@ -341,9 +341,13 @@ class FilterCategoryAccessor(FixedErrorTraitType):
         assert len(data_filter_extension) == 1
         category_size = data_filter_extension[0].category_size  # type: ignore
 
-        if isinstance(value, (int, float, str)):
+        if isinstance(value, (int, float, np.number, str)):
             if category_size != 1:
                 self.error(obj, value, info="category_size==1 with scalar value")
+
+            if isinstance(value, np.number):
+                value = float(value)
+
             return value
 
         if isinstance(value, (tuple, list)):

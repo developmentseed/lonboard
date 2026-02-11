@@ -1,6 +1,6 @@
 """Python library for fast, interactive geospatial vector data visualization in Jupyter."""
 
-from . import colormap, controls, experimental, layer_extension, traits
+from . import basemap, colormap, controls, experimental, layer_extension, traits
 from ._map import Map
 from ._version import __version__
 from ._viz import viz
@@ -46,6 +46,7 @@ __all__ = [
     "SolidPolygonLayer",
     "TripsLayer",
     "__version__",
+    "basemap",
     "colormap",
     "controls",
     "experimental",

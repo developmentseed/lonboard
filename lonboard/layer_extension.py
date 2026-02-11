@@ -311,7 +311,7 @@ class DataFilterExtension(BaseExtension):
 
     Accessor to retrieve the category for each object that it will be filtered by.
 
-    - Type: [FilterValueAccessor][lonboard.traits.FilterValueAccessor]
+    - Type: [FilterCategoryAccessor][lonboard.traits.FilterCategoryAccessor]
         - If a scalar value is provided, it is used as the value for all objects.
         - If an array is provided, each value in the array will be used as the value for
           the object at the same row index.
