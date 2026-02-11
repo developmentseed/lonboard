@@ -2,7 +2,7 @@
 
 from __future__ import annotations
 
-from typing import TYPE_CHECKING
+from typing import TYPE_CHECKING, Unpack
 
 import traitlets.traitlets as t
 
@@ -34,7 +34,7 @@ class BitmapLayer(BaseLayer):
     ```
     """
 
-    def __init__(self, **kwargs: BitmapLayerKwargs) -> None:
+    def __init__(self, **kwargs: Unpack[BitmapLayerKwargs]) -> None:
         super().__init__(**kwargs)  # type: ignore
 
     _layer_type = t.Unicode("bitmap").tag(sync=True)
@@ -144,7 +144,7 @@ class BitmapTileLayer(BaseLayer):
     ```
     """
 
-    def __init__(self, **kwargs: BitmapTileLayerKwargs) -> None:
+    def __init__(self, **kwargs: Unpack[BitmapTileLayerKwargs]) -> None:
         super().__init__(**kwargs)  # type: ignore
 
     _layer_type = t.Unicode("bitmap-tile").tag(sync=True)

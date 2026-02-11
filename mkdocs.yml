@@ -78,6 +78,7 @@ nav:
           - api/layers/path-layer.md
           - api/layers/point-cloud-layer.md
           - api/layers/polygon-layer.md
+          - api/layers/raster-layer.md
           - api/layers/s2-layer.md
           - api/layers/scatterplot-layer.md
           - api/layers/solid-polygon-layer.md
@@ -196,11 +197,15 @@ plugins:
             - https://arrow.apache.org/docs/objects.inv
             - https://cartopy.readthedocs.io/stable/objects.inv
             - https://contextily.readthedocs.io/en/stable/objects.inv
+            - https://developmentseed.org/async-geotiff/latest/objects.inv
+            - https://developmentseed.org/async-pmtiles/latest/objects.inv
+            - https://developmentseed.org/obspec/latest/objects.inv
+            - https://developmentseed.org/obstore/latest/objects.inv
             - https://docs.python.org/3/objects.inv
             - https://duckdb.org/docs/stable/clients/python/reference/objects.inv
             - https://fiona.readthedocs.io/en/stable/objects.inv
-            - https://geoarrow.org/geoarrow-python/main/objects.inv
             - https://geoarrow.github.io/geoarrow-rs/python/latest/objects.inv
+            - https://geoarrow.org/geoarrow-python/main/objects.inv
             - https://geopandas.org/en/stable/objects.inv
             - https://geopy.readthedocs.io/en/stable/objects.inv
             - https://ipython.readthedocs.io/en/stable/objects.inv
