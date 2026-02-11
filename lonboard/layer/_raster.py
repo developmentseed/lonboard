@@ -4,9 +4,8 @@ from __future__ import annotations
 
 import asyncio
 import traceback
-from typing import TYPE_CHECKING, Any, Generic, Protocol, TypeVar, Unpack
+from typing import TYPE_CHECKING, Generic, Protocol, TypeVar, Unpack
 
-import numpy as np
 import traitlets.traitlets as t
 
 from lonboard._geoarrow.ops import Bbox, WeightedCentroid
@@ -16,9 +15,7 @@ from lonboard.raster import IMAGE_MIME_TYPES, EncodedImage
 if TYPE_CHECKING:
     import sys
 
-    from async_geotiff import GeoTIFF
     from async_pmtiles import PMTilesReader
-    from numpy.typing import NDArray
 
     from lonboard.types.layer import RasterLayerKwargs
 
@@ -32,7 +29,11 @@ if TYPE_CHECKING:
 MSG_KIND = "raster-get-tile-data"
 
 Tile_co = TypeVar("Tile_co", covariant=True)
+"""Covariant generic type for type that FetchTile can return."""
+
 Tile_contra = TypeVar("Tile_contra", contravariant=True)
+"""Contravariant generic type for type that RenderTile can receive."""
+
 T = TypeVar("T")
 
 
@@ -70,9 +71,6 @@ class RenderTile(Protocol[Tile_contra]):
         ...
 
 
-# class FrontendTileRequest(TypedDict):
-
-
 def handle_anywidget_dispatch(
     widget: RasterLayer,
     msg: str | list | dict,
@@ -85,26 +83,6 @@ def handle_anywidget_dispatch(
     task = asyncio.create_task(_handle_tile_request(widget, msg, buffers))
     widget._pending_tasks.add(task)
     task.add_done_callback(widget._pending_tasks.discard)
-
-
-# https://github.com/rasterio/rasterio/blob/2d79e5f3a00e919ecaa9573adba34a78274ce48c/rasterio/plot.py#L227-L241
-def reshape_as_image(arr: NDArray) -> NDArray:
-    """Return the source array reshaped image axis order.
-
-    This order is expected by image processing and visualization software (matplotlib,
-    scikit-image, etc) by swapping the axes order from
-    ```
-    (bands, rows, columns)
-    ```
-    to
-    ```
-    (rows, columns, bands)
-    ```
-    """
-    # swap the axes order from (bands, rows, columns) to (rows, columns, bands)
-    return np.transpose(arr, [1, 2, 0])
-    # Or, if we use masked arrays in the future:
-    # np.ma.transpose(arr, [1, 2, 0])
 
 
 async def _handle_tile_request(
@@ -190,7 +168,6 @@ class RasterLayer(BaseLayer, Generic[T]):
 
     def __init__(
         self,
-        # tms: TileMatrixSet,
         *,
         fetch_tile: FetchTile[T],
         render: RenderTile[T],
@@ -225,7 +202,38 @@ class RasterLayer(BaseLayer, Generic[T]):
         reader: PMTilesReader,
         **kwargs: Unpack[RasterLayerKwargs],
     ) -> RasterLayer[Buffer | None]:
-        """Create a RasterLayer from a PMTiles URL."""
+        """Create a RasterLayer from a PMTiles archive.
+
+        **Example:**
+
+        Using [`obstore.store.HTTPStore`][obstore.store.HTTPStore] to read a PMTiles
+        file over HTTP:
+
+        ```py
+        from async_pmtiles import PMTilesReader
+        from lonboard import Map, RasterLayer
+        from obstore.store import HTTPStore
+
+        store = HTTPStore("https://air.mtn.tw")
+        reader = await PMTilesReader.open("flowers.pmtiles", store=store)
+        layer = RasterLayer.from_pmtiles(reader)
+        m = Map(layer)
+        ```
+
+        Args:
+            reader: A PMTilesReader instance from [`async-pmtiles`](https://github.com/developmentseed/async-pmtiles). Refer to the `async-pmtiles` documentation for how to create a PMTilesReader from various input sources.
+
+        Keyword Args:
+            kwargs: parameters passed on to `__init__`
+
+        Raises:
+            ValueError: if the PMTiles tile type is not a supported raster format (i.e.
+                PNG, JPEG, WEBP, or AVIF).
+
+        Returns:
+            A new RasterLayer instance.
+
+        """
         from pmtiles.tile import TileType
 
         mime_type: IMAGE_MIME_TYPES
@@ -280,41 +288,41 @@ class RasterLayer(BaseLayer, Generic[T]):
             **kwargs,  # type: ignore
         )
 
-    @classmethod
-    def from_async_geotiff(
-        cls,
-        geotiff: GeoTIFF,
-        /,
-        *,
-        render: RenderTile[Any],
-        **kwargs: Any,
-        # TODO: can this return type specify RasterLayer[T] where T is the type of the
-        # GeoTIFF?
-        # Ideally, in a typed context, render should receive the correct tile type
-    ) -> RasterLayer[Any]:
-        """Create a RasterLayer from a GeoTIFF instance from async-geotiff."""
-        from async_geotiff.tms import generate_tms
+    # @classmethod
+    # def from_async_geotiff(
+    #     cls,
+    #     geotiff: GeoTIFF,
+    #     /,
+    #     *,
+    #     render: RenderTile[Any],
+    #     **kwargs: Any,
+    #     # TODO: can this return type specify RasterLayer[T] where T is the type of the
+    #     # GeoTIFF?
+    #     # Ideally, in a typed context, render should receive the correct tile type
+    # ) -> RasterLayer[Any]:
+    #     """Create a RasterLayer from a GeoTIFF instance from async-geotiff."""
+    #     from async_geotiff.tms import generate_tms
 
-        tms = generate_tms(geotiff)
+    #     tms = generate_tms(geotiff)
 
-        # This should create a closure for fetching tiles from the geotiff. So the user
-        # shouldn't have to manually provide a fetch_tile function.
+    #     # This should create a closure for fetching tiles from the geotiff. So the user
+    #     # shouldn't have to manually provide a fetch_tile function.
 
-        async def geotiff_fetch_tile(
-            x: int,
-            y: int,
-            z: int,  # noqa: ARG001
-        ) -> Any:
-            """Fetch a specific tile from the GeoTIFF."""
-            # TODO: select correct IFD
-            return await geotiff.fetch_tile(x, y)
+    #     async def geotiff_fetch_tile(
+    #         x: int,
+    #         y: int,
+    #         z: int,
+    #     ) -> Any:
+    #         """Fetch a specific tile from the GeoTIFF."""
+    #         # TODO: select correct IFD
+    #         return await geotiff.fetch_tile(x, y)
 
-        return RasterLayer(
-            tms=tms,
-            fetch_tile=geotiff_fetch_tile,
-            render=render,
-            **kwargs,
-        )  # type: ignore[call-arg]
+    #     return RasterLayer(
+    #         tms=tms,
+    #         fetch_tile=geotiff_fetch_tile,
+    #         render=render,
+    #         **kwargs,
+    #     )  # type: ignore[call-arg]
 
     _layer_type = t.Unicode("raster").tag(sync=True)
 
