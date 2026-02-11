@@ -145,10 +145,10 @@ export class DataFilterExtension extends BaseExtensionModel {
     if (isDefined(this.filterSize) || isDefined(this.categorySize)) {
       const props = {
         ...(isDefined(this.filterSize)
-          ? { filterSize: this.filterSize != null ? this.filterSize : 0 }
+          ? { filterSize: this.filterSize !== null ? this.filterSize : 0 }
           : {}),
         ...(isDefined(this.categorySize)
-          ? { categorySize: this.categorySize != null ? this.categorySize : 0 }
+          ? { categorySize: this.categorySize !== null ? this.categorySize : 0 }
           : {}),
       };
       return new _DataFilterExtension(props);
