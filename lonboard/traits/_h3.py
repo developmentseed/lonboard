@@ -50,17 +50,16 @@ class H3Accessor(FixedErrorTraitType):
         value: pd.Series,
     ) -> NDArray[np.str_] | NDArray[np.uint64]:
         """Cast pandas Series to numpy ndarray."""
+        import pandas as pd
+
         if isinstance(value.dtype, np.dtype) and np.issubdtype(value.dtype, np.integer):
             return np.asarray(value, dtype=np.uint64)
 
-        if not isinstance(value.dtype, np.dtype) or not np.issubdtype(
-            value.dtype,
-            np.object_,
-        ):
+        if not pd.api.types.is_string_dtype(value):
             self.error(
                 obj,
                 value,
-                info="H3 Pandas series not object or uint64 dtype.",
+                info="H3 Pandas series not object or string or uint64 dtype.",
             )
 
         if not (value.str.len() == 15).all():
