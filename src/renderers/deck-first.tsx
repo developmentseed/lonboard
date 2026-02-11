@@ -1,6 +1,6 @@
 import DeckGL from "@deck.gl/react";
-import React from "react";
-import Map from "react-map-gl/maplibre";
+import type React from "react";
+import MapGL from "react-map-gl/maplibre";
 
 import type { DeckFirstRendererProps, MapRendererProps } from "./types";
 
@@ -33,7 +33,7 @@ const DeckFirstRenderer: React.FC<MapRendererProps & DeckFirstRendererProps> = (
     >
       {controls.map((control) => control.renderDeck())}
       {renderBasemap && (
-        <Map mapStyle={mapStyle} customAttribution={customAttribution}></Map>
+        <MapGL mapStyle={mapStyle} customAttribution={customAttribution} />
       )}
     </DeckGL>
   );

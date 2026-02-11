@@ -5,14 +5,14 @@ import type {
   PickingInfo,
 } from "@deck.gl/core";
 import type { WidgetModel } from "@jupyter-widgets/base";
-import * as arrow from "apache-arrow";
+import type * as arrow from "apache-arrow";
 import { Vector } from "apache-arrow";
 
 import { parseParquetBuffers } from "../../parquet.js";
 import { isDefined } from "../../util.js";
 import { BaseModel } from "../base.js";
-import { initializeExtension } from "../extension.js";
 import type { BaseExtensionModel } from "../extension.js";
+import { initializeExtension } from "../extension.js";
 import { initializeChildModels } from "../initialize.js";
 
 export abstract class BaseLayerModel extends BaseModel {

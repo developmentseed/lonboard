@@ -189,7 +189,7 @@ class VariableLengthTuple(traitlets.Container):
         for v in value:
             try:
                 v = trait._validate(obj, v)  # noqa: PLW2901
-            except TraitError as error:  # noqa: PERF203
+            except TraitError as error:
                 self.error(obj, v, error)
             else:
                 validated.append(v)

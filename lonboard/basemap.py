@@ -2,10 +2,10 @@
 
 from __future__ import annotations
 
-from enum import Enum
+from enum import StrEnum
 from typing import TYPE_CHECKING
 
-import traitlets as t
+import traitlets.traitlets as t
 from typing_extensions import deprecated
 
 from lonboard._base import BaseWidget
@@ -15,7 +15,7 @@ if TYPE_CHECKING:
     from typing import Literal
 
 
-class CartoStyle(str, Enum):
+class CartoStyle(StrEnum):
     """Maplibre-supported vector basemap styles provided by Carto.
 
     Refer to [Carto
@@ -71,7 +71,7 @@ class CartoStyle(str, Enum):
 @deprecated(
     "CartoBasemap is deprecated, use CartoStyle instead. Will be removed in v0.14",
 )
-class CartoBasemap(str, Enum):
+class CartoBasemap(StrEnum):
     """Maplibre-supported vector basemap styles provided by Carto.
 
     Refer to [Carto

@@ -1,16 +1,14 @@
-import { GeoArrowColumnLayer } from "@geoarrow/deck.gl-layers";
 import type { GeoArrowColumnLayerProps } from "@geoarrow/deck.gl-layers";
+import { GeoArrowColumnLayer } from "@geoarrow/deck.gl-layers";
 import type { WidgetModel } from "@jupyter-widgets/base";
-
-import { BaseArrowLayerModel } from "./base.js";
 import { isDefined } from "../../util.js";
-import {
-  PointVector,
+import type {
   ColorAccessorInput,
   FloatAccessorInput,
-  accessColorData,
-  accessFloatData,
+  PointVector,
 } from "../types.js";
+import { accessColorData, accessFloatData } from "../types.js";
+import { BaseArrowLayerModel } from "./base.js";
 
 export class ColumnModel extends BaseArrowLayerModel {
   static layerType = "column";

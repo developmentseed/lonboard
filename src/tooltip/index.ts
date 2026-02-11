@@ -1,4 +1,4 @@
-import { TooltipContent } from "@deck.gl/core/dist/lib/tooltip";
+import type { TooltipContent } from "@deck.gl/core/dist/lib/tooltip";
 import type { GeoArrowPickingInfo } from "@geoarrow/deck.gl-layers";
 
 import "./index.css";
@@ -44,7 +44,7 @@ export function getTooltip({ object }: GeoArrowPickingInfo): TooltipContent {
       return null;
     }
 
-    delete jsonObj["geometry"];
+    delete jsonObj.geometry;
 
     if (Object.keys(jsonObj).length === 0) {
       return null;

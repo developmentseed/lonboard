@@ -41,7 +41,7 @@ export function useBasemapState(
     };
 
     loadBasemap();
-  }, [basemapModelId]);
+  }, [basemapModelId, updateStateCallback, widgetManager]);
 
   return basemapState;
 }

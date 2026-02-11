@@ -1,13 +1,9 @@
 /** Check for null and undefined */
 
-import {
-  _GlobeView as GlobeView,
-  GlobeViewState,
-  MapView,
-  MapViewState,
-} from "@deck.gl/core";
+import type { GlobeViewState, MapViewState } from "@deck.gl/core";
+import { _GlobeView as GlobeView, MapView } from "@deck.gl/core";
 
-import { MapRendererProps } from "./renderers";
+import type { MapRendererProps } from "./renderers";
 
 // https://stackoverflow.com/a/52097445
 export function isDefined<T>(value: T | undefined | null): value is T {
@@ -29,7 +25,7 @@ export function isMapView(views: MapRendererProps["views"]) {
 }
 
 export function sanitizeViewState(
-  views: MapRendererProps["views"],
+  _views: MapRendererProps["views"],
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   viewState: (MapViewState | GlobeViewState) & Record<string, any>,
 ): MapViewState | GlobeViewState {

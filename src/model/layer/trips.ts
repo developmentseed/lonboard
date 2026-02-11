@@ -1,15 +1,14 @@
-import { GeoArrowTripsLayer } from "@geoarrow/deck.gl-layers";
 import type { GeoArrowTripsLayerProps } from "@geoarrow/deck.gl-layers";
+import { GeoArrowTripsLayer } from "@geoarrow/deck.gl-layers";
 import type { WidgetModel } from "@jupyter-widgets/base";
 
 import { isDefined } from "../../util.js";
-import {
+import type {
   ColorAccessorInput,
   FloatAccessorInput,
   TimestampVector,
-  accessColorData,
-  accessFloatData,
 } from "../types.js";
+import { accessColorData, accessFloatData } from "../types.js";
 import { BaseArrowLayerModel } from "./base.js";
 
 export class TripsModel extends BaseArrowLayerModel {

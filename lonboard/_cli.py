@@ -9,6 +9,7 @@ import click
 from arro3.core import Table
 from pyproj import CRS
 
+import lonboard
 from lonboard import viz
 from lonboard._constants import EXTENSION_NAME
 
@@ -152,10 +153,17 @@ def read_geoparquet(path: Path) -> Table:
         "but is in other cases."
     ),
 )
+@click.option(
+    "-v",
+    "--version",
+    is_flag=True,
+    help="Show the version and exit.",
+)
 @click.argument("files", nargs=-1, type=click.Path(path_type=Path))
 def main(
     output: Path | None,
     open_browser: bool | None,  # noqa: FBT001
+    version: bool,  # noqa: FBT001
     files: list[Path],
 ) -> None:
     """Interactively visualize geospatial data using Lonboard.
@@ -163,6 +171,10 @@ def main(
     This CLI can be used either to quickly view local files or to create static HTML
     files.
     """
+    if version:
+        click.echo(f"Lonboard version {lonboard.__version__}")
+        return
+
     tables = []
     for path in files:
         if path.suffix == ".parquet":
