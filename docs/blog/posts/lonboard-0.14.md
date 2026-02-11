@@ -7,8 +7,8 @@ authors:
   - kylebarron
 links:
   - CHANGELOG.md#0140-2026-02-11
-  - examples/raster-pmtiles
-  - examples/data-filter-extension-categorical
+  - Raster PMTiles example: examples/raster-pmtiles
+  - Categorical Data Filtering example: examples/data-filter-extension-categorical
 ---
 
 # Releasing lonboard 0.14!
