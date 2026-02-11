@@ -43,6 +43,16 @@ export function sanitizeViewState(
           maxZoom: viewState.maxZoom,
         }
       : 0),
+    ...(Number.isFinite(viewState.pitch)
+      ? {
+          pitch: viewState.pitch,
+        }
+      : 0),
+    ...(Number.isFinite(viewState.bearing)
+      ? {
+          bearing: viewState.bearing,
+        }
+      : 0),
   };
   return sanitized;
 }
