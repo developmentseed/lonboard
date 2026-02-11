@@ -1,9 +1,10 @@
-import { GeoArrowHeatmapLayer } from "@geoarrow/deck.gl-layers";
 import type { GeoArrowHeatmapLayerProps } from "@geoarrow/deck.gl-layers";
+import { GeoArrowHeatmapLayer } from "@geoarrow/deck.gl-layers";
 import type { WidgetModel } from "@jupyter-widgets/base";
 
 import { isDefined } from "../../util.js";
-import { PointVector, FloatAccessorInput, accessFloatData } from "../types.js";
+import type { FloatAccessorInput, PointVector } from "../types.js";
+import { accessFloatData } from "../types.js";
 import { BaseArrowLayerModel } from "./base.js";
 
 export class HeatmapModel extends BaseArrowLayerModel {

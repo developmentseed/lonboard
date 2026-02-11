@@ -1,19 +1,14 @@
-import { TileLayer, TileLayerProps } from "@deck.gl/geo-layers";
+import type { TileLayerProps } from "@deck.gl/geo-layers";
+import { TileLayer } from "@deck.gl/geo-layers";
 import { BitmapLayer } from "@deck.gl/layers";
-import type { WidgetModel } from "@jupyter-widgets/base";
-
-import { BaseLayerModel } from "./base.js";
 import { invoke } from "../dispatch.js";
+import { BaseLayerModel } from "./base.js";
 
 // This must be kept in sync with lonboard/layer/_raster.py
 const MSG_KIND = "raster-get-tile-data";
 
 export class RasterModel extends BaseLayerModel {
   static layerType = "raster";
-
-  constructor(model: WidgetModel, updateStateCallback: () => void) {
-    super(model, updateStateCallback);
-  }
 
   getTileData: TileLayerProps["getTileData"] = async (tile) => {
     const { index } = tile;

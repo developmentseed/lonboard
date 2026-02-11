@@ -19,7 +19,7 @@ import {
   OrthographicView,
 } from "@deck.gl/core";
 import type { CommonViewProps } from "@deck.gl/core/dist/views/view";
-import { WidgetModel } from "@jupyter-widgets/base";
+import type { WidgetModel } from "@jupyter-widgets/base";
 
 import { isDefined } from "../util";
 import { BaseModel } from "./base";

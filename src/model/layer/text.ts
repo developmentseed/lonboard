@@ -1,18 +1,17 @@
-import { _GeoArrowTextLayer as GeoArrowTextLayer } from "@geoarrow/deck.gl-layers";
 import type { _GeoArrowTextLayerProps as GeoArrowTextLayerProps } from "@geoarrow/deck.gl-layers";
+import { _GeoArrowTextLayer as GeoArrowTextLayer } from "@geoarrow/deck.gl-layers";
 import type { WidgetModel } from "@jupyter-widgets/base";
 
 import { isDefined } from "../../util.js";
-import {
-  PointVector,
+import type {
   ColorAccessorInput,
   FloatAccessorInput,
-  StringAccessorInput,
   PixelOffsetAccessorInput,
-  accessColorData,
-  accessFloatData,
+  PointVector,
+  StringAccessorInput,
   StringVector,
 } from "../types.js";
+import { accessColorData, accessFloatData } from "../types.js";
 import { BaseArrowLayerModel } from "./base.js";
 
 export class TextModel extends BaseArrowLayerModel {

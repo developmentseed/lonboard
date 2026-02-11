@@ -1,9 +1,9 @@
-import {
+import type {
   ColorAccessor,
   FloatAccessor,
 } from "@geoarrow/deck.gl-layers/src/types";
-import * as ga from "@geoarrow/geoarrow-js";
-import {
+import type * as ga from "@geoarrow/geoarrow-js";
+import type {
   FixedSizeList,
   Float32,
   Int,

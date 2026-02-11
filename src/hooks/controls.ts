@@ -1,7 +1,7 @@
 import type { IWidgetManager, WidgetModel } from "@jupyter-widgets/base";
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 
-import { BaseMapControlModel } from "../model";
+import type { BaseMapControlModel } from "../model";
 import { initializeChildModels } from "../model/index.js";
 import { initializeControl } from "../model/map-control";
 
@@ -16,6 +16,8 @@ export function useControlsState(
   const [controlsState, setControlsState] = useState<
     Record<string, BaseMapControlModel>
   >({});
+  const controlsStateRef = useRef(controlsState);
+  controlsStateRef.current = controlsState;
 
   useEffect(() => {
     const loadMapControls = async () => {
@@ -23,7 +25,7 @@ export function useControlsState(
         const controlsModels = await initializeChildModels<BaseMapControlModel>(
           widgetManager,
           controlsIds,
-          controlsState,
+          controlsStateRef.current,
           async (model: WidgetModel) =>
             initializeControl(model, updateStateCallback),
         );
@@ -35,7 +37,7 @@ export function useControlsState(
     };
 
     loadMapControls();
-  }, [controlsIds]);
+  }, [controlsIds, updateStateCallback, widgetManager]);
 
   return Object.values(controlsState);
 }

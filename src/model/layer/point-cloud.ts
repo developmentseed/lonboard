@@ -1,9 +1,10 @@
-import { GeoArrowPointCloudLayer } from "@geoarrow/deck.gl-layers";
 import type { GeoArrowPointCloudLayerProps } from "@geoarrow/deck.gl-layers";
+import { GeoArrowPointCloudLayer } from "@geoarrow/deck.gl-layers";
 import type { WidgetModel } from "@jupyter-widgets/base";
 
 import { isDefined } from "../../util.js";
-import { ColorAccessorInput, accessColorData, NormalVector } from "../types.js";
+import type { ColorAccessorInput, NormalVector } from "../types.js";
+import { accessColorData } from "../types.js";
 import { BaseArrowLayerModel } from "./base.js";
 
 export class PointCloudModel extends BaseArrowLayerModel {

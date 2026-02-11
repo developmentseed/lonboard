@@ -5,7 +5,7 @@ import {
   ZoomWidget,
 } from "@deck.gl/react";
 import type { WidgetModel } from "@jupyter-widgets/base";
-import React from "react";
+import type React from "react";
 import {
   FullscreenControl,
   NavigationControl,
@@ -48,10 +48,6 @@ export abstract class BaseMapControlModel extends BaseModel {
 
 export class FullscreenControlModel extends BaseMapControlModel {
   static controlType = "fullscreen";
-
-  constructor(model: WidgetModel, updateStateCallback: () => void) {
-    super(model, updateStateCallback);
-  }
 
   renderDeck() {
     const { placement, ...otherProps } = this.baseDeckProps();

@@ -37,8 +37,5 @@ jobs:
       - name: Install
         run: npm ci
 
-      - name: Prettier check
-        run: npm run prettier:check
-
-      - name: Lint check
-        run: npm run lint
+      - name: Biome check
+        run: npm run check

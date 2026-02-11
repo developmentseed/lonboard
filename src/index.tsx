@@ -1,14 +1,14 @@
 import { createRender, useModel, useModelState } from "@anywidget/react";
 import type { Initialize, Render } from "@anywidget/types";
-import { MapViewState, PickingInfo } from "@deck.gl/core";
-import { PolygonLayer, PolygonLayerProps } from "@deck.gl/layers";
-import { DeckGLRef } from "@deck.gl/react";
-import { GeoArrowPickingInfo } from "@geoarrow/deck.gl-layers";
+import type { MapViewState, PickingInfo } from "@deck.gl/core";
+import type { PolygonLayerProps } from "@deck.gl/layers";
+import { PolygonLayer } from "@deck.gl/layers";
+import type { DeckGLRef } from "@deck.gl/react";
+import type { GeoArrowPickingInfo } from "@geoarrow/deck.gl-layers";
 import type { IWidgetManager } from "@jupyter-widgets/base";
 import { NextUIProvider } from "@nextui-org/react";
 import debounce from "lodash.debounce";
 import throttle from "lodash.throttle";
-import * as React from "react";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { v4 as uuidv4 } from "uuid";
 
@@ -23,7 +23,7 @@ import { DEFAULT_MAP_STYLE } from "./model/basemap.js";
 import { initParquetWasm } from "./parquet.js";
 import DeckFirstRenderer from "./renderers/deck-first.js";
 import OverlayRenderer from "./renderers/overlay.js";
-import {
+import type {
   DeckFirstRendererProps,
   MapRendererProps,
   OverlayRendererProps,
@@ -32,7 +32,7 @@ import SidePanel from "./sidepanel/index";
 import { useStore, useViewStateDebounced } from "./state";
 import Toolbar from "./toolbar.js";
 import { getTooltip } from "./tooltip/index.js";
-import { Message } from "./types.js";
+import type { Message } from "./types.js";
 import { isDefined, isGlobeView, sanitizeViewState } from "./util.js";
 
 import "maplibre-gl/dist/maplibre-gl.css";
@@ -116,7 +116,7 @@ function App() {
       (window as unknown as Record<string, unknown>).__deck =
         deckRef.current.deck;
     }
-  }, [deckRef.current]);
+  }, []);
 
   const model = useModel();
 
@@ -174,8 +174,11 @@ function App() {
 
   // Fake state just to get react to re-render when a model callback is called
   // eslint-disable-next-line @typescript-eslint/no-unused-vars
-  const [stateCounter, setStateCounter] = useState<Date>(new Date());
-  const updateStateCallback = () => setStateCounter(new Date());
+  const [_stateCounter, setStateCounter] = useState<Date>(new Date());
+  const updateStateCallback = useCallback(
+    () => setStateCounter(new Date()),
+    [],
+  );
 
   const basemapState = useBasemapState(
     basemapModelId,
@@ -240,17 +243,27 @@ function App() {
       bboxSelectStart,
       setBboxStart,
       setBboxEnd,
+      model.get,
+      model.send,
     ],
   );
 
-  const onMapHoverHandler = useCallback(
+  const isOnMapHoverEventEnabledRef = useRef(isOnMapHoverEventEnabled);
+  isOnMapHoverEventEnabledRef.current = isOnMapHoverEventEnabled;
+  const justClickedRef = useRef(justClicked);
+  justClickedRef.current = justClicked;
+
+  const onMapHoverHandler = useRef(
     throttle((info: PickingInfo) => {
-      if (isOnMapHoverEventEnabled && !justClicked && info.coordinate) {
+      if (
+        isOnMapHoverEventEnabledRef.current &&
+        !justClickedRef.current &&
+        info.coordinate
+      ) {
         setBboxHover(info.coordinate);
       }
     }, 100),
-    [isOnMapHoverEventEnabled, justClicked, setBboxHover],
-  );
+  ).current;
 
   const mapRenderProps: MapRendererProps = {
     mapStyle: basemapState?.style || DEFAULT_MAP_STYLE,
