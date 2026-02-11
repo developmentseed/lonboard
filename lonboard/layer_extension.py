@@ -5,6 +5,7 @@ import traitlets.traitlets as t
 from lonboard._base import BaseExtension
 from lonboard.traits import (
     DashArrayAccessor,
+    FilterCategoryAccessor,
     FilterValueAccessor,
     FloatAccessor,
     PointAccessor,
@@ -310,7 +311,7 @@ class DataFilterExtension(BaseExtension):
 
     Accessor to retrieve the category for each object that it will be filtered by.
 
-    - Type: [FilterValueAccessor][lonboard.traits.FilterValueAccessor]
+    - Type: [FilterCategoryAccessor][lonboard.traits.FilterCategoryAccessor]
         - If a scalar value is provided, it is used as the value for all objects.
         - If an array is provided, each value in the array will be used as the value for
           the object at the same row index.
@@ -353,15 +354,18 @@ class DataFilterExtension(BaseExtension):
         "filter_transform_size": t.Bool(default_value=True).tag(sync=True),
         "filter_transform_color": t.Bool(default_value=True).tag(sync=True),
         "get_filter_value": FilterValueAccessor(default_value=None, allow_none=True),
-        "get_filter_category": FilterValueAccessor(default_value=None, allow_none=True),
+        "get_filter_category": FilterCategoryAccessor(
+            default_value=None,
+            allow_none=True,
+        ),
     }
 
-    filter_size = t.Int(None, min=1, max=4, allow_none=True).tag(sync=True)
+    filter_size = t.Int(1, min=1, max=4, allow_none=True).tag(sync=True)
     """The size of the filter (number of columns to filter by).
 
     The data filter can show/hide data based on 1-4 numeric properties of each object.
 
-    - Type: `int`. This is required if using range-based filtering.
+    - Type: `int`, optional. This is required if using range-based filtering.
     - Default 1.
     """
 
@@ -370,8 +374,8 @@ class DataFilterExtension(BaseExtension):
 
     The category filter can show/hide data based on 1-4 properties of each object.
 
-    - Type: `int`. This is required if using category-based filtering.
-    - Default 0.
+    - Type: `int`, optional. This is required if using category-based filtering.
+    - Default None.
     """
 
 
