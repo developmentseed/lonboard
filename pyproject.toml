@@ -87,7 +87,7 @@ dev = [
     "matplotlib>=3.7.5",
     "movingpandas>=0.20.0",
     "palettable>=3.3.3",
-    "pandas<3",
+    "pandas",
     "pandas-stubs>=2.2.2.240807",
     "pre-commit>=3.5.0",
     "pyarrow>=21.0.0",

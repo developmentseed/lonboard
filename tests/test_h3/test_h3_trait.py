@@ -2,7 +2,7 @@ import numpy as np
 import pandas as pd
 import pyarrow as pa
 import pytest
-from traitlets import TraitError
+from traitlets.traitlets import TraitError
 
 from lonboard.layer import BaseLayer
 from lonboard.traits import H3Accessor
