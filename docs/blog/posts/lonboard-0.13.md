@@ -11,7 +11,7 @@ links:
 
 # Releasing lonboard 0.13!
 
-Lonboard is a Python library for fast, interactive geospatial vector data visualization in Jupyter.
+Lonboard is a Python library for fast, interactive geospatial data visualization in Jupyter.
 
 This post gives an overview of what's new in Lonboard version 0.13.
 
