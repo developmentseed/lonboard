@@ -6,7 +6,7 @@ categories:
 authors:
   - kylebarron
 links:
-  - CHANGELOG.md
+  - CHANGELOG.md#0130-2025-11-05
 ---
 
 # Releasing lonboard 0.13!
