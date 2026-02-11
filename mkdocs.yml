@@ -44,6 +44,7 @@ nav:
       - examples/overture-geoparquet.ipynb
       - examples/air-traffic-control.ipynb
       - examples/global-boundaries.ipynb
+      - examples/raster-pmtiles.ipynb
       - examples/kontur_pop.ipynb
       - examples/migration.ipynb
       - examples/data-filter-extension.ipynb

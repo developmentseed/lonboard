@@ -17,7 +17,7 @@
 [pypi-img]: https://static.pepy.tech/badge/lonboard
 [pypi-link]: https://pypi.org/project/lonboard/
 
-A Python library for fast, interactive geospatial vector data visualization in Jupyter.
+A Python library for fast, interactive geospatial data visualization in Jupyter.
 
 Building on cutting-edge technologies like [GeoArrow](https://github.com/geoarrow/geoarrow) and [GeoParquet](https://github.com/opengeospatial/geoparquet) in conjunction with [GPU-based map rendering](https://deck.gl/), Lonboard aims to enable visualizing large geospatial datasets interactively through a simple interface.
 

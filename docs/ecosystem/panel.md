@@ -129,7 +129,7 @@ state_options = sorted(state for state in gdf["state"].unique() if state)
 
 description = """# Lonboard
 
-A Python library for **fast, interactive geospatial vector data visualization** in Jupyter (and Panel).
+A Python library for **fast, interactive geospatial data visualization** in Jupyter (and Panel).
 
 By utilizing new technologies like `GeoArrow` and `GeoParquet` in conjunction with GPU-based map rendering, Lonboard aims to enable visualizing large geospatial datasets interactively through a simple interface."""
 

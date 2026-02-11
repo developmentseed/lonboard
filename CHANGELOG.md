@@ -1,5 +1,39 @@
 # Changelog
 
+## [0.14.0] - 2026-02-11
+
+### Breaking changes
+
+* feat!: Require Python 3.11 by @kylebarron in https://github.com/developmentseed/lonboard/pull/1090
+
+### New Features
+
+* feat: PMTiles constructor for RasterLayer by @kylebarron in https://github.com/developmentseed/lonboard/pull/1105
+* feat: Added explicit support for numpy number types by @shawnboltz in https://github.com/developmentseed/lonboard/pull/1056
+* feat: Create display window under Map for rendering callback exceptions by @kylebarron in https://github.com/developmentseed/lonboard/pull/1085
+* DataFilterExtension get_filter_category by @ATL2001 in https://github.com/developmentseed/lonboard/pull/884
+* feat(cli): Add --version flag to CLI by @kylebarron in https://github.com/developmentseed/lonboard/pull/1092
+
+
+### Bug Fixes
+
+* fix: Fixup error in sidecar example notebook by @mfisher87 in https://github.com/developmentseed/lonboard/pull/1077
+* fix: Support pandas v3 by @kylebarron in https://github.com/developmentseed/lonboard/pull/1107
+* fix: Fix map.set_view_state does not set pitch and bearing by @jwardbond in https://github.com/developmentseed/lonboard/pull/1055
+
+### Other
+
+* chore: Switch to `biome` for Typescript linting by @kylebarron in https://github.com/developmentseed/lonboard/pull/1103
+* refactor: migrate from XState to Zustand for state management by @vgeorge in https://github.com/developmentseed/lonboard/pull/1042
+
+### New Contributors
+
+* @mfisher87 made their first contribution in https://github.com/developmentseed/lonboard/pull/1077
+* @shawnboltz made their first contribution in https://github.com/developmentseed/lonboard/pull/1056
+* @jwardbond made their first contribution in https://github.com/developmentseed/lonboard/pull/1055
+
+**Full Changelog**: https://github.com/developmentseed/lonboard/compare/v0.13.0...v0.14.0
+
 ## [0.13.0] - 2025-11-05
 
 ### New Features :sparkles:
