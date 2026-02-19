@@ -4,9 +4,10 @@ from __future__ import annotations
 
 import asyncio
 import traceback
-from typing import TYPE_CHECKING, Generic, Protocol, TypeVar, Unpack
+from typing import TYPE_CHECKING, Any, Generic, Protocol, TypeVar, Unpack
 
 import traitlets.traitlets as t
+from pyproj.transformer import Transformer
 
 from lonboard._geoarrow.ops import Bbox, WeightedCentroid
 from lonboard.layer._base import BaseLayer
@@ -16,6 +17,7 @@ from lonboard.traits import ProjectionTrait, TileMatrixSetTrait
 if TYPE_CHECKING:
     import sys
 
+    from async_geotiff import GeoTIFF
     from async_pmtiles import PMTilesReader
     from morecantile import TileMatrixSet
     from pyproj import CRS
@@ -293,41 +295,50 @@ class RasterLayer(BaseLayer, Generic[T]):
             **kwargs,  # type: ignore
         )
 
-    # @classmethod
-    # def from_async_geotiff(
-    #     cls,
-    #     geotiff: GeoTIFF,
-    #     /,
-    #     *,
-    #     render: RenderTile[Any],
-    #     **kwargs: Any,
-    #     # TODO: can this return type specify RasterLayer[T] where T is the type of the
-    #     # GeoTIFF?
-    #     # Ideally, in a typed context, render should receive the correct tile type
-    # ) -> RasterLayer[Any]:
-    #     """Create a RasterLayer from a GeoTIFF instance from async-geotiff."""
-    #     from async_geotiff.tms import generate_tms
+    @classmethod
+    def from_async_geotiff(
+        cls,
+        geotiff: GeoTIFF,
+        /,
+        *,
+        render: RenderTile[Any],
+        **kwargs: Any,
+        # TODO: can this return type specify RasterLayer[T] where T is the type of the
+        # GeoTIFF?
+        # Ideally, in a typed context, render should receive the correct tile type
+    ) -> RasterLayer[Any]:
+        """Create a RasterLayer from a GeoTIFF instance from async-geotiff."""
+        from async_geotiff.tms import generate_tms
 
-    #     tms = generate_tms(geotiff)
+        tms = generate_tms(geotiff)
 
-    #     # This should create a closure for fetching tiles from the geotiff. So the user
-    #     # shouldn't have to manually provide a fetch_tile function.
+        async def geotiff_fetch_tile(
+            x: int,
+            y: int,
+            z: int,
+        ) -> Any:
+            """Fetch a specific tile from the GeoTIFF."""
+            # TODO: select correct IFD
+            return await geotiff.fetch_tile(x, y)
 
-    #     async def geotiff_fetch_tile(
-    #         x: int,
-    #         y: int,
-    #         z: int,
-    #     ) -> Any:
-    #         """Fetch a specific tile from the GeoTIFF."""
-    #         # TODO: select correct IFD
-    #         return await geotiff.fetch_tile(x, y)
+        transformer = Transformer.from_crs(geotiff.crs, "EPSG:4326", always_xy=True)
+        wgs84_bounds = transformer.transform_bounds(*geotiff.bounds)
+        wgs84_center = (
+            wgs84_bounds[0] + (wgs84_bounds[2] - wgs84_bounds[0]) / 2,
+            wgs84_bounds[1] + (wgs84_bounds[3] - wgs84_bounds[1]) / 2,
+        )
 
-    #     return RasterLayer(
-    #         tms=tms,
-    #         fetch_tile=geotiff_fetch_tile,
-    #         render=render,
-    #         **kwargs,
-    #     )  # type: ignore[call-arg]
+        return RasterLayer(
+            tile_matrix_set=tms,
+            crs=geotiff.crs,
+            fetch_tile=geotiff_fetch_tile,
+            render=render,
+            # min_zoom=0,
+            # max_zoom=len(tms.tileMatrices) - 1,
+            _bounds=Bbox(*wgs84_bounds),
+            _center=wgs84_center,
+            **kwargs,
+        )  # type: ignore[call-arg]
 
     _layer_type = t.Unicode("raster").tag(sync=True)
 

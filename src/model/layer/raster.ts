@@ -2,7 +2,7 @@ import type {
   TileLayerProps,
   _Tileset2DProps as Tileset2DProps,
 } from "@deck.gl/geo-layers";
-import { TileLayer, _Tileset2D as Tileset2D } from "@deck.gl/geo-layers";
+import { TileLayer } from "@deck.gl/geo-layers";
 import { BitmapLayer } from "@deck.gl/layers";
 import { TileMatrixSetTileset } from "@developmentseed/deck.gl-raster";
 import type { TileMatrixSet } from "@developmentseed/morecantile";
@@ -24,7 +24,7 @@ type TileResponse =
 export class RasterModel extends BaseLayerModel {
   static layerType = "raster";
 
-  protected tms: TileMatrixSet | undefined;
+  protected tileMatrixSet: TileMatrixSet | null | undefined;
   /** PROJJSON CRS */
   protected crs: PROJJSONDefinition | undefined;
   protected tileSize: TileLayerProps["tileSize"];
@@ -38,7 +38,7 @@ export class RasterModel extends BaseLayerModel {
   constructor(model: WidgetModel, updateStateCallback: () => void) {
     super(model, updateStateCallback);
 
-    this.initRegularAttribute("tms", "tms");
+    this.initRegularAttribute("tile_matrix_set", "tileMatrixSet");
     this.initRegularAttribute("crs", "crs");
     this.initRegularAttribute("tile_size", "tileSize");
     this.initRegularAttribute("zoom_offset", "zoomOffset");
@@ -99,36 +99,69 @@ export class RasterModel extends BaseLayerModel {
     return { message, buffers, image };
   };
 
-  makeTileset2D(): TileLayerProps["TilesetClass"] {
-    const tms = this.tms;
-    const crs = this.crs;
-    if (!tms || !crs) {
-      return Tileset2D;
-    }
-
-    const forwardTo4326 = proj4(crs, "EPSG:4326").forward;
-    const forwardTo3857 = proj4(crs, "EPSG:3857").forward;
+  renderTileMatrixSet(
+    tileMatrixSet: TileMatrixSet,
+    crs: PROJJSONDefinition,
+  ): TileLayer {
+    const converter4326 = proj4(crs, "EPSG:4326");
+    const forwardTo4326 = (x: number, y: number): [number, number] =>
+      converter4326.forward([x, y]);
+    const converter3857 = proj4(crs, "EPSG:3857");
+    const forwardTo3857 = (x: number, y: number): [number, number] =>
+      converter3857.forward([x, y]);
 
     class TileMatrixSetTilesetFactory extends TileMatrixSetTileset {
       constructor(opts: Tileset2DProps) {
-        super(opts, tms, {
+        super(opts, tileMatrixSet, {
           projectTo4326: forwardTo4326,
           projectTo3857: forwardTo3857,
         });
       }
     }
 
-    return TileMatrixSetTilesetFactory;
+    return new TileLayer({
+      ...this.baseLayerProps(),
+      ...this.layerProps(),
+      getTileData: this.getTileData?.bind(this),
+      TilesetClass: TileMatrixSetTilesetFactory,
+      renderSubLayers: (props) => {
+        const { tile } = props;
+        const { boundingBox } = tile;
+
+        if (!props.data) {
+          return null;
+        }
+
+        console.log("props.data");
+        console.log(props.data);
+        const { image } = props.data;
+        console.log("in renderSubLayers");
+        console.log(props);
+
+        return new BitmapLayer(props, {
+          image,
+          bounds: [
+            boundingBox[0][0],
+            boundingBox[0][1],
+            boundingBox[1][0],
+            boundingBox[1][1],
+          ],
+        });
+      },
+    });
   }
 
   render(): TileLayer {
-    const TilesetClass = this.makeTileset2D();
+    const tileMatrixSet = this.tileMatrixSet;
+    const crs = this.crs;
+    if (tileMatrixSet && crs) {
+      return this.renderTileMatrixSet(tileMatrixSet, crs);
+    }
 
     return new TileLayer({
       ...this.baseLayerProps(),
       ...this.layerProps(),
       getTileData: this.getTileData?.bind(this),
-      TilesetClass,
       renderSubLayers: (props) => {
         const { tile } = props;
         const { boundingBox } = tile;
