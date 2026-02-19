@@ -17,7 +17,7 @@ from lonboard.traits import ProjectionTrait, TileMatrixSetTrait
 if TYPE_CHECKING:
     import sys
 
-    from async_geotiff import GeoTIFF
+    from async_geotiff import GeoTIFF, Overview
     from async_pmtiles import PMTilesReader
     from morecantile import TileMatrixSet
     from pyproj import CRS
@@ -318,8 +318,9 @@ class RasterLayer(BaseLayer, Generic[T]):
             z: int,
         ) -> Any:
             """Fetch a specific tile from the GeoTIFF."""
-            # TODO: select correct IFD
-            return await geotiff.fetch_tile(x, y)
+            images: list[GeoTIFF | Overview] = [geotiff, *geotiff.overviews]
+            image = images[len(images) - 1 - z]
+            return await image.fetch_tile(x, y)
 
         transformer = Transformer.from_crs(geotiff.crs, "EPSG:4326", always_xy=True)
         wgs84_bounds = transformer.transform_bounds(*geotiff.bounds)
