@@ -144,9 +144,46 @@ export class RasterModel extends BaseLayerModel {
       return null;
     }
 
-    const image = await dataViewToImageBitmap(buffers[0], message.mime_type);
+    const bitmap = await dataViewToImageBitmap(buffers[0], message.mime_type);
+    const image = imageBitmapToImageData(bitmap);
 
-    return { message, buffers, image };
+    // Compute per-tile affine transforms once; cached by TileLayer
+    const tileMatrix = this.tileMatrixSet?.tileMatrices[z];
+    if (!tileMatrix) {
+      return null;
+    }
+    const tileAffine = tileTransform(tileMatrix, { col: x, row: y });
+    const invAffine = invert(tileAffine);
+    const forwardTransform = (u: number, v: number): [number, number] =>
+      apply(tileAffine, u, v);
+    const inverseTransform = (px: number, py: number): [number, number] =>
+      apply(invAffine, px, py);
+
+    return { image, forwardTransform, inverseTransform };
+  };
+
+  renderRasterSubLayer: TileLayerProps<TileData | null>["renderSubLayers"] = (
+    props,
+  ) => {
+    if (!props.data) {
+      return null;
+    }
+
+    const { image, forwardTransform, inverseTransform } = props.data;
+    const { inverseFrom4326, forwardTo4326 } = this.accessConverters();
+
+    return new RasterLayer({
+      id: `${props.id}-raster`,
+      width: image.width,
+      height: image.height,
+      renderPipeline: image,
+      reprojectionFns: {
+        forwardTransform,
+        inverseTransform,
+        forwardReproject: forwardTo4326,
+        inverseReproject: inverseFrom4326,
+      },
+    });
   };
 
   renderTileMatrixSet(
@@ -168,30 +205,7 @@ export class RasterModel extends BaseLayerModel {
       ...this.layerProps(),
       getTileData: this.getTileData?.bind(this),
       TilesetClass: TileMatrixSetTilesetFactory,
-      renderSubLayers: (props) => {
-        const { tile } = props;
-        const { boundingBox } = tile;
-
-        if (!props.data) {
-          return null;
-        }
-
-        console.log("props.data");
-        console.log(props.data);
-        const { image } = props.data;
-        console.log("in renderSubLayers");
-        console.log(props);
-
-        return new BitmapLayer(props, {
-          image,
-          bounds: [
-            boundingBox[0][0],
-            boundingBox[0][1],
-            boundingBox[1][0],
-            boundingBox[1][1],
-          ],
-        });
-      },
+      renderSubLayers: this.renderRasterSubLayer.bind(this),
     });
   }
 
@@ -201,8 +215,8 @@ export class RasterModel extends BaseLayerModel {
     if (tileMatrixSet && converters) {
       return this.renderTileMatrixSet(
         tileMatrixSet,
-        converters[4326].forward,
-        converters[3857].forward,
+        (x, y) => converters[4326].forward([x, y]),
+        (x, y) => converters[3857].forward([x, y]),
       );
     }
 
@@ -218,11 +232,7 @@ export class RasterModel extends BaseLayerModel {
           return null;
         }
 
-        console.log("props.data");
-        console.log(props.data);
-        const { image } = props.data;
-        console.log("in renderSubLayers");
-        console.log(props);
+        const { image } = props.data as TileData;
 
         return new BitmapLayer(props, {
           image,
@@ -251,4 +261,11 @@ function dataViewToImageBitmap(
   const bytes = new Uint8Array(buffer, byteOffset, byteLength);
   const blob = new Blob([bytes], { type: mimeType });
   return createImageBitmap(blob);
+}
+
+function imageBitmapToImageData(bitmap: ImageBitmap): ImageData {
+  const canvas = new OffscreenCanvas(bitmap.width, bitmap.height);
+  const ctx = canvas.getContext("2d")!;
+  ctx.drawImage(bitmap, 0, 0);
+  return ctx.getImageData(0, 0, bitmap.width, bitmap.height);
 }
