@@ -200,6 +200,7 @@ plugins:
             - https://contextily.readthedocs.io/en/stable/objects.inv
             - https://developmentseed.org/async-geotiff/latest/objects.inv
             - https://developmentseed.org/async-pmtiles/latest/objects.inv
+            - https://developmentseed.org/morecantile/objects.inv
             - https://developmentseed.org/obspec/latest/objects.inv
             - https://developmentseed.org/obstore/latest/objects.inv
             - https://docs.python.org/3/objects.inv
