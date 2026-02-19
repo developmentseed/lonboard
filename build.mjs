@@ -47,12 +47,21 @@ esbuild.build({
   // Force all packages (including those nested inside local file deps) to
   // resolve to lonboard's own copies, preventing duplicate instances.
   alias: {
+    "@deck.gl/aggregation-layers": "./node_modules/@deck.gl/aggregation-layers",
     "@deck.gl/core": "./node_modules/@deck.gl/core",
-    "@deck.gl/layers": "./node_modules/@deck.gl/layers",
+    "@deck.gl/extensions": "./node_modules/@deck.gl/extensions",
     "@deck.gl/geo-layers": "./node_modules/@deck.gl/geo-layers",
+    "@deck.gl/layers": "./node_modules/@deck.gl/layers",
+    "@deck.gl/mapbox": "./node_modules/@deck.gl/mapbox",
     "@deck.gl/mesh-layers": "./node_modules/@deck.gl/mesh-layers",
+    "@deck.gl/react": "./node_modules/@deck.gl/react",
+    "@deck.gl/widgets": "./node_modules/@deck.gl/widgets",
+    "@luma.gl/constants": "./node_modules/@luma.gl/constants",
     "@luma.gl/core": "./node_modules/@luma.gl/core",
+    "@luma.gl/engine": "./node_modules/@luma.gl/engine",
+    "@luma.gl/gltf": "./node_modules/@luma.gl/gltf",
     "@luma.gl/shadertools": "./node_modules/@luma.gl/shadertools",
+    "@luma.gl/webgl": "./node_modules/@luma.gl/webgl",
   },
   platform: "browser",
   loader: {
