@@ -11,11 +11,14 @@ import traitlets.traitlets as t
 from lonboard._geoarrow.ops import Bbox, WeightedCentroid
 from lonboard.layer._base import BaseLayer
 from lonboard.raster import IMAGE_MIME_TYPES, EncodedImage
+from lonboard.traits import ProjectionTrait, TileMatrixSetTrait
 
 if TYPE_CHECKING:
     import sys
 
     from async_pmtiles import PMTilesReader
+    from morecantile import TileMatrixSet
+    from pyproj import CRS
 
     from lonboard.types.layer import RasterLayerKwargs
 
@@ -168,6 +171,8 @@ class RasterLayer(BaseLayer, Generic[T]):
 
     def __init__(
         self,
+        tile_matrix_set: TileMatrixSet | None,
+        crs: CRS,
         *,
         fetch_tile: FetchTile[T],
         render: RenderTile[T],
@@ -183,7 +188,7 @@ class RasterLayer(BaseLayer, Generic[T]):
         self.on_msg(handle_anywidget_dispatch)
         self._bounds = _bounds
         self._center = _center
-        super().__init__(**kwargs)  # type: ignore
+        super().__init__(tile_matrix_set=tile_matrix_set, crs=crs, **kwargs)  # type: ignore
 
     @property
     def _bbox(self) -> Bbox:
@@ -325,6 +330,10 @@ class RasterLayer(BaseLayer, Generic[T]):
     #     )  # type: ignore[call-arg]
 
     _layer_type = t.Unicode("raster").tag(sync=True)
+
+    tile_matrix_set: TileMatrixSet = TileMatrixSetTrait(allow_none=True).tag(sync=True)  # type: ignore
+
+    crs: CRS = ProjectionTrait().tag(sync=True)  # type: ignore
 
     # TODO: Restore TMS generic tile traversal. For now, for simplicity, we're only rendering standard web mercator tiles.
     # _tms = Dict().tag(sync=True)
