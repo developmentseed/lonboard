@@ -44,6 +44,16 @@ esbuild.build({
       },
     }),
   ],
+  // Force all packages (including those nested inside local file deps) to
+  // resolve to lonboard's own copies, preventing duplicate instances.
+  alias: {
+    "@deck.gl/core": "./node_modules/@deck.gl/core",
+    "@deck.gl/layers": "./node_modules/@deck.gl/layers",
+    "@deck.gl/geo-layers": "./node_modules/@deck.gl/geo-layers",
+    "@deck.gl/mesh-layers": "./node_modules/@deck.gl/mesh-layers",
+    "@luma.gl/core": "./node_modules/@luma.gl/core",
+    "@luma.gl/shadertools": "./node_modules/@luma.gl/shadertools",
+  },
   platform: "browser",
   loader: {
     ".worker.js": "text",
