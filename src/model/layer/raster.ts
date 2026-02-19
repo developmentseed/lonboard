@@ -4,8 +4,14 @@ import type {
 } from "@deck.gl/geo-layers";
 import { TileLayer } from "@deck.gl/geo-layers";
 import { BitmapLayer } from "@deck.gl/layers";
-import { TileMatrixSetTileset } from "@developmentseed/deck.gl-raster";
+import { apply, invert } from "@developmentseed/affine";
+import {
+  RasterLayer,
+  TileMatrixSetTileset,
+} from "@developmentseed/deck.gl-raster";
 import type { TileMatrixSet } from "@developmentseed/morecantile";
+import { tileTransform } from "@developmentseed/morecantile";
+import type { ReprojectionFns } from "@developmentseed/raster-reproject";
 import type { WidgetModel } from "@jupyter-widgets/base";
 import proj4 from "proj4";
 import type { PROJJSONDefinition } from "proj4/dist/lib/core.js";
@@ -21,6 +27,12 @@ type TileResponse =
   | { type: "encoded-image"; mime_type: string }
   | { error: string };
 
+type TileData = {
+  image: ImageData;
+  forwardTransform: ReprojectionFns["forwardTransform"];
+  inverseTransform: ReprojectionFns["inverseTransform"];
+};
+
 export class RasterModel extends BaseLayerModel {
   static layerType = "raster";
 
@@ -35,6 +47,11 @@ export class RasterModel extends BaseLayerModel {
   protected maxCacheSize: TileLayerProps["maxCacheSize"];
   protected debounceTime: TileLayerProps["debounceTime"];
 
+  protected converters?: {
+    4326: proj4.Converter;
+    3857: proj4.Converter;
+  };
+
   constructor(model: WidgetModel, updateStateCallback: () => void) {
     super(model, updateStateCallback);
 
@@ -47,6 +64,37 @@ export class RasterModel extends BaseLayerModel {
     this.initRegularAttribute("extent", "extent");
     this.initRegularAttribute("max_cache_size", "maxCacheSize");
     this.initRegularAttribute("debounce_time", "debounceTime");
+
+    if (this.crs) {
+      this.converters = {
+        4326: proj4(this.crs, "EPSG:4326"),
+        3857: proj4(this.crs, "EPSG:3857"),
+      };
+    }
+
+    this.model.on("change:crs", () => {
+      const crs = this.model.get("crs");
+      this.converters = {
+        4326: proj4(crs, "EPSG:4326"),
+        3857: proj4(crs, "EPSG:3857"),
+      };
+    });
+  }
+
+  accessConverters() {
+    const converters = this.converters;
+    if (!converters) {
+      throw new Error("CRS converters are not initialized");
+    }
+
+    return {
+      forwardTo4326: (x: number, y: number): [number, number] =>
+        converters[4326].forward([x, y]),
+      inverseFrom4326: (x: number, y: number): [number, number] =>
+        converters[4326].inverse([x, y]),
+      forwardTo3857: (x: number, y: number): [number, number] =>
+        converters[3857].forward([x, y]),
+    };
   }
 
   layerProps(): TileLayerProps {
@@ -63,7 +111,9 @@ export class RasterModel extends BaseLayerModel {
     };
   }
 
-  getTileData: TileLayerProps["getTileData"] = async (tile) => {
+  getTileData: TileLayerProps<TileData | null>["getTileData"] = async (
+    tile,
+  ) => {
     const { index } = tile;
     const { signal } = tile;
     const { x, y, z } = index;
@@ -101,20 +151,14 @@ export class RasterModel extends BaseLayerModel {
 
   renderTileMatrixSet(
     tileMatrixSet: TileMatrixSet,
-    crs: PROJJSONDefinition,
+    projectTo4326: (x: number, y: number) => [number, number],
+    projectTo3857: (x: number, y: number) => [number, number],
   ): TileLayer {
-    const converter4326 = proj4(crs, "EPSG:4326");
-    const forwardTo4326 = (x: number, y: number): [number, number] =>
-      converter4326.forward([x, y]);
-    const converter3857 = proj4(crs, "EPSG:3857");
-    const forwardTo3857 = (x: number, y: number): [number, number] =>
-      converter3857.forward([x, y]);
-
     class TileMatrixSetTilesetFactory extends TileMatrixSetTileset {
       constructor(opts: Tileset2DProps) {
         super(opts, tileMatrixSet, {
-          projectTo4326: forwardTo4326,
-          projectTo3857: forwardTo3857,
+          projectTo4326,
+          projectTo3857,
         });
       }
     }
@@ -153,9 +197,13 @@ export class RasterModel extends BaseLayerModel {
 
   render(): TileLayer {
     const tileMatrixSet = this.tileMatrixSet;
-    const crs = this.crs;
-    if (tileMatrixSet && crs) {
-      return this.renderTileMatrixSet(tileMatrixSet, crs);
+    const converters = this.converters;
+    if (tileMatrixSet && converters) {
+      return this.renderTileMatrixSet(
+        tileMatrixSet,
+        converters[4326].forward,
+        converters[3857].forward,
+      );
     }
 
     return new TileLayer({
