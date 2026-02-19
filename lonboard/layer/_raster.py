@@ -17,7 +17,7 @@ from lonboard.traits import ProjectionTrait, TileMatrixSetTrait
 if TYPE_CHECKING:
     import sys
 
-    from async_geotiff import GeoTIFF, Overview
+    from async_geotiff import GeoTIFF, Overview, Tile
     from async_pmtiles import PMTilesReader
     from morecantile import TileMatrixSet
     from pyproj import CRS
@@ -301,12 +301,12 @@ class RasterLayer(BaseLayer, Generic[T]):
         geotiff: GeoTIFF,
         /,
         *,
-        render: RenderTile[Any],
+        render: RenderTile[Tile],
         **kwargs: Any,
         # TODO: can this return type specify RasterLayer[T] where T is the type of the
         # GeoTIFF?
         # Ideally, in a typed context, render should receive the correct tile type
-    ) -> RasterLayer[Any]:
+    ) -> RasterLayer[Tile]:
         """Create a RasterLayer from a GeoTIFF instance from async-geotiff."""
         from async_geotiff.tms import generate_tms
 
@@ -316,7 +316,7 @@ class RasterLayer(BaseLayer, Generic[T]):
             x: int,
             y: int,
             z: int,
-        ) -> Any:
+        ) -> Tile:
             """Fetch a specific tile from the GeoTIFF."""
             images: list[GeoTIFF | Overview] = [geotiff, *geotiff.overviews]
             image = images[len(images) - 1 - z]
