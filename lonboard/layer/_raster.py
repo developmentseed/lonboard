@@ -320,7 +320,7 @@ class RasterLayer(BaseLayer, Generic[T]):
             """Fetch a specific tile from the GeoTIFF."""
             images: list[GeoTIFF | Overview] = [geotiff, *geotiff.overviews]
             image = images[len(images) - 1 - z]
-            return await image.fetch_tile(x, y)
+            return await image.fetch_tile(x, y, boundless=False)
 
         transformer = Transformer.from_crs(geotiff.crs, "EPSG:4326", always_xy=True)
         wgs84_bounds = transformer.transform_bounds(*geotiff.bounds)
@@ -346,9 +346,6 @@ class RasterLayer(BaseLayer, Generic[T]):
     tile_matrix_set: TileMatrixSet = TileMatrixSetTrait(allow_none=True).tag(sync=True)  # type: ignore
 
     crs: CRS = ProjectionTrait().tag(sync=True)  # type: ignore
-
-    # TODO: Restore TMS generic tile traversal. For now, for simplicity, we're only rendering standard web mercator tiles.
-    # _tms = Dict().tag(sync=True)
 
     tile_size = t.Int(512).tag(sync=True)
     """The pixel dimension of the tiles, usually a power of 2.
