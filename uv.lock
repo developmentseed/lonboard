@@ -13,6 +13,9 @@ resolution-markers = [
     "python_full_version < '3.12' and sys_platform != 'emscripten' and sys_platform != 'win32'",
 ]
 
+[options]
+prerelease-mode = "allow"
+
 [[package]]
 name = "affine"
 version = "2.4.0"
@@ -369,7 +372,7 @@ wheels = [
 
 [[package]]
 name = "async-geotiff"
-version = "0.2.0"
+version = "0.3.0b1"
 source = { registry = "https://pypi.org/simple" }
 dependencies = [
     { name = "affine" },
@@ -377,9 +380,9 @@ dependencies = [
     { name = "numpy" },
     { name = "pyproj" },
 ]
-sdist = { url = "https://files.pythonhosted.org/packages/b6/34/5e44823000e3fc280478c0a7dd8a0abc1a6fd06e7c92edc0f35a2f9ee63e/async_geotiff-0.2.0.tar.gz", hash = "sha256:c834c603a0e84843db0d367100057b74d46844ce8218dff2ee26c60783d1282c", size = 20739, upload-time = "2026-02-05T21:35:33.451Z" }
+sdist = { url = "https://files.pythonhosted.org/packages/24/c8/6f87c9af3d55d5179bde2c98af6235c7618183e0eecc23823ba10815fa6d/async_geotiff-0.3.0b1.tar.gz", hash = "sha256:7d4db0654daba0cf14af293117026e8109c468daba3bc4faaceb17139141f559", size = 21156, upload-time = "2026-02-20T16:39:01.423Z" }
 wheels = [
-    { url = "https://files.pythonhosted.org/packages/a8/bd/ad5fe7093b2c79e2b2ed475bf2c6b2302c4d328fae994a00c6d4356b63e4/async_geotiff-0.2.0-py3-none-any.whl", hash = "sha256:1addebc3aa3c4cc10fc8faa09db9dee80d467f3742f0bba561d392d4a74f69dc", size = 26329, upload-time = "2026-02-05T21:35:32.433Z" },
+    { url = "https://files.pythonhosted.org/packages/ea/4f/bd061edea345de87816e6eb7792ef9d831d26208cbbef73f4c2a84cded2c/async_geotiff-0.3.0b1-py3-none-any.whl", hash = "sha256:977c9d0a57ee2ba2e5425cd56eab097afcb517a63c3ff0f84fbfaf1e18ce4147", size = 26834, upload-time = "2026-02-20T16:39:00.552Z" },
 ]
 
 [[package]]
@@ -2177,7 +2180,7 @@ requires-dist = [
     { name = "arro3-compute", specifier = ">=0.4.1" },
     { name = "arro3-core", specifier = ">=0.4.1" },
     { name = "arro3-io", specifier = ">=0.4.1" },
-    { name = "async-geotiff", marker = "python_full_version >= '3.11' and extra == 'raster'", specifier = ">=0.2.0" },
+    { name = "async-geotiff", marker = "python_full_version >= '3.11' and extra == 'raster'", specifier = ">=0.3.0b1" },
     { name = "click", marker = "extra == 'cli'", specifier = ">=8.1.7" },
     { name = "geoarrow-rust-core", specifier = ">=0.5.2" },
     { name = "geopandas", marker = "extra == 'geopandas'", specifier = ">=0.13" },
