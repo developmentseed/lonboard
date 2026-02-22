@@ -296,7 +296,7 @@ class RasterLayer(BaseLayer, Generic[T]):
         )
 
     @classmethod
-    def from_async_geotiff(
+    def from_geotiff(
         cls,
         geotiff: GeoTIFF,
         /,
