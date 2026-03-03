@@ -11,7 +11,7 @@ docs_dir: docs
 extra:
   analytics:
     provider: plausible
-    domain: developmentseed.org/lonboard
+    domain: developmentseed.org
     feedback:
       title: Was this page helpful?
       ratings:
