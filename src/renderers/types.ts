@@ -3,6 +3,7 @@ import type { DeckGLRef } from "@deck.gl/react";
 import type { RefObject } from "react";
 
 import type { BaseMapControlModel } from "../model";
+import type { FlyToMessage } from "../types";
 
 type ViewOrViews = View | View[];
 export type MapRendererProps<ViewsT extends ViewOrViews = ViewOrViews> = Pick<
@@ -28,6 +29,8 @@ export type MapRendererProps<ViewsT extends ViewOrViews = ViewOrViews> = Pick<
 
 export type OverlayRendererProps = {
   interleaved: boolean;
+  flyToRequest?: FlyToMessage | null;
+  onFlyToComplete?: () => void;
 };
 
 export type DeckFirstRendererProps = {

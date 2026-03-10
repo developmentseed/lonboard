@@ -1,7 +1,7 @@
 import type { MapboxOverlayProps } from "@deck.gl/mapbox";
 import { MapboxOverlay } from "@deck.gl/mapbox";
-import type React from "react";
-import type { ViewStateChangeEvent } from "react-map-gl/maplibre";
+import React from "react";
+import type { MapRef, ViewStateChangeEvent } from "react-map-gl/maplibre";
 import MapGL, { useControl } from "react-map-gl/maplibre";
 import { isGlobeView } from "../util";
 import type { MapRendererProps, OverlayRendererProps } from "./types";
@@ -37,8 +37,35 @@ const OverlayRenderer: React.FC<MapRendererProps & OverlayRendererProps> = (
     initialViewState,
     views,
     onViewStateChange,
+    flyToRequest,
+    onFlyToComplete,
     ...deckProps
   } = mapProps;
+
+  const mapRef = React.useRef<MapRef>(null);
+
+  React.useEffect(() => {
+    if (flyToRequest && mapRef.current) {
+      const map = mapRef.current.getMap();
+      map.flyTo({
+        center: [flyToRequest.longitude, flyToRequest.latitude],
+        zoom: flyToRequest.zoom,
+        pitch: flyToRequest.pitch ?? 0,
+        bearing: flyToRequest.bearing ?? 0,
+        duration:
+          flyToRequest.transitionDuration === "auto"
+            ? undefined
+            : flyToRequest.transitionDuration,
+        ...(flyToRequest.curve != null && { curve: flyToRequest.curve }),
+        ...(flyToRequest.speed != null && { speed: flyToRequest.speed }),
+        ...(flyToRequest.screenSpeed != null && {
+          screenSpeed: flyToRequest.screenSpeed,
+        }),
+      });
+      onFlyToComplete?.();
+    }
+  }, [flyToRequest, onFlyToComplete]);
+
   const onMoveEnd = onViewStateChange
     ? (evt: ViewStateChangeEvent) => {
         const viewState = {
@@ -53,6 +80,7 @@ const OverlayRenderer: React.FC<MapRendererProps & OverlayRendererProps> = (
     : undefined;
   return (
     <MapGL
+      ref={mapRef}
       reuseMaps
       initialViewState={initialViewState}
       mapStyle={mapStyle}

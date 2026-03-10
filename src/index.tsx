@@ -32,7 +32,7 @@ import SidePanel from "./sidepanel/index";
 import { useStore, useViewStateDebounced } from "./state";
 import Toolbar from "./toolbar.js";
 import { getTooltip } from "./tooltip/index.js";
-import type { Message } from "./types.js";
+import type { FlyToMessage, Message } from "./types.js";
 import { isDefined, isGlobeView, sanitizeViewState } from "./util.js";
 
 import "maplibre-gl/dist/maplibre-gl.css";
@@ -160,11 +160,20 @@ function App() {
   const [initialViewState, setViewState] =
     useViewStateDebounced<MapViewState>("view_state");
 
+  const [flyToRequest, setFlyToRequest] = useState<FlyToMessage | null>(null);
+
   // Handle custom messages
   model.on("msg:custom", (msg: Message) => {
     switch (msg.type) {
       case "fly-to":
-        flyTo(msg, setViewState);
+        if (
+          basemapState?.mode === "overlaid" ||
+          basemapState?.mode === "interleaved"
+        ) {
+          setFlyToRequest(msg);
+        } else {
+          flyTo(msg, setViewState);
+        }
         break;
 
       default:
@@ -294,6 +303,8 @@ function App() {
 
   const overlayRenderProps: OverlayRendererProps = {
     interleaved: basemapState?.mode === "interleaved",
+    flyToRequest,
+    onFlyToComplete: () => setFlyToRequest(null),
   };
 
   const deckFirstRenderProps: DeckFirstRendererProps = {
