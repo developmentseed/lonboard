@@ -99,8 +99,9 @@ class ViewStateTrait(FixedErrorTraitType):
         snake_case_kwargs = {_camel_to_snake(k): v for k, v in value.items()}
 
         # Filter out transition fields that are not part of the view state dataclass
-        snake_case_kwargs = {k: v for k, v in snake_case_kwargs.items()
-                    if not k.startswith("transition")}
+        snake_case_kwargs = {
+            k: v for k, v in snake_case_kwargs.items() if not k.startswith("transition")
+        }
 
         return validator(**snake_case_kwargs)  # type: ignore
 
