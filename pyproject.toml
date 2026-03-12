@@ -86,6 +86,7 @@ dev = [
     "geoarrow-rust-core>=0.4.0",
     "geoarrow-rust-io>=0.4.1",
     "geodatasets>=2024.8.0",
+    "geopy>=2.4.1",
     "h3>=4.3.1",
     "jupyterlab>=4.3.3",
     "matplotlib>=3.7.5",

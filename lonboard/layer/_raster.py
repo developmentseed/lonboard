@@ -171,7 +171,6 @@ class RasterLayer(BaseLayer, Generic[T]):
         *,
         fetch_tile: FetchTile[T],
         render: RenderTile[T],
-        debug: bool = False,
         _bounds: Bbox | None = None,
         _center: tuple[float, float] | None = None,
         **kwargs: Unpack[RasterLayerKwargs],
@@ -179,7 +178,6 @@ class RasterLayer(BaseLayer, Generic[T]):
         self._pending_tasks = set()
         self.fetch_tile = fetch_tile
         self.render = render
-        self.debug = debug
         self.on_msg(handle_anywidget_dispatch)
         self._bounds = _bounds
         self._center = _center

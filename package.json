@@ -11,6 +11,7 @@
     "@developmentseed/deck.gl-geotiff": "^0.1.0",
     "@geoarrow/deck.gl-layers": "^0.4.0-beta.6",
     "@geoarrow/geoarrow-js": "^0.3.2",
+    "@maplibre/maplibre-gl-geocoder": "^1.9.4",
     "@nextui-org/react": "^2.4.8",
     "apache-arrow": "^21.1.0",
     "esbuild-sass-plugin": "^3.3.1",

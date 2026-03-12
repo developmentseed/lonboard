@@ -59,6 +59,7 @@ nav:
           - ColorPicker: examples/integrations/color-picker.ipynb
           - Sidecar: examples/integrations/sidecar.ipynb
           - examples/ais-movingpandas.ipynb
+          - examples/geocoder-control.ipynb
       - 30 Day Map Challenge:
           - "Day 1: Points": examples/map_challenge/1-points.ipynb
           - "Day 6: Asia": examples/map_challenge/6-asia.ipynb
