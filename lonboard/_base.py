@@ -16,8 +16,9 @@ parameter of the layer.
 
 class BaseWidget(Widget):
     _error_output: ErrorOutput
+    debug: bool
 
-    def __init__(self, **kwargs: Any) -> None:
+    def __init__(self, *, debug: bool = False, **kwargs: Any) -> None:
         # Raise error on unknown keyword name
         # Note: we don't use `class_own_traits()` because some layer props are set on
         # BaseLayer
@@ -27,14 +28,16 @@ class BaseWidget(Widget):
                 raise TypeError(msg.format(provided_trait_name=provided_trait_name))
 
         self._error_output = ErrorOutput(name=self.__class__.__name__)
+        self.debug = debug
 
         super().__init__(**kwargs)
 
 
 class BaseAnyWidget(AnyWidget):
     _error_output: ErrorOutput
+    debug: bool
 
-    def __init__(self, **kwargs: Any) -> None:
+    def __init__(self, *, debug: bool = False, **kwargs: Any) -> None:
         # Raise error on unknown keyword name
         layer_trait_names = self.trait_names()
         for provided_trait_name in kwargs:
@@ -42,6 +45,7 @@ class BaseAnyWidget(AnyWidget):
                 raise TypeError(msg.format(provided_trait_name=provided_trait_name))
 
         self._error_output = ErrorOutput(name=self.__class__.__name__)
+        self.debug = debug
 
         super().__init__(**kwargs)
 

@@ -61,7 +61,9 @@ async def _handle_geocoder_request(
     output = widget._error_output
 
     try:
-        output.append_stdout(f"Received tile request: {msg}")
+        if widget.debug:
+            output.append_stdout(f"Received tile request: {msg}")
+
         query = msg["msg"]["query"]
         response = await widget._client(query)
         widget.send(
@@ -94,7 +96,7 @@ class GeoJsonPoint(TypedDict):
     """The coordinates of the point, in [longitude, latitude] order."""
 
 
-class GeocoderResponse(TypedDict):
+class GeocoderFeature(TypedDict):
     """The expected response from a geocoder query.
 
     This must be a GeoJSON Point feature, extended with some additional properties.
@@ -133,14 +135,29 @@ class GeocoderResponse(TypedDict):
     """The center of the feature [lng, lat]."""
 
 
+class GeocoderFeatureCollection(TypedDict):
+    """A collection of geocoder features."""
+
+    type: Literal["FeatureCollection"]
+
+    features: Sequence[GeocoderFeature]
+    """The geocoder features returned from the query."""
+
+
 class GeocoderHandler(Protocol):
     """A protocol for handling geocoder queries from the frontend."""
 
-    async def __call__(self, query: str) -> GeocoderResponse | None:
+    async def __call__(
+        self,
+        query: str,
+    ) -> GeocoderFeatureCollection | GeocoderFeature | None:
         """Handle a geocoder query.
 
         Args:
             query: The geocoder query string from the frontend.
+
+        Returns:
+            A `FeatureCollection` or `Feature` to return to the frontend. Return a FeatureCollection if there are multiple results found.
 
         """
         ...
@@ -197,32 +214,36 @@ class GeocoderControl(BaseControl):
             )
             raise TypeError(msg)
 
-        async def handler(query: str) -> GeocoderResponse | None:
-            location = await geocoder.geocode(query)
+        def convert_location(location: Location) -> GeocoderFeature:
+            return {
+                "type": "Feature",
+                "properties": {},
+                "geometry": {
+                    "type": "Point",
+                    "coordinates": (location.longitude, location.latitude),
+                },
+                "text": location.address,
+                "place_name": location.address,
+                "place_type": ["geopy-result"],
+                "center": (location.longitude, location.latitude),
+            }
+
+        async def handler(
+            query: str,
+        ) -> GeocoderFeatureCollection | GeocoderFeature | None:
+            location = await geocoder.geocode(query, exactly_one=False)
             if location is None:
                 return None
 
             if isinstance(location, list):
-                if len(location) == 0:
-                    return None
-
-                location = location[0]
+                locations = [convert_location(loc) for loc in location]
+                return {
+                    "type": "FeatureCollection",
+                    "features": locations,
+                }
 
             if isinstance(location, Location):
-                location = cast("Location", location)
-
-                return {
-                    "type": "Feature",
-                    "properties": {},
-                    "geometry": {
-                        "type": "Point",
-                        "coordinates": (location.longitude, location.latitude),
-                    },
-                    "text": location.address,
-                    "place_name": location.address,
-                    "place_type": ["geopy-result"],
-                    "center": (location.longitude, location.latitude),
-                }
+                return convert_location(location)
 
             raise TypeError(f"Unexpected geopy result type: {location}")
 

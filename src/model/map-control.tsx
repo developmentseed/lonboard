@@ -1,7 +1,6 @@
 import {
   CompassWidget,
   FullscreenWidget,
-  _GeocoderWidget as GeocoderWidget,
   _ScaleWidget as ScaleWidget,
   ZoomWidget,
 } from "@deck.gl/react";
@@ -10,6 +9,7 @@ import type { WidgetModel } from "@jupyter-widgets/base";
 import type {
   CarmenGeojsonFeature,
   MaplibreGeocoderApi,
+  MaplibreGeocoderFeatureResults,
   MaplibreGeocoderOptions,
 } from "@maplibre/maplibre-gl-geocoder";
 import MaplibreGeocoder from "@maplibre/maplibre-gl-geocoder";
@@ -95,8 +95,12 @@ function MaplibreGeocoderControl({
 export class GeocoderControlModel extends BaseMapControlModel {
   static controlType = "geocoder";
 
-  async invokePythonGeocode(query: string) {
-    const [message] = await invoke<CarmenGeojsonFeature | null>(
+  async invokePythonGeocode(
+    query: string,
+  ): Promise<MaplibreGeocoderFeatureResults | null> {
+    const [message] = await invoke<
+      MaplibreGeocoderFeatureResults | CarmenGeojsonFeature | null
+    >(
       this.model,
       {
         query,
@@ -104,10 +108,22 @@ export class GeocoderControlModel extends BaseMapControlModel {
       GEOCODER_MSG_KIND,
       { timeout: 10000 },
     );
-    return message;
+
+    if (!message) {
+      return null;
+    }
+
+    if ("features" in message) {
+      return message;
+    }
+
+    return {
+      type: "FeatureCollection",
+      features: [message],
+    };
   }
 
-  emptyResult(): CarmenGeojsonFeature {
+  emptyFeature(): CarmenGeojsonFeature {
     return {
       id: "",
       text: "",
@@ -122,15 +138,30 @@ export class GeocoderControlModel extends BaseMapControlModel {
     };
   }
 
+  emptyFeatureCollection(): MaplibreGeocoderFeatureResults {
+    return {
+      type: "FeatureCollection",
+      features: [this.emptyFeature()],
+    };
+  }
+
   deckGeocoder(): Geocoder {
     return {
       name: "python-geocoder",
       requiresApiKey: false,
       geocode: async (address: string) => {
-        const feature = await this.invokePythonGeocode(address);
+        const features = await this.invokePythonGeocode(address);
+
+        if (!features) {
+          return null;
+        }
+
+        const feature = features.features[0];
+
         if (!feature) {
           return null;
         }
+
         const { center } = feature;
         if (!center || center.length < 2) {
           return null;
@@ -147,34 +178,34 @@ export class GeocoderControlModel extends BaseMapControlModel {
     return {
       forwardGeocode: async (config) => {
         const queryString = config.query?.toString();
-        const feature = queryString
+        const features = queryString
           ? ((await this.invokePythonGeocode(queryString)) ??
-            this.emptyResult())
-          : this.emptyResult();
-        return {
-          type: "FeatureCollection",
-          features: [feature],
-        };
+            this.emptyFeatureCollection())
+          : this.emptyFeatureCollection();
+        return features;
       },
     };
   }
 
+  // deck.gl's GeocoderWidget appeared to not work well in testing
   renderDeck() {
-    const { placement, ...otherProps } = this.baseDeckProps();
-    console.log(placement);
-    return (
-      <div>
-        {
-          <GeocoderWidget
-            placement={placement || "top-left"}
-            label="Geocoder"
-            geocoder="custom"
-            customGeocoder={this.deckGeocoder()}
-            {...otherProps}
-          />
-        }
-      </div>
-    );
+    return null;
+
+    // const { placement, ...otherProps } = this.baseDeckProps();
+    // console.log(placement);
+    // return (
+    //   <div>
+    //     {
+    //       <GeocoderWidget
+    //         placement={placement || "top-left"}
+    //         label="Geocoder"
+    //         geocoder="custom"
+    //         customGeocoder={this.deckGeocoder()}
+    //         {...otherProps}
+    //       />
+    //     }
+    //   </div>
+    // );
   }
 
   renderMaplibre() {
