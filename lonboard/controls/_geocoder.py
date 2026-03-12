@@ -203,6 +203,9 @@ class GeocoderControl(BaseControl):
                 return None
 
             if isinstance(location, list):
+                if len(location) == 0:
+                    return None
+
                 location = location[0]
 
             if isinstance(location, Location):
