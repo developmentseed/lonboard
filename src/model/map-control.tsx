@@ -10,7 +10,6 @@ import type { WidgetModel } from "@jupyter-widgets/base";
 import type {
   CarmenGeojsonFeature,
   MaplibreGeocoderApi,
-  MaplibreGeocoderFeatureResults,
   MaplibreGeocoderOptions,
 } from "@maplibre/maplibre-gl-geocoder";
 import MaplibreGeocoder from "@maplibre/maplibre-gl-geocoder";
@@ -97,7 +96,7 @@ export class GeocoderControlModel extends BaseMapControlModel {
   static controlType = "geocoder";
 
   async invokePythonGeocode(query: string) {
-    const [message] = await invoke<MaplibreGeocoderFeatureResults>(
+    const [message] = await invoke<CarmenGeojsonFeature>(
       this.model,
       {
         query,
@@ -128,11 +127,8 @@ export class GeocoderControlModel extends BaseMapControlModel {
       name: "python-geocoder",
       requiresApiKey: false,
       geocode: async (address: string) => {
-        const result = await this.invokePythonGeocode(address);
-        if (result.features.length === 0) {
-          return null;
-        }
-        const { center } = result.features[0];
+        const feature = await this.invokePythonGeocode(address);
+        const { center } = feature;
         if (!center || center.length < 2) {
           return null;
         }
@@ -148,13 +144,13 @@ export class GeocoderControlModel extends BaseMapControlModel {
     return {
       forwardGeocode: async (config) => {
         const queryString = config.query?.toString();
-        if (!queryString) {
-          return {
-            type: "FeatureCollection",
-            features: [this.emptyResult()],
-          };
-        }
-        return await this.invokePythonGeocode(queryString);
+        const feature = queryString
+          ? await this.invokePythonGeocode(queryString)
+          : this.emptyResult();
+        return {
+          type: "FeatureCollection",
+          features: [feature],
+        };
       },
     };
   }
@@ -266,6 +262,10 @@ export async function initializeControl(
   switch (controlType) {
     case FullscreenControlModel.controlType:
       controlModel = new FullscreenControlModel(model, updateStateCallback);
+      break;
+
+    case GeocoderControlModel.controlType:
+      controlModel = new GeocoderControlModel(model, updateStateCallback);
       break;
 
     case NavigationControlModel.controlType:
