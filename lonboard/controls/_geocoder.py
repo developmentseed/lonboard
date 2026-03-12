@@ -43,6 +43,7 @@ def _on_geocoder_dispatch(
     msg: str | list | dict,
     buffers: list[bytes],  # noqa: ARG001
 ) -> None:
+    """Synchronous dispatch entry point passed to `Widget.on_msg`."""  # noqa: D401
     if not isinstance(msg, dict) or msg.get("kind") != GEOCODER_MSG_KIND:
         return
 
@@ -58,11 +59,12 @@ async def _handle_geocoder_request(
     widget: GeocoderControl,
     msg: _GeocoderRequest,
 ) -> None:
+    """Async callback to handle geocoder requests from the frontend."""
     output = widget._error_output
 
     try:
         if widget.debug:
-            output.append_stdout(f"Received tile request: {msg}")
+            output.append_stdout(f"Received geocoder request: {msg}")
 
         query = msg["msg"]["query"]
         response = await widget._client(query)
@@ -76,7 +78,7 @@ async def _handle_geocoder_request(
 
     except Exception:  # noqa: BLE001
         error_msg = traceback.format_exc()
-        output.append_stderr(f"Error handling tile request: {error_msg}\n")
+        output.append_stderr(f"Error performing geocoder query: {error_msg}\n")
 
         widget.send(
             {
@@ -109,6 +111,7 @@ class GeocoderFeature(TypedDict):
     properties: dict[str, Any]
 
     geometry: GeoJsonPoint
+    """A GeoJSON Point geometry representing the location of the geocoder result."""
 
     text: str
     """Text representing the feature (e.g. "Austin")."""
