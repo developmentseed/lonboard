@@ -22,6 +22,8 @@ from lonboard.controls._base import BaseControl
 if TYPE_CHECKING:
     from collections.abc import Sequence
 
+    from geopy.geocoders.base import Geocoder
+
 
 GEOCODER_MSG_KIND: Final = "geocoder-query"
 
@@ -134,7 +136,7 @@ class GeocoderResponse(TypedDict):
 class GeocoderHandler(Protocol):
     """A protocol for handling geocoder queries from the frontend."""
 
-    async def __call__(self, query: str) -> GeocoderResponse:
+    async def __call__(self, query: str) -> GeocoderResponse | None:
         """Handle a geocoder query.
 
         Args:
@@ -162,23 +164,65 @@ class GeocoderControl(BaseControl):
         super().__init__(**kwargs)
 
     @classmethod
-    def from_geopy(cls, geocoder: Any, **kwargs: Any) -> GeocoderControl:
-        """Create a GeocoderControl from a geopy geocoder instance."""
-        # async def handler(query: str) -> GeocoderResponse:
-        #     loop = asyncio.get_event_loop()
-        #     result = await loop.run_in_executor(None, geocoder.geocode, query)
-        #     if result is None:
-        #         raise ValueError(f"Geocoding query '{query}' returned no results")
-        #     return {
-        #         "type": "Feature",
-        #         "properties": {"name": result.address},
-        #         "text": result.address,
-        #         "place_name": result.address,
-        #         "place_type": ["geopy-result"],
-        #         "center": (result.longitude, result.latitude),
-        #     }
+    def from_geopy(cls, geocoder: Geocoder, **kwargs: Any) -> GeocoderControl:
+        """Create a GeocoderControl from a [geopy][geopy] geocoder instance.
 
-        raise NotImplementedError
-        # return cls(client=handler, **kwargs)
+        The geocoder must be created in [async mode] using an async adapter (e.g.
+        [`AioHTTPAdapter`][geopy.adapters.AioHTTPAdapter]).
+
+        [async mode]: https://geopy.readthedocs.io/en/stable/#async-mode
+
+        **Example:**
+
+        ```py
+        from lonboard.controls import GeocoderControl
+        from lonboard import Map
+        from geopy.adapters import AioHTTPAdapter
+        from geopy.geocoders import Nominatim
+
+        geocoder = Nominatim(user_agent="lonboard", adapter_factory=AioHTTPAdapter)
+        geocoder_control = GeocoderControl.from_geopy(geocoder)
+
+        m = Map(layer, controls=[geocoder_control])
+        ```
+        """
+        from geopy.adapters import BaseAsyncAdapter
+        from geopy.location import Location
+
+        if not isinstance(geocoder.adapter, BaseAsyncAdapter):
+            msg = (
+                "The geopy geocoder must be created in async mode.\n"
+                "Pass `adapter_factory=AioHTTPAdapter` to the geocoder constructor.\n"
+                "See https://geopy.readthedocs.io/en/stable/#async-mode for more info.",
+            )
+            raise TypeError(msg)
+
+        async def handler(query: str) -> GeocoderResponse | None:
+            location = await geocoder.geocode(query)
+            if location is None:
+                return None
+
+            if isinstance(location, list):
+                location = location[0]
+
+            if isinstance(location, Location):
+                location = cast("Location", location)
+
+                return {
+                    "type": "Feature",
+                    "properties": {},
+                    "geometry": {
+                        "type": "Point",
+                        "coordinates": (location.longitude, location.latitude),
+                    },
+                    "text": location.address,
+                    "place_name": location.address,
+                    "place_type": ["geopy-result"],
+                    "center": (location.longitude, location.latitude),
+                }
+
+            raise TypeError(f"Unexpected geopy result type: {location}")
+
+        return cls(client=handler, **kwargs)
 
     _control_type = t.Unicode("geocoder").tag(sync=True)
