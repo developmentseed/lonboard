@@ -176,7 +176,14 @@ class GeocoderControl(BaseControl):
     _pending_tasks: set[asyncio.Task[None]]
     _client: GeocoderHandler
 
-    def __init__(self, client: GeocoderHandler, **kwargs: Any) -> None:
+    def __init__(self, *, client: GeocoderHandler, **kwargs: Any) -> None:
+        """Create a new GeocoderControl.
+
+        Keyword Args:
+            client: An async callable that takes a geocoder query string and returns a `Feature` or `FeatureCollection` representing the geocoder results. Use the GeocoderHandler protocol for type checking.
+            kwargs: Other keyword arguments passed to the `BaseControl`.
+
+        """
         self._client = client
         self.on_msg(_on_geocoder_dispatch)
         self._pending_tasks = set()
