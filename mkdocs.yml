@@ -59,6 +59,7 @@ nav:
           - ColorPicker: examples/integrations/color-picker.ipynb
           - Sidecar: examples/integrations/sidecar.ipynb
           - examples/ais-movingpandas.ipynb
+          - examples/geocoder-control.ipynb
       - 30 Day Map Challenge:
           - "Day 1: Points": examples/map_challenge/1-points.ipynb
           - "Day 6: Asia": examples/map_challenge/6-asia.ipynb
@@ -126,6 +127,8 @@ watch:
 theme:
   name: material
   custom_dir: docs/overrides
+  logo: assets/lonboard-logo.png
+  favicon: assets/ds_favicon.png
   palette:
     # Palette toggle for automatic mode
     - media: "(prefers-color-scheme)"
