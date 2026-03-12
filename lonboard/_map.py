@@ -11,7 +11,6 @@ import traitlets.traitlets as t
 from ipywidgets import CallbackDispatcher, VBox
 
 from lonboard._base import BaseAnyWidget
-from lonboard._exception_display import ErrorOutput
 from lonboard._html_export import map_to_html
 from lonboard._viewport import compute_view
 from lonboard.basemap import CartoStyle, MaplibreBasemap
@@ -130,14 +129,13 @@ class Map(BaseAnyWidget):
         self.layout.height = "100%"
         self.layout.width = "100%"
 
-        self._error_output = ErrorOutput(name=self.__class__.__name__)
-
     def _repr_mimebundle_(self, **kwargs: Any) -> tuple[dict, dict] | None:
         # Insert a display Output after the map for rendering exceptions from callbacks
         # and from JS code
-        error_outputs = [layer._error_output for layer in self.layers]  # noqa: SLF001
+        layer_error_outputs = [layer._error_output for layer in self.layers]  # noqa: SLF001
+        control_error_outputs = [control._error_output for control in self.controls]  # noqa: SLF001
         error_vbox = VBox(
-            [self._error_output, *error_outputs],
+            [self._error_output, *layer_error_outputs, *control_error_outputs],
             layout={"max_height": "200px", "overflow": "auto"},
         )
         container = VBox([self, error_vbox])
