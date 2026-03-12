@@ -17,6 +17,10 @@
 [pypi-img]: https://static.pepy.tech/badge/lonboard
 [pypi-link]: https://pypi.org/project/lonboard/
 
+<p align="center">
+    <img src="assets/lonboard-logo.png" style="max-width:600px;" />
+</p>
+
 A Python library for fast, interactive geospatial data visualization in Jupyter.
 
 Building on cutting-edge technologies like [GeoArrow](https://github.com/geoarrow/geoarrow) and [GeoParquet](https://github.com/opengeospatial/geoparquet) in conjunction with [GPU-based map rendering](https://deck.gl/), Lonboard aims to enable visualizing large geospatial datasets interactively through a simple interface.
@@ -63,4 +67,4 @@ Refer to the documentation at [developmentseed.org/lonboard](https://development
 
 This is a new binding to the [deck.gl](https://deck.gl) geospatial data visualization library. A "deck" is the part of a skateboard you ride on. What's a fast, geospatial skateboard? A <em>lon</em>board.
 
-![](assets/dalle-lonboard.jpg)
+<img src="assets/lonboard-logo.png" style="max-width:450px;" />
