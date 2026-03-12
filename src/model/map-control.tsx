@@ -1,11 +1,11 @@
 import {
   CompassWidget,
   FullscreenWidget,
+  _GeocoderWidget as GeocoderWidget,
   _ScaleWidget as ScaleWidget,
   ZoomWidget,
 } from "@deck.gl/react";
 import type { Geocoder } from "@deck.gl/widgets";
-import { GeocoderWidgetProps } from "@deck.gl/widgets";
 import type { WidgetModel } from "@jupyter-widgets/base";
 import type {
   CarmenGeojsonFeature,
@@ -123,6 +123,27 @@ export class GeocoderControlModel extends BaseMapControlModel {
     };
   }
 
+  deckGeocoder(): Geocoder {
+    return {
+      name: "python-geocoder",
+      requiresApiKey: false,
+      geocode: async (address: string) => {
+        const result = await this.invokePythonGeocode(address);
+        if (result.features.length === 0) {
+          return null;
+        }
+        const { center } = result.features[0];
+        if (!center || center.length < 2) {
+          return null;
+        }
+        return {
+          longitude: center[0],
+          latitude: center[1],
+        };
+      },
+    };
+  }
+
   maplibreApi(): MaplibreGeocoderApi | null {
     return {
       forwardGeocode: async (config) => {
@@ -139,7 +160,21 @@ export class GeocoderControlModel extends BaseMapControlModel {
   }
 
   renderDeck() {
-    return null;
+    const { placement, ...otherProps } = this.baseDeckProps();
+    console.log(placement);
+    return (
+      <div>
+        {
+          <GeocoderWidget
+            placement={placement || "top-left"}
+            label="Geocoder"
+            geocoder="custom"
+            customGeocoder={this.deckGeocoder()}
+            {...otherProps}
+          />
+        }
+      </div>
+    );
   }
 
   renderMaplibre() {
