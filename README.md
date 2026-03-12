@@ -18,7 +18,7 @@
 [pypi-link]: https://pypi.org/project/lonboard/
 
 <p align="center">
-    <img src="assets/lonboard-logo.png" style="max-width:600px;" />
+    <img src="assets/lonboard-logo.png" width="600" />
 </p>
 <p align="center">
     <em>Fast, interactive geospatial data visualization in Jupyter.</em>
@@ -68,7 +68,7 @@ Refer to the documentation at [developmentseed.org/lonboard](https://development
 
 This is a new binding to the [deck.gl](https://deck.gl) geospatial data visualization library. A "deck" is the part of a skateboard you ride on. What's a fast, geospatial skateboard? A <em>lon</em>board.
 
-<img src="assets/lonboard-logo.png" style="max-width:450px;" />
+<img src="assets/lonboard-logo.png" width="400" />
 
 _Illustration by [Gus Becker]._
 
