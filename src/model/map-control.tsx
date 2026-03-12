@@ -4,16 +4,28 @@ import {
   _ScaleWidget as ScaleWidget,
   ZoomWidget,
 } from "@deck.gl/react";
+import type { Geocoder } from "@deck.gl/widgets";
+import { GeocoderWidgetProps } from "@deck.gl/widgets";
 import type { WidgetModel } from "@jupyter-widgets/base";
+import type {
+  CarmenGeojsonFeature,
+  MaplibreGeocoderApi,
+  MaplibreGeocoderFeatureResults,
+  MaplibreGeocoderOptions,
+} from "@maplibre/maplibre-gl-geocoder";
+import MaplibreGeocoder from "@maplibre/maplibre-gl-geocoder";
 import type React from "react";
+import type { ControlPosition } from "react-map-gl/maplibre";
 import {
   FullscreenControl,
   NavigationControl,
   ScaleControl,
+  useControl,
 } from "react-map-gl/maplibre";
 
 import { isDefined } from "../util";
 import { BaseModel } from "./base";
+import { invoke } from "./dispatch";
 
 export abstract class BaseMapControlModel extends BaseModel {
   static controlType: string;
@@ -58,6 +70,86 @@ export class FullscreenControlModel extends BaseMapControlModel {
 
   renderMaplibre() {
     return <div>{<FullscreenControl {...this.baseMaplibreProps()} />}</div>;
+  }
+}
+
+const GEOCODER_MSG_KIND = "geocoder-query";
+
+type ControlOptions = {
+  position?: ControlPosition;
+};
+
+function MaplibreGeocoderControl({
+  api,
+  props = {},
+  opts = {},
+}: {
+  api: MaplibreGeocoderApi;
+  props?: MaplibreGeocoderOptions;
+  opts?: ControlOptions;
+}) {
+  useControl(() => new MaplibreGeocoder(api, props), opts);
+
+  return null;
+}
+
+export class GeocoderControlModel extends BaseMapControlModel {
+  static controlType = "geocoder";
+
+  async invokePythonGeocode(query: string) {
+    const [message] = await invoke<MaplibreGeocoderFeatureResults>(
+      this.model,
+      {
+        query,
+      },
+      GEOCODER_MSG_KIND,
+      { timeout: 10000 },
+    );
+    return message;
+  }
+
+  emptyResult(): CarmenGeojsonFeature {
+    return {
+      id: "",
+      text: "",
+      place_name: "",
+      place_type: [],
+      type: "Feature",
+      geometry: {
+        type: "Point",
+        coordinates: [0, 0],
+      },
+      properties: {},
+    };
+  }
+
+  maplibreApi(): MaplibreGeocoderApi | null {
+    return {
+      forwardGeocode: async (config) => {
+        const queryString = config.query?.toString();
+        if (!queryString) {
+          return {
+            type: "FeatureCollection",
+            features: [this.emptyResult()],
+          };
+        }
+        return await this.invokePythonGeocode(queryString);
+      },
+    };
+  }
+
+  renderDeck() {
+    return null;
+  }
+
+  renderMaplibre() {
+    const api = this.maplibreApi();
+    if (api) {
+      return (
+        <MaplibreGeocoderControl api={api} opts={this.baseMaplibreProps()} />
+      );
+    }
+    return null;
   }
 }
 
