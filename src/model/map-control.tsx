@@ -96,7 +96,7 @@ export class GeocoderControlModel extends BaseMapControlModel {
   static controlType = "geocoder";
 
   async invokePythonGeocode(query: string) {
-    const [message] = await invoke<CarmenGeojsonFeature>(
+    const [message] = await invoke<CarmenGeojsonFeature | null>(
       this.model,
       {
         query,
@@ -128,6 +128,9 @@ export class GeocoderControlModel extends BaseMapControlModel {
       requiresApiKey: false,
       geocode: async (address: string) => {
         const feature = await this.invokePythonGeocode(address);
+        if (!feature) {
+          return null;
+        }
         const { center } = feature;
         if (!center || center.length < 2) {
           return null;
@@ -145,7 +148,8 @@ export class GeocoderControlModel extends BaseMapControlModel {
       forwardGeocode: async (config) => {
         const queryString = config.query?.toString();
         const feature = queryString
-          ? await this.invokePythonGeocode(queryString)
+          ? ((await this.invokePythonGeocode(queryString)) ??
+            this.emptyResult())
           : this.emptyResult();
         return {
           type: "FeatureCollection",
