@@ -19,9 +19,9 @@ This post gives an overview of what's new in Lonboard version 0.15.
 
 Refer to the [changelog] for all updates.
 
-## Geocoder controls
+## Geocoder Control
 
-Lonboard now supports a [`GeocoderControl`][lonboard.controls.GeocoderControl]!
+Lonboard introduced [_map controls_][lonboard.controls] in [version 0.14](lonboard-0.14.md) to extend client-side map functionality. Lonboard is now adding support for a [`GeocoderControl`][lonboard.controls.GeocoderControl]!
 
 This allows you to include a drop-down element on the map for easily finding locations of interest on the map.
 
