@@ -18,7 +18,7 @@
 [pypi-link]: https://pypi.org/project/lonboard/
 
 <p align="center">
-    <img src="assets/lonboard-logo.png" width="600" />
+    <img src="assets/lonboard-logo.png" width="550" />
 </p>
 <p align="center">
     <em>Fast, interactive geospatial data visualization in Jupyter.</em>
