@@ -19,7 +19,21 @@ This post gives an overview of what's new in Lonboard version 0.15.
 
 Refer to the [changelog] for all updates.
 
-## Geocoder Control
+## New logo!
+
+Lonboard has a new logo!
+
+<img src="../../assets/lonboard-logo.png" width="400" />
+
+This logo was designed by [Gus Becker], and continues with the pun behind Lonboard:
+
+[Gus Becker]: https://gusbus.space/
+
+Lonboard connects to the [deck.gl] geospatial data visualization library. A "deck" is the part of a skateboard you ride on. What's a fast, geospatial skateboard? A <em>lon</em>board.
+
+[deck.gl]: https://deck.gl
+
+## Geocoder control
 
 Lonboard introduced [_map controls_][lonboard.controls] in [version 0.14](lonboard-0.14.md) to extend client-side map functionality. Lonboard is now adding support for a [`GeocoderControl`][lonboard.controls.GeocoderControl]!
 
