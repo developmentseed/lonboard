@@ -31,8 +31,6 @@ This allows you to include a drop-down element on the map for easily finding loc
 
 To use, create a [`GeocoderControl`][lonboard.controls.GeocoderControl] and add it to your `Map` via the `controls` parameter.
 
-To create a `GeocoderControl` you have two options.
-
 ### Using with GeoPy
 
 The `GeocoderControl` has integration with [GeoPy](https://geopy.readthedocs.io/en/stable/), a Python library that [supports many geocoder providers](https://geopy.readthedocs.io/en/stable/#module-geopy.geocoders).
@@ -62,7 +60,6 @@ from lonboard.controls import (
     GeocoderFeatureCollection,
 )
 
-
 async def my_custom_geocoder(
     query: str,
 ) -> GeocoderFeatureCollection | GeocoderFeature | None:
@@ -76,7 +73,7 @@ async def my_custom_geocoder(
                 "properties": {},
                 "geometry": {
                     "type": "Point",
-                    "coordinates": (-122.4194, 37.7749),  # San Francisco
+                    "coordinates": (-122.4194, 37.7749),
                 },
                 "text": "San Francisco, CA, USA",
                 "place_name": "San Francisco, CA, USA",
@@ -85,7 +82,6 @@ async def my_custom_geocoder(
             },
         ],
     }
-
 
 geocoder_control = GeocoderControl(client=my_custom_geocoder)
 m = Map([], controls=[geocoder_control])
