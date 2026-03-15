@@ -213,12 +213,14 @@ class BaseLayer(BaseWidget):
     - Default: `False`
     """
 
+    # Note that the default_value of VariableLengthTuple doesn't accept an empty list
+    #  or None
     highlight_color = VariableLengthTuple(
         t.Int(),
-        default_value=None,
+        default_value=[0, 0, 128, 128],
         minlen=3,
         maxlen=4,
-    )
+    ).tag(sync=True)
     """
     RGBA color to blend with the highlighted object (the hovered over object if
     `auto_highlight=true`). When the value is a 3 component (RGB) array, a default alpha
