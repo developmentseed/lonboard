@@ -203,6 +203,17 @@ def apply_categorical_cmap(  # noqa: C901
 
     values = ChunkedArray(values)
 
+    # Handle boolean arrays since dictionary_encode doesn't support boolean type
+    boolean_cmap_conversion = None
+    if DataType.is_boolean(values.type):
+        # Convert boolean values to strings for dictionary encoding
+        values_numpy = values.to_numpy(zero_copy_only=False)
+        string_values = np.where(values_numpy, "True", "False")
+        values = ChunkedArray(Array.from_numpy(string_values))
+        
+        # Create a mapping from string keys to boolean keys for colormap lookup
+        boolean_cmap_conversion = {str(k): k for k in cmap.keys() if isinstance(k, bool)}
+
     if not DataType.is_dictionary(values.type):
         values = ChunkedArray(dictionary_encode(values))
 
@@ -220,7 +231,11 @@ def apply_categorical_cmap(  # noqa: C901
         lut[:, 3] = 255
 
     for i, key in enumerate(dictionary):
-        color = cmap[key.as_py()]
+        key_py = key.as_py()
+        # If we converted boolean to string, map back to boolean for colormap lookup
+        if boolean_cmap_conversion and key_py in boolean_cmap_conversion:
+            key_py = boolean_cmap_conversion[key_py]
+        color = cmap[key_py]
 
         if isinstance(color, str):
             color = _to_rgba_no_colorcycle(color, alpha=alpha)
