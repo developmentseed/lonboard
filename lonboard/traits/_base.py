@@ -166,6 +166,7 @@ class VariableLengthTuple(Container):
         self._maxlen = maxlen
         self._minlen = minlen
         super().__init__(trait=trait, default_value=default_value, **kwargs)
+        self.tag(sync=True)
 
     def length_error(self, obj: Any, value: Any) -> None:
         e = "The '%s' trait of %s instance must be of length %i <= L <= %i" % (
