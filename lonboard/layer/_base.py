@@ -217,7 +217,7 @@ class BaseLayer(BaseWidget):
     #  or None
     highlight_color = VariableLengthTuple(
         t.Int(),
-        default_value=[0, 0, 128, 128],
+        default_value=(0, 0, 128, 128),
         minlen=3,
         maxlen=4,
     ).tag(sync=True)
