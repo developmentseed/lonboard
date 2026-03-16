@@ -162,7 +162,7 @@ class BaseLayer(BaseWidget):
 
     #     self.send_state(added_names + ["extensions"])
 
-    pickable = t.Bool(default_value=True).tag(sync=True)
+    pickable = t.Bool(default_value=True)
     """
     Whether the layer responds to mouse pointer picking events.
 
@@ -178,7 +178,7 @@ class BaseLayer(BaseWidget):
     - Default: `True`
     """
 
-    visible = t.Bool(default_value=True).tag(sync=True)
+    visible = t.Bool(default_value=True)
     """
     Whether the layer is visible.
 
@@ -193,7 +193,7 @@ class BaseLayer(BaseWidget):
     - Default: `True`
     """
 
-    opacity = t.Float(1, min=0, max=1).tag(sync=True)
+    opacity = t.Float(1, min=0, max=1)
     """
     The opacity of the layer.
 
@@ -201,7 +201,7 @@ class BaseLayer(BaseWidget):
     - Default: `1`
     """
 
-    auto_highlight = t.Bool(default_value=False).tag(sync=True)
+    auto_highlight = t.Bool(default_value=False)
     """
     When true, the current object pointed to by the mouse pointer (when hovered over) is
     highlighted with `highlightColor`.
@@ -217,7 +217,7 @@ class BaseLayer(BaseWidget):
         default_value=(0, 0, 128, 128),
         minlen=3,
         maxlen=4,
-    ).tag(sync=True)
+    )
     """
     RGBA color to blend with the highlighted object (the hovered over object if
     `auto_highlight=true`). When the value is a 3 component (RGB) array, a default alpha
@@ -227,7 +227,7 @@ class BaseLayer(BaseWidget):
     - Default: `[0, 0, 128, 128]`
     """
 
-    selected_index = t.Int(None, allow_none=True).tag(sync=True)
+    selected_index = t.Int(None, allow_none=True)
     """
     The positional index of the most-recently clicked on row of data.
 
@@ -248,7 +248,7 @@ class BaseLayer(BaseWidget):
     for an example.
     """
 
-    before_id = t.Unicode(None, allow_none=True).tag(sync=True)
+    before_id = t.Unicode(None, allow_none=True)
     """The identifier of a layer in the Maplibre basemap layer stack.
 
     This deck.gl layer will be rendered just before the layer with the given identifier. You can find such an identifier by inspecting the basemap style JSON.

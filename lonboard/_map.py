@@ -196,12 +196,12 @@ class Map(BaseAnyWidget):
 
     """
 
-    _has_click_handlers = t.Bool(default_value=False, allow_none=False).tag(sync=True)
+    _has_click_handlers = t.Bool(default_value=False, allow_none=False)
     """
     Indicates if a click handler has been registered.
     """
 
-    height = t.MapHeightTrait().tag(sync=True)
+    height = t.MapHeightTrait()
     """Height of the map in pixels, or valid CSS height property.
 
     For example, it can be `600` (pixels) or `"75vh"` (75% of the viewport height).
@@ -211,7 +211,6 @@ class Map(BaseAnyWidget):
     """
 
     layers = t.VariableLengthTuple(Instance(BaseLayer)).tag(
-        sync=True,
         **ipywidgets.widget_serialization,
     )
     """One or more [`Layer`][lonboard.BaseLayer] objects to display on this map.
@@ -225,7 +224,6 @@ class Map(BaseAnyWidget):
             ScaleControl(),
         ),
     ).tag(
-        sync=True,
         **ipywidgets.widget_serialization,
     )
     """One or more map controls to display on this map.
@@ -234,6 +232,7 @@ class Map(BaseAnyWidget):
     """
 
     view: Instance[BaseView | None] = Instance(BaseView, allow_none=True).tag(
+        # Note, we use upstream `Instance`, so we pass sync=True still
         sync=True,
         **ipywidgets.widget_serialization,
     )
@@ -261,7 +260,7 @@ class Map(BaseAnyWidget):
 
         return proposal["value"]
 
-    show_tooltip = t.Bool(default_value=False).tag(sync=True)
+    show_tooltip = t.Bool(default_value=False)
     """
     Whether to render a tooltip on hover on the map.
 
@@ -269,7 +268,7 @@ class Map(BaseAnyWidget):
     - Default: `False`
     """
 
-    show_side_panel = t.Bool(default_value=True).tag(sync=True)
+    show_side_panel = t.Bool(default_value=True)
     """
     Whether to render a side panel upon clicking on elements.
 
@@ -277,7 +276,7 @@ class Map(BaseAnyWidget):
     - Default: `True`
     """
 
-    picking_radius = t.Int(5).tag(sync=True)
+    picking_radius = t.Int(5)
     """
     Extra pixels around the pointer to include while picking (such as for a tooltip).
 
@@ -354,7 +353,7 @@ class Map(BaseAnyWidget):
             t.Unicode(allow_none=True),
             t.VariableLengthTuple(t.Unicode(allow_none=False)),
         ],
-    ).tag(sync=True)
+    )
     """
     Custom attribution to display on the map.
 
@@ -392,7 +391,7 @@ class Map(BaseAnyWidget):
     # want, and `Union[float, bool]` would coerce `True` to `1`, which we also don't
     # want.
     # In the future we could create a custom trait for this if asked for.
-    use_device_pixels = t.Any(allow_none=True, default_value=None).tag(sync=True)
+    use_device_pixels = t.Any(allow_none=True, default_value=None)
     """Controls the resolution of the drawing buffer used for rendering.
 
     Setting this to `false` or a number <= 1 will improve performance on high resolution
@@ -418,7 +417,7 @@ class Map(BaseAnyWidget):
     - Default: `true`
     """
 
-    parameters = t.Any(allow_none=True, default_value=None).tag(sync=True)
+    parameters = t.Any(allow_none=True, default_value=None)
     """GPU parameters to pass to deck.gl.
 
     !!! Note "This is an advanced API. The vast majority of users should not need to touch this setting."
@@ -490,7 +489,7 @@ class Map(BaseAnyWidget):
         t.Float(),
         allow_none=True,
         default_value=None,
-    ).tag(sync=True)
+    )
     """
     Bounds selected by the user, represented as a tuple of floats ordered as
 

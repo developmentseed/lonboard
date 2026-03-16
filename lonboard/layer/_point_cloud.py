@@ -80,7 +80,7 @@ class PointCloudLayer(BaseArrowLayer):
     ) -> Self:
         return super().from_duckdb(sql=sql, con=con, crs=crs, **kwargs)
 
-    _layer_type = t.Unicode("point-cloud").tag(sync=True)
+    _layer_type = t.Unicode("point-cloud")
 
     table = t.ArrowTableTrait(
         allowed_geometry_types={EXTENSION_NAME.POINT},
@@ -96,7 +96,7 @@ class PointCloudLayer(BaseArrowLayer):
     [`from_geopandas`][lonboard.PointCloudLayer.from_geopandas] instead.
     """
 
-    size_units = t.Unicode(None, allow_none=True).tag(sync=True)
+    size_units = t.Unicode(None, allow_none=True)
     """
     The units of the line width, one of `'meters'`, `'common'`, and `'pixels'`. See
     [unit
@@ -106,7 +106,7 @@ class PointCloudLayer(BaseArrowLayer):
     - Default: `'pixels'`
     """
 
-    point_size = t.Float(None, allow_none=True, min=0).tag(sync=True)
+    point_size = t.Float(None, allow_none=True, min=0)
     """
     Global radius of all points, in units specified by `size_units`.
 

@@ -91,7 +91,7 @@ class A5Layer(PolygonLayer):
         table = pa.Table.from_pandas(df)
         return cls(table, get_pentagon=get_pentagon, **kwargs)
 
-    _layer_type = Unicode("a5").tag(sync=True)
+    _layer_type = Unicode("a5")
 
     table = ArrowTableTrait(geometry_required=False)
     """An Arrow table with properties to associate with the A5 pentagons.

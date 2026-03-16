@@ -89,7 +89,7 @@ class ScatterplotLayer(BaseArrowLayer):
     ) -> Self:
         return super().from_duckdb(sql=sql, con=con, crs=crs, **kwargs)
 
-    _layer_type = t.Unicode("scatterplot").tag(sync=True)
+    _layer_type = t.Unicode("scatterplot")
 
     table = t.ArrowTableTrait(
         allowed_geometry_types={EXTENSION_NAME.POINT, EXTENSION_NAME.MULTIPOINT},
@@ -104,7 +104,7 @@ class ScatterplotLayer(BaseArrowLayer):
     [`from_geopandas`][lonboard.ScatterplotLayer.from_geopandas] instead.
     """
 
-    radius_units = t.Unicode(None, allow_none=True).tag(sync=True)
+    radius_units = t.Unicode(None, allow_none=True)
     """
     The units of the radius, one of `'meters'`, `'common'`, and `'pixels'`. See [unit
     system](https://deck.gl/docs/developer-guide/coordinate-systems#supported-units).
@@ -113,7 +113,7 @@ class ScatterplotLayer(BaseArrowLayer):
     - Default: `'meters'`
     """
 
-    radius_scale = t.Float(None, allow_none=True, min=0).tag(sync=True)
+    radius_scale = t.Float(None, allow_none=True, min=0)
     """
     A global radius multiplier for all points.
 
@@ -121,7 +121,7 @@ class ScatterplotLayer(BaseArrowLayer):
     - Default: `1`
     """
 
-    radius_min_pixels = t.Float(None, allow_none=True, min=0).tag(sync=True)
+    radius_min_pixels = t.Float(None, allow_none=True, min=0)
     """
     The minimum radius in pixels. This can be used to prevent the circle from getting
     too small when zoomed out.
@@ -130,7 +130,7 @@ class ScatterplotLayer(BaseArrowLayer):
     - Default: `0`
     """
 
-    radius_max_pixels = t.Float(None, allow_none=True, min=0).tag(sync=True)
+    radius_max_pixels = t.Float(None, allow_none=True, min=0)
     """
     The maximum radius in pixels. This can be used to prevent the circle from getting
     too big when zoomed in.
@@ -139,7 +139,7 @@ class ScatterplotLayer(BaseArrowLayer):
     - Default: `None`
     """
 
-    line_width_units = t.Unicode(None, allow_none=True).tag(sync=True)
+    line_width_units = t.Unicode(None, allow_none=True)
     """
     The units of the line width, one of `'meters'`, `'common'`, and `'pixels'`. See
     [unit
@@ -149,7 +149,7 @@ class ScatterplotLayer(BaseArrowLayer):
     - Default: `'meters'`
     """
 
-    line_width_scale = t.Float(None, allow_none=True, min=0).tag(sync=True)
+    line_width_scale = t.Float(None, allow_none=True, min=0)
     """
     A global line width multiplier for all points.
 
@@ -157,7 +157,7 @@ class ScatterplotLayer(BaseArrowLayer):
     - Default: `1`
     """
 
-    line_width_min_pixels = t.Float(None, allow_none=True, min=0).tag(sync=True)
+    line_width_min_pixels = t.Float(None, allow_none=True, min=0)
     """
     The minimum line width in pixels. This can be used to prevent the stroke from
     getting too thin when zoomed out.
@@ -166,7 +166,7 @@ class ScatterplotLayer(BaseArrowLayer):
     - Default: `0`
     """
 
-    line_width_max_pixels = t.Float(None, allow_none=True, min=0).tag(sync=True)
+    line_width_max_pixels = t.Float(None, allow_none=True, min=0)
     """
     The maximum line width in pixels. This can be used to prevent the stroke from
     getting too thick when zoomed in.
@@ -175,7 +175,7 @@ class ScatterplotLayer(BaseArrowLayer):
     - Default: `None`
     """
 
-    stroked = t.Bool(None, allow_none=True).tag(sync=True)
+    stroked = t.Bool(None, allow_none=True)
     """
     Draw the outline of points.
 
@@ -183,7 +183,7 @@ class ScatterplotLayer(BaseArrowLayer):
     - Default: `False`
     """
 
-    filled = t.Bool(None, allow_none=True).tag(sync=True)
+    filled = t.Bool(None, allow_none=True)
     """
     Draw the filled area of points.
 
@@ -191,7 +191,7 @@ class ScatterplotLayer(BaseArrowLayer):
     - Default: `True`
     """
 
-    billboard = t.Bool(None, allow_none=True).tag(sync=True)
+    billboard = t.Bool(None, allow_none=True)
     """
     If `True`, rendered circles always face the camera. If `False` circles face up (i.e.
     are parallel with the ground plane).
@@ -200,7 +200,7 @@ class ScatterplotLayer(BaseArrowLayer):
     - Default: `False`
     """
 
-    antialiasing = t.Bool(None, allow_none=True).tag(sync=True)
+    antialiasing = t.Bool(None, allow_none=True)
     """
     If `True`, circles are rendered with smoothed edges. If `False`, circles are
     rendered with rough edges. Antialiasing can cause artifacts on edges of overlapping

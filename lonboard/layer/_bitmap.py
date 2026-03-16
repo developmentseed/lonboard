@@ -33,9 +33,9 @@ class BitmapLayer(BaseLayer):
     def __init__(self, **kwargs: Unpack[BitmapLayerKwargs]) -> None:
         super().__init__(**kwargs)  # type: ignore
 
-    _layer_type = t.Unicode("bitmap").tag(sync=True)
+    _layer_type = t.Unicode("bitmap")
 
-    image = t.Unicode().tag(sync=True)
+    image = t.Unicode()
     """The URL to an image to display.
 
     - Type: `str`
@@ -50,7 +50,7 @@ class BitmapLayer(BaseLayer):
                 maxlen=4,
             ),
         ],
-    ).tag(sync=True)
+    )
     """The bounds of the image.
 
     Supported formats:
@@ -60,7 +60,7 @@ class BitmapLayer(BaseLayer):
           `[[left, bottom], [left, top], [right, top], [right, bottom]]`.
     """
 
-    desaturate = t.Float(0, min=0, max=1).tag(sync=True)
+    desaturate = t.Float(0, min=0, max=1)
     """The desaturation of the bitmap. Between `[0, 1]`.
 
     - Type: `float`, optional
@@ -143,7 +143,7 @@ class BitmapTileLayer(BaseLayer):
     def __init__(self, **kwargs: Unpack[BitmapTileLayerKwargs]) -> None:
         super().__init__(**kwargs)  # type: ignore
 
-    _layer_type = t.Unicode("bitmap-tile").tag(sync=True)
+    _layer_type = t.Unicode("bitmap-tile")
 
     data = t.Union([t.Unicode(), t.VariableLengthTuple(t.Unicode(), minlen=1)]).tag(
         sync=True,
@@ -161,7 +161,7 @@ class BitmapTileLayer(BaseLayer):
     balanced among the endpoints, based on the tile index.
     """
 
-    tile_size = t.Int(None, allow_none=True).tag(sync=True)
+    tile_size = t.Int(None, allow_none=True)
     """
     The pixel dimension of the tiles, usually a power of 2.
 
@@ -173,7 +173,7 @@ class BitmapTileLayer(BaseLayer):
     - Default: `512`
     """
 
-    zoom_offset = t.Int(None, allow_none=True).tag(sync=True)
+    zoom_offset = t.Int(None, allow_none=True)
     """
     This offset changes the zoom level at which the tiles are fetched. Needs to be an
     integer.
@@ -182,7 +182,7 @@ class BitmapTileLayer(BaseLayer):
     - Default: `0`
     """
 
-    max_zoom = t.Int(None, allow_none=True).tag(sync=True)
+    max_zoom = t.Int(None, allow_none=True)
     """
     The max zoom level of the layer's data. When overzoomed (i.e. `zoom > max_zoom`),
     tiles from this level will be displayed.
@@ -191,7 +191,7 @@ class BitmapTileLayer(BaseLayer):
     - Default: `None`
     """
 
-    min_zoom = t.Int(None, allow_none=True).tag(sync=True)
+    min_zoom = t.Int(None, allow_none=True)
     """
     The min zoom level of the layer's data. When underzoomed (i.e. `zoom < min_zoom`),
     the layer will not display any tiles unless `extent` is defined, to avoid issuing
@@ -207,7 +207,7 @@ class BitmapTileLayer(BaseLayer):
         maxlen=4,
         allow_none=True,
         default_value=None,
-    ).tag(sync=True)
+    )
     """
     The bounding box of the layer's data, in the form of `[min_x, min_y, max_x, max_y]`.
     If provided, the layer will only load and render the tiles that are needed to fill
@@ -217,7 +217,7 @@ class BitmapTileLayer(BaseLayer):
     - Default: `None`
     """
 
-    max_cache_size = t.Int(None, allow_none=True).tag(sync=True)
+    max_cache_size = t.Int(None, allow_none=True)
     """
     The maximum number of tiles that can be cached. The tile cache keeps loaded tiles in
     memory even if they are no longer visible. It reduces the need to re-download the
@@ -232,11 +232,11 @@ class BitmapTileLayer(BaseLayer):
     """
 
     # TODO: Not sure if `getTileData` returns a `byteLength`?
-    # max_cache_byte_size = t.Int(None, allow_none=True).tag(sync=True)
+    # max_cache_byte_size = t.Int(None, allow_none=True)
     # """
     # """
 
-    refinement_strategy = t.Unicode(None, allow_none=True).tag(sync=True)
+    refinement_strategy = t.Unicode(None, allow_none=True)
     """How the tile layer refines the visibility of tiles.
 
     When zooming in and out, if the layer only shows tiles from the current zoom level,
@@ -257,7 +257,7 @@ class BitmapTileLayer(BaseLayer):
     - Default: `"best-available"`
     """
 
-    max_requests = t.Int(None, allow_none=True).tag(sync=True)
+    max_requests = t.Int(None, allow_none=True)
     """The maximum number of concurrent data fetches.
 
     If <= 0, no throttling will occur, and `get_tile_data` may be called an unlimited
@@ -281,7 +281,7 @@ class BitmapTileLayer(BaseLayer):
     how long the tile was visible, and may increase server load.
     """
 
-    desaturate = t.Float(0, min=0, max=1).tag(sync=True)
+    desaturate = t.Float(0, min=0, max=1)
     """The desaturation of the bitmap. Between `[0, 1]`.
 
     - Type: `float`, optional

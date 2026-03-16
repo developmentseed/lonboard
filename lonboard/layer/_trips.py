@@ -71,7 +71,7 @@ class TripsLayer(BaseArrowLayer):
     multiple times.
     """
 
-    _layer_type = t.Unicode("trip").tag(sync=True)
+    _layer_type = t.Unicode("trip")
 
     table = t.ArrowTableTrait(
         allowed_geometry_types={
@@ -79,7 +79,7 @@ class TripsLayer(BaseArrowLayer):
         },
     )
 
-    width_units = t.Unicode(default_value=None, allow_none=True).tag(sync=True)
+    width_units = t.Unicode(default_value=None, allow_none=True)
     """
     The units of the line width, one of `'meters'`, `'common'`, and `'pixels'`. See
     [unit
@@ -121,7 +121,7 @@ class TripsLayer(BaseArrowLayer):
     - Default: `None`
     """
 
-    joint_rounded = t.Bool(default_value=None, allow_none=True).tag(sync=True)
+    joint_rounded = t.Bool(default_value=None, allow_none=True)
     """
     Type of joint. If `True`, draw round joints. Otherwise draw miter joints.
 
@@ -129,7 +129,7 @@ class TripsLayer(BaseArrowLayer):
     - Default: `False`
     """
 
-    cap_rounded = t.Bool(default_value=None, allow_none=True).tag(sync=True)
+    cap_rounded = t.Bool(default_value=None, allow_none=True)
     """
     Type of caps. If `True`, draw round caps. Otherwise draw square caps.
 
@@ -137,7 +137,7 @@ class TripsLayer(BaseArrowLayer):
     - Default: `False`
     """
 
-    miter_limit = t.Int(default_value=None, allow_none=True).tag(sync=True)
+    miter_limit = t.Int(default_value=None, allow_none=True)
     """
     The maximum extent of a joint in ratio to the stroke width.
     Only works if `jointRounded` is `False`.
@@ -146,7 +146,7 @@ class TripsLayer(BaseArrowLayer):
     - Default: `4`
     """
 
-    billboard = t.Bool(default_value=None, allow_none=True).tag(sync=True)
+    billboard = t.Bool(default_value=None, allow_none=True)
     """
     If `True`, extrude the path in screen space (width always faces the camera).
     If `False`, the width always faces up.
@@ -155,21 +155,21 @@ class TripsLayer(BaseArrowLayer):
     - Default: `False`
     """
 
-    fade_trail = t.Bool(default_value=None, allow_none=True).tag(sync=True)
+    fade_trail = t.Bool(default_value=None, allow_none=True)
     """Whether or not the path fades out.
 
     - Type: `bool`, optional
     - Default: `True`
     """
 
-    trail_length = t.Float(default_value=None, allow_none=True).tag(sync=True)
+    trail_length = t.Float(default_value=None, allow_none=True)
     """Trail length.
 
     - Type: `float`, optional
     - Default: `120`
     """
 
-    _current_time = t.Float(0).tag(sync=True)
+    _current_time = t.Float(0)
     """The current time of the frame.
 
     - Type: `float`, optional

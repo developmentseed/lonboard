@@ -11,4 +11,4 @@ class FullscreenControl(BaseControl):
     that allows for toggling fullscreen mode.
     """
 
-    _control_type = t.Unicode("fullscreen").tag(sync=True)
+    _control_type = t.Unicode("fullscreen")

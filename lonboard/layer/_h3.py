@@ -181,7 +181,7 @@ class H3HexagonLayer(PolygonLayer):
         table = pa.Table.from_pandas(df)
         return cls(table, get_hexagon=get_hexagon, **kwargs)
 
-    _layer_type = t.Unicode("h3-hexagon").tag(sync=True)
+    _layer_type = t.Unicode("h3-hexagon")
 
     table = t.ArrowTableTrait(geometry_required=False)
     """An Arrow table with properties to associate with the H3 hexagons.
@@ -198,7 +198,7 @@ class H3HexagonLayer(PolygonLayer):
     - Type: [H3Accessor][lonboard.traits.H3Accessor]
     """
 
-    high_precision = t.Bool(None, allow_none=True).tag(sync=True)
+    high_precision = t.Bool(None, allow_none=True)
     """Whether to render H3 hexagons in high-precision mode.
 
     Each hexagon in the H3 indexing system is [slightly different in shape](https://h3geo.org/docs/core-library/coordsystems). To draw a large number of hexagons efficiently, the `H3HexagonLayer` may choose to use instanced drawing by assuming that all hexagons within the current viewport have the same shape as the one at the center of the current viewport. The discrepancy is usually too small to be visible.
@@ -219,7 +219,7 @@ class H3HexagonLayer(PolygonLayer):
     - Default: `None`
     """
 
-    coverage = t.Float(None, allow_none=True, min=0, max=1).tag(sync=True)
+    coverage = t.Float(None, allow_none=True, min=0, max=1)
     """Hexagon radius multiplier, between 0 - 1.
 
     When coverage = 1, hexagon is rendered with actual size, by specifying a different value (between 0 and 1) hexagon can be scaled down.

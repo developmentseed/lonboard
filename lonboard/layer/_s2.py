@@ -91,7 +91,7 @@ class S2Layer(PolygonLayer):
         table = pa.Table.from_pandas(df)
         return cls(table, get_s2_token=get_s2_token, **kwargs)
 
-    _layer_type = t.Unicode("s2").tag(sync=True)
+    _layer_type = t.Unicode("s2")
 
     table = t.ArrowTableTrait(geometry_required=False)
     """An Arrow table with properties to associate with the S2 cells.

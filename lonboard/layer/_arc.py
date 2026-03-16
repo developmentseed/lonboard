@@ -31,21 +31,21 @@ class ArcLayer(BaseArrowLayer):
     [geoarrow-pyarrow](https://geoarrow.github.io/geoarrow-python/main/index.html).
     """
 
-    great_circle = t.Bool(None, allow_none=True).tag(sync=True)
+    great_circle = t.Bool(None, allow_none=True)
     """If `True`, create the arc along the shortest path on the earth surface.
 
     - Type: `bool`, optional
     - Default: `False`
     """
 
-    num_segments = t.Int(None, allow_none=True).tag(sync=True)
+    num_segments = t.Int(None, allow_none=True)
     """The number of segments used to draw each arc.
 
     - Type: `int`, optional
     - Default: `50`
     """
 
-    width_units = t.Unicode(None, allow_none=True).tag(sync=True)
+    width_units = t.Unicode(None, allow_none=True)
     """
     The units of the line width, one of `'meters'`, `'common'`, and `'pixels'`. See
     [unit
@@ -55,7 +55,7 @@ class ArcLayer(BaseArrowLayer):
     - Default: `'pixels'`
     """
 
-    width_scale = t.Float(None, allow_none=True, min=0).tag(sync=True)
+    width_scale = t.Float(None, allow_none=True, min=0)
     """
     The scaling multiplier for the width of each line.
 
@@ -63,14 +63,14 @@ class ArcLayer(BaseArrowLayer):
     - Default: `1`
     """
 
-    width_min_pixels = t.Float(None, allow_none=True, min=0).tag(sync=True)
+    width_min_pixels = t.Float(None, allow_none=True, min=0)
     """The minimum line width in pixels.
 
     - Type: `float`, optional
     - Default: `0`
     """
 
-    width_max_pixels = t.Float(None, allow_none=True, min=0).tag(sync=True)
+    width_max_pixels = t.Float(None, allow_none=True, min=0)
     """The maximum line width in pixels.
 
     - Type: `float`, optional

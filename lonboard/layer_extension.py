@@ -2,14 +2,6 @@ from typing import ClassVar
 
 import lonboard.traits as t
 from lonboard._base import BaseExtension
-from lonboard.traits import (
-    DashArrayAccessor,
-    FilterCategoryAccessor,
-    FilterValueAccessor,
-    FloatAccessor,
-    PointAccessor,
-    VariableLengthTuple,
-)
 
 
 class BrushingExtension(BaseExtension):
@@ -78,13 +70,13 @@ class BrushingExtension(BaseExtension):
     - Default: `None`.
     """
 
-    _extension_type = t.Unicode("brushing").tag(sync=True)
+    _extension_type = t.Unicode("brushing")
 
     _layer_traits: ClassVar = {
-        "brushing_enabled": t.Bool(default_value=True).tag(sync=True),
-        "brushing_target": t.Unicode(None, allow_none=True).tag(sync=True),
-        "brushing_radius": t.Float(None, allow_none=True, min=0).tag(sync=True),
-        "get_brushing_target": PointAccessor(None, allow_none=True),
+        "brushing_enabled": t.Bool(default_value=True),
+        "brushing_target": t.Unicode(None, allow_none=True),
+        "brushing_radius": t.Float(None, allow_none=True, min=0),
+        "get_brushing_target": t.PointAccessor(None, allow_none=True),
     }
 
 
@@ -124,12 +116,12 @@ class CollisionFilterExtension(BaseExtension):
 
     """
 
-    _extension_type = t.Unicode("collision-filter").tag(sync=True)
+    _extension_type = t.Unicode("collision-filter")
 
     _layer_traits: ClassVar = {
-        "collision_enabled": t.Bool(default_value=True).tag(sync=True),
-        "collision_group": t.Unicode(None, allow_none=True).tag(sync=True),
-        "get_collision_priority": FloatAccessor(None, allow_none=True),
+        "collision_enabled": t.Bool(default_value=True),
+        "collision_group": t.Unicode(None, allow_none=True),
+        "get_collision_priority": t.FloatAccessor(None, allow_none=True),
     }
 
 
@@ -316,50 +308,50 @@ class DataFilterExtension(BaseExtension):
           the object at the same row index.
     """
 
-    _extension_type = t.Unicode("data-filter").tag(sync=True)
+    _extension_type = t.Unicode("data-filter")
 
     _layer_traits: ClassVar = {
         "filter_categories": t.Union(
             [
-                VariableLengthTuple(t.Any()),
-                VariableLengthTuple(
-                    VariableLengthTuple(t.Any()),
+                t.VariableLengthTuple(t.Any()),
+                t.VariableLengthTuple(
+                    t.VariableLengthTuple(t.Any()),
                     minlen=2,
                     maxlen=4,
                 ),
             ],
             default_value=None,
             allow_none=True,
-        ).tag(sync=True),
-        "filter_enabled": t.Bool(default_value=True).tag(sync=True),
+        ),
+        "filter_enabled": t.Bool(default_value=True),
         "filter_range": t.Union(
             [
-                VariableLengthTuple(t.Float(), minlen=2, maxlen=2),
-                VariableLengthTuple(
-                    VariableLengthTuple(t.Float(), minlen=2, maxlen=2),
+                t.VariableLengthTuple(t.Float(), minlen=2, maxlen=2),
+                t.VariableLengthTuple(
+                    t.VariableLengthTuple(t.Float(), minlen=2, maxlen=2),
                     minlen=2,
                     maxlen=4,
                 ),
             ],
             default_value=None,
             allow_none=True,
-        ).tag(sync=True),
+        ),
         "filter_soft_range": t.Tuple(
             t.Float(),
             t.Float(),
             default_value=None,
             allow_none=True,
-        ).tag(sync=True),
-        "filter_transform_size": t.Bool(default_value=True).tag(sync=True),
-        "filter_transform_color": t.Bool(default_value=True).tag(sync=True),
-        "get_filter_value": FilterValueAccessor(default_value=None, allow_none=True),
-        "get_filter_category": FilterCategoryAccessor(
+        ),
+        "filter_transform_size": t.Bool(default_value=True),
+        "filter_transform_color": t.Bool(default_value=True),
+        "get_filter_value": t.FilterValueAccessor(default_value=None, allow_none=True),
+        "get_filter_category": t.FilterCategoryAccessor(
             default_value=None,
             allow_none=True,
         ),
     }
 
-    filter_size = t.Int(1, min=1, max=4, allow_none=True).tag(sync=True)
+    filter_size = t.Int(1, min=1, max=4, allow_none=True)
     """The size of the filter (number of columns to filter by).
 
     The data filter can show/hide data based on 1-4 numeric properties of each object.
@@ -368,7 +360,7 @@ class DataFilterExtension(BaseExtension):
     - Default 1.
     """
 
-    category_size = t.Int(None, min=1, max=4, allow_none=True).tag(sync=True)
+    category_size = t.Int(None, min=1, max=4, allow_none=True)
     """The size of the category filter (number of columns to filter by).
 
     The category filter can show/hide data based on 1-4 properties of each object.
@@ -463,23 +455,23 @@ class PathStyleExtension(BaseExtension):
     segments, this mode yields the best result.
     """  # noqa: D205
 
-    _extension_type = t.Unicode("path-style").tag(sync=True)
+    _extension_type = t.Unicode("path-style")
 
     _layer_traits: ClassVar = {
-        "get_dash_array": DashArrayAccessor(None, allow_none=True),
-        "dash_justified": t.Bool(None, allow_none=True).tag(sync=True),
-        "get_offset": FloatAccessor(None, allow_none=True),
-        "dash_gap_pickable": t.Bool(None, allow_none=True).tag(sync=True),
+        "get_dash_array": t.DashArrayAccessor(None, allow_none=True),
+        "dash_justified": t.Bool(None, allow_none=True),
+        "get_offset": t.FloatAccessor(None, allow_none=True),
+        "dash_gap_pickable": t.Bool(None, allow_none=True),
     }
 
-    dash = t.Bool(None, allow_none=True).tag(sync=True)
+    dash = t.Bool(None, allow_none=True)
     """Add capability to render dashed lines.
 
     - Type: `boolean`, optional
     - Default False.
     """
 
-    high_precision_dash = t.Bool(None, allow_none=True).tag(sync=True)
+    high_precision_dash = t.Bool(None, allow_none=True)
     """Improve dash rendering quality in certain circumstances.
 
     Note that this option introduces additional performance overhead. See "Remarks".
@@ -488,7 +480,7 @@ class PathStyleExtension(BaseExtension):
     - Default `False`.
     """
 
-    offset = t.Bool(None, allow_none=True).tag(sync=True)
+    offset = t.Bool(None, allow_none=True)
     """Add capability to offset lines.
 
     - Type: `boolean`, optional

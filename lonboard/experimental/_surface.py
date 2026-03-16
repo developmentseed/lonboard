@@ -190,7 +190,7 @@ class SurfaceLayer(BaseLayer):
             **kwargs,
         )
 
-    _layer_type = t.Unicode("surface").tag(sync=True)
+    _layer_type = t.Unicode("surface")
 
     positions = MeshAccessor(
         list_size=3,
@@ -214,9 +214,9 @@ class SurfaceLayer(BaseLayer):
         ),
     )
 
-    texture = TextureTrait().tag(sync=True)
+    texture = TextureTrait()
 
-    wireframe = t.Bool(None, allow_none=True).tag(sync=True)
+    wireframe = t.Bool(None, allow_none=True)
     """Whether to render the mesh in wireframe mode.
 
     - Type: `bool`, optional

@@ -60,7 +60,7 @@ class ColumnLayer(BaseArrowLayer):
     ) -> Self:
         return super().from_duckdb(sql=sql, con=con, crs=crs, **kwargs)
 
-    _layer_type = t.Unicode("column").tag(sync=True)
+    _layer_type = t.Unicode("column")
 
     table = t.ArrowTableTrait(allowed_geometry_types={EXTENSION_NAME.POINT})
     """A GeoArrow table with a Point or MultiPoint column.
@@ -73,7 +73,7 @@ class ColumnLayer(BaseArrowLayer):
     [`from_geopandas`][lonboard.ScatterplotLayer.from_geopandas] instead.
     """
 
-    disk_resolution = t.Int(None, allow_none=True).tag(sync=True)
+    disk_resolution = t.Int(None, allow_none=True)
     """
     The number of sides to render the disk as. The disk is a regular polygon that fits
     inside the given radius. A higher resolution will yield a smoother look close-up,
@@ -83,7 +83,7 @@ class ColumnLayer(BaseArrowLayer):
     - Default: `20`
     """
 
-    radius = t.Float(None, allow_none=True).tag(sync=True)
+    radius = t.Float(None, allow_none=True)
     """
     Disk size in units specified by `radius_units` (default meters).
 
@@ -91,7 +91,7 @@ class ColumnLayer(BaseArrowLayer):
     - Default: `1000`
     """
 
-    angle = t.Float(None, allow_none=True).tag(sync=True)
+    angle = t.Float(None, allow_none=True)
     """
     Disk rotation, counter-clockwise in degrees.
 
@@ -110,7 +110,7 @@ class ColumnLayer(BaseArrowLayer):
     - Default: `(0, 0)`
     """
 
-    coverage = t.Float(None, allow_none=True).tag(sync=True)
+    coverage = t.Float(None, allow_none=True)
     """
     Radius multiplier, between 0 - 1. The radius of the disk is calculated by
     `coverage * radius`
@@ -119,7 +119,7 @@ class ColumnLayer(BaseArrowLayer):
     - Default: `1`
     """
 
-    elevation_scale = t.Float(None, allow_none=True).tag(sync=True)
+    elevation_scale = t.Float(None, allow_none=True)
     """
     Column elevation multiplier. The elevation of column is calculated by
     `elevation_scale * get_elevation(d)`. `elevation_scale` is a handy property
@@ -129,7 +129,7 @@ class ColumnLayer(BaseArrowLayer):
     - Default: `1`
     """
 
-    filled = t.Bool(None, allow_none=True).tag(sync=True)
+    filled = t.Bool(None, allow_none=True)
     """
     Whether to draw a filled column (solid fill).
 
@@ -137,7 +137,7 @@ class ColumnLayer(BaseArrowLayer):
     - Default: `True`
     """
 
-    stroked = t.Bool(None, allow_none=True).tag(sync=True)
+    stroked = t.Bool(None, allow_none=True)
     """
     Whether to draw an outline around the disks. Only applies if `extruded=False`.
 
@@ -145,7 +145,7 @@ class ColumnLayer(BaseArrowLayer):
     - Default: `False`
     """
 
-    extruded = t.Bool(None, allow_none=True).tag(sync=True)
+    extruded = t.Bool(None, allow_none=True)
     """
     Whether to extrude the columns. If set to `false`, all columns will be rendered as
     flat polygons.
@@ -154,7 +154,7 @@ class ColumnLayer(BaseArrowLayer):
     - Default: `True`
     """
 
-    wireframe = t.Bool(None, allow_none=True).tag(sync=True)
+    wireframe = t.Bool(None, allow_none=True)
     """
     Whether to generate a line wireframe of the column. The outline will have
     "horizontal" lines closing the top and bottom polygons and a vertical line
@@ -164,7 +164,7 @@ class ColumnLayer(BaseArrowLayer):
     - Default: `False`
     """
 
-    flat_shading = t.Bool(None, allow_none=True).tag(sync=True)
+    flat_shading = t.Bool(None, allow_none=True)
     """
     If `True`, the vertical surfaces of the columns use [flat
     shading](https://en.wikipedia.org/wiki/Shading#Flat_vs._smooth_shading). If `false`,
@@ -174,7 +174,7 @@ class ColumnLayer(BaseArrowLayer):
     - Default: `False`
     """
 
-    radius_units = t.Unicode(None, allow_none=True).tag(sync=True)
+    radius_units = t.Unicode(None, allow_none=True)
     """
     The units of the radius, one of `'meters'`, `'common'`, and `'pixels'`. See [unit
     system](https://deck.gl/docs/developer-guide/coordinate-systems#supported-units).
@@ -183,7 +183,7 @@ class ColumnLayer(BaseArrowLayer):
     - Default: `'meters'`
     """
 
-    line_width_units = t.Unicode(None, allow_none=True).tag(sync=True)
+    line_width_units = t.Unicode(None, allow_none=True)
     """
     The units of the line width, one of `'meters'`, `'common'`, and `'pixels'`. See
     [unit
@@ -193,7 +193,7 @@ class ColumnLayer(BaseArrowLayer):
     - Default: `'meters'`
     """
 
-    line_width_scale = t.Float(None, allow_none=True, min=0).tag(sync=True)
+    line_width_scale = t.Float(None, allow_none=True, min=0)
     """
     The line width multiplier that multiplied to all outlines if the `stroked` attribute
     is `True`.
@@ -202,7 +202,7 @@ class ColumnLayer(BaseArrowLayer):
     - Default: `1`
     """
 
-    line_width_min_pixels = t.Float(None, allow_none=True, min=0).tag(sync=True)
+    line_width_min_pixels = t.Float(None, allow_none=True, min=0)
     """
     The minimum outline width in pixels. This can be used to prevent the line from
     getting too small when zoomed out.
@@ -211,7 +211,7 @@ class ColumnLayer(BaseArrowLayer):
     - Default: `0`
     """
 
-    line_width_max_pixels = t.Float(None, allow_none=True, min=0).tag(sync=True)
+    line_width_max_pixels = t.Float(None, allow_none=True, min=0)
     """
     The maximum outline width in pixels. This can be used to prevent the line from
     getting too big when zoomed in.

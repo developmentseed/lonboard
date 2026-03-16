@@ -91,7 +91,7 @@ class GeohashLayer(PolygonLayer):
         table = pa.Table.from_pandas(df)
         return cls(table, get_geohash=get_geohash, **kwargs)
 
-    _layer_type = t.Unicode("geohash").tag(sync=True)
+    _layer_type = t.Unicode("geohash")
 
     table = t.ArrowTableTrait(geometry_required=False)
     """An Arrow table with properties to associate with the geohashes.

@@ -11,9 +11,9 @@ class ScaleControl(BaseControl):
     map.
     """
 
-    _control_type = t.Unicode("scale").tag(sync=True)
+    _control_type = t.Unicode("scale")
 
-    max_width = t.Int(allow_none=True, default_value=None).tag(sync=True)
+    max_width = t.Int(allow_none=True, default_value=None)
     """The maximum width of the scale control in pixels.
 
     This only has effect for Maplibre-driven maps (i.e. where
@@ -23,7 +23,7 @@ class ScaleControl(BaseControl):
     Default `100`.
     """
 
-    unit = t.Unicode(allow_none=True, default_value=None).tag(sync=True)
+    unit = t.Unicode(allow_none=True, default_value=None)
     """The unit of the scale.
 
     This only has effect for Maplibre-driven maps (i.e. where

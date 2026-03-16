@@ -94,7 +94,7 @@ class PathLayer(BaseArrowLayer):
     ) -> Self:
         return super().from_duckdb(sql=sql, con=con, crs=crs, **kwargs)
 
-    _layer_type = t.Unicode("path").tag(sync=True)
+    _layer_type = t.Unicode("path")
 
     table = t.ArrowTableTrait(
         allowed_geometry_types={
@@ -112,7 +112,7 @@ class PathLayer(BaseArrowLayer):
     [`from_geopandas`][lonboard.PathLayer.from_geopandas] instead.
     """
 
-    width_units = t.Unicode(None, allow_none=True).tag(sync=True)
+    width_units = t.Unicode(None, allow_none=True)
     """
     The units of the line width, one of `'meters'`, `'common'`, and `'pixels'`. See
     [unit
@@ -122,7 +122,7 @@ class PathLayer(BaseArrowLayer):
     - Default: `'meters'`
     """
 
-    width_scale = t.Float(None, allow_none=True, min=0).tag(sync=True)
+    width_scale = t.Float(None, allow_none=True, min=0)
     """
     The path width multiplier that multiplied to all paths.
 
@@ -130,7 +130,7 @@ class PathLayer(BaseArrowLayer):
     - Default: `1`
     """
 
-    width_min_pixels = t.Float(None, allow_none=True, min=0).tag(sync=True)
+    width_min_pixels = t.Float(None, allow_none=True, min=0)
     """
     The minimum path width in pixels. This prop can be used to prevent the path from
     getting too thin when zoomed out.
@@ -139,7 +139,7 @@ class PathLayer(BaseArrowLayer):
     - Default: `0`
     """
 
-    width_max_pixels = t.Float(None, allow_none=True, min=0).tag(sync=True)
+    width_max_pixels = t.Float(None, allow_none=True, min=0)
     """
     The maximum path width in pixels. This prop can be used to prevent the path from
     getting too thick when zoomed in.
@@ -148,7 +148,7 @@ class PathLayer(BaseArrowLayer):
     - Default: `None`
     """
 
-    joint_rounded = t.Bool(None, allow_none=True).tag(sync=True)
+    joint_rounded = t.Bool(None, allow_none=True)
     """
     Type of joint. If `True`, draw round joints. Otherwise draw miter joints.
 
@@ -156,7 +156,7 @@ class PathLayer(BaseArrowLayer):
     - Default: `False`
     """
 
-    cap_rounded = t.Bool(None, allow_none=True).tag(sync=True)
+    cap_rounded = t.Bool(None, allow_none=True)
     """
     Type of caps. If `True`, draw round caps. Otherwise draw square caps.
 
@@ -164,7 +164,7 @@ class PathLayer(BaseArrowLayer):
     - Default: `False`
     """
 
-    miter_limit = t.Int(None, allow_none=True).tag(sync=True)
+    miter_limit = t.Int(None, allow_none=True)
     """
     The maximum extent of a joint in ratio to the stroke width.
     Only works if `jointRounded` is `False`.
@@ -173,7 +173,7 @@ class PathLayer(BaseArrowLayer):
     - Default: `4`
     """
 
-    billboard = t.Bool(None, allow_none=True).tag(sync=True)
+    billboard = t.Bool(None, allow_none=True)
     """
     If `True`, extrude the path in screen space (width always faces the camera).
     If `False`, the width always faces up.

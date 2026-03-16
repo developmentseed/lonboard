@@ -27,6 +27,7 @@ class BasemapUrl(t.Unicode):
         **kwargs: Any,
     ) -> None:
         super().__init__(*args, **kwargs)
+        self.tag(sync=True)
 
     def validate(self, obj: HasTraits | None, value: Any) -> Any:
         value = super().validate(obj, value)
@@ -54,7 +55,6 @@ class MapHeightTrait(FixedErrorTraitType):
         **kwargs: Any,
     ) -> None:
         super().__init__(*args, **kwargs)
-
         self.tag(sync=True)
 
     def validate(self, obj: Any, value: Any) -> str:
@@ -80,7 +80,6 @@ class ViewStateTrait(FixedErrorTraitType):
         **kwargs: Any,
     ) -> None:
         super().__init__(*args, **kwargs)
-
         self.tag(sync=True, to_json=serialize_view_state)
 
     def validate(self, obj: Map, value: Any) -> None | BaseViewState:

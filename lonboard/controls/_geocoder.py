@@ -258,4 +258,4 @@ class GeocoderControl(BaseControl):
 
         return cls(client=handler, **kwargs)
 
-    _control_type = t.Unicode("geocoder").tag(sync=True)
+    _control_type = t.Unicode("geocoder")
