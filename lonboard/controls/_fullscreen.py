@@ -1,7 +1,6 @@
 from __future__ import annotations
 
-import traitlets.traitlets as t
-
+import lonboard.traits as t
 from lonboard.controls._base import BaseControl
 
 
@@ -12,4 +11,4 @@ class FullscreenControl(BaseControl):
     that allows for toggling fullscreen mode.
     """
 
-    _control_type = t.Unicode("fullscreen").tag(sync=True)
+    _control_type = t.Unicode("fullscreen")

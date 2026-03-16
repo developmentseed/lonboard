@@ -5,29 +5,29 @@ from typing import TYPE_CHECKING, Any
 from urllib.parse import urlparse
 
 import numpy as np
-import traitlets
 
 from lonboard._environment import DEFAULT_HEIGHT
 from lonboard._serialization import serialize_view_state
 from lonboard.traits._base import FixedErrorTraitType
+from lonboard.traits._upstream_wrappers import Unicode
 from lonboard.view_state import BaseViewState, MapViewState
 
 if TYPE_CHECKING:
-    from traitlets import HasTraits
-    from traitlets.traitlets import TraitType
+    from traitlets.traitlets import HasTraits
 
     from lonboard._map import Map
 
 
-class BasemapUrl(traitlets.Unicode):
+class BasemapUrl(Unicode):
     """Validation for basemap url."""
 
     def __init__(
-        self: TraitType,
+        self,
         *args: Any,
         **kwargs: Any,
     ) -> None:
         super().__init__(*args, **kwargs)
+        self.tag(sync=True)
 
     def validate(self, obj: HasTraits | None, value: Any) -> Any:
         value = super().validate(obj, value)
@@ -50,12 +50,11 @@ class MapHeightTrait(FixedErrorTraitType):
     default_value = DEFAULT_HEIGHT
 
     def __init__(
-        self: TraitType,
+        self,
         *args: Any,
         **kwargs: Any,
     ) -> None:
         super().__init__(*args, **kwargs)
-
         self.tag(sync=True)
 
     def validate(self, obj: Any, value: Any) -> str:
@@ -76,12 +75,11 @@ class ViewStateTrait(FixedErrorTraitType):
     default_value = None
 
     def __init__(
-        self: TraitType,
+        self,
         *args: Any,
         **kwargs: Any,
     ) -> None:
         super().__init__(*args, **kwargs)
-
         self.tag(sync=True, to_json=serialize_view_state)
 
     def validate(self, obj: Map, value: Any) -> None | BaseViewState:

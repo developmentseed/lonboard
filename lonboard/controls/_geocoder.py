@@ -15,8 +15,7 @@ from typing import (
     cast,
 )
 
-import traitlets.traitlets as t
-
+import lonboard.traits as t
 from lonboard.controls._base import BaseControl
 
 if TYPE_CHECKING:
@@ -259,4 +258,4 @@ class GeocoderControl(BaseControl):
 
         return cls(client=handler, **kwargs)
 
-    _control_type = t.Unicode("geocoder").tag(sync=True)
+    _control_type = t.Unicode("geocoder")

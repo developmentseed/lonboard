@@ -5,10 +5,10 @@ from __future__ import annotations
 from typing import TYPE_CHECKING, Any
 
 import ipywidgets
-import traitlets
-import traitlets.traitlets as t
 from arro3.core import ChunkedArray, Schema, Table
+from traitlets.traitlets import HasTraits, Instance
 
+import lonboard.traits as t
 from lonboard._base import BaseExtension, BaseWidget
 from lonboard._constants import OGC_84
 from lonboard._geoarrow._duckdb import from_duckdb as _from_duckdb
@@ -27,7 +27,6 @@ from lonboard._geoarrow.row_index import add_positional_row_index
 from lonboard._serialization import infer_rows_per_chunk
 from lonboard._utils import auto_downcast as _auto_downcast
 from lonboard._utils import get_geometry_column_index, remove_extension_kwargs
-from lonboard.traits import ArrowTableTrait, VariableLengthTuple
 
 if TYPE_CHECKING:
     import sys
@@ -81,7 +80,7 @@ class BaseLayer(BaseWidget):
 
     # TODO: validate that only one extension per type is included. E.g. you can't have
     # two data filter extensions.
-    extensions = VariableLengthTuple(t.Instance(BaseExtension)).tag(
+    extensions = t.VariableLengthTuple(Instance(BaseExtension)).tag(
         sync=True,
         **ipywidgets.widget_serialization,
     )
@@ -105,7 +104,7 @@ class BaseLayer(BaseWidget):
             # the `Widget` implementation, `send_state` will fail, even if the user
             # passes in a value, because `send_state` is called before we call
             # `super().__init__()`
-            traitlets.HasTraits.add_traits(self, **extension._layer_traits)
+            HasTraits.add_traits(self, **extension._layer_traits)
 
             # Note: This is part of `Widget.add_traits` (in the direct superclass) that
             # we skip by calling `traitlets.HasTraits.add_traits`
@@ -163,7 +162,7 @@ class BaseLayer(BaseWidget):
 
     #     self.send_state(added_names + ["extensions"])
 
-    pickable = t.Bool(default_value=True).tag(sync=True)
+    pickable = t.Bool(default_value=True)
     """
     Whether the layer responds to mouse pointer picking events.
 
@@ -179,7 +178,7 @@ class BaseLayer(BaseWidget):
     - Default: `True`
     """
 
-    visible = t.Bool(default_value=True).tag(sync=True)
+    visible = t.Bool(default_value=True)
     """
     Whether the layer is visible.
 
@@ -194,7 +193,7 @@ class BaseLayer(BaseWidget):
     - Default: `True`
     """
 
-    opacity = t.Float(1, min=0, max=1).tag(sync=True)
+    opacity = t.Float(1, min=0, max=1)
     """
     The opacity of the layer.
 
@@ -202,7 +201,7 @@ class BaseLayer(BaseWidget):
     - Default: `1`
     """
 
-    auto_highlight = t.Bool(default_value=False).tag(sync=True)
+    auto_highlight = t.Bool(default_value=False)
     """
     When true, the current object pointed to by the mouse pointer (when hovered over) is
     highlighted with `highlightColor`.
@@ -213,12 +212,12 @@ class BaseLayer(BaseWidget):
     - Default: `False`
     """
 
-    highlight_color = VariableLengthTuple(
+    highlight_color = t.VariableLengthTuple(
         t.Int(),
         default_value=(0, 0, 128, 128),
         minlen=3,
         maxlen=4,
-    ).tag(sync=True)
+    )
     """
     RGBA color to blend with the highlighted object (the hovered over object if
     `auto_highlight=true`). When the value is a 3 component (RGB) array, a default alpha
@@ -228,7 +227,7 @@ class BaseLayer(BaseWidget):
     - Default: `[0, 0, 128, 128]`
     """
 
-    selected_index = t.Int(None, allow_none=True).tag(sync=True)
+    selected_index = t.Int(None, allow_none=True)
     """
     The positional index of the most-recently clicked on row of data.
 
@@ -249,7 +248,7 @@ class BaseLayer(BaseWidget):
     for an example.
     """
 
-    before_id = t.Unicode(None, allow_none=True).tag(sync=True)
+    before_id = t.Unicode(None, allow_none=True)
     """The identifier of a layer in the Maplibre basemap layer stack.
 
     This deck.gl layer will be rendered just before the layer with the given identifier. You can find such an identifier by inspecting the basemap style JSON.
@@ -321,7 +320,7 @@ class BaseArrowLayer(BaseLayer):
 
     # The following traitlets **are** serialized to JS
 
-    table: ArrowTableTrait
+    table: t.ArrowTableTrait
     """An Arrow table with data for this layer.
 
     Some downstream layers will require this table to have a geospatial column. Other
