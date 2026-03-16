@@ -6,9 +6,20 @@
 
 * Geocoder control by @kylebarron in https://github.com/developmentseed/lonboard/pull/1124
 
+### Bug fixes
+
+* fix: Make sure BaseLayer.highlight_color has .tag(sync=True) by @shawnboltz in https://github.com/developmentseed/lonboard/pull/1131
+
 ### Documentation updates
 
 * Update Lonboard logo and devseed favicon by @kylebarron in https://github.com/developmentseed/lonboard/pull/1125
+
+### Other
+
+* refactor: trait cleanup, remove verbose `sync=True` everywhere by @kylebarron in https://github.com/developmentseed/lonboard/pull/1133
+
+**Full Changelog**: https://github.com/developmentseed/lonboard/compare/v0.14.0...v0.15.0
+
 
 **Full Changelog**: https://github.com/developmentseed/lonboard/compare/v0.14.0...v0.15.0
 
