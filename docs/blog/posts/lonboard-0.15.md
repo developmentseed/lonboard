@@ -23,7 +23,7 @@ Refer to the [changelog] for all updates.
 
 Lonboard has a new logo!
 
-<img src="../../assets/lonboard-logo.png" width="400" />
+![](../../assets/lonboard-logo.png)
 
 This logo was designed by [Gus Becker], and continues with the pun behind Lonboard:
 
