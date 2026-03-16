@@ -213,8 +213,6 @@ class BaseLayer(BaseWidget):
     - Default: `False`
     """
 
-    # Note that the default_value of VariableLengthTuple doesn't accept an empty list
-    #  or None
     highlight_color = VariableLengthTuple(
         t.Int(),
         default_value=(0, 0, 128, 128),
