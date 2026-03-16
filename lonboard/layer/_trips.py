@@ -4,18 +4,12 @@ from datetime import datetime, timedelta
 from typing import TYPE_CHECKING, Any
 
 import ipywidgets
-import traitlets
 from arro3.core import DataType, Scalar
 
+import lonboard.traits as t
 from lonboard._constants import EXTENSION_NAME, MIN_INTEGER_FLOAT32
 from lonboard._utils import timestamp_max_physical_value, timestamp_start_offset
 from lonboard.layer._base import BaseArrowLayer
-from lonboard.traits import (
-    ArrowTableTrait,
-    ColorAccessor,
-    FloatAccessor,
-    TimestampAccessor,
-)
 
 if TYPE_CHECKING:
     import sys
@@ -77,15 +71,15 @@ class TripsLayer(BaseArrowLayer):
     multiple times.
     """
 
-    _layer_type = traitlets.Unicode("trip").tag(sync=True)
+    _layer_type = t.Unicode("trip")
 
-    table = ArrowTableTrait(
+    table = t.ArrowTableTrait(
         allowed_geometry_types={
             EXTENSION_NAME.LINESTRING,
         },
     )
 
-    width_units = traitlets.Unicode(default_value=None, allow_none=True).tag(sync=True)
+    width_units = t.Unicode(default_value=None, allow_none=True)
     """
     The units of the line width, one of `'meters'`, `'common'`, and `'pixels'`. See
     [unit
@@ -95,7 +89,7 @@ class TripsLayer(BaseArrowLayer):
     - Default: `'meters'`
     """
 
-    width_scale = traitlets.Float(default_value=None, allow_none=True, min=0).tag(
+    width_scale = t.Float(default_value=None, allow_none=True, min=0).tag(
         sync=True,
     )
     """
@@ -105,7 +99,7 @@ class TripsLayer(BaseArrowLayer):
     - Default: `1`
     """
 
-    width_min_pixels = traitlets.Float(default_value=None, allow_none=True, min=0).tag(
+    width_min_pixels = t.Float(default_value=None, allow_none=True, min=0).tag(
         sync=True,
     )
     """
@@ -116,7 +110,7 @@ class TripsLayer(BaseArrowLayer):
     - Default: `0`
     """
 
-    width_max_pixels = traitlets.Float(default_value=None, allow_none=True, min=0).tag(
+    width_max_pixels = t.Float(default_value=None, allow_none=True, min=0).tag(
         sync=True,
     )
     """
@@ -127,7 +121,7 @@ class TripsLayer(BaseArrowLayer):
     - Default: `None`
     """
 
-    joint_rounded = traitlets.Bool(default_value=None, allow_none=True).tag(sync=True)
+    joint_rounded = t.Bool(default_value=None, allow_none=True)
     """
     Type of joint. If `True`, draw round joints. Otherwise draw miter joints.
 
@@ -135,7 +129,7 @@ class TripsLayer(BaseArrowLayer):
     - Default: `False`
     """
 
-    cap_rounded = traitlets.Bool(default_value=None, allow_none=True).tag(sync=True)
+    cap_rounded = t.Bool(default_value=None, allow_none=True)
     """
     Type of caps. If `True`, draw round caps. Otherwise draw square caps.
 
@@ -143,7 +137,7 @@ class TripsLayer(BaseArrowLayer):
     - Default: `False`
     """
 
-    miter_limit = traitlets.Int(default_value=None, allow_none=True).tag(sync=True)
+    miter_limit = t.Int(default_value=None, allow_none=True)
     """
     The maximum extent of a joint in ratio to the stroke width.
     Only works if `jointRounded` is `False`.
@@ -152,7 +146,7 @@ class TripsLayer(BaseArrowLayer):
     - Default: `4`
     """
 
-    billboard = traitlets.Bool(default_value=None, allow_none=True).tag(sync=True)
+    billboard = t.Bool(default_value=None, allow_none=True)
     """
     If `True`, extrude the path in screen space (width always faces the camera).
     If `False`, the width always faces up.
@@ -161,21 +155,21 @@ class TripsLayer(BaseArrowLayer):
     - Default: `False`
     """
 
-    fade_trail = traitlets.Bool(default_value=None, allow_none=True).tag(sync=True)
+    fade_trail = t.Bool(default_value=None, allow_none=True)
     """Whether or not the path fades out.
 
     - Type: `bool`, optional
     - Default: `True`
     """
 
-    trail_length = traitlets.Float(default_value=None, allow_none=True).tag(sync=True)
+    trail_length = t.Float(default_value=None, allow_none=True)
     """Trail length.
 
     - Type: `float`, optional
     - Default: `120`
     """
 
-    _current_time = traitlets.Float(0).tag(sync=True)
+    _current_time = t.Float(0)
     """The current time of the frame.
 
     - Type: `float`, optional
@@ -189,7 +183,7 @@ class TripsLayer(BaseArrowLayer):
         timestamp data to a range representable by `float32`.
     """
 
-    get_color = ColorAccessor(None, allow_none=True)
+    get_color = t.ColorAccessor(None, allow_none=True)
     """
     The color of each path in the format of `[r, g, b, [a]]`. Each channel is a number
     between 0-255 and `a` is 255 if not supplied.
@@ -202,7 +196,7 @@ class TripsLayer(BaseArrowLayer):
     - Default: `[0, 0, 0, 255]`.
     """
 
-    get_width = FloatAccessor(None, allow_none=True)
+    get_width = t.FloatAccessor(None, allow_none=True)
     """
     The width of each path, in units specified by `width_units` (default `'meters'`).
 
@@ -213,7 +207,7 @@ class TripsLayer(BaseArrowLayer):
     - Default: `1`.
     """
 
-    get_timestamps = TimestampAccessor(None, allow_none=True)
+    get_timestamps = t.TimestampAccessor(None, allow_none=True)
     """
     The timestamp of each coordinate.
 

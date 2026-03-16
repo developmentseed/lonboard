@@ -1,9 +1,10 @@
 from typing import Any, ClassVar
 
-import traitlets.traitlets as t
 from anywidget import AnyWidget
 from ipywidgets import Widget
+from traitlets.traitlets import TraitType
 
+import lonboard.traits as t
 from lonboard._exception_display import ErrorOutput
 
 msg = """
@@ -53,5 +54,5 @@ class BaseAnyWidget(AnyWidget):
 class BaseExtension(BaseWidget):
     _extension_type: t.Unicode
 
-    _layer_traits: ClassVar[dict[str, t.TraitType]] = {}
+    _layer_traits: ClassVar[dict[str, TraitType]] = {}
     """Traits from this extension to dynamically assign onto a layer."""

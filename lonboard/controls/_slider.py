@@ -6,11 +6,12 @@ from typing import (
     Any,
 )
 
-import traitlets.traitlets as t
 from ipywidgets.widgets.trait_types import TypedTuple
 
 # Import from source to allow mkdocstrings to link to base class
 from ipywidgets.widgets.widget_box import VBox
+
+import lonboard.traits as t
 
 if TYPE_CHECKING:
     from collections.abc import Sequence

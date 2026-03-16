@@ -1,7 +1,6 @@
 from __future__ import annotations
 
-import traitlets.traitlets as t
-
+import lonboard.traits as t
 from lonboard._base import BaseWidget
 
 
@@ -17,7 +16,7 @@ class BaseControl(BaseWidget):
         ],
         allow_none=True,
         default_value=None,
-    ).tag(sync=True)
+    )
     """Position of the control in the map.
 
     One of `"top-left"`, `"top-right"`, `"bottom-left"`, or `"bottom-right"`.

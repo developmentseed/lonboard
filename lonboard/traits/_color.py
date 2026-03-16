@@ -12,8 +12,6 @@ from lonboard._vendor.matplotlib.colors import _to_rgba_no_colorcycle
 from lonboard.traits._base import FixedErrorTraitType
 
 if TYPE_CHECKING:
-    from traitlets.traitlets import TraitType
-
     from lonboard.layer import BaseArrowLayer
 
 
@@ -51,7 +49,7 @@ class ColorAccessor(FixedErrorTraitType):
     )
 
     def __init__(
-        self: TraitType,
+        self,
         *args: Any,
         **kwargs: Any,
     ) -> None:
