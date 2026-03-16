@@ -6,10 +6,10 @@ from urllib.parse import urlparse
 
 import numpy as np
 
-import lonboard.traits as t
 from lonboard._environment import DEFAULT_HEIGHT
 from lonboard._serialization import serialize_view_state
 from lonboard.traits._base import FixedErrorTraitType
+from lonboard.traits._upstream_wrappers import Unicode
 from lonboard.view_state import BaseViewState, MapViewState
 
 if TYPE_CHECKING:
@@ -18,7 +18,7 @@ if TYPE_CHECKING:
     from lonboard._map import Map
 
 
-class BasemapUrl(t.Unicode):
+class BasemapUrl(Unicode):
     """Validation for basemap url."""
 
     def __init__(
