@@ -5,12 +5,11 @@ from __future__ import annotations
 import sys
 from typing import TYPE_CHECKING, Any, NoReturn, TypeVar
 
-import traitlets
-from traitlets import TraitError, Undefined
+from traitlets.traitlets import Container, TraitError, TraitType, Undefined
 from traitlets.utils.descriptions import class_of, describe
 
 if TYPE_CHECKING:
-    from traitlets import HasTraits
+    from traitlets.traitlets import HasTraits
     from traitlets.utils.sentinel import Sentinel
 
 DEFAULT_INITIAL_VIEW_STATE = {
@@ -22,7 +21,7 @@ DEFAULT_INITIAL_VIEW_STATE = {
 }
 
 
-class FixedErrorTraitType(traitlets.TraitType):
+class FixedErrorTraitType(TraitType):
     """A custom subclass of traitlets.TraitType.
 
     This is because its `error` method ignores the `info` passed in. See
@@ -121,7 +120,7 @@ T = TypeVar("T")
 # TODO: switch to
 # class VariableLengthTuple(traitlets.Container[tuple[T, ...]])
 # When we can upgrade to traitlets 5.10 (depends on Colab upgrading)
-class VariableLengthTuple(traitlets.Container):
+class VariableLengthTuple(Container):
     """An instance of a Python tuple with variable numbers of elements of the same type."""
 
     klass = list  # type:ignore[assignment]
@@ -129,7 +128,7 @@ class VariableLengthTuple(traitlets.Container):
 
     def __init__(
         self,
-        trait: T | Sentinel = None,
+        trait: T | Sentinel,
         default_value: tuple[T, ...] | Sentinel | None = Undefined,
         minlen: int = 0,
         maxlen: int = sys.maxsize,

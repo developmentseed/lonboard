@@ -2,15 +2,8 @@ from __future__ import annotations
 
 from typing import TYPE_CHECKING
 
-import traitlets.traitlets as t
-
+import lonboard.traits as t
 from lonboard.layer._base import BaseArrowLayer
-from lonboard.traits import (
-    ArrowTableTrait,
-    ColorAccessor,
-    FloatAccessor,
-    PointAccessor,
-)
 
 if TYPE_CHECKING:
     import sys
@@ -28,9 +21,9 @@ if TYPE_CHECKING:
 class ArcLayer(BaseArrowLayer):
     """Render raised arcs joining pairs of source and target coordinates."""
 
-    _layer_type = t.Unicode("arc").tag(sync=True)
+    _layer_type = t.Unicode("arc")
 
-    table = ArrowTableTrait(geometry_required=False)
+    table = t.ArrowTableTrait(geometry_required=False)
     """A GeoArrow table.
 
     This is the fastest way to plot data from an existing GeoArrow source, such as
@@ -84,23 +77,23 @@ class ArcLayer(BaseArrowLayer):
     - Default: `None`
     """
 
-    get_source_position = PointAccessor(None, allow_none=True)
+    get_source_position = t.PointAccessor(None, allow_none=True)
     """Source position of each object
     """
 
-    get_target_position = PointAccessor(None, allow_none=True)
+    get_target_position = t.PointAccessor(None, allow_none=True)
     """Target position of each object
     """
 
-    get_source_color = ColorAccessor(None, allow_none=True)
+    get_source_color = t.ColorAccessor(None, allow_none=True)
     """Source color of each object
     """
 
-    get_target_color = ColorAccessor(None, allow_none=True)
+    get_target_color = t.ColorAccessor(None, allow_none=True)
     """Target color of each object
     """
 
-    get_width = FloatAccessor(None, allow_none=True)
+    get_width = t.FloatAccessor(None, allow_none=True)
     """The line width of each object, in units specified by `widthUnits`.
 
     - Type: [FloatAccessor][lonboard.traits.FloatAccessor], optional
@@ -110,11 +103,11 @@ class ArcLayer(BaseArrowLayer):
     - Default: `1`.
     """
 
-    get_height = FloatAccessor(None, allow_none=True)
+    get_height = t.FloatAccessor(None, allow_none=True)
     """Height color of each object
     """
 
-    get_tilt = FloatAccessor(None, allow_none=True)
+    get_tilt = t.FloatAccessor(None, allow_none=True)
     """
     Use to tilt the arc to the side if you have multiple arcs with the same source and
     target positions.

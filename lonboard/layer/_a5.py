@@ -2,13 +2,11 @@ from __future__ import annotations
 
 from typing import TYPE_CHECKING
 
-import traitlets.traitlets as t
-
 from lonboard._utils import auto_downcast as _auto_downcast
 
 # Important to import from ._polygon to avoid circular imports
 from lonboard.layer._polygon import PolygonLayer
-from lonboard.traits import A5Accessor, ArrowTableTrait
+from lonboard.traits import A5Accessor, ArrowTableTrait, Unicode
 
 if TYPE_CHECKING:
     import sys
@@ -93,7 +91,7 @@ class A5Layer(PolygonLayer):
         table = pa.Table.from_pandas(df)
         return cls(table, get_pentagon=get_pentagon, **kwargs)
 
-    _layer_type = t.Unicode("a5").tag(sync=True)
+    _layer_type = Unicode("a5").tag(sync=True)
 
     table = ArrowTableTrait(geometry_required=False)
     """An Arrow table with properties to associate with the A5 pentagons.

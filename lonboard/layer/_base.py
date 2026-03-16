@@ -5,10 +5,10 @@ from __future__ import annotations
 from typing import TYPE_CHECKING, Any
 
 import ipywidgets
-import traitlets
-import traitlets.traitlets as t
 from arro3.core import ChunkedArray, Schema, Table
+from traitlets.traitlets import HasTraits, Instance
 
+import lonboard.traits as t
 from lonboard._base import BaseExtension, BaseWidget
 from lonboard._constants import OGC_84
 from lonboard._geoarrow._duckdb import from_duckdb as _from_duckdb
@@ -27,7 +27,6 @@ from lonboard._geoarrow.row_index import add_positional_row_index
 from lonboard._serialization import infer_rows_per_chunk
 from lonboard._utils import auto_downcast as _auto_downcast
 from lonboard._utils import get_geometry_column_index, remove_extension_kwargs
-from lonboard.traits import ArrowTableTrait, VariableLengthTuple
 
 if TYPE_CHECKING:
     import sys
@@ -81,7 +80,7 @@ class BaseLayer(BaseWidget):
 
     # TODO: validate that only one extension per type is included. E.g. you can't have
     # two data filter extensions.
-    extensions = VariableLengthTuple(t.Instance(BaseExtension)).tag(
+    extensions = t.VariableLengthTuple(Instance(BaseExtension)).tag(
         sync=True,
         **ipywidgets.widget_serialization,
     )
@@ -105,7 +104,7 @@ class BaseLayer(BaseWidget):
             # the `Widget` implementation, `send_state` will fail, even if the user
             # passes in a value, because `send_state` is called before we call
             # `super().__init__()`
-            traitlets.HasTraits.add_traits(self, **extension._layer_traits)
+            HasTraits.add_traits(self, **extension._layer_traits)
 
             # Note: This is part of `Widget.add_traits` (in the direct superclass) that
             # we skip by calling `traitlets.HasTraits.add_traits`
@@ -213,7 +212,7 @@ class BaseLayer(BaseWidget):
     - Default: `False`
     """
 
-    highlight_color = VariableLengthTuple(
+    highlight_color = t.VariableLengthTuple(
         t.Int(),
         default_value=(0, 0, 128, 128),
         minlen=3,
@@ -321,7 +320,7 @@ class BaseArrowLayer(BaseLayer):
 
     # The following traitlets **are** serialized to JS
 
-    table: ArrowTableTrait
+    table: t.ArrowTableTrait
     """An Arrow table with data for this layer.
 
     Some downstream layers will require this table to have a geospatial column. Other

@@ -4,12 +4,11 @@ import warnings
 from typing import TYPE_CHECKING
 
 import numpy as np
-import traitlets.traitlets as t
 
+import lonboard.traits as t
 from lonboard._geoarrow.ops import Bbox, WeightedCentroid
 from lonboard._utils import auto_downcast as _auto_downcast
 from lonboard.layer._polygon import PolygonLayer
-from lonboard.traits import ArrowTableTrait, H3Accessor
 
 if TYPE_CHECKING:
     import sys
@@ -184,14 +183,14 @@ class H3HexagonLayer(PolygonLayer):
 
     _layer_type = t.Unicode("h3-hexagon").tag(sync=True)
 
-    table = ArrowTableTrait(geometry_required=False)
+    table = t.ArrowTableTrait(geometry_required=False)
     """An Arrow table with properties to associate with the H3 hexagons.
 
     If you have a Pandas `DataFrame`, use
     [`from_pandas`][lonboard.H3HexagonLayer.from_pandas] instead.
     """
 
-    get_hexagon = H3Accessor()
+    get_hexagon = t.H3Accessor()
     """The cell identifier of each H3 hexagon.
 
     Accepts either an array of strings or uint64 integers representing H3 cell IDs.

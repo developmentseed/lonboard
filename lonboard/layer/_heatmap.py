@@ -2,16 +2,11 @@ from __future__ import annotations
 
 from typing import TYPE_CHECKING
 
-import traitlets.traitlets as t
 from arro3.core import Table
 
+import lonboard.traits as t
 from lonboard._constants import EXTENSION_NAME
 from lonboard.layer._base import BaseArrowLayer
-from lonboard.traits import (
-    ArrowTableTrait,
-    FloatAccessor,
-    VariableLengthTuple,
-)
 
 if TYPE_CHECKING:
     import sys
@@ -98,7 +93,7 @@ class HeatmapLayer(BaseArrowLayer):
 
     _layer_type = t.Unicode("heatmap").tag(sync=True)
 
-    table = ArrowTableTrait(allowed_geometry_types={EXTENSION_NAME.POINT})
+    table = t.ArrowTableTrait(allowed_geometry_types={EXTENSION_NAME.POINT})
     """A GeoArrow table with a Point column.
 
     This is the fastest way to plot data from an existing GeoArrow source, such as
@@ -143,7 +138,7 @@ class HeatmapLayer(BaseArrowLayer):
     - Default: `0.05`
     """
 
-    color_domain = VariableLengthTuple(
+    color_domain = t.VariableLengthTuple(
         t.Float(),
         default_value=None,
         allow_none=True,
@@ -183,7 +178,7 @@ class HeatmapLayer(BaseArrowLayer):
     - Default: `500`
     """
 
-    get_weight = FloatAccessor(None, allow_none=True)
+    get_weight = t.FloatAccessor(None, allow_none=True)
     """The weight of each object.
 
     - Type: [FloatAccessor][lonboard.traits.FloatAccessor], optional

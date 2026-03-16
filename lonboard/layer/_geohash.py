@@ -2,13 +2,11 @@ from __future__ import annotations
 
 from typing import TYPE_CHECKING
 
-import traitlets.traitlets as t
-
+import lonboard.traits as t
 from lonboard._utils import auto_downcast as _auto_downcast
 
 # Important to import from ._polygon to avoid circular imports
 from lonboard.layer._polygon import PolygonLayer
-from lonboard.traits import ArrowTableTrait, TextAccessor
 
 if TYPE_CHECKING:
     import sys
@@ -95,14 +93,14 @@ class GeohashLayer(PolygonLayer):
 
     _layer_type = t.Unicode("geohash").tag(sync=True)
 
-    table = ArrowTableTrait(geometry_required=False)
+    table = t.ArrowTableTrait(geometry_required=False)
     """An Arrow table with properties to associate with the geohashes.
 
     If you have a Pandas `DataFrame`, use
     [`from_pandas`][lonboard.GeohashLayer.from_pandas] instead.
     """
 
-    get_geohash = TextAccessor()
+    get_geohash = t.TextAccessor()
     """The cell identifier of each geohash.
 
     Accepts either an array of strings or uint64 integers representing geohash IDs.

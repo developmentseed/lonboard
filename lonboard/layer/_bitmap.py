@@ -4,13 +4,9 @@ from __future__ import annotations
 
 from typing import TYPE_CHECKING, Unpack
 
-import traitlets.traitlets as t
-
+import lonboard.traits as t
 from lonboard._geoarrow.ops import Bbox, WeightedCentroid
 from lonboard.layer._base import BaseLayer
-from lonboard.traits import (
-    VariableLengthTuple,
-)
 
 if TYPE_CHECKING:
     from lonboard.types.layer import BitmapLayerKwargs, BitmapTileLayerKwargs
@@ -47,9 +43,9 @@ class BitmapLayer(BaseLayer):
 
     bounds = t.Union(
         [
-            VariableLengthTuple(t.Float(), minlen=4, maxlen=4),
-            VariableLengthTuple(
-                VariableLengthTuple(t.Float(), minlen=2, maxlen=2),
+            t.VariableLengthTuple(t.Float(), minlen=4, maxlen=4),
+            t.VariableLengthTuple(
+                t.VariableLengthTuple(t.Float(), minlen=2, maxlen=2),
                 minlen=4,
                 maxlen=4,
             ),
@@ -71,7 +67,7 @@ class BitmapLayer(BaseLayer):
     - Default: `0`
     """
 
-    transparent_color = VariableLengthTuple(
+    transparent_color = t.VariableLengthTuple(
         t.Float(),
         default_value=None,
         allow_none=True,
@@ -84,7 +80,7 @@ class BitmapLayer(BaseLayer):
     - Default: `[0, 0, 0, 0]`
     """
 
-    tint_color = VariableLengthTuple(
+    tint_color = t.VariableLengthTuple(
         t.Float(),
         default_value=None,
         allow_none=True,
@@ -149,7 +145,7 @@ class BitmapTileLayer(BaseLayer):
 
     _layer_type = t.Unicode("bitmap-tile").tag(sync=True)
 
-    data = t.Union([t.Unicode(), VariableLengthTuple(t.Unicode(), minlen=1)]).tag(
+    data = t.Union([t.Unicode(), t.VariableLengthTuple(t.Unicode(), minlen=1)]).tag(
         sync=True,
     )
     """
@@ -205,7 +201,7 @@ class BitmapTileLayer(BaseLayer):
     - Default: `None`
     """
 
-    extent = VariableLengthTuple(
+    extent = t.VariableLengthTuple(
         t.Float(),
         minlen=4,
         maxlen=4,
@@ -292,7 +288,7 @@ class BitmapTileLayer(BaseLayer):
     - Default: `0`
     """
 
-    transparent_color = VariableLengthTuple(
+    transparent_color = t.VariableLengthTuple(
         t.Float(),
         default_value=None,
         allow_none=True,
@@ -305,7 +301,7 @@ class BitmapTileLayer(BaseLayer):
     - Default: `[0, 0, 0, 0]`
     """
 
-    tint_color = VariableLengthTuple(
+    tint_color = t.VariableLengthTuple(
         t.Float(),
         default_value=None,
         allow_none=True,

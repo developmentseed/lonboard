@@ -1,7 +1,6 @@
 from typing import ClassVar
 
-import traitlets.traitlets as t
-
+import lonboard.traits as t
 from lonboard._base import BaseExtension
 from lonboard.traits import (
     DashArrayAccessor,

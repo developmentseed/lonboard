@@ -15,8 +15,7 @@ from typing import (
     cast,
 )
 
-import traitlets.traitlets as t
-
+import lonboard.traits as t
 from lonboard.controls._base import BaseControl
 
 if TYPE_CHECKING:

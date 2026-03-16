@@ -17,7 +17,6 @@ from arro3.core import (
     list_flatten,
     list_offsets,
 )
-from traitlets.traitlets import TraitType
 
 from lonboard._constants import MAX_INTEGER_FLOAT32, MIN_INTEGER_FLOAT32
 from lonboard._serialization import TIMESTAMP_ACCESSOR_SERIALIZATION
@@ -25,8 +24,6 @@ from lonboard._utils import get_geometry_column_index
 from lonboard.traits import FixedErrorTraitType
 
 if TYPE_CHECKING:
-    from traitlets.traitlets import TraitType
-
     from lonboard.layer import BaseArrowLayer
 
 
@@ -52,7 +49,7 @@ class TimestampAccessor(FixedErrorTraitType):
     info_text = "a Arrow ListArray representing a nested array of timestamps"
 
     def __init__(
-        self: TraitType,
+        self,
         *args: Any,
         **kwargs: Any,
     ) -> None:

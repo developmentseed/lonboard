@@ -4,15 +4,9 @@ from __future__ import annotations
 
 from typing import TYPE_CHECKING
 
-import traitlets.traitlets as t
-
+import lonboard.traits as t
 from lonboard._constants import EXTENSION_NAME
 from lonboard.layer._base import BaseArrowLayer
-from lonboard.traits import (
-    ArrowTableTrait,
-    ColorAccessor,
-    FloatAccessor,
-)
 
 if TYPE_CHECKING:
     import sys
@@ -68,7 +62,7 @@ class ColumnLayer(BaseArrowLayer):
 
     _layer_type = t.Unicode("column").tag(sync=True)
 
-    table = ArrowTableTrait(allowed_geometry_types={EXTENSION_NAME.POINT})
+    table = t.ArrowTableTrait(allowed_geometry_types={EXTENSION_NAME.POINT})
     """A GeoArrow table with a Point or MultiPoint column.
 
     This is the fastest way to plot data from an existing GeoArrow source, such as
@@ -226,7 +220,7 @@ class ColumnLayer(BaseArrowLayer):
     - Default: `None`
     """
 
-    get_fill_color = ColorAccessor(None, allow_none=True)
+    get_fill_color = t.ColorAccessor(None, allow_none=True)
     """
     The filled color of each object in the format of `[r, g, b, [a]]`. Each channel is a
     number between 0-255 and `a` is 255 if not supplied.
@@ -239,7 +233,7 @@ class ColumnLayer(BaseArrowLayer):
     - Default: `[0, 0, 0, 255]`.
     """
 
-    get_line_color = ColorAccessor(None, allow_none=True)
+    get_line_color = t.ColorAccessor(None, allow_none=True)
     """
     The outline color of each object in the format of `[r, g, b, [a]]`. Each channel is
     a number between 0-255 and `a` is 255 if not supplied.
@@ -252,7 +246,7 @@ class ColumnLayer(BaseArrowLayer):
     - Default: `[0, 0, 0, 255]`.
     """
 
-    get_elevation = FloatAccessor(None, allow_none=True)
+    get_elevation = t.FloatAccessor(None, allow_none=True)
     """
     The elevation of each cell in meters.
 
@@ -265,7 +259,7 @@ class ColumnLayer(BaseArrowLayer):
     - Default: `1000`.
     """
 
-    get_line_width = FloatAccessor(None, allow_none=True)
+    get_line_width = t.FloatAccessor(None, allow_none=True)
     """
     The width of the outline of each column, in units specified by `line_width_units`
     (default `'meters'`). Only applies if `extruded: false` and `stroked: true`.

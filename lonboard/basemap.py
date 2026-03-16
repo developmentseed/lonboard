@@ -5,9 +5,9 @@ from __future__ import annotations
 from enum import StrEnum
 from typing import TYPE_CHECKING
 
-import traitlets.traitlets as t
 from typing_extensions import deprecated
 
+import lonboard.traits as t
 from lonboard._base import BaseWidget
 from lonboard.traits import BasemapUrl
 

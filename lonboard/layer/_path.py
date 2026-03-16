@@ -4,15 +4,9 @@ from __future__ import annotations
 
 from typing import TYPE_CHECKING
 
-import traitlets.traitlets as t
-
+import lonboard.traits as t
 from lonboard._constants import EXTENSION_NAME
 from lonboard.layer._base import BaseArrowLayer
-from lonboard.traits import (
-    ArrowTableTrait,
-    ColorAccessor,
-    FloatAccessor,
-)
 
 if TYPE_CHECKING:
     import sys
@@ -102,7 +96,7 @@ class PathLayer(BaseArrowLayer):
 
     _layer_type = t.Unicode("path").tag(sync=True)
 
-    table = ArrowTableTrait(
+    table = t.ArrowTableTrait(
         allowed_geometry_types={
             EXTENSION_NAME.LINESTRING,
             EXTENSION_NAME.MULTILINESTRING,
@@ -188,7 +182,7 @@ class PathLayer(BaseArrowLayer):
     - Default: `False`
     """
 
-    get_color = ColorAccessor(None, allow_none=True)
+    get_color = t.ColorAccessor(None, allow_none=True)
     """
     The color of each path in the format of `[r, g, b, [a]]`. Each channel is a number
     between 0-255 and `a` is 255 if not supplied.
@@ -201,7 +195,7 @@ class PathLayer(BaseArrowLayer):
     - Default: `[0, 0, 0, 255]`.
     """
 
-    get_width = FloatAccessor(None, allow_none=True)
+    get_width = t.FloatAccessor(None, allow_none=True)
     """
     The width of each path, in units specified by `width_units` (default `'meters'`).
 

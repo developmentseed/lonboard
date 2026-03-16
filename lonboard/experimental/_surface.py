@@ -4,10 +4,10 @@ from typing import TYPE_CHECKING
 
 import numpy as np
 import pyproj
-import traitlets.traitlets as t
 from affine import Affine
 from arro3.core import DataType
 
+import lonboard.traits as t
 from lonboard.experimental.traits import MeshAccessor, TextureTrait
 from lonboard.layer import BaseLayer
 

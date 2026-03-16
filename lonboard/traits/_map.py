@@ -5,25 +5,24 @@ from typing import TYPE_CHECKING, Any
 from urllib.parse import urlparse
 
 import numpy as np
-import traitlets
 
+import lonboard.traits as t
 from lonboard._environment import DEFAULT_HEIGHT
 from lonboard._serialization import serialize_view_state
 from lonboard.traits._base import FixedErrorTraitType
 from lonboard.view_state import BaseViewState, MapViewState
 
 if TYPE_CHECKING:
-    from traitlets import HasTraits
-    from traitlets.traitlets import TraitType
+    from traitlets.traitlets import HasTraits
 
     from lonboard._map import Map
 
 
-class BasemapUrl(traitlets.Unicode):
+class BasemapUrl(t.Unicode):
     """Validation for basemap url."""
 
     def __init__(
-        self: TraitType,
+        self,
         *args: Any,
         **kwargs: Any,
     ) -> None:
@@ -50,7 +49,7 @@ class MapHeightTrait(FixedErrorTraitType):
     default_value = DEFAULT_HEIGHT
 
     def __init__(
-        self: TraitType,
+        self,
         *args: Any,
         **kwargs: Any,
     ) -> None:
@@ -76,7 +75,7 @@ class ViewStateTrait(FixedErrorTraitType):
     default_value = None
 
     def __init__(
-        self: TraitType,
+        self,
         *args: Any,
         **kwargs: Any,
     ) -> None:

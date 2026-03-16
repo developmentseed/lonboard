@@ -2,11 +2,9 @@
 
 from __future__ import annotations
 
-import traitlets.traitlets as t
-
+import lonboard.traits as t
 from lonboard._constants import EXTENSION_NAME
 from lonboard.layer._base import BaseArrowLayer
-from lonboard.traits import ArrowTableTrait, ColorAccessor, FloatAccessor, TextAccessor
 
 
 class TextLayer(BaseArrowLayer):
@@ -14,7 +12,7 @@ class TextLayer(BaseArrowLayer):
 
     _layer_type = t.Unicode("text").tag(sync=True)
 
-    table = ArrowTableTrait(allowed_geometry_types={EXTENSION_NAME.POINT})
+    table = t.ArrowTableTrait(allowed_geometry_types={EXTENSION_NAME.POINT})
     """A GeoArrow table with a Point or MultiPoint column.
 
     This is the fastest way to plot data from an existing GeoArrow source, such as
@@ -73,19 +71,19 @@ class TextLayer(BaseArrowLayer):
     # - Default: `False`
     # """
 
-    get_background_color = ColorAccessor(None, allow_none=True)
+    get_background_color = t.ColorAccessor(None, allow_none=True)
     """Background color accessor.
 
     default [255, 255, 255, 255]
     """
 
-    get_border_color = ColorAccessor(None, allow_none=True)
+    get_border_color = t.ColorAccessor(None, allow_none=True)
     """Border color accessor.
 
     default [0, 0, 0, 255]
     """
 
-    get_border_width = FloatAccessor(None, allow_none=True)
+    get_border_width = t.FloatAccessor(None, allow_none=True)
     """Border width accessor.
 
     default 0
@@ -169,7 +167,7 @@ class TextLayer(BaseArrowLayer):
     default -1
     """
 
-    get_text = TextAccessor(None, allow_none=True)
+    get_text = t.TextAccessor(None, allow_none=True)
     """Label text accessor"""
 
     # get_position = t.Any(None, allow_none=True).tag(sync=True)
@@ -177,19 +175,19 @@ class TextLayer(BaseArrowLayer):
 
     #  ?: Accessor<DataT, Position>;
 
-    get_color = ColorAccessor(None, allow_none=True)
+    get_color = t.ColorAccessor(None, allow_none=True)
     """Label color accessor
 
     default [0, 0, 0, 255]
     """
 
-    get_size = FloatAccessor(None, allow_none=True)
+    get_size = t.FloatAccessor(None, allow_none=True)
     """Label size accessor
 
     default 32
     """
 
-    get_angle = FloatAccessor(None, allow_none=True)
+    get_angle = t.FloatAccessor(None, allow_none=True)
     """Label rotation accessor, in degrees
 
     default 0

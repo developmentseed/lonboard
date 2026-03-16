@@ -2,15 +2,9 @@ from __future__ import annotations
 
 from typing import TYPE_CHECKING
 
-import traitlets.traitlets as t
-
+import lonboard.traits as t
 from lonboard._constants import EXTENSION_NAME
 from lonboard.layer._base import BaseArrowLayer
-from lonboard.traits import (
-    ArrowTableTrait,
-    ColorAccessor,
-    FloatAccessor,
-)
 
 if TYPE_CHECKING:
     import sys
@@ -106,7 +100,7 @@ class PolygonLayer(BaseArrowLayer):
 
     _layer_type = t.Unicode("polygon").tag(sync=True)
 
-    table = ArrowTableTrait(
+    table = t.ArrowTableTrait(
         allowed_geometry_types={EXTENSION_NAME.POLYGON, EXTENSION_NAME.MULTIPOLYGON},
     )
     """A GeoArrow table with a Polygon or MultiPolygon column.
@@ -229,7 +223,7 @@ class PolygonLayer(BaseArrowLayer):
     - Default: `4`
     """
 
-    get_fill_color = ColorAccessor(None, allow_none=True)
+    get_fill_color = t.ColorAccessor(None, allow_none=True)
     """
     The fill color of each polygon in the format of `[r, g, b, [a]]`. Each channel is a
     number between 0-255 and `a` is 255 if not supplied.
@@ -242,7 +236,7 @@ class PolygonLayer(BaseArrowLayer):
     - Default: `[0, 0, 0, 255]`.
     """
 
-    get_line_color = ColorAccessor(None, allow_none=True)
+    get_line_color = t.ColorAccessor(None, allow_none=True)
     """
     The outline color of each polygon in the format of `[r, g, b, [a]]`. Each channel is
     a number between 0-255 and `a` is 255 if not supplied.
@@ -257,7 +251,7 @@ class PolygonLayer(BaseArrowLayer):
     - Default: `[0, 0, 0, 255]`.
     """
 
-    get_line_width = FloatAccessor(None, allow_none=True)
+    get_line_width = t.FloatAccessor(None, allow_none=True)
     """
     The width of the outline of each polygon, in units specified by `line_width_units`
     (default `'meters'`).
@@ -269,7 +263,7 @@ class PolygonLayer(BaseArrowLayer):
     - Default: `1`.
     """
 
-    get_elevation = FloatAccessor(None, allow_none=True)
+    get_elevation = t.FloatAccessor(None, allow_none=True)
     """
     The elevation to extrude each polygon with, in meters.
 
@@ -358,7 +352,7 @@ class SolidPolygonLayer(BaseArrowLayer):
 
     _layer_type = t.Unicode("solid-polygon").tag(sync=True)
 
-    table = ArrowTableTrait(
+    table = t.ArrowTableTrait(
         allowed_geometry_types={EXTENSION_NAME.POLYGON, EXTENSION_NAME.MULTIPOLYGON},
     )
     """A GeoArrow table with a Polygon or MultiPolygon column.
@@ -417,7 +411,7 @@ class SolidPolygonLayer(BaseArrowLayer):
     - Default: `1`
     """
 
-    get_elevation = FloatAccessor(None, allow_none=True)
+    get_elevation = t.FloatAccessor(None, allow_none=True)
     """
     The elevation to extrude each polygon with, in meters.
 
@@ -430,7 +424,7 @@ class SolidPolygonLayer(BaseArrowLayer):
     - Default: `1000`.
     """
 
-    get_fill_color = ColorAccessor(None, allow_none=True)
+    get_fill_color = t.ColorAccessor(None, allow_none=True)
     """
     The fill color of each polygon in the format of `[r, g, b, [a]]`. Each channel is a
     number between 0-255 and `a` is 255 if not supplied.
@@ -443,7 +437,7 @@ class SolidPolygonLayer(BaseArrowLayer):
     - Default: `[0, 0, 0, 255]`.
     """
 
-    get_line_color = ColorAccessor(None, allow_none=True)
+    get_line_color = t.ColorAccessor(None, allow_none=True)
     """
     The line color of each polygon in the format of `[r, g, b, [a]]`. Each channel is a
     number between 0-255 and `a` is 255 if not supplied.

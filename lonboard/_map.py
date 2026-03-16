@@ -7,9 +7,11 @@ from typing import IO, TYPE_CHECKING, Any, TextIO, overload
 
 import ipywidgets
 import numpy as np
-import traitlets.traitlets as t
+import traitlets
 from ipywidgets import CallbackDispatcher, VBox
+from traitlets.traitlets import Instance, TraitError, default, validate
 
+import lonboard.traits as t
 from lonboard._base import BaseAnyWidget
 from lonboard._html_export import map_to_html
 from lonboard._viewport import compute_view
@@ -22,7 +24,6 @@ from lonboard.controls import (
 )
 from lonboard.experimental.view import BaseView, GlobeView, MapView
 from lonboard.layer import BaseLayer
-from lonboard.traits import MapHeightTrait, VariableLengthTuple, ViewStateTrait
 from lonboard.view_state import BaseViewState, GlobeViewState, MapViewState
 
 if TYPE_CHECKING:
@@ -169,7 +170,7 @@ class Map(BaseAnyWidget):
     _esm = bundler_output_dir / "index.js"
     _css = bundler_output_dir / "index.css"
 
-    view_state: BaseViewState | None = ViewStateTrait()  # type: ignore
+    view_state: BaseViewState | None = t.ViewStateTrait()  # type: ignore
     """
     The view state of the map.
 
@@ -200,7 +201,7 @@ class Map(BaseAnyWidget):
     Indicates if a click handler has been registered.
     """
 
-    height = MapHeightTrait().tag(sync=True)
+    height = t.MapHeightTrait().tag(sync=True)
     """Height of the map in pixels, or valid CSS height property.
 
     For example, it can be `600` (pixels) or `"75vh"` (75% of the viewport height).
@@ -209,15 +210,15 @@ class Map(BaseAnyWidget):
     - Default: full height of the containing cell.
     """
 
-    layers = VariableLengthTuple(t.Instance(BaseLayer)).tag(
+    layers = t.VariableLengthTuple(Instance(BaseLayer)).tag(
         sync=True,
         **ipywidgets.widget_serialization,
     )
     """One or more [`Layer`][lonboard.BaseLayer] objects to display on this map.
     """
 
-    controls = VariableLengthTuple(
-        t.Instance(BaseControl),
+    controls = t.VariableLengthTuple(
+        Instance(BaseControl),
         default_value=(
             FullscreenControl(),
             NavigationControl(),
@@ -232,7 +233,7 @@ class Map(BaseAnyWidget):
     See [`lonboard.controls`][] for available controls.
     """
 
-    view: t.Instance[BaseView | None] = t.Instance(BaseView, allow_none=True).tag(
+    view: Instance[BaseView | None] = Instance(BaseView, allow_none=True).tag(
         sync=True,
         **ipywidgets.widget_serialization,
     )
@@ -243,10 +244,10 @@ class Map(BaseAnyWidget):
     See [`lonboard.experimental.view`][] for available view types.
     """
 
-    @t.validate("view")
+    @traitlets.traitlets.validate("view")
     def _validate_view(
         self,
-        proposal: TraitProposal[t.Instance[BaseView | None], BaseView, Self],
+        proposal: TraitProposal[Instance[BaseView | None], BaseView, Self],
     ) -> BaseView:
         # if proposed view is a globe view, ensure that basemap is interleaved
         if (
@@ -254,7 +255,7 @@ class Map(BaseAnyWidget):
             and self.basemap is not None
             and self.basemap.mode != "interleaved"
         ):
-            raise t.TraitError(
+            raise TraitError(
                 "GlobeView requires the basemap mode to be 'interleaved'. Please set `basemap.mode='interleaved'`.",
             )
 
@@ -287,7 +288,7 @@ class Map(BaseAnyWidget):
     - Default: `5`
     """
 
-    basemap: t.Instance[MaplibreBasemap | None] = t.Instance(
+    basemap: Instance[MaplibreBasemap | None] = Instance(
         MaplibreBasemap,
         # If both `args` and `kw` are None, then the default value is None.
         # Set empty kw so that the default is MaplibreBasemap() with default params
@@ -304,11 +305,11 @@ class Map(BaseAnyWidget):
     Pass `None` to disable rendering a basemap.
     """
 
-    @t.validate("basemap")
+    @validate("basemap")
     def _validate_basemap(
         self,
         proposal: TraitProposal[
-            t.Instance[MaplibreBasemap | None],
+            Instance[MaplibreBasemap | None],
             MaplibreBasemap,
             Self,
         ],
@@ -319,7 +320,7 @@ class Map(BaseAnyWidget):
             and proposal["value"].mode != "interleaved"
             and isinstance(self.view, GlobeView)
         ):
-            raise t.TraitError(
+            raise TraitError(
                 "GlobeView requires the basemap mode to be 'interleaved'. Please set `basemap.mode='interleaved'`.",
             )
 
@@ -351,7 +352,7 @@ class Map(BaseAnyWidget):
     custom_attribution = t.Union(
         [
             t.Unicode(allow_none=True),
-            VariableLengthTuple(t.Unicode(allow_none=False)),
+            t.VariableLengthTuple(t.Unicode(allow_none=False)),
         ],
     ).tag(sync=True)
     """
@@ -730,7 +731,7 @@ class Map(BaseAnyWidget):
 
         return HTML(self.to_html())
 
-    @t.default("view_state")
+    @default("view_state")
     def _default_initial_view_state(self) -> dict[str, Any]:
         if self.view is None or isinstance(self.view, (MapView, GlobeView)):
             return compute_view(self.layers)  # type: ignore

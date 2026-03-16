@@ -6,8 +6,7 @@ import asyncio
 import traceback
 from typing import TYPE_CHECKING, Generic, Protocol, TypeVar, Unpack
 
-import traitlets.traitlets as t
-
+import lonboard.traits as t
 from lonboard._geoarrow.ops import Bbox, WeightedCentroid
 from lonboard.layer._base import BaseLayer
 from lonboard.raster import IMAGE_MIME_TYPES, EncodedImage

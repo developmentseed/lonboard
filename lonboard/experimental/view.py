@@ -1,5 +1,4 @@
-import traitlets.traitlets as t
-
+import lonboard.traits as t
 from lonboard._base import BaseWidget
 from lonboard.view_state import (
     BaseViewState,
