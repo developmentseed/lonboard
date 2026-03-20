@@ -301,9 +301,6 @@ class RasterLayer(BaseLayer, Generic[T]):
         *,
         render: RenderTile[Tile],
         **kwargs: Any,
-        # TODO: can this return type specify RasterLayer[T] where T is the type of the
-        # GeoTIFF?
-        # Ideally, in a typed context, render should receive the correct tile type
     ) -> RasterLayer[Tile]:
         """Create a RasterLayer from a GeoTIFF instance from async-geotiff."""
         from async_geotiff.tms import generate_tms
