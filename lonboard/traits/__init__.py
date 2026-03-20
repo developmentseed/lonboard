@@ -17,18 +17,25 @@ from ._raster import ProjectionTrait, TileMatrixSetTrait
 from ._table import ArrowTableTrait
 from ._text import TextAccessor
 from ._timestamp import TimestampAccessor
+from ._upstream_wrappers import Any, Bool, Enum, Float, Int, List, Tuple, Unicode, Union
 
 __all__ = [
     "A5Accessor",
+    "Any",
     "ArrowTableTrait",
     "BasemapUrl",
+    "Bool",
     "ColorAccessor",
     "DashArrayAccessor",
+    "Enum",
     "FilterCategoryAccessor",
     "FilterValueAccessor",
     "FixedErrorTraitType",
+    "Float",
     "FloatAccessor",
     "H3Accessor",
+    "Int",
+    "List",
     "MapHeightTrait",
     "NormalAccessor",
     "PointAccessor",
@@ -36,6 +43,9 @@ __all__ = [
     "TextAccessor",
     "TileMatrixSetTrait",
     "TimestampAccessor",
+    "Tuple",
+    "Unicode",
+    "Union",
     "VariableLengthTuple",
     "ViewStateTrait",
 ]

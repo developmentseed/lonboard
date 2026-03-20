@@ -6,9 +6,9 @@ import asyncio
 import traceback
 from typing import TYPE_CHECKING, Any, Generic, Protocol, TypeVar, Unpack
 
-import traitlets.traitlets as t
 from pyproj.transformer import Transformer
 
+import lonboard.traits as t
 from lonboard._geoarrow.ops import Bbox, WeightedCentroid
 from lonboard.layer._base import BaseLayer
 from lonboard.raster import IMAGE_MIME_TYPES, EncodedImage
@@ -178,7 +178,6 @@ class RasterLayer(BaseLayer, Generic[T]):
         *,
         fetch_tile: FetchTile[T],
         render: RenderTile[T],
-        debug: bool = False,
         _bounds: Bbox | None = None,
         _center: tuple[float, float] | None = None,
         **kwargs: Unpack[RasterLayerKwargs],
@@ -186,7 +185,6 @@ class RasterLayer(BaseLayer, Generic[T]):
         self._pending_tasks = set()
         self.fetch_tile = fetch_tile
         self.render = render
-        self.debug = debug
         self.on_msg(handle_anywidget_dispatch)
         self._bounds = _bounds
         self._center = _center
@@ -341,13 +339,13 @@ class RasterLayer(BaseLayer, Generic[T]):
             **kwargs,
         )  # type: ignore[call-arg]
 
-    _layer_type = t.Unicode("raster").tag(sync=True)
+    _layer_type = t.Unicode("raster")
 
     tile_matrix_set: TileMatrixSet = TileMatrixSetTrait(allow_none=True).tag(sync=True)  # type: ignore
 
     crs: CRS = ProjectionTrait().tag(sync=True)  # type: ignore
 
-    tile_size = t.Int(512).tag(sync=True)
+    tile_size = t.Int(512)
     """The pixel dimension of the tiles, usually a power of 2.
 
     For geospatial viewports, tile size represents the target pixel width and height of each tile when rendered. Smaller tile sizes display the content at higher resolution, while the layer needs to load more tiles to fill the same viewport.
@@ -357,13 +355,13 @@ class RasterLayer(BaseLayer, Generic[T]):
     - Default: `512`
     """
 
-    zoom_offset = t.Int(0).tag(sync=True)
+    zoom_offset = t.Int(0)
     """This offset changes the zoom level at which the tiles are fetched.  Needs to be an integer.
 
     - Default: `0`
     """
 
-    max_zoom = t.Int(allow_none=True, default_value=None).tag(sync=True)
+    max_zoom = t.Int(allow_none=True, default_value=None)
     """The max zoom level of the layer's data.
 
     When overzoomed (i.e. `zoom > maxZoom`), tiles from this level will be displayed.
@@ -371,7 +369,7 @@ class RasterLayer(BaseLayer, Generic[T]):
     - Default: `null`
     """
 
-    min_zoom = t.Int(0).tag(sync=True)
+    min_zoom = t.Int(0)
     """The min zoom level of the layer's data.
 
     When underzoomed (i.e. `zoom < minZoom`), the layer will not display any tiles
@@ -386,7 +384,7 @@ class RasterLayer(BaseLayer, Generic[T]):
         default_value=None,
         minlen=4,
         maxlen=4,
-    ).tag(sync=True)
+    )
     """The bounding box of the layer's data, in the form of `[minX, minY, maxX, maxY]`.
 
     If provided, the layer will only load and render the tiles that are needed to fill
@@ -395,7 +393,7 @@ class RasterLayer(BaseLayer, Generic[T]):
     - Default: `null`
     """
 
-    max_cache_size = t.Int(allow_none=True, default_value=None).tag(sync=True)
+    max_cache_size = t.Int(allow_none=True, default_value=None)
     """The maximum number of tiles that can be cached.
 
     The tile cache keeps loaded tiles in memory even if they are no longer visible. It
@@ -408,10 +406,10 @@ class RasterLayer(BaseLayer, Generic[T]):
     - Default: `null`
     """
 
-    # max_requests = t.Int(6).tag(sync=True)
+    # max_requests = t.Int(6)
     """Maximum number of concurrent getTileData calls. Default: 6."""
 
-    debounce_time = t.Int(0).tag(sync=True)
+    debounce_time = t.Int(0)
     """Queue tile requests until no new tiles have been added for at least `debounceTime` milliseconds.
 
     If `debounceTime == 0`, tile requests are issued as quickly as the `maxRequests` concurrent request limit allows.

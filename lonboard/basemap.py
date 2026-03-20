@@ -5,9 +5,9 @@ from __future__ import annotations
 from enum import StrEnum
 from typing import TYPE_CHECKING
 
-import traitlets.traitlets as t
 from typing_extensions import deprecated
 
+import lonboard.traits as t
 from lonboard._base import BaseWidget
 from lonboard.traits import BasemapUrl
 
@@ -145,7 +145,7 @@ class MaplibreBasemap(BaseWidget):
             "reverse-controlled",
         ],
         default_value="overlaid",
-    ).tag(sync=True)
+    )
     """The basemap integration mode.
 
     This determines how deck.gl and MapLibre are rendered together.
@@ -179,7 +179,7 @@ class MaplibreBasemap(BaseWidget):
     **Default**: `"overlaid"`
     """
 
-    style = BasemapUrl(CartoStyle.PositronNoLabels).tag(sync=True)
+    style = BasemapUrl(CartoStyle.PositronNoLabels)
     """
     A MapLibre-compatible basemap style.
 

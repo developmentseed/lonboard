@@ -2,15 +2,9 @@ from __future__ import annotations
 
 from typing import TYPE_CHECKING
 
-import traitlets.traitlets as t
-
+import lonboard.traits as t
 from lonboard._constants import EXTENSION_NAME
 from lonboard.layer._base import BaseArrowLayer
-from lonboard.traits import (
-    ArrowTableTrait,
-    ColorAccessor,
-    FloatAccessor,
-)
 
 if TYPE_CHECKING:
     import sys
@@ -104,9 +98,9 @@ class PolygonLayer(BaseArrowLayer):
     ) -> Self:
         return super().from_duckdb(sql=sql, con=con, crs=crs, **kwargs)
 
-    _layer_type = t.Unicode("polygon").tag(sync=True)
+    _layer_type = t.Unicode("polygon")
 
-    table = ArrowTableTrait(
+    table = t.ArrowTableTrait(
         allowed_geometry_types={EXTENSION_NAME.POLYGON, EXTENSION_NAME.MULTIPOLYGON},
     )
     """A GeoArrow table with a Polygon or MultiPolygon column.
@@ -119,7 +113,7 @@ class PolygonLayer(BaseArrowLayer):
     [`from_geopandas`][lonboard.PolygonLayer.from_geopandas] instead.
     """
 
-    stroked = t.Bool(None, allow_none=True).tag(sync=True)
+    stroked = t.Bool(None, allow_none=True)
     """Whether to draw an outline around the polygon (solid fill).
 
     Note that both the outer polygon as well the outlines of any holes will be drawn.
@@ -128,7 +122,7 @@ class PolygonLayer(BaseArrowLayer):
     - Default: `True`
     """
 
-    filled = t.Bool(None, allow_none=True).tag(sync=True)
+    filled = t.Bool(None, allow_none=True)
     """Whether to draw a filled polygon (solid fill).
 
     Note that only the area between the outer polygon and any holes will be filled.
@@ -137,7 +131,7 @@ class PolygonLayer(BaseArrowLayer):
     - Default: `True`
     """
 
-    extruded = t.Bool(None, allow_none=True).tag(sync=True)
+    extruded = t.Bool(None, allow_none=True)
     """Whether to extrude the polygons.
 
     Based on the elevations provided by the `getElevation` accessor.
@@ -149,7 +143,7 @@ class PolygonLayer(BaseArrowLayer):
     - Default: `False`
     """
 
-    wireframe = t.Bool(None, allow_none=True).tag(sync=True)
+    wireframe = t.Bool(None, allow_none=True)
     """
     Whether to generate a line wireframe of the polygon. The outline will have
     "horizontal" lines closing the top and bottom polygons and a vertical line
@@ -165,7 +159,7 @@ class PolygonLayer(BaseArrowLayer):
       with the same data if you want a combined rendering effect.
     """
 
-    elevation_scale = t.Float(None, allow_none=True, min=0).tag(sync=True)
+    elevation_scale = t.Float(None, allow_none=True, min=0)
     """Elevation multiplier.
 
     The final elevation is calculated by `elevationScale * getElevation(d)`.
@@ -176,7 +170,7 @@ class PolygonLayer(BaseArrowLayer):
     - Default: `1`
     """
 
-    line_width_units = t.Unicode(None, allow_none=True).tag(sync=True)
+    line_width_units = t.Unicode(None, allow_none=True)
     """
     The units of the outline width, one of `'meters'`, `'common'`, and `'pixels'`. See
     [unit
@@ -186,7 +180,7 @@ class PolygonLayer(BaseArrowLayer):
     - Default: `'meters'`
     """
 
-    line_width_scale = t.Float(None, allow_none=True, min=0).tag(sync=True)
+    line_width_scale = t.Float(None, allow_none=True, min=0)
     """
     The outline width multiplier that multiplied to all outlines of `Polygon` and
     `MultiPolygon` features if the `stroked` attribute is true.
@@ -195,7 +189,7 @@ class PolygonLayer(BaseArrowLayer):
     - Default: `1`
     """
 
-    line_width_min_pixels = t.Float(None, allow_none=True, min=0).tag(sync=True)
+    line_width_min_pixels = t.Float(None, allow_none=True, min=0)
     """
     The minimum outline width in pixels. This can be used to prevent the outline from
     getting too small when zoomed out.
@@ -204,7 +198,7 @@ class PolygonLayer(BaseArrowLayer):
     - Default: `0`
     """
 
-    line_width_max_pixels = t.Float(None, allow_none=True, min=0).tag(sync=True)
+    line_width_max_pixels = t.Float(None, allow_none=True, min=0)
     """
     The maximum outline width in pixels. This can be used to prevent the outline from
     getting too big when zoomed in.
@@ -213,14 +207,14 @@ class PolygonLayer(BaseArrowLayer):
     - Default: `None`
     """
 
-    line_joint_rounded = t.Bool(None, allow_none=True).tag(sync=True)
+    line_joint_rounded = t.Bool(None, allow_none=True)
     """Type of joint. If `true`, draw round joints. Otherwise draw miter joints.
 
     - Type: `bool`, optional
     - Default: `False`
     """
 
-    line_miter_limit = t.Float(None, allow_none=True, min=0).tag(sync=True)
+    line_miter_limit = t.Float(None, allow_none=True, min=0)
     """The maximum extent of a joint in ratio to the stroke width.
 
     Only works if `line_joint_rounded` is false.
@@ -229,7 +223,7 @@ class PolygonLayer(BaseArrowLayer):
     - Default: `4`
     """
 
-    get_fill_color = ColorAccessor(None, allow_none=True)
+    get_fill_color = t.ColorAccessor(None, allow_none=True)
     """
     The fill color of each polygon in the format of `[r, g, b, [a]]`. Each channel is a
     number between 0-255 and `a` is 255 if not supplied.
@@ -242,7 +236,7 @@ class PolygonLayer(BaseArrowLayer):
     - Default: `[0, 0, 0, 255]`.
     """
 
-    get_line_color = ColorAccessor(None, allow_none=True)
+    get_line_color = t.ColorAccessor(None, allow_none=True)
     """
     The outline color of each polygon in the format of `[r, g, b, [a]]`. Each channel is
     a number between 0-255 and `a` is 255 if not supplied.
@@ -257,7 +251,7 @@ class PolygonLayer(BaseArrowLayer):
     - Default: `[0, 0, 0, 255]`.
     """
 
-    get_line_width = FloatAccessor(None, allow_none=True)
+    get_line_width = t.FloatAccessor(None, allow_none=True)
     """
     The width of the outline of each polygon, in units specified by `line_width_units`
     (default `'meters'`).
@@ -269,7 +263,7 @@ class PolygonLayer(BaseArrowLayer):
     - Default: `1`.
     """
 
-    get_elevation = FloatAccessor(None, allow_none=True)
+    get_elevation = t.FloatAccessor(None, allow_none=True)
     """
     The elevation to extrude each polygon with, in meters.
 
@@ -356,9 +350,9 @@ class SolidPolygonLayer(BaseArrowLayer):
     ) -> Self:
         return super().from_duckdb(sql=sql, con=con, crs=crs, **kwargs)
 
-    _layer_type = t.Unicode("solid-polygon").tag(sync=True)
+    _layer_type = t.Unicode("solid-polygon")
 
-    table = ArrowTableTrait(
+    table = t.ArrowTableTrait(
         allowed_geometry_types={EXTENSION_NAME.POLYGON, EXTENSION_NAME.MULTIPOLYGON},
     )
     """A GeoArrow table with a Polygon or MultiPolygon column.
@@ -371,7 +365,7 @@ class SolidPolygonLayer(BaseArrowLayer):
     [`from_geopandas`][lonboard.SolidPolygonLayer.from_geopandas] instead.
     """
 
-    filled = t.Bool(None, allow_none=True).tag(sync=True)
+    filled = t.Bool(None, allow_none=True)
     """
     Whether to fill the polygons (based on the color provided by the
     `get_fill_color` accessor).
@@ -380,7 +374,7 @@ class SolidPolygonLayer(BaseArrowLayer):
     - Default: `True`
     """
 
-    extruded = t.Bool(None, allow_none=True).tag(sync=True)
+    extruded = t.Bool(None, allow_none=True)
     """
     Whether to extrude the polygons (based on the elevations provided by the
     `get_elevation` accessor'). If set to `False`, all polygons will be flat, this
@@ -391,7 +385,7 @@ class SolidPolygonLayer(BaseArrowLayer):
     - Default: `False`
     """
 
-    wireframe = t.Bool(None, allow_none=True).tag(sync=True)
+    wireframe = t.Bool(None, allow_none=True)
     """
     Whether to generate a line wireframe of the polygon. The outline will have
     "horizontal" lines closing the top and bottom polygons and a vertical line
@@ -407,7 +401,7 @@ class SolidPolygonLayer(BaseArrowLayer):
       with the same data if you want a combined rendering effect.
     """
 
-    elevation_scale = t.Float(None, allow_none=True, min=0).tag(sync=True)
+    elevation_scale = t.Float(None, allow_none=True, min=0)
     """
     Elevation multiplier. The final elevation is calculated by `elevation_scale *
     get_elevation(d)`. `elevation_scale` is a handy property to scale all elevation
@@ -417,7 +411,7 @@ class SolidPolygonLayer(BaseArrowLayer):
     - Default: `1`
     """
 
-    get_elevation = FloatAccessor(None, allow_none=True)
+    get_elevation = t.FloatAccessor(None, allow_none=True)
     """
     The elevation to extrude each polygon with, in meters.
 
@@ -430,7 +424,7 @@ class SolidPolygonLayer(BaseArrowLayer):
     - Default: `1000`.
     """
 
-    get_fill_color = ColorAccessor(None, allow_none=True)
+    get_fill_color = t.ColorAccessor(None, allow_none=True)
     """
     The fill color of each polygon in the format of `[r, g, b, [a]]`. Each channel is a
     number between 0-255 and `a` is 255 if not supplied.
@@ -443,7 +437,7 @@ class SolidPolygonLayer(BaseArrowLayer):
     - Default: `[0, 0, 0, 255]`.
     """
 
-    get_line_color = ColorAccessor(None, allow_none=True)
+    get_line_color = t.ColorAccessor(None, allow_none=True)
     """
     The line color of each polygon in the format of `[r, g, b, [a]]`. Each channel is a
     number between 0-255 and `a` is 255 if not supplied.

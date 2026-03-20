@@ -2,16 +2,11 @@ from __future__ import annotations
 
 from typing import TYPE_CHECKING
 
-import traitlets.traitlets as t
 from arro3.core import Table
 
+import lonboard.traits as t
 from lonboard._constants import EXTENSION_NAME
 from lonboard.layer._base import BaseArrowLayer
-from lonboard.traits import (
-    ArrowTableTrait,
-    FloatAccessor,
-    VariableLengthTuple,
-)
 
 if TYPE_CHECKING:
     import sys
@@ -96,9 +91,9 @@ class HeatmapLayer(BaseArrowLayer):
     ) -> Self:
         return super().from_duckdb(sql=sql, con=con, crs=crs, **kwargs)
 
-    _layer_type = t.Unicode("heatmap").tag(sync=True)
+    _layer_type = t.Unicode("heatmap")
 
-    table = ArrowTableTrait(allowed_geometry_types={EXTENSION_NAME.POINT})
+    table = t.ArrowTableTrait(allowed_geometry_types={EXTENSION_NAME.POINT})
     """A GeoArrow table with a Point column.
 
     This is the fastest way to plot data from an existing GeoArrow source, such as
@@ -109,7 +104,7 @@ class HeatmapLayer(BaseArrowLayer):
     [`from_geopandas`][lonboard.HeatmapLayer.from_geopandas] instead.
     """
 
-    radius_pixels = t.Float(None, allow_none=True).tag(sync=True)
+    radius_pixels = t.Float(None, allow_none=True)
     """Radius of the circle in pixels, to which the weight of an object is distributed.
 
     - Type: `float`, optional
@@ -123,7 +118,7 @@ class HeatmapLayer(BaseArrowLayer):
     # - Default: `6-class YlOrRd` - [colorbrewer](http://colorbrewer2.org/#type=sequential&scheme=YlOrRd&n=6)
     # """
 
-    intensity = t.Float(None, allow_none=True).tag(sync=True)
+    intensity = t.Float(None, allow_none=True)
     """
     Value that is multiplied with the total weight at a pixel to obtain the final
     weight.
@@ -132,7 +127,7 @@ class HeatmapLayer(BaseArrowLayer):
     - Default: `1`
     """
 
-    threshold = t.Float(None, allow_none=True, min=0, max=1).tag(sync=True)
+    threshold = t.Float(None, allow_none=True, min=0, max=1)
     """Ratio of the fading weight to the max weight, between `0` and `1`.
 
     For example, `0.1` affects all pixels with weight under 10% of the max.
@@ -143,13 +138,13 @@ class HeatmapLayer(BaseArrowLayer):
     - Default: `0.05`
     """
 
-    color_domain = VariableLengthTuple(
+    color_domain = t.VariableLengthTuple(
         t.Float(),
         default_value=None,
         allow_none=True,
         minlen=2,
         maxlen=2,
-    ).tag(sync=True)
+    )
     # """
     # Controls how weight values are mapped to the `color_range`, as an array of two
     # numbers [`min_value`, `max_value`].
@@ -158,7 +153,7 @@ class HeatmapLayer(BaseArrowLayer):
     # - Default: `None`
     # """
 
-    aggregation = t.Unicode(None, allow_none=True).tag(sync=True)
+    aggregation = t.Unicode(None, allow_none=True)
     """Defines the type of aggregation operation
 
     Valid values are 'SUM', 'MEAN'.
@@ -167,14 +162,14 @@ class HeatmapLayer(BaseArrowLayer):
     - Default: `"SUM"`
     """
 
-    weights_texture_size = t.Int(None, allow_none=True).tag(sync=True)
+    weights_texture_size = t.Int(None, allow_none=True)
     """Specifies the size of weight texture.
 
     - Type: `int`, optional
     - Default: `2048`
     """
 
-    debounce_timeout = t.Int(None, allow_none=True).tag(sync=True)
+    debounce_timeout = t.Int(None, allow_none=True)
     """
     Interval in milliseconds during which changes to the viewport don't trigger
     aggregation.
@@ -183,7 +178,7 @@ class HeatmapLayer(BaseArrowLayer):
     - Default: `500`
     """
 
-    get_weight = FloatAccessor(None, allow_none=True)
+    get_weight = t.FloatAccessor(None, allow_none=True)
     """The weight of each object.
 
     - Type: [FloatAccessor][lonboard.traits.FloatAccessor], optional

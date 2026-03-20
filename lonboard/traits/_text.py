@@ -12,7 +12,6 @@ from lonboard.traits._base import FixedErrorTraitType
 
 if TYPE_CHECKING:
     import pandas as pd
-    from traitlets.traitlets import TraitType
 
     from lonboard.layer import BaseArrowLayer
 
@@ -39,7 +38,7 @@ class TextAccessor(FixedErrorTraitType):
     )
 
     def __init__(
-        self: TraitType,
+        self,
         *args: Any,
         **kwargs: Any,
     ) -> None:
