@@ -26,7 +26,7 @@
     "maplibre-gl": "^5.9.0",
     "memoize-one": "^6.0.0",
     "parquet-wasm": "0.7.1",
-    "proj4": "^2.20.2",
+    "proj4": "^2.20.4",
     "react": "^19.2.0",
     "react-dom": "^19.2.0",
     "react-map-gl": "^8.1.0",
