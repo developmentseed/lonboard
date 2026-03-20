@@ -46,6 +46,9 @@ esbuild.build({
   ],
   // Force all packages (including those nested inside local file deps) to
   // resolve to lonboard's own copies, preventing duplicate instances.
+  //
+  // This is useful when developing against a local copy of deck.gl-raster, to
+  // ensure we don't have duplicate luma.gl versions, which crashes the page.
   alias: {
     "@deck.gl/aggregation-layers": "./node_modules/@deck.gl/aggregation-layers",
     "@deck.gl/core": "./node_modules/@deck.gl/core",
