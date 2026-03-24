@@ -16,7 +16,7 @@ jobs:
           permission-pull-requests: write
 
       - name: PR Conventional Commit Validation
-        uses: ytanikin/pr-conventional-commits@1.5.1
+        uses: ytanikin/pr-conventional-commits@1.5.2
         with:
           task_types: '["feat","fix","docs","test","ci","refactor","perf","chore","revert"]'
           token: ${{ steps.app-token.outputs.token }}
