@@ -1,7 +1,7 @@
 name: PR Conventional Commit Validation
 
 on:
-  pull_request_target:
+  pull_request:
     types: [opened, synchronize, reopened, edited]
 
 jobs:
@@ -13,6 +13,7 @@ jobs:
         with:
           app-id: ${{ secrets.DS_RELEASE_BOT_ID }}
           private-key: ${{ secrets.DS_RELEASE_BOT_PRIVATE_KEY }}
+          permission-pull-requests: write
 
       - name: PR Conventional Commit Validation
         uses: ytanikin/pr-conventional-commits@1.5.1
