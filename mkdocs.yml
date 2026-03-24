@@ -224,7 +224,7 @@ plugins:
             - https://pygeos.readthedocs.io/en/latest/objects.inv
             - https://pyogrio.readthedocs.io/en/stable/objects.inv
             - https://pyproj4.github.io/pyproj/stable/objects.inv
-            - https://pysal.org/libpysal/objects.inv
+            - https://pysal.org/libpysal/stable/objects.inv
             - https://pysal.org/mapclassify/objects.inv
             - https://python-visualization.github.io/folium/latest/objects.inv
             - https://rasterio.readthedocs.io/en/stable/objects.inv
