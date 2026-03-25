@@ -15,7 +15,9 @@ authors:
 
 We've added support for rendering arbitrary [Cloud-Optimized GeoTIFF] (COG) files in Lonboard.
 
-It works out of the box with practically any COG data. COG tiles are streamed on demand as required. No need to set up a separate tile server. No large downloads. No dependency on GDAL.
+It works out of the box with practically any COG data. COG tiles are streamed on demand as required.
+
+No need to set up a separate tile server. No large downloads. No dependency on GDAL.
 
 [Cloud-Optimized GeoTIFF]: https://cogeo.org/
 
@@ -23,13 +25,13 @@ It works out of the box with practically any COG data. COG tiles are streamed on
 
 ## Overview
 
-The [`RasterLayer`][lonboard.RasterLayer] now has a [`from_geotiff`][lonboard.RasterLayer.from_geotiff] constructor. This allows for creating a new `RasterLayer` visualization from a [GeoTIFF][async_geotiff.GeoTIFF] object from the [Async-GeoTIFF] library.
+The [`RasterLayer`][lonboard.RasterLayer] now has a [`from_geotiff`][lonboard.RasterLayer.from_geotiff] constructor. Use this to visualize a [GeoTIFF][async_geotiff.GeoTIFF] object from the [Async-GeoTIFF] library.
 
 Three simple steps:
 
 1. Open a [`GeoTIFF`][async_geotiff.GeoTIFF] using [Async-GeoTIFF] and [Obstore].
 2. Create a _function callback_ for converting numpy data loaded from a GeoTIFF tile to a PNG image.
-3. Pass both of the above into [`RasterLayer.from_geotiff`][lonboard.RasterLayer.from_geotiff] and, voilà! Your COG have your COG rendering on the map.
+3. Pass both of the above into [`RasterLayer.from_geotiff`][lonboard.RasterLayer.from_geotiff] and, voilà! Your COG is rendering on the map!
 
 [Async-GeoTIFF]: https://developmentseed.org/async-geotiff/latest/
 [Obstore]: https://developmentseed.org/obstore/latest/

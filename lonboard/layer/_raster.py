@@ -4,7 +4,7 @@ from __future__ import annotations
 
 import asyncio
 import traceback
-from typing import TYPE_CHECKING, Any, Generic, Literal, Protocol, TypeVar, Unpack
+from typing import TYPE_CHECKING, Generic, Literal, Protocol, TypeVar, Unpack
 
 from pyproj.transformer import Transformer
 
@@ -320,9 +320,25 @@ class RasterLayer(BaseLayer, Generic[T]):
         /,
         *,
         render_tile: RenderTile[Tile],
-        **kwargs: Any,
+        **kwargs: Unpack[RasterLayerKwargs],
     ) -> RasterLayer[Tile]:
-        """Create a RasterLayer from a GeoTIFF instance from async-geotiff."""
+        """Create a RasterLayer from a GeoTIFF instance from async-geotiff.
+
+        **Example:**
+
+        Args:
+            geotiff: A GeoTIFF instance from [`async-geotiff`](https://github.com/developmentseed/async-geotiff). Refer to the `async-geotiff` documentation for how to create a GeoTIFF from various input sources.
+
+        Keyword Args:
+            render_tile:
+            TODO: reword
+            A function that takes a tile from the GeoTIFF and renders it into an RGBA image. The input tile will be in the format returned by `async-geotiff`'s `fetch_tile` method, which includes metadata and a method to access the pixel data as a NumPy array.
+            kwargs: parameters passed on to `__init__`
+
+        Returns:
+            A new RasterLayer instance.
+
+        """
         from async_geotiff.tms import generate_tms
 
         tms = generate_tms(geotiff)
