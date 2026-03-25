@@ -146,8 +146,7 @@ export class RasterModel extends BaseLayerModel {
       return null;
     }
 
-    const bitmap = await dataViewToImageBitmap(buffers[0], message.mime_type);
-    const image = imageBitmapToImageData(bitmap);
+    const image = await dataViewToImageBitmap(buffers[0], message.mime_type);
 
     // Compute per-tile affine transforms once; cached by TileLayer
     const tileMatrix = this.tileMatrixSet?.tileMatrices[z];
@@ -177,7 +176,7 @@ export class RasterModel extends BaseLayerModel {
         id: `${props.id}-raster`,
         width: image.width,
         height: image.height,
-        renderPipeline: image,
+        image,
         reprojectionFns: {
           forwardTransform,
           inverseTransform,
@@ -262,11 +261,4 @@ function dataViewToImageBitmap(
   const bytes = new Uint8Array(buffer, byteOffset, byteLength);
   const blob = new Blob([bytes], { type: mimeType });
   return createImageBitmap(blob);
-}
-
-function imageBitmapToImageData(bitmap: ImageBitmap): ImageData {
-  const canvas = new OffscreenCanvas(bitmap.width, bitmap.height);
-  const ctx = canvas.getContext("2d")!;
-  ctx.drawImage(bitmap, 0, 0);
-  return ctx.getImageData(0, 0, bitmap.width, bitmap.height);
 }
