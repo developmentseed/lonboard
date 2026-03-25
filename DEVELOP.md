@@ -67,6 +67,14 @@ All models on the TypeScript side are combined into a single entry point, which 
 
 Anywidget and its dependency ipywidgets handles the serialization from Python into JS, automatically keeping each side in sync.
 
+### Developing against local packages
+
+E.g. to test against a local copy of `deck.gl-raster`:
+
+```bash
+pnpm link ../deck.gl-raster/packages/*
+```
+
 ## Publishing
 
 Push a new tag to the main branch of the format `v*`. A new version will be published to PyPI automatically.
