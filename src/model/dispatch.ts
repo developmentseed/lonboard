@@ -54,6 +54,7 @@ export async function invoke<ResponseT>(
       settled = true;
 
       model.off("msg:custom", handler);
+      model.send({ id, kind: `${kind}-cancel` });
       reject(signal.reason);
     };
 
