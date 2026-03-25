@@ -46,7 +46,7 @@ T = TypeVar("T")
 class FetchTile(Protocol[Tile_co]):
     """Protocol for user-defined fetch_tile function."""
 
-    async def __call__(self, *, x: int, y: int, z: int) -> Tile_co:
+    async def __call__(self, x: int, y: int, z: int) -> Tile_co:
         """Fetch a tile asynchronously.
 
         Args:
@@ -128,9 +128,9 @@ async def _handle_tile_request(
         if widget.debug:
             output.append_stdout(f"Fetching tile at x={x}, y={y}, z={z}\n")
 
-        tile = await widget.fetch_tile(x=x, y=y, z=z)
+        tile = await widget._fetch_tile(x=x, y=y, z=z)
         # TODO: put rendering in thread pool?
-        rendered = widget.render_tile(tile)
+        rendered = widget._render_tile(tile)
         if rendered is None:
             widget.send(
                 {
@@ -181,8 +181,8 @@ class RasterLayer(BaseLayer, Generic[T]):
     # fires an AbortSignal. Entries are removed automatically on completion.
     _pending_tasks: dict[str, asyncio.Task[None]]
 
-    fetch_tile: FetchTile[T]
-    render_tile: RenderTile[T]
+    _fetch_tile: FetchTile[T]
+    _render_tile: RenderTile[T]
     _bounds: Bbox | None
     _center: tuple[float, float] | None
 
@@ -191,15 +191,15 @@ class RasterLayer(BaseLayer, Generic[T]):
         *,
         _tile_matrix_set: TileMatrixSet | None,
         _crs: CRS,
-        fetch_tile: FetchTile[T],
-        render_tile: RenderTile[T],
+        _fetch_tile: FetchTile[T],
+        _render_tile: RenderTile[T],
         _bounds: Bbox | None = None,
         _center: tuple[float, float] | None = None,
         **kwargs: Unpack[RasterLayerKwargs],
     ) -> None:
         self._pending_tasks = {}
-        self.fetch_tile = fetch_tile
-        self.render_tile = render_tile
+        self._fetch_tile = _fetch_tile
+        self._render_tile = _render_tile
         self.on_msg(handle_anywidget_dispatch)
         self._bounds = _bounds
         self._center = _center
@@ -216,9 +216,12 @@ class RasterLayer(BaseLayer, Generic[T]):
         assert self._center is not None
         return WeightedCentroid(x=self._center[0], y=self._center[1], num_items=100)
 
-    @classmethod
+    # Note: this is a staticmethod because it always returns a concrete instance of
+    # RasterLayer[Tile]
+    # The typing doesn't work out if this is `@classmethod` because the type checker
+    # tries and fails to associate `T` with `Tile`.
+    @staticmethod
     def from_pmtiles(
-        cls,
         reader: PMTilesReader,
         **kwargs: Unpack[RasterLayerKwargs],
     ) -> RasterLayer[Buffer | None]:
@@ -273,7 +276,6 @@ class RasterLayer(BaseLayer, Generic[T]):
                 )
 
         async def fetch_tile(
-            *,
             x: int,
             y: int,
             z: int,
@@ -297,9 +299,9 @@ class RasterLayer(BaseLayer, Generic[T]):
         kwargs.pop("max_zoom", None)
         kwargs.pop("extent", None)
 
-        return cls(
-            fetch_tile=fetch_tile,
-            render_tile=render_tile,
+        return RasterLayer(
+            _fetch_tile=fetch_tile,
+            _render_tile=render_tile,
             min_zoom=reader.minzoom,
             max_zoom=reader.maxzoom,
             extent=reader.bounds,
@@ -308,9 +310,12 @@ class RasterLayer(BaseLayer, Generic[T]):
             **kwargs,  # type: ignore
         )
 
-    @classmethod
+    # Note: this is a staticmethod because it always returns a concrete instance of
+    # RasterLayer[Tile]
+    # The typing doesn't work out if this is `@classmethod` because the type checker
+    # tries and fails to associate `T` with `Tile`.
+    @staticmethod
     def from_geotiff(
-        cls,
         geotiff: GeoTIFF,
         /,
         *,
@@ -339,17 +344,17 @@ class RasterLayer(BaseLayer, Generic[T]):
             wgs84_bounds[1] + (wgs84_bounds[3] - wgs84_bounds[1]) / 2,
         )
 
-        return cls(
+        return RasterLayer(
             _tile_matrix_set=tms,
             _crs=geotiff.crs,
-            fetch_tile=geotiff_fetch_tile,
-            render_tile=render_tile,
+            _fetch_tile=geotiff_fetch_tile,
+            _render_tile=render_tile,
             # min_zoom=0,
             # max_zoom=len(tms.tileMatrices) - 1,
             _bounds=Bbox(*wgs84_bounds),
             _center=wgs84_center,
             **kwargs,
-        )  # type: ignore[call-arg]
+        )
 
     _layer_type = t.Unicode("raster")
 
