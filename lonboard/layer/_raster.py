@@ -61,7 +61,7 @@ class FetchTile(Protocol[Tile_co]):
 
 
 class RenderTile(Protocol[Tile_contra]):
-    """Protocol for user-defined render function."""
+    """Protocol for user-defined render_tile function."""
 
     def __call__(self, tile: Tile_contra) -> EncodedImage | None:
         """Render a tile.
@@ -114,7 +114,7 @@ async def _handle_tile_request(
 
         tile = await widget.fetch_tile(x=x, y=y, z=z)
         # TODO: put rendering in thread pool?
-        rendered = widget.render(tile)
+        rendered = widget.render_tile(tile)
         if rendered is None:
             widget.send(
                 {
@@ -167,7 +167,7 @@ class RasterLayer(BaseLayer, Generic[T]):
     _pending_tasks: set[asyncio.Task[None]]
 
     fetch_tile: FetchTile[T]
-    render: RenderTile[T]
+    render_tile: RenderTile[T]
     _bounds: Bbox | None
     _center: tuple[float, float] | None
 
@@ -177,14 +177,14 @@ class RasterLayer(BaseLayer, Generic[T]):
         crs: CRS,
         *,
         fetch_tile: FetchTile[T],
-        render: RenderTile[T],
+        render_tile: RenderTile[T],
         _bounds: Bbox | None = None,
         _center: tuple[float, float] | None = None,
         **kwargs: Unpack[RasterLayerKwargs],
     ) -> None:
         self._pending_tasks = set()
         self.fetch_tile = fetch_tile
-        self.render = render
+        self.render_tile = render_tile
         self.on_msg(handle_anywidget_dispatch)
         self._bounds = _bounds
         self._center = _center
@@ -270,8 +270,8 @@ class RasterLayer(BaseLayer, Generic[T]):
 
             return buffer
 
-        def render(tile: Buffer | None) -> EncodedImage | None:
-            """Render a tile using the user-provided render function."""
+        def render_tile(tile: Buffer | None) -> EncodedImage | None:
+            """Render a tile using the user-provided render_tile function."""
             if tile is None:
                 return None
 
@@ -284,7 +284,7 @@ class RasterLayer(BaseLayer, Generic[T]):
 
         return RasterLayer(
             fetch_tile=fetch_tile,
-            render=render,
+            render_tile=render_tile,
             min_zoom=reader.minzoom,
             max_zoom=reader.maxzoom,
             extent=reader.bounds,
@@ -299,7 +299,7 @@ class RasterLayer(BaseLayer, Generic[T]):
         geotiff: GeoTIFF,
         /,
         *,
-        render: RenderTile[Tile],
+        render_tile: RenderTile[Tile],
         **kwargs: Any,
     ) -> RasterLayer[Tile]:
         """Create a RasterLayer from a GeoTIFF instance from async-geotiff."""
@@ -328,7 +328,7 @@ class RasterLayer(BaseLayer, Generic[T]):
             tile_matrix_set=tms,
             crs=geotiff.crs,
             fetch_tile=geotiff_fetch_tile,
-            render=render,
+            render_tile=render_tile,
             # min_zoom=0,
             # max_zoom=len(tms.tileMatrices) - 1,
             _bounds=Bbox(*wgs84_bounds),
