@@ -164,29 +164,28 @@ export class RasterModel extends BaseLayerModel {
     return { image, forwardTransform, inverseTransform };
   };
 
-  renderRasterSubLayer: TileLayerProps<TileData | null>["renderSubLayers"] = (
-    props,
-  ) => {
-    if (!props.data) {
-      return null;
-    }
+  readonly renderRasterSubLayer: TileLayerProps<TileData | null>["renderSubLayers"] =
+    (props) => {
+      if (!props.data) {
+        return null;
+      }
 
-    const { image, forwardTransform, inverseTransform } = props.data;
-    const { inverseFrom4326, forwardTo4326 } = this.accessConverters();
+      const { image, forwardTransform, inverseTransform } = props.data;
+      const { inverseFrom4326, forwardTo4326 } = this.accessConverters();
 
-    return new RasterLayer({
-      id: `${props.id}-raster`,
-      width: image.width,
-      height: image.height,
-      renderPipeline: image,
-      reprojectionFns: {
-        forwardTransform,
-        inverseTransform,
-        forwardReproject: forwardTo4326,
-        inverseReproject: inverseFrom4326,
-      },
-    });
-  };
+      return new RasterLayer({
+        id: `${props.id}-raster`,
+        width: image.width,
+        height: image.height,
+        renderPipeline: image,
+        reprojectionFns: {
+          forwardTransform,
+          inverseTransform,
+          forwardReproject: forwardTo4326,
+          inverseReproject: inverseFrom4326,
+        },
+      });
+    };
 
   renderTileMatrixSet(
     tileMatrixSet: TileMatrixSet,
@@ -205,9 +204,9 @@ export class RasterModel extends BaseLayerModel {
     return new TileLayer({
       ...this.baseLayerProps(),
       ...this.layerProps(),
-      getTileData: this.getTileData?.bind(this),
+      getTileData: this.getTileData,
       TilesetClass: TileMatrixSetTilesetFactory,
-      renderSubLayers: this.renderRasterSubLayer.bind(this),
+      renderSubLayers: this.renderRasterSubLayer,
     });
   }
 
@@ -225,7 +224,7 @@ export class RasterModel extends BaseLayerModel {
     return new TileLayer({
       ...this.baseLayerProps(),
       ...this.layerProps(),
-      getTileData: this.getTileData?.bind(this),
+      getTileData: this.getTileData,
       renderSubLayers: (props) => {
         const { tile } = props;
         const { boundingBox } = tile;
