@@ -12,8 +12,6 @@ from lonboard._serialization import ACCESSOR_SERIALIZATION
 from lonboard.traits._base import FixedErrorTraitType
 
 if TYPE_CHECKING:
-    from traitlets.traitlets import TraitType
-
     from lonboard.layer import BaseArrowLayer
 
 
@@ -42,7 +40,7 @@ class NormalAccessor(FixedErrorTraitType):
     )
 
     def __init__(
-        self: TraitType,
+        self,
         *args: Any,
         **kwargs: Any,
     ) -> None:

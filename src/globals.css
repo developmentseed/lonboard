@@ -34,5 +34,35 @@ div.lonboard {
   margin-top: -5px;
 }
 
+/*
+ * Tailwind preflight conflicts with maplibre-gl-geocoder:
+ *
+ * 1. Preflight sets `svg { display: block }`, breaking inline icon layout.
+ * 2. Preflight scoped inside `div.lonboard` outputs `div.lonboard input { padding: 0 }`,
+ *    which outspecifices the geocoder's own padding and causes text to overlap the search icon.
+ *    Match that specificity to override it.
+ * 3. Browsers add a native clear button to `type="search"` inputs; hide it since
+ *    the geocoder renders its own.
+ */
+.maplibregl-ctrl-geocoder svg {
+  display: inline-block;
+}
+div.lonboard .maplibregl-ctrl-geocoder--input {
+  padding: 6px 45px;
+}
+@media screen and (min-width: 640px) {
+  div.lonboard .maplibregl-ctrl-geocoder--input {
+    padding: 6px 35px;
+  }
+}
+.maplibregl-ctrl-geocoder--input::-webkit-search-cancel-button {
+  display: none;
+}
+.maplibregl-ctrl-geocoder--button {
+  padding: 0;
+  border: none;
+  background: #fff;
+}
+
 @tailwind components;
 @tailwind utilities;

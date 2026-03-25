@@ -4,18 +4,23 @@ from __future__ import annotations
 
 import asyncio
 import traceback
-from typing import TYPE_CHECKING, Generic, Protocol, TypeVar, Unpack
+from typing import TYPE_CHECKING, Any, Generic, Protocol, TypeVar, Unpack
 
-import traitlets.traitlets as t
+from pyproj.transformer import Transformer
 
+import lonboard.traits as t
 from lonboard._geoarrow.ops import Bbox, WeightedCentroid
 from lonboard.layer._base import BaseLayer
 from lonboard.raster import IMAGE_MIME_TYPES, EncodedImage
+from lonboard.traits import ProjectionTrait, TileMatrixSetTrait
 
 if TYPE_CHECKING:
     import sys
 
+    from async_geotiff import GeoTIFF, Overview, Tile
     from async_pmtiles import PMTilesReader
+    from morecantile import TileMatrixSet
+    from pyproj import CRS
 
     from lonboard.types.layer import RasterLayerKwargs
 
@@ -25,8 +30,9 @@ if TYPE_CHECKING:
         from typing_extensions import Buffer
 
 
-# This must be kept in sync with src/model/layer/raster.ts
+# These must be kept in sync with src/model/layer/raster.ts
 MSG_KIND = "raster-get-tile-data"
+MSG_KIND_CANCEL = f"{MSG_KIND}-cancel"
 
 Tile_co = TypeVar("Tile_co", covariant=True)
 """Covariant generic type for type that FetchTile can return."""
@@ -40,7 +46,7 @@ T = TypeVar("T")
 class FetchTile(Protocol[Tile_co]):
     """Protocol for user-defined fetch_tile function."""
 
-    async def __call__(self, *, x: int, y: int, z: int) -> Tile_co:
+    async def __call__(self, x: int, y: int, z: int) -> Tile_co:
         """Fetch a tile asynchronously.
 
         Args:
@@ -56,7 +62,7 @@ class FetchTile(Protocol[Tile_co]):
 
 
 class RenderTile(Protocol[Tile_contra]):
-    """Protocol for user-defined render function."""
+    """Protocol for user-defined render_tile function."""
 
     def __call__(self, tile: Tile_contra) -> EncodedImage | None:
         """Render a tile.
@@ -76,13 +82,28 @@ def handle_anywidget_dispatch(
     msg: str | list | dict,
     buffers: list[bytes],
 ) -> None:
-    if not isinstance(msg, dict) or msg.get("kind") != MSG_KIND:
+    if not isinstance(msg, dict):
+        return
+
+    kind = msg.get("kind")
+
+    if kind == MSG_KIND_CANCEL:
+        task_id = msg.get("id")
+        if not isinstance(task_id, str):
+            return
+        task = widget._pending_tasks.pop(task_id, None)
+        if task is not None:
+            task.cancel()
+        return
+
+    if kind != MSG_KIND:
         return
 
     # Schedule the async handler on the event loop
+    task_id = msg["id"]
     task = asyncio.create_task(_handle_tile_request(widget, msg, buffers))
-    widget._pending_tasks.add(task)
-    task.add_done_callback(widget._pending_tasks.discard)
+    widget._pending_tasks[task_id] = task
+    task.add_done_callback(lambda _: widget._pending_tasks.pop(task_id, None))
 
 
 async def _handle_tile_request(
@@ -107,9 +128,9 @@ async def _handle_tile_request(
         if widget.debug:
             output.append_stdout(f"Fetching tile at x={x}, y={y}, z={z}\n")
 
-        tile = await widget.fetch_tile(x=x, y=y, z=z)
+        tile = await widget._fetch_tile(x=x, y=y, z=z)
         # TODO: put rendering in thread pool?
-        rendered = widget.render(tile)
+        rendered = widget._render_tile(tile)
         if rendered is None:
             widget.send(
                 {
@@ -156,34 +177,33 @@ class RasterLayer(BaseLayer, Generic[T]):
     """
 
     # Prevent garbage collection of async tasks before they complete.
-    # Tasks are removed automatically via add_done_callback when they finish.
-    #
-    # TODO: ensure JS AbortSignal propagates to cancel these tasks
-    _pending_tasks: set[asyncio.Task[None]]
+    # Tasks are keyed by their UUID so they can be cancelled by ID when JS
+    # fires an AbortSignal. Entries are removed automatically on completion.
+    _pending_tasks: dict[str, asyncio.Task[None]]
 
-    fetch_tile: FetchTile[T]
-    render: RenderTile[T]
+    _fetch_tile: FetchTile[T]
+    _render_tile: RenderTile[T]
     _bounds: Bbox | None
     _center: tuple[float, float] | None
 
     def __init__(
         self,
         *,
-        fetch_tile: FetchTile[T],
-        render: RenderTile[T],
-        debug: bool = False,
+        _tile_matrix_set: TileMatrixSet | None,
+        _crs: CRS,
+        _fetch_tile: FetchTile[T],
+        _render_tile: RenderTile[T],
         _bounds: Bbox | None = None,
         _center: tuple[float, float] | None = None,
         **kwargs: Unpack[RasterLayerKwargs],
     ) -> None:
-        self._pending_tasks = set()
-        self.fetch_tile = fetch_tile
-        self.render = render
-        self.debug = debug
+        self._pending_tasks = {}
+        self._fetch_tile = _fetch_tile
+        self._render_tile = _render_tile
         self.on_msg(handle_anywidget_dispatch)
         self._bounds = _bounds
         self._center = _center
-        super().__init__(**kwargs)  # type: ignore
+        super().__init__(_tile_matrix_set=_tile_matrix_set, _crs=_crs, **kwargs)  # type: ignore
 
     @property
     def _bbox(self) -> Bbox:
@@ -196,9 +216,12 @@ class RasterLayer(BaseLayer, Generic[T]):
         assert self._center is not None
         return WeightedCentroid(x=self._center[0], y=self._center[1], num_items=100)
 
-    @classmethod
+    # Note: this is a staticmethod because it always returns a concrete instance of
+    # RasterLayer[Tile]
+    # The typing doesn't work out if this is `@classmethod` because the type checker
+    # tries and fails to associate `T` with `Tile`.
+    @staticmethod
     def from_pmtiles(
-        cls,
         reader: PMTilesReader,
         **kwargs: Unpack[RasterLayerKwargs],
     ) -> RasterLayer[Buffer | None]:
@@ -253,7 +276,6 @@ class RasterLayer(BaseLayer, Generic[T]):
                 )
 
         async def fetch_tile(
-            *,
             x: int,
             y: int,
             z: int,
@@ -265,8 +287,8 @@ class RasterLayer(BaseLayer, Generic[T]):
 
             return buffer
 
-        def render(tile: Buffer | None) -> EncodedImage | None:
-            """Render a tile using the user-provided render function."""
+        def render_tile(tile: Buffer | None) -> EncodedImage | None:
+            """Render a tile using the user-provided render_tile function."""
             if tile is None:
                 return None
 
@@ -278,8 +300,8 @@ class RasterLayer(BaseLayer, Generic[T]):
         kwargs.pop("extent", None)
 
         return RasterLayer(
-            fetch_tile=fetch_tile,
-            render=render,
+            _fetch_tile=fetch_tile,
+            _render_tile=render_tile,
             min_zoom=reader.minzoom,
             max_zoom=reader.maxzoom,
             extent=reader.bounds,
@@ -288,48 +310,59 @@ class RasterLayer(BaseLayer, Generic[T]):
             **kwargs,  # type: ignore
         )
 
-    # @classmethod
-    # def from_async_geotiff(
-    #     cls,
-    #     geotiff: GeoTIFF,
-    #     /,
-    #     *,
-    #     render: RenderTile[Any],
-    #     **kwargs: Any,
-    #     # TODO: can this return type specify RasterLayer[T] where T is the type of the
-    #     # GeoTIFF?
-    #     # Ideally, in a typed context, render should receive the correct tile type
-    # ) -> RasterLayer[Any]:
-    #     """Create a RasterLayer from a GeoTIFF instance from async-geotiff."""
-    #     from async_geotiff.tms import generate_tms
+    # Note: this is a staticmethod because it always returns a concrete instance of
+    # RasterLayer[Tile]
+    # The typing doesn't work out if this is `@classmethod` because the type checker
+    # tries and fails to associate `T` with `Tile`.
+    @staticmethod
+    def from_geotiff(
+        geotiff: GeoTIFF,
+        /,
+        *,
+        render_tile: RenderTile[Tile],
+        **kwargs: Any,
+    ) -> RasterLayer[Tile]:
+        """Create a RasterLayer from a GeoTIFF instance from async-geotiff."""
+        from async_geotiff.tms import generate_tms
 
-    #     tms = generate_tms(geotiff)
+        tms = generate_tms(geotiff)
 
-    #     # This should create a closure for fetching tiles from the geotiff. So the user
-    #     # shouldn't have to manually provide a fetch_tile function.
+        async def geotiff_fetch_tile(
+            x: int,
+            y: int,
+            z: int,
+        ) -> Tile:
+            """Fetch a specific tile from the GeoTIFF."""
+            images: list[GeoTIFF | Overview] = [geotiff, *geotiff.overviews]
+            image = images[len(images) - 1 - z]
+            return await image.fetch_tile(x, y, boundless=False)
 
-    #     async def geotiff_fetch_tile(
-    #         x: int,
-    #         y: int,
-    #         z: int,
-    #     ) -> Any:
-    #         """Fetch a specific tile from the GeoTIFF."""
-    #         # TODO: select correct IFD
-    #         return await geotiff.fetch_tile(x, y)
+        transformer = Transformer.from_crs(geotiff.crs, "EPSG:4326", always_xy=True)
+        wgs84_bounds = transformer.transform_bounds(*geotiff.bounds)
+        wgs84_center = (
+            wgs84_bounds[0] + (wgs84_bounds[2] - wgs84_bounds[0]) / 2,
+            wgs84_bounds[1] + (wgs84_bounds[3] - wgs84_bounds[1]) / 2,
+        )
 
-    #     return RasterLayer(
-    #         tms=tms,
-    #         fetch_tile=geotiff_fetch_tile,
-    #         render=render,
-    #         **kwargs,
-    #     )  # type: ignore[call-arg]
+        return RasterLayer(
+            _tile_matrix_set=tms,
+            _crs=geotiff.crs,
+            _fetch_tile=geotiff_fetch_tile,
+            _render_tile=render_tile,
+            # min_zoom=0,
+            # max_zoom=len(tms.tileMatrices) - 1,
+            _bounds=Bbox(*wgs84_bounds),
+            _center=wgs84_center,
+            **kwargs,
+        )
 
-    _layer_type = t.Unicode("raster").tag(sync=True)
+    _layer_type = t.Unicode("raster")
 
-    # TODO: Restore TMS generic tile traversal. For now, for simplicity, we're only rendering standard web mercator tiles.
-    # _tms = Dict().tag(sync=True)
+    _tile_matrix_set: TileMatrixSet = TileMatrixSetTrait(allow_none=True).tag(sync=True)  # type: ignore
 
-    tile_size = t.Int(512).tag(sync=True)
+    _crs: CRS = ProjectionTrait().tag(sync=True)  # type: ignore
+
+    _tile_size = t.Int(512)
     """The pixel dimension of the tiles, usually a power of 2.
 
     For geospatial viewports, tile size represents the target pixel width and height of each tile when rendered. Smaller tile sizes display the content at higher resolution, while the layer needs to load more tiles to fill the same viewport.
@@ -339,13 +372,13 @@ class RasterLayer(BaseLayer, Generic[T]):
     - Default: `512`
     """
 
-    zoom_offset = t.Int(0).tag(sync=True)
+    zoom_offset = t.Int(0)
     """This offset changes the zoom level at which the tiles are fetched.  Needs to be an integer.
 
     - Default: `0`
     """
 
-    max_zoom = t.Int(allow_none=True, default_value=None).tag(sync=True)
+    max_zoom = t.Int(allow_none=True, default_value=None)
     """The max zoom level of the layer's data.
 
     When overzoomed (i.e. `zoom > maxZoom`), tiles from this level will be displayed.
@@ -353,7 +386,7 @@ class RasterLayer(BaseLayer, Generic[T]):
     - Default: `null`
     """
 
-    min_zoom = t.Int(0).tag(sync=True)
+    min_zoom = t.Int(0)
     """The min zoom level of the layer's data.
 
     When underzoomed (i.e. `zoom < minZoom`), the layer will not display any tiles
@@ -368,7 +401,7 @@ class RasterLayer(BaseLayer, Generic[T]):
         default_value=None,
         minlen=4,
         maxlen=4,
-    ).tag(sync=True)
+    )
     """The bounding box of the layer's data, in the form of `[minX, minY, maxX, maxY]`.
 
     If provided, the layer will only load and render the tiles that are needed to fill
@@ -377,7 +410,7 @@ class RasterLayer(BaseLayer, Generic[T]):
     - Default: `null`
     """
 
-    max_cache_size = t.Int(allow_none=True, default_value=None).tag(sync=True)
+    max_cache_size = t.Int(allow_none=True, default_value=None)
     """The maximum number of tiles that can be cached.
 
     The tile cache keeps loaded tiles in memory even if they are no longer visible. It
@@ -390,10 +423,10 @@ class RasterLayer(BaseLayer, Generic[T]):
     - Default: `null`
     """
 
-    # max_requests = t.Int(6).tag(sync=True)
+    # max_requests = t.Int(6)
     """Maximum number of concurrent getTileData calls. Default: 6."""
 
-    debounce_time = t.Int(0).tag(sync=True)
+    debounce_time = t.Int(0)
     """Queue tile requests until no new tiles have been added for at least `debounceTime` milliseconds.
 
     If `debounceTime == 0`, tile requests are issued as quickly as the `maxRequests` concurrent request limit allows.

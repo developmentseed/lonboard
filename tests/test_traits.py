@@ -7,7 +7,7 @@ import pyarrow as pa
 import pytest
 import traitlets
 from arro3.core import Table
-from traitlets import TraitError
+from traitlets.traitlets import TraitError
 
 from lonboard._base import BaseExtension
 from lonboard.layer import BaseArrowLayer, BaseLayer

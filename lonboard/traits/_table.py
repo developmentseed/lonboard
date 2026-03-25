@@ -14,8 +14,6 @@ from lonboard._utils import get_geometry_column_index
 from lonboard.traits._base import FixedErrorTraitType
 
 if TYPE_CHECKING:
-    from traitlets.traitlets import TraitType
-
     from lonboard.layer import BaseArrowLayer
 
 
@@ -36,7 +34,7 @@ class ArrowTableTrait(FixedErrorTraitType):
     )
 
     def __init__(
-        self: TraitType,
+        self,
         *args: Any,
         allowed_geometry_types: set[EXTENSION_NAME] | None = None,
         allowed_dimensions: set[int] | None = None,

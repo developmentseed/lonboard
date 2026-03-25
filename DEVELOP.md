@@ -51,10 +51,10 @@ npm run build:watch
 
 ### Environment Variables
 
-To use custom environment variables, copy the example environment file:
+To use custom environment variables, you can create a file `.env`:
 
-```sh
-cp .env.example .env
+```bash
+VARIABLE="setting"
 ```
 
 This file contains the list of environment variables for the JavaScript component, and the build task will use them when available.
@@ -66,6 +66,17 @@ This file contains the list of environment variables for the JavaScript componen
 All models on the TypeScript side are combined into a single entry point, which is compiled by ESBuild and loaded by the Python `Map` class. (Refer to the `_esm` key on the `Map` class, which tells Jupyter/ipywidgets where to load the JavaScript bundle.)
 
 Anywidget and its dependency ipywidgets handles the serialization from Python into JS, automatically keeping each side in sync.
+
+### Developing against local packages
+
+E.g. to test against a local copy of `deck.gl-raster`:
+
+```bash
+pnpm link ../deck.gl-raster/packages/*
+```
+
+You'll also want to ensure that deck.gl versions in both projects are pinned
+exactly the same.
 
 ## Publishing
 

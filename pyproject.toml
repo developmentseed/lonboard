@@ -1,6 +1,6 @@
 [project]
 name = "lonboard"
-version = "0.14.0"
+version = "0.16.0-beta.1"
 description = "Fast, interactive geospatial data visualization in Jupyter."
 authors = [{ name = "Kyle Barron", email = "kyle@developmentseed.org" }]
 license = "MIT"
@@ -45,8 +45,8 @@ classifiers = [
 cli = ["click>=8.1.7", "pyogrio>=0.8", "shapely>=2"]
 geopandas = ["geopandas>=0.13", "pandas>=2", "pyarrow>=16", "shapely>=2"]
 movingpandas = ["movingpandas>=0.17"]
-cog = [
-    "async-geotiff>=0.1.0; python_version >= '3.11'",
+geotiff = [
+    "async-geotiff>=0.3.0; python_version >= '3.11'",
     "morecantile>=7.0; python_version >= '3.11'",
 ]
 
@@ -86,6 +86,7 @@ dev = [
     "geoarrow-rust-core>=0.4.0",
     "geoarrow-rust-io>=0.4.1",
     "geodatasets>=2024.8.0",
+    "geopy>=2.4.1",
     "h3>=4.3.1",
     "jupyterlab>=4.3.3",
     "matplotlib>=3.7.5",

@@ -44,22 +44,30 @@ jobs:
           # If no files with path lonboard/static, fail
           unzip -l dist/*.whl | grep "lonboard/static" || exit 1
 
-      - uses: actions/upload-artifact@v6
+      - uses: actions/upload-artifact@v7
         with:
           path: ./dist/
 
   upload_pypi:
+    name: Upload release to PyPI
     needs: [build]
+    if: github.event_name == 'push' && startsWith(github.ref, 'refs/tags')
     runs-on: ubuntu-latest
+    environment:
+      # Note: this environment must be configured in the repo settings
+      name: pypi-release
+      url: https://pypi.org/p/lonboard
+    permissions:
+      id-token: write # IMPORTANT: this permission is mandatory for trusted publishing
     steps:
-      - uses: actions/download-artifact@v7
+      - uses: actions/download-artifact@v8
         with:
           name: artifact
           path: dist
           merge-multiple: true
 
-      - uses: pypa/gh-action-pypi-publish@release/v1
-        with:
-          user: __token__
-          password: ${{ secrets.PYPI_API_TOKEN }}
-          # To test: repository_url: https://test.pypi.org/legacy/
+      - name: Publish package distributions to PyPI
+        uses: pypa/gh-action-pypi-publish@release/v1
+        # Optional: test upload to Test PyPI instead of production PyPI
+        # with:
+        #   repository-url: https://test.pypi.org/legacy/

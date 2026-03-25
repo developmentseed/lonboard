@@ -34,7 +34,7 @@ class MeshAccessor(FixedErrorTraitType):
     expected_arrow_type: DataType
 
     def __init__(
-        self: TraitType,
+        self,
         *args: Any,
         list_size: int,
         expected_arrow_type: DataType,
@@ -78,11 +78,7 @@ class TextureTrait(FixedErrorTraitType):
     allow_none = True
     info_text = "a URL string or numpy array representing image data"
 
-    def __init__(
-        self: TraitType,
-        *args: Any,
-        **kwargs: Any,
-    ) -> None:
+    def __init__(self, *args: Any, **kwargs: Any) -> None:
         super().__init__(*args, **kwargs)
         # This uses the default traitlet serialization for bytes (inside of a dict) and
         # strings
