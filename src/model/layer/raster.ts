@@ -55,9 +55,9 @@ export class RasterModel extends BaseLayerModel {
   constructor(model: WidgetModel, updateStateCallback: () => void) {
     super(model, updateStateCallback);
 
-    this.initRegularAttribute("tile_matrix_set", "tileMatrixSet");
-    this.initRegularAttribute("crs", "crs");
-    this.initRegularAttribute("tile_size", "tileSize");
+    this.initRegularAttribute("_tile_matrix_set", "tileMatrixSet");
+    this.initRegularAttribute("_crs", "crs");
+    this.initRegularAttribute("_tile_size", "tileSize");
     this.initRegularAttribute("zoom_offset", "zoomOffset");
     this.initRegularAttribute("max_zoom", "maxZoom");
     this.initRegularAttribute("min_zoom", "minZoom");

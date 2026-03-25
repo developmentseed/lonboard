@@ -338,11 +338,11 @@ class RasterLayer(BaseLayer, Generic[T]):
 
     _layer_type = t.Unicode("raster")
 
-    tile_matrix_set: TileMatrixSet = TileMatrixSetTrait(allow_none=True).tag(sync=True)  # type: ignore
+    _tile_matrix_set: TileMatrixSet = TileMatrixSetTrait(allow_none=True).tag(sync=True)  # type: ignore
 
-    crs: CRS = ProjectionTrait().tag(sync=True)  # type: ignore
+    _crs: CRS = ProjectionTrait().tag(sync=True)  # type: ignore
 
-    tile_size = t.Int(512)
+    _tile_size = t.Int(512)
     """The pixel dimension of the tiles, usually a power of 2.
 
     For geospatial viewports, tile size represents the target pixel width and height of each tile when rendered. Smaller tile sizes display the content at higher resolution, while the layer needs to load more tiles to fill the same viewport.
