@@ -30,8 +30,9 @@ if TYPE_CHECKING:
         from typing_extensions import Buffer
 
 
-# This must be kept in sync with src/model/layer/raster.ts
+# These must be kept in sync with src/model/layer/raster.ts
 MSG_KIND = "raster-get-tile-data"
+MSG_KIND_CANCEL = f"{MSG_KIND}-cancel"
 
 Tile_co = TypeVar("Tile_co", covariant=True)
 """Covariant generic type for type that FetchTile can return."""
@@ -81,13 +82,28 @@ def handle_anywidget_dispatch(
     msg: str | list | dict,
     buffers: list[bytes],
 ) -> None:
-    if not isinstance(msg, dict) or msg.get("kind") != MSG_KIND:
+    if not isinstance(msg, dict):
+        return
+
+    kind = msg.get("kind")
+
+    if kind == MSG_KIND_CANCEL:
+        task_id = msg.get("id")
+        if not isinstance(task_id, str):
+            return
+        task = widget._pending_tasks.pop(task_id, None)
+        if task is not None:
+            task.cancel()
+        return
+
+    if kind != MSG_KIND:
         return
 
     # Schedule the async handler on the event loop
+    task_id = msg["id"]
     task = asyncio.create_task(_handle_tile_request(widget, msg, buffers))
-    widget._pending_tasks.add(task)
-    task.add_done_callback(widget._pending_tasks.discard)
+    widget._pending_tasks[task_id] = task
+    task.add_done_callback(lambda _: widget._pending_tasks.pop(task_id, None))
 
 
 async def _handle_tile_request(
@@ -161,10 +177,9 @@ class RasterLayer(BaseLayer, Generic[T]):
     """
 
     # Prevent garbage collection of async tasks before they complete.
-    # Tasks are removed automatically via add_done_callback when they finish.
-    #
-    # TODO: ensure JS AbortSignal propagates to cancel these tasks
-    _pending_tasks: set[asyncio.Task[None]]
+    # Tasks are keyed by their UUID so they can be cancelled by ID when JS
+    # fires an AbortSignal. Entries are removed automatically on completion.
+    _pending_tasks: dict[str, asyncio.Task[None]]
 
     fetch_tile: FetchTile[T]
     render_tile: RenderTile[T]
@@ -173,22 +188,22 @@ class RasterLayer(BaseLayer, Generic[T]):
 
     def __init__(
         self,
-        tile_matrix_set: TileMatrixSet | None,
-        crs: CRS,
         *,
+        _tile_matrix_set: TileMatrixSet | None,
+        _crs: CRS,
         fetch_tile: FetchTile[T],
         render_tile: RenderTile[T],
         _bounds: Bbox | None = None,
         _center: tuple[float, float] | None = None,
         **kwargs: Unpack[RasterLayerKwargs],
     ) -> None:
-        self._pending_tasks = set()
+        self._pending_tasks = {}
         self.fetch_tile = fetch_tile
         self.render_tile = render_tile
         self.on_msg(handle_anywidget_dispatch)
         self._bounds = _bounds
         self._center = _center
-        super().__init__(tile_matrix_set=tile_matrix_set, crs=crs, **kwargs)  # type: ignore
+        super().__init__(_tile_matrix_set=_tile_matrix_set, _crs=_crs, **kwargs)  # type: ignore
 
     @property
     def _bbox(self) -> Bbox:
@@ -282,7 +297,7 @@ class RasterLayer(BaseLayer, Generic[T]):
         kwargs.pop("max_zoom", None)
         kwargs.pop("extent", None)
 
-        return RasterLayer(
+        return cls(
             fetch_tile=fetch_tile,
             render_tile=render_tile,
             min_zoom=reader.minzoom,
@@ -324,9 +339,9 @@ class RasterLayer(BaseLayer, Generic[T]):
             wgs84_bounds[1] + (wgs84_bounds[3] - wgs84_bounds[1]) / 2,
         )
 
-        return RasterLayer(
-            tile_matrix_set=tms,
-            crs=geotiff.crs,
+        return cls(
+            _tile_matrix_set=tms,
+            _crs=geotiff.crs,
             fetch_tile=geotiff_fetch_tile,
             render_tile=render_tile,
             # min_zoom=0,
