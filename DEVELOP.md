@@ -75,6 +75,9 @@ E.g. to test against a local copy of `deck.gl-raster`:
 pnpm link ../deck.gl-raster/packages/*
 ```
 
+You'll also want to ensure that deck.gl versions in both projects are pinned
+exactly the same.
+
 ## Publishing
 
 Push a new tag to the main branch of the format `v*`. A new version will be published to PyPI automatically.

@@ -1,3 +1,4 @@
+import type { TextureSource } from "@deck.gl/core";
 import type {
   TileLayerProps,
   _Tileset2DProps as Tileset2DProps,
@@ -28,7 +29,7 @@ type TileResponse =
   | { error: string };
 
 type TileData = {
-  image: ImageData;
+  image: TextureSource;
   forwardTransform: ReprojectionFns["forwardTransform"];
   inverseTransform: ReprojectionFns["inverseTransform"];
 };
@@ -200,7 +201,7 @@ export class RasterModel extends BaseLayerModel {
       }
     }
 
-    return new TileLayer({
+    return new TileLayer<TileData | null>({
       ...this.baseLayerProps(),
       ...this.layerProps(),
       getTileData: this.getTileData,
@@ -220,7 +221,7 @@ export class RasterModel extends BaseLayerModel {
       );
     }
 
-    return new TileLayer({
+    return new TileLayer<TileData | null>({
       ...this.baseLayerProps(),
       ...this.layerProps(),
       getTileData: this.getTileData,
@@ -228,12 +229,13 @@ export class RasterModel extends BaseLayerModel {
         const { tile } = props;
         const { boundingBox } = tile;
 
-        if (!props.data) {
+        if (!props.data || props.data === null) {
           return null;
         }
 
-        const { image } = props.data as TileData;
+        const { image } = props.data;
 
+        // @ts-expect-error props.data null not assignable to undefined
         return new BitmapLayer(props, {
           image,
           bounds: [
