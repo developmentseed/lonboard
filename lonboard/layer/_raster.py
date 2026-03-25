@@ -4,6 +4,7 @@ from __future__ import annotations
 
 import asyncio
 import traceback
+from contextlib import redirect_stderr, redirect_stdout
 from typing import TYPE_CHECKING, Generic, Literal, Protocol, TypeVar, Unpack
 
 from pyproj.transformer import Transformer
@@ -113,24 +114,28 @@ async def _handle_tile_request(
 ) -> None:
     """Async handler for tile data requests from the frontend."""
     output = widget._error_output
+    content = msg.get("msg", {})
+    tile = content.get("tile", {})
+    index = tile.get("index", {})
+    x = index.get("x")
+    y = index.get("y")
+    z = index.get("z")
 
     try:
         if widget.debug:
             output.append_stdout(f"Received tile request: {msg}")
 
-        content = msg["msg"]
-        tile = content["tile"]
-        index = tile["index"]
-        x = index["x"]
-        y = index["y"]
-        z = index["z"]
-
         if widget.debug:
             output.append_stdout(f"Fetching tile at x={x}, y={y}, z={z}\n")
 
-        tile = await widget._fetch_tile(x=x, y=y, z=z)
+        loaded_tile = await widget._fetch_tile(x=x, y=y, z=z)
+
         # TODO: put rendering in thread pool?
-        rendered = widget._render_tile(tile)
+        with (
+            redirect_stdout(output.open_stdout()),  # type: ignore
+            redirect_stderr(output.open_stderr()),  # type: ignore
+        ):
+            rendered = widget._render_tile(loaded_tile)
         if rendered is None:
             widget.send(
                 {
@@ -158,7 +163,9 @@ async def _handle_tile_request(
         )
     except Exception:  # noqa: BLE001
         error_msg = traceback.format_exc()
-        output.append_stderr(f"Error handling tile request: {error_msg}\n")
+        output.append_stderr(
+            f"Error handling tile request for input {tile}\n: {error_msg}\n",
+        )
 
         widget.send(
             {

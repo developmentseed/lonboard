@@ -1,6 +1,6 @@
 from __future__ import annotations
 
-from typing import TYPE_CHECKING, TypeVar
+from typing import TYPE_CHECKING, TypeVar, overload
 
 import numpy as np
 
@@ -10,7 +10,14 @@ if TYPE_CHECKING:
     T = TypeVar("T", bound=np.generic)
 
 
-def reshape_as_image(arr: NDArray[T]) -> NDArray[T]:
+# Note: it's important for the np.ma.MaskedArray overload to be first
+@overload
+def reshape_as_image(arr: np.ma.MaskedArray) -> np.ma.MaskedArray: ...
+@overload
+def reshape_as_image(arr: NDArray[T]) -> NDArray[T]: ...
+def reshape_as_image(
+    arr: NDArray[T] | np.ma.MaskedArray,
+) -> NDArray[T] | np.ma.MaskedArray:
     """Return the source array reshaped into standard image axis ordering.
 
     Libraries like async-geotiff and rasterio return arrays in `(bands, rows, columns)`
@@ -19,6 +26,8 @@ def reshape_as_image(arr: NDArray[T]) -> NDArray[T]:
 
     This function performs this reshaping by swapping the axes order from (bands, rows,
     columns) to (rows, columns, bands).
+
+    For more information, read the [rasterio documentation on interoperability](https://rasterio.readthedocs.io/en/stable/topics/image_processing.html).
 
     Args:
         arr : array-like of shape (bands, rows, columns)
