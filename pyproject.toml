@@ -45,7 +45,7 @@ classifiers = [
 cli = ["click>=8.1.7", "pyogrio>=0.8", "shapely>=2"]
 geopandas = ["geopandas>=0.13", "pandas>=2", "pyarrow>=16", "shapely>=2"]
 movingpandas = ["movingpandas>=0.17"]
-raster = [
+geotiff = [
     "async-geotiff>=0.3.0; python_version >= '3.11'",
     "morecantile>=7.0; python_version >= '3.11'",
 ]
