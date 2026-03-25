@@ -47,6 +47,7 @@ export class RasterModel extends BaseLayerModel {
   protected maxCacheSize: TileLayerProps["maxCacheSize"];
   protected debounceTime: TileLayerProps["debounceTime"];
 
+  /** proj4 converters from the source CRS to EPSG:4326 and EPSG:3857 */
   protected converters?: {
     4326: proj4.Converter;
     3857: proj4.Converter;
@@ -72,8 +73,9 @@ export class RasterModel extends BaseLayerModel {
       };
     }
 
-    this.model.on("change:crs", () => {
-      const crs = this.model.get("crs");
+    // Note: if we change the name to public "crs" we'll have to change it here
+    this.model.on("change:_crs", () => {
+      const crs = this.model.get("_crs");
       this.converters = {
         4326: proj4(crs, "EPSG:4326"),
         3857: proj4(crs, "EPSG:3857"),
