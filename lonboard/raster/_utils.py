@@ -27,6 +27,8 @@ def reshape_as_image(
     This function performs this reshaping by swapping the axes order from (bands, rows,
     columns) to (rows, columns, bands).
 
+    For more information, read the [rasterio documentation on interoperability](https://rasterio.readthedocs.io/en/stable/topics/image_processing.html).
+
     Args:
         arr : array-like of shape (bands, rows, columns)
             image to reshape
