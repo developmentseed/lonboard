@@ -51,10 +51,10 @@ npm run build:watch
 
 ### Environment Variables
 
-To use custom environment variables, copy the example environment file:
+To use custom environment variables, you can create a file `.env`:
 
-```sh
-cp .env.example .env
+```bash
+VARIABLE="setting"
 ```
 
 This file contains the list of environment variables for the JavaScript component, and the build task will use them when available.
