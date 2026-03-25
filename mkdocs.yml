@@ -95,6 +95,7 @@ nav:
       - api/basemap.md
       - api/colormap.md
       - api/controls.md
+      - api/raster.md
       - api/traits.md
       - api/view_state.md
       - Experimental:
