@@ -4,14 +4,14 @@ from __future__ import annotations
 
 import asyncio
 import traceback
-from typing import TYPE_CHECKING, Any, Generic, Protocol, TypeVar, Unpack
+from typing import TYPE_CHECKING, Any, Generic, Literal, Protocol, TypeVar, Unpack
 
 from pyproj.transformer import Transformer
 
 import lonboard.traits as t
 from lonboard._geoarrow.ops import Bbox, WeightedCentroid
 from lonboard.layer._base import BaseLayer
-from lonboard.raster import IMAGE_MIME_TYPES, EncodedImage
+from lonboard.raster import EncodedImage
 from lonboard.traits import ProjectionTrait, TileMatrixSetTrait
 
 if TYPE_CHECKING:
@@ -151,7 +151,7 @@ async def _handle_tile_request(
                 "kind": f"{MSG_KIND}-response",
                 "response": {
                     "type": "encoded-image",
-                    "mime_type": rendered.mime_type,
+                    "media_type": rendered.media_type,
                 },
             },
             response_buffers,
@@ -259,16 +259,16 @@ class RasterLayer(BaseLayer, Generic[T]):
         """
         from pmtiles.tile import TileType
 
-        mime_type: IMAGE_MIME_TYPES
+        media_type: Literal["image/png", "image/jpeg", "image/webp", "image/avif"]
         match reader.tile_type:
             case TileType.PNG:
-                mime_type = "image/png"
+                media_type = "image/png"
             case TileType.JPEG:
-                mime_type = "image/jpeg"
+                media_type = "image/jpeg"
             case TileType.WEBP:
-                mime_type = "image/webp"
+                media_type = "image/webp"
             case TileType.AVIF:
-                mime_type = "image/avif"
+                media_type = "image/avif"
             case _:
                 raise ValueError(
                     f"PMTiles tile type {reader.tile_type} is not supported by RasterLayer. "
@@ -292,7 +292,7 @@ class RasterLayer(BaseLayer, Generic[T]):
             if tile is None:
                 return None
 
-            return EncodedImage(data=tile, mime_type=mime_type)
+            return EncodedImage(data=tile, media_type=media_type)
 
         # Remove the kwargs that we override
         kwargs.pop("min_zoom", None)
