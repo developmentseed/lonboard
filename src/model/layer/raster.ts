@@ -25,7 +25,7 @@ const MSG_KIND = "raster-get-tile-data";
 
 type TileResponse =
   | { type: "empty" }
-  | { type: "encoded-image"; mime_type: string }
+  | { type: "encoded-image"; media_type: string }
   | { error: string };
 
 type TileData = {
@@ -147,7 +147,7 @@ export class RasterModel extends BaseLayerModel {
       return null;
     }
 
-    const image = await dataViewToImageBitmap(buffers[0], message.mime_type);
+    const image = await dataViewToImageBitmap(buffers[0], message.media_type);
 
     // Compute per-tile affine transforms once; cached by TileLayer
     const tileMatrix = this.tileMatrixSet?.tileMatrices[z];

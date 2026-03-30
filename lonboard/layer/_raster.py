@@ -5,14 +5,14 @@ from __future__ import annotations
 import asyncio
 import traceback
 from contextlib import redirect_stderr, redirect_stdout
-from typing import TYPE_CHECKING, Any, Generic, Protocol, TypeVar, Unpack
+from typing import TYPE_CHECKING, Generic, Literal, Protocol, TypeVar, Unpack
 
 from pyproj.transformer import Transformer
 
 import lonboard.traits as t
 from lonboard._geoarrow.ops import Bbox, WeightedCentroid
 from lonboard.layer._base import BaseLayer
-from lonboard.raster import IMAGE_MIME_TYPES, EncodedImage
+from lonboard.raster import EncodedImage
 from lonboard.traits import ProjectionTrait, TileMatrixSetTrait
 
 if TYPE_CHECKING:
@@ -156,7 +156,7 @@ async def _handle_tile_request(
                 "kind": f"{MSG_KIND}-response",
                 "response": {
                     "type": "encoded-image",
-                    "mime_type": rendered.mime_type,
+                    "media_type": rendered.media_type,
                 },
             },
             response_buffers,
@@ -266,16 +266,16 @@ class RasterLayer(BaseLayer, Generic[T]):
         """
         from pmtiles.tile import TileType
 
-        mime_type: IMAGE_MIME_TYPES
+        media_type: Literal["image/png", "image/jpeg", "image/webp", "image/avif"]
         match reader.tile_type:
             case TileType.PNG:
-                mime_type = "image/png"
+                media_type = "image/png"
             case TileType.JPEG:
-                mime_type = "image/jpeg"
+                media_type = "image/jpeg"
             case TileType.WEBP:
-                mime_type = "image/webp"
+                media_type = "image/webp"
             case TileType.AVIF:
-                mime_type = "image/avif"
+                media_type = "image/avif"
             case _:
                 raise ValueError(
                     f"PMTiles tile type {reader.tile_type} is not supported by RasterLayer. "
@@ -299,7 +299,7 @@ class RasterLayer(BaseLayer, Generic[T]):
             if tile is None:
                 return None
 
-            return EncodedImage(data=tile, mime_type=mime_type)
+            return EncodedImage(data=tile, media_type=media_type)
 
         # Remove the kwargs that we override
         kwargs.pop("min_zoom", None)
@@ -327,9 +327,27 @@ class RasterLayer(BaseLayer, Generic[T]):
         /,
         *,
         render_tile: RenderTile[Tile],
-        **kwargs: Any,
+        **kwargs: Unpack[RasterLayerKwargs],
     ) -> RasterLayer[Tile]:
-        """Create a RasterLayer from a GeoTIFF instance from async-geotiff."""
+        """Create a RasterLayer from a GeoTIFF instance from [Async-GeoTIFF].
+
+        This supports visualizing _virtually any_ [GeoTIFF][async_geotiff.GeoTIFF] instance, no matter whether it's a local file or stored on a remote store like S3.
+
+        This works best with [Cloud-Optimized GeoTIFFs](https://cogeo.org/) (COGs) since they are designed for efficient access by internal tiles. But it will work with any tiled GeoTIFF.
+
+        [Async-GeoTIFF]: https://developmentseed.org/async-geotiff/latest/
+
+        Args:
+            geotiff: A GeoTIFF instance from [Async-GeoTIFF]. Refer to the [Async-GeoTIFF] documentation for how to create a GeoTIFF from various input sources.
+
+        Keyword Args:
+            render_tile: A callback to transform a [Tile][async_geotiff.Tile] into an RGBA image. The callback must return an [EncodedImage][lonboard.raster.EncodedImage] instance
+            kwargs: parameters passed on to `__init__`
+
+        Returns:
+            A new RasterLayer instance.
+
+        """
         from async_geotiff.tms import generate_tms
 
         tms = generate_tms(geotiff)

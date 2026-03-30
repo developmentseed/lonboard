@@ -6,6 +6,8 @@
 - [North America roads ![](../assets/path-layer-roads.jpg)](../examples/north-america-roads) using [`PathLayer`][lonboard.PathLayer]
 - [Spatially-Partitioned GeoParquet ![](../assets/spatially-partitioned-geoparquet.jpg)](../examples/overture-geoparquet) using [`PolygonLayer`][lonboard.PolygonLayer]
 - [Overture Maps buildings ![](../assets/overture.jpg)](../examples/overture-maps) using [`PolygonLayer`][lonboard.PolygonLayer]
+- [Raster COG: NLCD Land Cover ![](../assets/raster-cog-nlcd.jpg)](../examples/raster-cog-nlcd-server) using [`RasterLayer`][lonboard.RasterLayer]
+- [Raster COG: Visual RGB Sentinel-2 ![](../assets/raster-cog-rgb-sentinel2.jpg)](../examples/raster-cog-rgb-server) using [`RasterLayer`][lonboard.RasterLayer]
 - [Air Traffic Control animation ![](../assets/air-traffic-control.gif)](../examples/air-traffic-control) using [`TripsLayer`][lonboard.TripsLayer]
 - [Global boundaries ![](../assets/boundaries.png)](../examples/global-boundaries) using [`PolygonLayer`][lonboard.PolygonLayer]
 - [Raster PMTiles ![](../assets/raster-pmtiles.jpg)](../examples/raster-pmtiles) using [`RasterLayer`][lonboard.RasterLayer]
