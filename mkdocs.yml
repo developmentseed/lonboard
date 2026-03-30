@@ -42,10 +42,10 @@ nav:
       - examples/north-america-roads.ipynb
       - examples/overture-maps.ipynb
       - examples/overture-geoparquet.ipynb
-      - examples/air-traffic-control.ipynb
-      - examples/global-boundaries.ipynb
       - examples/raster-cog-nlcd-server.ipynb
       - examples/raster-cog-rgb-server.ipynb
+      - examples/air-traffic-control.ipynb
+      - examples/global-boundaries.ipynb
       - examples/raster-pmtiles.ipynb
       - examples/kontur_pop.ipynb
       - examples/migration.ipynb
