@@ -8,6 +8,8 @@
 - [Overture Maps buildings ![](../assets/overture.jpg)](../examples/overture-maps) using [`PolygonLayer`][lonboard.PolygonLayer]
 - [Air Traffic Control animation ![](../assets/air-traffic-control.gif)](../examples/air-traffic-control) using [`TripsLayer`][lonboard.TripsLayer]
 - [Global boundaries ![](../assets/boundaries.png)](../examples/global-boundaries) using [`PolygonLayer`][lonboard.PolygonLayer]
+- [Raster COG: NLCD Land Cover ![](../assets/raster-cog-nlcd.jpg)](../examples/raster-cog-nlcd-server) using [`RasterLayer`][lonboard.RasterLayer]
+- [Raster COG: Visual RGB Sentinel-2 ![](../assets/raster-cog-rgb-sentinel2.jpg)](../examples/raster-cog-rgb-server) using [`RasterLayer`][lonboard.RasterLayer]
 - [Raster PMTiles ![](../assets/raster-pmtiles.jpg)](../examples/raster-pmtiles) using [`RasterLayer`][lonboard.RasterLayer]
 - [H3 Population Data ![](../assets/kontur-h3.jpg)](../examples/kontur_pop) using [`H3HexagonLayer`][lonboard.H3HexagonLayer]
 - [U.S. County-to-County Migration ![](../assets/arc-layer-migration-example.gif)](../examples/migration) using [`ArcLayer`][lonboard.ArcLayer] and [`BrushingExtension`][lonboard.layer_extension.BrushingExtension]
