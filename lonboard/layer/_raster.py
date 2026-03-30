@@ -329,17 +329,19 @@ class RasterLayer(BaseLayer, Generic[T]):
         render_tile: RenderTile[Tile],
         **kwargs: Unpack[RasterLayerKwargs],
     ) -> RasterLayer[Tile]:
-        """Create a RasterLayer from a GeoTIFF instance from async-geotiff.
+        """Create a RasterLayer from a GeoTIFF instance from [Async-GeoTIFF].
 
-        **Example:**
+        This supports visualizing _virtually any_ [GeoTIFF][async_geotiff.GeoTIFF] instance, no matter whether it's a local file or stored on a remote store like S3.
+
+        This works best with [Cloud-Optimized GeoTIFFs](https://cogeo.org/) (COGs) since they are designed for efficient access by internal tiles. But it will work with any tiled GeoTIFF.
+
+        [Async-GeoTIFF]: https://developmentseed.org/async-geotiff/latest/
 
         Args:
-            geotiff: A GeoTIFF instance from [`async-geotiff`](https://github.com/developmentseed/async-geotiff). Refer to the `async-geotiff` documentation for how to create a GeoTIFF from various input sources.
+            geotiff: A GeoTIFF instance from [Async-GeoTIFF]. Refer to the [Async-GeoTIFF] documentation for how to create a GeoTIFF from various input sources.
 
         Keyword Args:
-            render_tile:
-            TODO: reword
-            A function that takes a tile from the GeoTIFF and renders it into an RGBA image. The input tile will be in the format returned by `async-geotiff`'s `fetch_tile` method, which includes metadata and a method to access the pixel data as a NumPy array.
+            render_tile: A callback to transform a [Tile][async_geotiff.Tile] into an RGBA image. The callback must return an [EncodedImage][lonboard.raster.EncodedImage] instance
             kwargs: parameters passed on to `__init__`
 
         Returns:
