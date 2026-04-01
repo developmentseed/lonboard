@@ -209,13 +209,17 @@ By proxying COG data through Python, we can maintain that same value proposition
 
 [In the future](#future-work) we'll add support for client-side rendering too, which will give you options over when to use Python-based or WebGL-based styling.
 
-### The crucial importance of async-geotiff
+### The crucial importance of Async-GeoTIFF
 
-Relying on async-geotiff will also hopefully show more end users the benefits of async data loading, which might get more people interested in async-geotiff.
+The frontend sends many individual tile requests to Python, which means that we want to make many concurrent tile requests to the underlying GeoTIFF. And the Python code fetching those tiles is running _in the user's existing Python environment_.
 
-This approach would be impossible with rasterio because each tile request from JavaScript would block the main thread in Python while waiting for the rasterio requests to finish.
+So a blocking, synchronous loader like Rasterio would both completely stall the user's Python session _and_ those requests would be extremely slow as the second request wouldn't start until the first request finished. I don't _think_ it's possible to put Rasterio's tile fetches into a thread pool, unless perhaps you require opting-in to the new [libertiff driver](https://gdal.org/en/stable/drivers/raster/libertiff.html) in GDAL 3.11. Even then, it would be messy to manage a thread pool.
 
-In fact, it was the goal of providing COG support in Lonboard that really drove my desire to get Async-GeoTIFF to a production-ready state.
+To get excellent performance here, the client that fetches the image tiles really **must be asynchronous**.
+
+[Async-GeoTIFF] is a new high-level library for reading GeoTIFF and Cloud-Optimized GeoTIFF (COG) data. With a [Rust core](https://github.com/developmentseed/async-tiff) that exposes asynchronous GeoTIFF fetching to Python, it vastly speeds up concurrent GeoTIFF data fetching, like what we need in Lonboard.
+
+By using Async-GeoTIFF, we can ensure that Lonboard's COG visualizations have the maximum possible performance. In fact, Lonboard integration was a driving factor to get Async-GeoTIFF to a production-ready state.
 
 ## Future Work
 
