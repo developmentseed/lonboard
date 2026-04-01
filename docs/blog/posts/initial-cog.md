@@ -11,13 +11,17 @@ authors:
 #   - CHANGELOG.md#0130-2025-11-05
 ---
 
-# Initial Cloud-Optimized GeoTIFF support in Lonboard
+# Cloud-Optimized GeoTIFFs in Lonboard
 
-We've added support for rendering arbitrary [Cloud-Optimized GeoTIFF] (COG) files in Lonboard.
+[![](../../assets/initial-cog-blog-hero.jpg)][nlcd_cog_example]
+
+[nlcd_cog_example]: ../../../../../examples/raster-cog-nlcd-server
+
+We've added support for rendering [Cloud-Optimized GeoTIFF]s (COGs) in Lonboard.
 
 It works out of the box with the [vast majority](#most-cloud-optimized-geotiffs-supported) of COG data in the wild. COG tiles are streamed on demand as required, letting you visualize massive multi-gigabyte files on the fly.
 
-No need to set up a separate tile server. No need to download full images. No dependency on GDAL.
+You have full customizability of how image data is displayed. No need to set up a separate tile server. No need to download full images. No dependency on GDAL.
 
 [Cloud-Optimized GeoTIFF]: https://cogeo.org/
 
@@ -30,7 +34,7 @@ The [`RasterLayer`][lonboard.RasterLayer] now has a [`from_geotiff`][lonboard.Ra
 Three simple steps:
 
 1. Open a [`GeoTIFF`][async_geotiff.GeoTIFF] using [Async-GeoTIFF] and [Obstore].
-2. Create a _function callback_ for converting NumPy array data loaded from the GeoTIFF to a PNG image.
+2. Create a _render function callback_ — `render_tile` — for converting NumPy array data loaded from the GeoTIFF to a PNG image. This gives you full control for how you want to visualize the GeoTIFF image data
 3. Pass both of the above into [`RasterLayer.from_geotiff`][lonboard.RasterLayer.from_geotiff] and, voilà! Your COG is rendering on the map!
 
 [Async-GeoTIFF]: https://developmentseed.org/async-geotiff/latest/
@@ -43,14 +47,14 @@ Three simple steps:
 
 ### Most Cloud-Optimized GeoTIFFs supported
 
-This initial release already supports the vast majority of COGs you might find in the wild. The main exceptions are COGs that:
+This initial release supports the vast majority of COGs you might find in the wild. Some primary exceptions are COGs that:
 
 - Cross the antimeridian
 - Use a polar projection
 - Have a rotated affine transformation
 - Have non-square pixels
 
-Each of these are pretty uncommon, and in any case are planned to be fixed in an upcoming future release.
+Each of these are pretty uncommon, and in any case we plan to be fixed in an upcoming release.
 
 ### No need to deploy/host a tile server
 
@@ -72,19 +76,20 @@ In the future, we'll add support for client-side, GPU-based visualization, allow
 
 ### Building on deck.gl-raster
 
-For the last few months I've been working on [deck.gl-raster], a new extension library for [deck.gl] that supports generically visualizing COG data. This work today
+For the last few months I've been working on [deck.gl-raster], a new extension library for [deck.gl] that supports generically visualizing COG data.  Since Lonboard is built upon deck.gl, we can seamlessly integrate deck.gl-raster into Lonboard.
 
-Since Lonboard is built upon [deck.gl], we can expose those rast
+deck.gl-raster takes care of the tile selection and image reprojection. As you pan around the map, deck.gl-raster integrates with the deck.gl [`TileLayer`] to fetch more data from the COG as necessary.
+
+Then, when image data for each tile arrives in the client, deck.gl-raster manages client-side reprojection from the source projection into Web Mercator.
 
 [deck.gl]: https://deck.gl/
 [deck.gl-raster]: https://developmentseed.org/deck.gl-raster/
+[`TileLayer`]: https://deck.gl/docs/api-reference/geo-layers/tile-layer
 
 
 ### Python as a simple data proxy
 
-This implementation relies heavily on Async-GeoTIFF.
-
-In fact **all data fetching is actually happening in Python**. The browser is not fetching any image data directly.
+This implementation relies heavily on [Async-GeoTIFF]. In fact **all data fetching is happens through Python**. The browser has no direct connection to the COG and is not fetching any image data directly; the _only_ things known by the client are the layout of the COG tile grid and how to ask Python for more tiles.
 
 - When you pan the map, deck.gl and deck.gl-raster decide which COG tiles should be loaded for the current viewport.
 - Lonboard's TypeScript code interprets those tile requests and forwards on a request to Python for each one.
@@ -92,7 +97,7 @@ In fact **all data fetching is actually happening in Python**. The browser is no
 - When [`GeoTIFF.fetch_tile`][async_geotiff.GeoTIFF.fetch_tile] has finished loading a tile,
 - The browser requests a tile from Python, which in turn requests a tile over the network. This is why the underlying cog client really had to be async. In order to get data fetching performance the end user expects, we couldn't use rasterio. Even if we were running rasterio in a thread pool (which is hard to do, only really possible for geotiff in specific situations, depends on the underlying gdal version if you want to use the libertiff driver, etc (link to stack stac)) it would probably have significantly slower performance than async-geotiff.
 
-But why fetch data through Python instead of directly from the browser? A few reasons.
+But why fetch data through Python instead of directly from the browser? A couple reasons:
 
 ### Simpler Authentication
 
@@ -124,17 +129,13 @@ In fact, it was the goal of providing COG support in Lonboard that really drove 
 
 ### Zarr integration
 
-Soon we'll start work in deck.gl-raster on integrating with [GeoZarr] to generically support Zarr visualizations in the browser.
-
-Once we do that, we can extend Lonboard to visualize arbitrary [Zarr-Python] datasets as well as COGs.
+Soon we'll start work in deck.gl-raster on integrating with [GeoZarr] to generically support Zarr visualizations in the browser. Once completed, we can connect Lonboard to [Zarr-Python] datasets as well as COGs.
 
 [GeoZarr]: https://geozarr.org/
 [Zarr-Python]: https://zarr.readthedocs.io/en/stable/
 
 ### Client-side rendering
 
-Today's release sets the groundwork for rendering COGs in Lonboard, but rendering is still "server-side". When you pass in the `render_tile` callback, that's rendering a PNG in Python, just like a standard raster tile server like titiler would do.
+Today's release sets the groundwork for rendering COGs in Lonboard, but rendering is still "server-side" in your `render_tile` callback.
 
-In the future, you'll be able to pass raw GeoTIFF data to the browser, to customize rendering on the fly
-
-Zarr + client-side rendering.
+In the future, you'll be able to pass raw GeoTIFF data to the browser to customize rendering on the fly, apply pixel filtering dynamically, and animate over time series.
