@@ -3,8 +3,9 @@ import { MapboxOverlay } from "@deck.gl/mapbox";
 import React from "react";
 import type { MapRef, ViewStateChangeEvent } from "react-map-gl/maplibre";
 import MapGL, { useControl } from "react-map-gl/maplibre";
+import type { FlyToMessage } from "../types";
 import { isGlobeView } from "../util";
-import type { MapRendererProps, OverlayRendererProps } from "./types";
+import type { MapRendererProps, OverlayRendererProps, RendererRef } from "./types";
 
 /**
  * DeckGLOverlay component that integrates deck.gl with react-map-gl
@@ -26,9 +27,10 @@ function DeckGLOverlay(props: MapboxOverlayProps) {
  * MapboxOverlay. This approach gives the base map more control and can
  * enable features like interleaved rendering between map and deck layers.
  */
-const OverlayRenderer: React.FC<MapRendererProps & OverlayRendererProps> = (
-  mapProps,
-) => {
+const OverlayRenderer = React.forwardRef<
+  RendererRef,
+  MapRendererProps & OverlayRendererProps
+>((mapProps, ref) => {
   // Remove maplibre-specific props before passing to DeckGL
   const {
     controls,
@@ -37,34 +39,28 @@ const OverlayRenderer: React.FC<MapRendererProps & OverlayRendererProps> = (
     initialViewState,
     views,
     onViewStateChange,
-    flyToRequest,
-    onFlyToComplete,
     ...deckProps
   } = mapProps;
 
   const mapRef = React.useRef<MapRef>(null);
 
-  React.useEffect(() => {
-    if (flyToRequest && mapRef.current) {
-      const map = mapRef.current.getMap();
+  React.useImperativeHandle(ref, () => ({
+    flyTo(msg: FlyToMessage) {
+      const map = mapRef.current?.getMap();
+      if (!map) return;
       map.flyTo({
-        center: [flyToRequest.longitude, flyToRequest.latitude],
-        zoom: flyToRequest.zoom,
-        pitch: flyToRequest.pitch ?? 0,
-        bearing: flyToRequest.bearing ?? 0,
+        center: [msg.longitude, msg.latitude],
+        zoom: msg.zoom,
+        pitch: msg.pitch ?? 0,
+        bearing: msg.bearing ?? 0,
         duration:
-          flyToRequest.transitionDuration === "auto"
-            ? undefined
-            : flyToRequest.transitionDuration,
-        ...(flyToRequest.curve != null && { curve: flyToRequest.curve }),
-        ...(flyToRequest.speed != null && { speed: flyToRequest.speed }),
-        ...(flyToRequest.screenSpeed != null && {
-          screenSpeed: flyToRequest.screenSpeed,
-        }),
+          msg.transitionDuration === "auto" ? undefined : msg.transitionDuration,
+        ...(msg.curve != null && { curve: msg.curve }),
+        ...(msg.speed != null && { speed: msg.speed }),
+        ...(msg.screenSpeed != null && { screenSpeed: msg.screenSpeed }),
       });
-      onFlyToComplete?.();
-    }
-  }, [flyToRequest, onFlyToComplete]);
+    },
+  }));
 
   const onMoveEnd = onViewStateChange
     ? (evt: ViewStateChangeEvent) => {
@@ -93,6 +89,6 @@ const OverlayRenderer: React.FC<MapRendererProps & OverlayRendererProps> = (
       <DeckGLOverlay {...deckProps} />
     </MapGL>
   );
-};
+});
 
 export default OverlayRenderer;

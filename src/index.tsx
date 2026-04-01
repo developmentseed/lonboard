@@ -12,7 +12,6 @@ import throttle from "lodash.throttle";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { v4 as uuidv4 } from "uuid";
 
-import { flyTo } from "./actions/fly-to.js";
 import {
   useBasemapState,
   useControlsState,
@@ -27,12 +26,13 @@ import type {
   DeckFirstRendererProps,
   MapRendererProps,
   OverlayRendererProps,
+  RendererRef,
 } from "./renderers/types.js";
 import SidePanel from "./sidepanel/index";
 import { useStore, useViewStateDebounced } from "./state";
 import Toolbar from "./toolbar.js";
 import { getTooltip } from "./tooltip/index.js";
-import type { FlyToMessage, Message } from "./types.js";
+import type { Message } from "./types.js";
 import { isDefined, isGlobeView, sanitizeViewState } from "./util.js";
 
 import "maplibre-gl/dist/maplibre-gl.css";
@@ -161,20 +161,13 @@ function App() {
   const [initialViewState, setViewState] =
     useViewStateDebounced<MapViewState>("view_state");
 
-  const [flyToRequest, setFlyToRequest] = useState<FlyToMessage | null>(null);
+  const rendererRef = useRef<RendererRef | null>(null);
 
   // Handle custom messages
   model.on("msg:custom", (msg: Message) => {
     switch (msg.type) {
       case "fly-to":
-        if (
-          basemapState?.mode === "overlaid" ||
-          basemapState?.mode === "interleaved"
-        ) {
-          setFlyToRequest(msg);
-        } else {
-          flyTo(msg, setViewState);
-        }
+        rendererRef.current?.flyTo(msg);
         break;
 
       default:
@@ -304,12 +297,11 @@ function App() {
 
   const overlayRenderProps: OverlayRendererProps = {
     interleaved: basemapState?.mode === "interleaved",
-    flyToRequest,
-    onFlyToComplete: () => setFlyToRequest(null),
   };
 
   const deckFirstRenderProps: DeckFirstRendererProps = {
     renderBasemap: Boolean(basemapState),
+    setViewState,
   };
 
   return (
@@ -346,9 +338,9 @@ function App() {
         <div className="bg-transparent h-full w-full relative">
           {basemapState?.mode === "overlaid" ||
           basemapState?.mode === "interleaved" ? (
-            <OverlayRenderer {...mapRenderProps} {...overlayRenderProps} />
+            <OverlayRenderer ref={rendererRef} {...mapRenderProps} {...overlayRenderProps} />
           ) : (
-            <DeckFirstRenderer {...mapRenderProps} {...deckFirstRenderProps} />
+            <DeckFirstRenderer ref={rendererRef} {...mapRenderProps} {...deckFirstRenderProps} />
           )}
         </div>
       </div>
