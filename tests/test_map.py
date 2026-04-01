@@ -110,6 +110,19 @@ def test_view_state_first_person_dict():
     assert m.view_state == FirstPersonViewState(**view_state)
 
 
+def test_view_state_filters_transition_keys():
+    """camelCase transition* keys from the frontend should be silently ignored."""
+    view_state = {
+        "longitude": -122.45,
+        "latitude": 37.8,
+        "zoom": 4.0,
+        "transitionDuration": 1000,
+        "transitionInterpolator": {"type": "FlyToInterpolator"},
+    }
+    m = Map([], view_state=view_state)
+    assert m.view_state == MapViewState(longitude=-122.45, latitude=37.8, zoom=4.0)
+
+
 def test_view_state_orthographic_view_empty():
     view_state = {}
     m = Map([], view=OrthographicView(), view_state=view_state)
