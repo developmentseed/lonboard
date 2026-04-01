@@ -1,8 +1,14 @@
 import DeckGL from "@deck.gl/react";
-import type React from "react";
+import React from "react";
 import MapGL from "react-map-gl/maplibre";
 
-import type { DeckFirstRendererProps, MapRendererProps } from "./types";
+import { flyTo } from "../actions/fly-to";
+import type { FlyToMessage } from "../types";
+import type {
+  DeckFirstRendererProps,
+  MapRendererProps,
+  RendererRef,
+} from "./types";
 
 /**
  * DeckFirst renderer: DeckGL wraps Map component
@@ -12,9 +18,10 @@ import type { DeckFirstRendererProps, MapRendererProps } from "./types";
  * This is the traditional approach where deck.gl has full control over
  * the rendering pipeline.
  */
-const DeckFirstRenderer: React.FC<MapRendererProps & DeckFirstRendererProps> = (
-  mapProps,
-) => {
+const DeckFirstRenderer = React.forwardRef<
+  RendererRef,
+  MapRendererProps & DeckFirstRendererProps
+>((mapProps, ref) => {
   // Remove maplibre-specific props before passing to DeckGL
   const {
     controls,
@@ -22,8 +29,16 @@ const DeckFirstRenderer: React.FC<MapRendererProps & DeckFirstRendererProps> = (
     customAttribution,
     deckRef,
     renderBasemap,
+    setViewState,
     ...deckProps
   } = mapProps;
+
+  React.useImperativeHandle(ref, () => ({
+    flyTo(msg: FlyToMessage) {
+      flyTo(msg, setViewState);
+    },
+  }));
+
   return (
     <DeckGL
       ref={deckRef}
@@ -33,10 +48,10 @@ const DeckFirstRenderer: React.FC<MapRendererProps & DeckFirstRendererProps> = (
     >
       {controls.map((control) => control.renderDeck())}
       {renderBasemap && (
-        <MapGL mapStyle={mapStyle} customAttribution={customAttribution} />
+        <MapGL mapStyle={mapStyle} attributionControl={{ customAttribution }} />
       )}
     </DeckGL>
   );
-};
+});
 
 export default DeckFirstRenderer;

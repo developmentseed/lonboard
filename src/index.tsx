@@ -12,7 +12,6 @@ import throttle from "lodash.throttle";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { v4 as uuidv4 } from "uuid";
 
-import { flyTo } from "./actions/fly-to.js";
 import {
   useBasemapState,
   useControlsState,
@@ -27,6 +26,7 @@ import type {
   DeckFirstRendererProps,
   MapRendererProps,
   OverlayRendererProps,
+  RendererRef,
 } from "./renderers/types.js";
 import SidePanel from "./sidepanel/index";
 import { useStore, useViewStateDebounced } from "./state";
@@ -161,17 +161,23 @@ function App() {
   const [initialViewState, setViewState] =
     useViewStateDebounced<MapViewState>("view_state");
 
-  // Handle custom messages
-  model.on("msg:custom", (msg: Message) => {
-    switch (msg.type) {
-      case "fly-to":
-        flyTo(msg, setViewState);
-        break;
+  const rendererRef = useRef<RendererRef | null>(null);
 
-      default:
-        break;
-    }
-  });
+  // Handle custom messages
+  useEffect(() => {
+    const handler = (msg: Message) => {
+      switch (msg.type) {
+        case "fly-to":
+          rendererRef.current?.flyTo(msg);
+          break;
+
+        default:
+          break;
+      }
+    };
+    model.on("msg:custom", handler);
+    return () => model.off("msg:custom", handler);
+  }, [model]);
 
   // Fake state just to get react to re-render when a model callback is called
   // eslint-disable-next-line @typescript-eslint/no-unused-vars
@@ -299,6 +305,7 @@ function App() {
 
   const deckFirstRenderProps: DeckFirstRendererProps = {
     renderBasemap: Boolean(basemapState),
+    setViewState,
   };
 
   return (
@@ -335,9 +342,17 @@ function App() {
         <div className="bg-transparent h-full w-full relative">
           {basemapState?.mode === "overlaid" ||
           basemapState?.mode === "interleaved" ? (
-            <OverlayRenderer {...mapRenderProps} {...overlayRenderProps} />
+            <OverlayRenderer
+              ref={rendererRef}
+              {...mapRenderProps}
+              {...overlayRenderProps}
+            />
           ) : (
-            <DeckFirstRenderer {...mapRenderProps} {...deckFirstRenderProps} />
+            <DeckFirstRenderer
+              ref={rendererRef}
+              {...mapRenderProps}
+              {...deckFirstRenderProps}
+            />
           )}
         </div>
       </div>

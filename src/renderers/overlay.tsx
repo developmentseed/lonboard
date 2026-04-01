@@ -1,10 +1,15 @@
 import type { MapboxOverlayProps } from "@deck.gl/mapbox";
 import { MapboxOverlay } from "@deck.gl/mapbox";
-import type React from "react";
-import type { ViewStateChangeEvent } from "react-map-gl/maplibre";
+import React from "react";
+import type { MapRef, ViewStateChangeEvent } from "react-map-gl/maplibre";
 import MapGL, { useControl } from "react-map-gl/maplibre";
+import type { FlyToMessage } from "../types";
 import { isGlobeView } from "../util";
-import type { MapRendererProps, OverlayRendererProps } from "./types";
+import type {
+  MapRendererProps,
+  OverlayRendererProps,
+  RendererRef,
+} from "./types";
 
 /**
  * DeckGLOverlay component that integrates deck.gl with react-map-gl
@@ -26,9 +31,10 @@ function DeckGLOverlay(props: MapboxOverlayProps) {
  * MapboxOverlay. This approach gives the base map more control and can
  * enable features like interleaved rendering between map and deck layers.
  */
-const OverlayRenderer: React.FC<MapRendererProps & OverlayRendererProps> = (
-  mapProps,
-) => {
+const OverlayRenderer = React.forwardRef<
+  RendererRef,
+  MapRendererProps & OverlayRendererProps
+>((mapProps, ref) => {
   // Remove maplibre-specific props before passing to DeckGL
   const {
     controls,
@@ -39,6 +45,29 @@ const OverlayRenderer: React.FC<MapRendererProps & OverlayRendererProps> = (
     onViewStateChange,
     ...deckProps
   } = mapProps;
+
+  const mapRef = React.useRef<MapRef>(null);
+
+  React.useImperativeHandle(ref, () => ({
+    flyTo(msg: FlyToMessage) {
+      const map = mapRef.current?.getMap();
+      if (!map) return;
+      map.flyTo({
+        center: [msg.longitude, msg.latitude],
+        zoom: msg.zoom,
+        duration:
+          msg.transitionDuration === "auto"
+            ? undefined
+            : msg.transitionDuration,
+        ...(msg.pitch != null && { pitch: msg.pitch }),
+        ...(msg.bearing != null && { bearing: msg.bearing }),
+        ...(msg.curve != null && { curve: msg.curve }),
+        ...(msg.speed != null && { speed: msg.speed }),
+        ...(msg.screenSpeed != null && { screenSpeed: msg.screenSpeed }),
+      });
+    },
+  }));
+
   const onMoveEnd = onViewStateChange
     ? (evt: ViewStateChangeEvent) => {
         const viewState = {
@@ -53,6 +82,7 @@ const OverlayRenderer: React.FC<MapRendererProps & OverlayRendererProps> = (
     : undefined;
   return (
     <MapGL
+      ref={mapRef}
       reuseMaps
       initialViewState={initialViewState}
       mapStyle={mapStyle}
@@ -65,6 +95,6 @@ const OverlayRenderer: React.FC<MapRendererProps & OverlayRendererProps> = (
       <DeckGLOverlay {...deckProps} />
     </MapGL>
   );
-};
+});
 
 export default OverlayRenderer;
