@@ -51,10 +51,10 @@ const OverlayRenderer = React.forwardRef<
       map.flyTo({
         center: [msg.longitude, msg.latitude],
         zoom: msg.zoom,
-        pitch: msg.pitch ?? 0,
-        bearing: msg.bearing ?? 0,
         duration:
           msg.transitionDuration === "auto" ? undefined : msg.transitionDuration,
+        ...(msg.pitch != null && { pitch: msg.pitch }),
+        ...(msg.bearing != null && { bearing: msg.bearing }),
         ...(msg.curve != null && { curve: msg.curve }),
         ...(msg.speed != null && { speed: msg.speed }),
         ...(msg.screenSpeed != null && { screenSpeed: msg.screenSpeed }),
