@@ -8,7 +8,7 @@ jobs:
   validate-pr-title:
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/create-github-app-token@v3.0.0
+      - uses: actions/create-github-app-token@f8d387b68d61c58ab83c6c016672934102569859 # v3.0.0
         id: app-token
         with:
           app-id: ${{ secrets.DS_RELEASE_BOT_ID }}
@@ -16,7 +16,7 @@ jobs:
           permission-pull-requests: write
 
       - name: PR Conventional Commit Validation
-        uses: ytanikin/pr-conventional-commits@1.5.2
+        uses: ytanikin/pr-conventional-commits@639145d78959c53c43112365837e3abd21ed67c1 # 1.5.2
         with:
           task_types: '["feat","fix","docs","test","ci","refactor","perf","chore","revert"]'
           token: ${{ steps.app-token.outputs.token }}
