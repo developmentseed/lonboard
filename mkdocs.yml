@@ -42,6 +42,8 @@ nav:
       - examples/north-america-roads.ipynb
       - examples/overture-maps.ipynb
       - examples/overture-geoparquet.ipynb
+      - examples/raster-cog-nlcd-server.ipynb
+      - examples/raster-cog-rgb-server.ipynb
       - examples/air-traffic-control.ipynb
       - examples/global-boundaries.ipynb
       - examples/raster-pmtiles.ipynb
@@ -95,6 +97,7 @@ nav:
       - api/basemap.md
       - api/colormap.md
       - api/controls.md
+      - api/raster.md
       - api/traits.md
       - api/view_state.md
       - Experimental:
@@ -207,7 +210,7 @@ plugins:
             - https://developmentseed.org/obspec/latest/objects.inv
             - https://developmentseed.org/obstore/latest/objects.inv
             - https://docs.python.org/3/objects.inv
-            - https://duckdb.org/docs/stable/clients/python/reference/objects.inv
+            - https://duckdb.org/docs/current/clients/python/reference/objects.inv
             - https://fiona.readthedocs.io/en/stable/objects.inv
             - https://geoarrow.github.io/geoarrow-rs/python/latest/objects.inv
             - https://geoarrow.org/geoarrow-python/main/objects.inv

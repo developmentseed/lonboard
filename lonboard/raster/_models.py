@@ -11,12 +11,13 @@ if TYPE_CHECKING:
     else:
         from typing_extensions import Buffer
 
-IMAGE_MIME_TYPES = Literal["image/png", "image/jpeg", "image/webp", "image/avif"]
-
 
 @dataclass
 class EncodedImage:
     """An encoded image in a specific format."""
 
     data: Buffer
-    mime_type: Literal["image/png", "image/jpeg", "image/webp", "image/avif"]
+    """Image data as a bytes-like object, such as bytes or memoryview."""
+
+    media_type: Literal["image/png", "image/jpeg", "image/webp", "image/avif"]
+    """The media type of the image, indicating its format."""
