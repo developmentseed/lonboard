@@ -338,9 +338,17 @@ function App() {
         <div className="bg-transparent h-full w-full relative">
           {basemapState?.mode === "overlaid" ||
           basemapState?.mode === "interleaved" ? (
-            <OverlayRenderer ref={rendererRef} {...mapRenderProps} {...overlayRenderProps} />
+            <OverlayRenderer
+              ref={rendererRef}
+              {...mapRenderProps}
+              {...overlayRenderProps}
+            />
           ) : (
-            <DeckFirstRenderer ref={rendererRef} {...mapRenderProps} {...deckFirstRenderProps} />
+            <DeckFirstRenderer
+              ref={rendererRef}
+              {...mapRenderProps}
+              {...deckFirstRenderProps}
+            />
           )}
         </div>
       </div>

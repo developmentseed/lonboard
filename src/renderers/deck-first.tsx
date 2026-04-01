@@ -4,7 +4,11 @@ import MapGL from "react-map-gl/maplibre";
 
 import { flyTo } from "../actions/fly-to";
 import type { FlyToMessage } from "../types";
-import type { DeckFirstRendererProps, MapRendererProps, RendererRef } from "./types";
+import type {
+  DeckFirstRendererProps,
+  MapRendererProps,
+  RendererRef,
+} from "./types";
 
 /**
  * DeckFirst renderer: DeckGL wraps Map component
@@ -44,10 +48,7 @@ const DeckFirstRenderer = React.forwardRef<
     >
       {controls.map((control) => control.renderDeck())}
       {renderBasemap && (
-        <MapGL
-          mapStyle={mapStyle}
-          attributionControl={{ customAttribution }}
-        />
+        <MapGL mapStyle={mapStyle} attributionControl={{ customAttribution }} />
       )}
     </DeckGL>
   );

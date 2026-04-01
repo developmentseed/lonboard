@@ -5,7 +5,11 @@ import type { MapRef, ViewStateChangeEvent } from "react-map-gl/maplibre";
 import MapGL, { useControl } from "react-map-gl/maplibre";
 import type { FlyToMessage } from "../types";
 import { isGlobeView } from "../util";
-import type { MapRendererProps, OverlayRendererProps, RendererRef } from "./types";
+import type {
+  MapRendererProps,
+  OverlayRendererProps,
+  RendererRef,
+} from "./types";
 
 /**
  * DeckGLOverlay component that integrates deck.gl with react-map-gl
@@ -52,7 +56,9 @@ const OverlayRenderer = React.forwardRef<
         center: [msg.longitude, msg.latitude],
         zoom: msg.zoom,
         duration:
-          msg.transitionDuration === "auto" ? undefined : msg.transitionDuration,
+          msg.transitionDuration === "auto"
+            ? undefined
+            : msg.transitionDuration,
         ...(msg.pitch != null && { pitch: msg.pitch }),
         ...(msg.bearing != null && { bearing: msg.bearing }),
         ...(msg.curve != null && { curve: msg.curve }),
