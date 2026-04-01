@@ -164,16 +164,20 @@ function App() {
   const rendererRef = useRef<RendererRef | null>(null);
 
   // Handle custom messages
-  model.on("msg:custom", (msg: Message) => {
-    switch (msg.type) {
-      case "fly-to":
-        rendererRef.current?.flyTo(msg);
-        break;
+  useEffect(() => {
+    const handler = (msg: Message) => {
+      switch (msg.type) {
+        case "fly-to":
+          rendererRef.current?.flyTo(msg);
+          break;
 
-      default:
-        break;
-    }
-  });
+        default:
+          break;
+      }
+    };
+    model.on("msg:custom", handler);
+    return () => model.off("msg:custom", handler);
+  }, [model]);
 
   // Fake state just to get react to re-render when a model callback is called
   // eslint-disable-next-line @typescript-eslint/no-unused-vars
