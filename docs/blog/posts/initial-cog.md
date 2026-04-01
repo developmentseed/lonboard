@@ -95,8 +95,8 @@ cog_path = "new-zealand/new-zealand_2024-2025_10m/rgb/2193/CC11.tiff"
 geotiff = await GeoTIFF.open(cog_path, store=store)
 
 
-# Define our render callback
-def render_rgb_tile(tile: Tile) -> EncodedImage:
+# Define our render callback. It must return an instance of `EncodedImage`.
+def render_tile(tile: Tile) -> EncodedImage:
     """Convert the array data from the GeoTIFF to an RGB PNG."""
 
     # Reshape from (bands, height, width) to (height, width, bands)
@@ -112,7 +112,7 @@ def render_rgb_tile(tile: Tile) -> EncodedImage:
     return EncodedImage(data=buf.getvalue(), media_type="image/png")
 
 # Create a RasterLayer and put it on a map
-layer = RasterLayer.from_geotiff(geotiff, render_tile=render_rgb_tile)
+layer = RasterLayer.from_geotiff(geotiff, render_tile=render_tile)
 m = Map(layer)
 m
 ```
@@ -134,20 +134,12 @@ tile = await geotiff.fetch_tile(0, 0)
 Now, pass the `tile` into your `render_tile` callback:
 
 ```py
-encoded_image = render_rgb_tile(tile)
+render_tile(tile)
 ```
 
-Then use `IPython.display.display_png` (already available as a dependency in Jupyter Notebooks) to see how your encoded PNG looks.
-
-```py
-from IPython.display import display_png
-
-display_png(encoded_image.data, raw=True)
-```
+The result of `render_tile` (which must be an [`EncodedImage`][lonboard.raster.EncodedImage]) should automatically display.
 
 ![](../../assets/raster-tile-debug.jpg)
-
-This is the same process happening under the hood by the `RasterLayer`. If your PNG renders correctly with `IPython.display.display_png`, it should render the same with the `RasterLayer`.
 
 ## How it works
 
