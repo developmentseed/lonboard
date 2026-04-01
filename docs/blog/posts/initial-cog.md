@@ -34,7 +34,7 @@ The [`RasterLayer`][lonboard.RasterLayer] now has a [`from_geotiff`][lonboard.Ra
 Three simple steps:
 
 1. [Open a `GeoTIFF`][async_geotiff.GeoTIFF.open] using [Async-GeoTIFF] and [Obstore].
-2. Create a _render function_ callback for converting NumPy array data loaded from the GeoTIFF to a PNG image. This gives you full control for how you want to visualize the GeoTIFF image data
+2. Create a _render function_ that converts [`Tile`s][async_geotiff.Tile] loaded on demand from the GeoTIFF to PNG images. This gives you full control for how you want to visualize the image data
 3. Pass the `GeoTIFF` and the render function (as the `render_tile` parameter) to [`RasterLayer.from_geotiff`][lonboard.RasterLayer.from_geotiff] and, voilà! Your COG is on the map!
 
 [Async-GeoTIFF]: https://developmentseed.org/async-geotiff/latest/
@@ -42,29 +42,44 @@ Three simple steps:
 
 ## Features
 
+### Visualize massive COGs on demand
+
+There's no restriction to the size of COGs that you can visualize with the `RasterLayer`. COG tiles will be streamed as necessary depending on your map's viewport.
+
+The [Land Cover example notebook][nlcd_cog_example] visualizes a 1.3GB COG on the fly with no hiccups.
+
+### Full control over image rendering
+
+Use any Python code — with _any_ dependencies you'd like — to customize how your images are displayed.
+
+Use NumPy to customize band combinations and apply colormaps as you'd like. Or for, say, embeddings data, you might want to apply some model on the fly as tiles are rendered.
+
+For now all Lonboard requires you to define a Python callback for converting COG tiles to PNGs, but [in the future](#future-work), we'll add support for client-side, GPU-based visualization. This will allow for richer visualizations  options like dynamic pixel filtering and animation over time series.
+
+### Any COG, anywhere
+
+Any COG that you can access with [Async-GeoTIFF] you can visualize. You're not limited to publicly accessible data; local files and private data behind authentication work seamlessly, even when no public URL exists to access it.
+
+Any credentials you use to load files never leave your Python environment and aren't transferred to the browser session.
+
+### No need to deploy/host a tile server
+
+With the `render_tile` callback, you're effectively creating your own tile server through Lonboard. As you pan around the map, Lonboard automatically calls `render_tile` as it fetches more data from the COG.
+
+This is akin to what a tile server like [Titiler] is doing, but this happens in your own Python environment instead of deploying a separate server. And unlike Titiler, no raster warping is needed because reprojection happens automatically in the browser.
+
+[Titiler]: https://github.com/developmentseed/titiler
+
 ### Most Cloud-Optimized GeoTIFFs supported
 
 This initial release supports the vast majority of COGs you might find in the wild. Some primary exceptions are COGs that:
 
-- Cross the antimeridian
-- Use a polar projection
-- Have a rotated affine transformation
-- Have non-square pixels
+- Cross the antimeridian.
+- Use a polar projection.
+- Have a rotated affine transformation.
+- Have non-square pixels.
 
 Each of these are pretty uncommon, and in any case we plan to be fixed in an upcoming release.
-
-### No need to deploy/host a tile server
-
-The Lonboard COG support works with any file that you can access with Async-GeoTIFF, whether it's a local file on disk or behind cloud storage authentication. As long as you can access a COG with Async-GeoTIFF, Lonboard can stream and visualize it directly, even if there's no public URL to access it.
-
-With the `render_tile` callback, you're effectively creating your own tile server through Lonboard. As you pan around the map, Lonboard automatically calls `render_tile`, as it fetches more data from the COG.
-
-This is akin to what a tile server like [Titiler] is doing, but this happens in your own Python environment instead of deploying a separate server. But unlike Titiler, no raster warping is needed because reprojection happens automatically in the browser.
-
-In the future, we'll add support for client-side, GPU-based visualization, allowing for richer visualization options. See [Future Work](#future-work).
-
-[Titiler]: https://github.com/developmentseed/titiler
-
 
 ## Example
 
