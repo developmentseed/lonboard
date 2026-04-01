@@ -1,6 +1,6 @@
 ---
 draft: false
-date: 2026-03-26
+date: 2026-04-02
 categories:
   - Release
   - Feature
@@ -15,9 +15,9 @@ authors:
 
 We've added support for rendering arbitrary [Cloud-Optimized GeoTIFF] (COG) files in Lonboard.
 
-It works out of the box with practically any COG data. COG tiles are streamed on demand as required.
+It works out of the box with the [vast majority](#most-cloud-optimized-geotiffs-supported) of COG data in the wild. COG tiles are streamed on demand as required, letting you visualize massive multi-gigabyte files on the fly.
 
-No need to set up a separate tile server. No large downloads. No dependency on GDAL.
+No need to set up a separate tile server. No need to download full images. No dependency on GDAL.
 
 [Cloud-Optimized GeoTIFF]: https://cogeo.org/
 
@@ -30,7 +30,7 @@ The [`RasterLayer`][lonboard.RasterLayer] now has a [`from_geotiff`][lonboard.Ra
 Three simple steps:
 
 1. Open a [`GeoTIFF`][async_geotiff.GeoTIFF] using [Async-GeoTIFF] and [Obstore].
-2. Create a _function callback_ for converting numpy data loaded from a GeoTIFF tile to a PNG image.
+2. Create a _function callback_ for converting NumPy array data loaded from the GeoTIFF to a PNG image.
 3. Pass both of the above into [`RasterLayer.from_geotiff`][lonboard.RasterLayer.from_geotiff] and, voilà! Your COG is rendering on the map!
 
 [Async-GeoTIFF]: https://developmentseed.org/async-geotiff/latest/
@@ -38,26 +38,31 @@ Three simple steps:
 
 ## Example
 
-### Understanding `render_tile`
-
-
-
-Effectively this creates your own tile server in Python that Lonboard calls to request more data from the COG.
-
-In the future, we'll add support for client-side, GPU-based visualization, allowing for richer visualization options. See [Future Work](#future-work).
 
 ## Features
 
-### Virtually all COGs supported
+### Most Cloud-Optimized GeoTIFFs supported
 
-The only COGs that aren't supported today are those that:
+This initial release already supports the vast majority of COGs you might find in the wild. The main exceptions are COGs that:
 
 - Cross the antimeridian
 - Use a polar projection
+- Have a rotated affine transformation
+- Have non-square pixels
+
+Each of these are pretty uncommon, and in any case are planned to be fixed in an upcoming future release.
 
 ### No need to deploy/host a tile server
 
-When you
+The Lonboard COG support works with any file that you can access with Async-GeoTIFF, whether it's a local file on disk or behind cloud storage authentication. As long as you can access a COG with Async-GeoTIFF, Lonboard can stream and visualize it directly, even if there's no public URL to access it.
+
+With the `render_tile` callback, you're effectively creating your own tile server through Lonboard. As you pan around the map, Lonboard automatically calls `render_tile`, as it fetches more data from the COG.
+
+This is akin to what a tile server like [Titiler] is doing, but this happens in your own Python environment instead of deploying a separate server. But unlike Titiler, no raster warping is needed because reprojection happens automatically in the browser.
+
+In the future, we'll add support for client-side, GPU-based visualization, allowing for richer visualization options. See [Future Work](#future-work).
+
+[Titiler]: https://github.com/developmentseed/titiler
 
 ## How it works
 
