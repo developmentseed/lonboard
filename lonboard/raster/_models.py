@@ -1,7 +1,7 @@
 from __future__ import annotations
 
 from dataclasses import dataclass
-from typing import TYPE_CHECKING, Literal
+from typing import TYPE_CHECKING, Any, Literal
 
 if TYPE_CHECKING:
     import sys
@@ -41,3 +41,7 @@ class EncodedImage:
                 raise TypeError(
                     f"data must be a bytes-like object such as bytes or memoryview, not {type(self.data).__name__!r}",
                 ) from e
+
+    def _repr_mimebundle_(self, **kwargs: Any) -> dict[str, bytes]:  # noqa: ARG002
+        data = self.data if isinstance(self.data, bytes) else bytes(self.data)
+        return {self.media_type: data}
