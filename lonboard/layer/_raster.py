@@ -204,9 +204,20 @@ class RasterLayer(BaseLayer, Generic[T]):
         _center: tuple[float, float] | None = None,
         **kwargs: Unpack[RasterLayerKwargs],
     ) -> None:
+
+        def render_tile_wrapper(tile: T) -> EncodedImage | None:
+            """Wrap render_tile to validate that it returns EncodedImage."""
+            output = _render_tile(tile)
+            if output is not None and not isinstance(output, EncodedImage):
+                raise TypeError(
+                    f"render_tile must return an EncodedImage or None, not {type(output).__name__!r}",
+                )
+
+            return output
+
         self._pending_tasks = {}
         self._fetch_tile = _fetch_tile
-        self._render_tile = _render_tile
+        self._render_tile = render_tile_wrapper
         self.on_msg(handle_anywidget_dispatch)
         self._bounds = _bounds
         self._center = _center
