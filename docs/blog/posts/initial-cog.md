@@ -34,7 +34,7 @@ The [`RasterLayer`][lonboard.RasterLayer] now has a [`from_geotiff`][lonboard.Ra
 Three simple steps:
 
 1. [Open a `GeoTIFF`][async_geotiff.GeoTIFF.open] using [Async-GeoTIFF] and [Obstore].
-2. Create a _render function_ that converts [`Tile`s][async_geotiff.Tile] loaded on demand from the GeoTIFF to PNG images. This gives you full control for how you want to visualize the image data
+2. Create a _render function_ that converts [`Tile`s][async_geotiff.Tile] loaded on demand from the GeoTIFF to PNG, JPEG, or WebP images. This gives you full control for how you want to render the image data.
 3. Pass the `GeoTIFF` and the render function (as the `render_tile` parameter) to [`RasterLayer.from_geotiff`][lonboard.RasterLayer.from_geotiff] and, voilà! Your COG is on the map!
 
 [Async-GeoTIFF]: https://developmentseed.org/async-geotiff/latest/
@@ -52,9 +52,9 @@ The [Land Cover example notebook][nlcd_cog_example] visualizes a 1.3GB COG on th
 
 Use any Python code — with _any_ dependencies you'd like — to customize how your images are displayed.
 
-Use NumPy to customize band combinations and apply colormaps as you'd like. Or for, say, embeddings data, you might want to apply some model on the fly as tiles are rendered.
+Use NumPy to customize band combinations and apply colormaps. Or for, say, embeddings data, you might want to apply some Machine Learning model on the fly as tiles are rendered.
 
-For now all Lonboard requires you to define a Python callback for converting COG tiles to PNGs, but [in the future](#future-work), we'll add support for client-side, GPU-based visualization. This will allow for richer visualizations  options like dynamic pixel filtering and animation over time series.
+For now Lonboard requires you to define the rendering as a Python callback, but [in the future](#future-work), we'll add support for client-side, GPU-based visualization. This will allow for richer visualizations, like dynamic pixel filtering, client-side band math, and animation over time series.
 
 ### Any COG, anywhere
 
@@ -62,9 +62,9 @@ Any COG that you can access with [Async-GeoTIFF] you can visualize. You're not l
 
 Any credentials you use to load files never leave your Python environment and aren't transferred to the browser session.
 
-### No need to deploy/host a tile server
+### No need to deploy and host a tile server
 
-With the `render_tile` callback, you're effectively creating your own tile server through Lonboard. As you pan around the map, Lonboard automatically calls `render_tile` as it fetches more data from the COG.
+With the [`render_tile` callback][lonboard.RasterLayer.from_geotiff], you're effectively creating your own tile server through Lonboard. As you pan around the map, Lonboard automatically calls `render_tile` as it fetches more data from the COG.
 
 This is akin to what a tile server like [Titiler] is doing, but this happens in your own Python environment instead of deploying a separate server. And unlike Titiler, no raster warping is needed because reprojection happens automatically in the browser.
 
@@ -138,7 +138,7 @@ Voilà here's the COG displayed:
 
 ### Debugging `render_tile`
 
-If you're having problems with `render_tile` raising exceptions (which should print in red below the map instance) or not rendering in the way you expect, you can debug `render_tile` in isolation.
+If you're having problems with `render_tile` raising exceptions (which should print in red below the map instance) or the COG isn't rendering as you expect, you can debug `render_tile` in isolation.
 
 First, use [`GeoTIFF.fetch_tile`][async_geotiff.GeoTIFF.fetch_tile] to load one tile from your GeoTIFF into memory. In this case, we load the top-left tile from the COG.
 
@@ -164,46 +164,50 @@ The result of `render_tile` (which must be an [`EncodedImage`][lonboard.raster.E
 
 ### Building on deck.gl-raster
 
-For the last few months I've been working on [deck.gl-raster], a new extension library for [deck.gl] that supports generically visualizing COG data.  Since Lonboard is built upon deck.gl, we can seamlessly integrate deck.gl-raster into Lonboard.
+For the last few months I've been working on [deck.gl-raster], a new extension library for [deck.gl] that supports generically visualizing raster data like COG (and soon Zarr). Since Lonboard is built upon deck.gl, we can seamlessly integrate deck.gl-raster into Lonboard.
 
-deck.gl-raster takes care of the tile selection and image reprojection. As you pan around the map, deck.gl-raster integrates with the deck.gl [`TileLayer`] to fetch more data from the COG as necessary.
+deck.gl-raster takes care of the tile selection and image reprojection. As you pan around the map, deck.gl-raster uses the deck.gl [`TileLayer`](https://deck.gl/docs/api-reference/geo-layers/tile-layer) to fetch more data from the COG as necessary.
 
 Then, when image data for each tile arrives in the client, deck.gl-raster manages client-side reprojection from the source projection into Web Mercator.
 
 [deck.gl]: https://deck.gl/
 [deck.gl-raster]: https://developmentseed.org/deck.gl-raster/
-[`TileLayer`]: https://deck.gl/docs/api-reference/geo-layers/tile-layer
 
+### Async-GeoTIFF as a basic data proxy
 
-### Python as a simple data proxy
-
-This implementation relies heavily on [Async-GeoTIFF]. In fact **all data fetching happens through Python**. The browser has no direct connection to the COG and is not fetching any image data directly; the _only_ things known by the client are the layout of the COG tile grid and how to ask Python for more tiles.
+This implementation relies heavily on the [Async-GeoTIFF] Python library. In fact **all data fetching happens through Python**. The browser has no direct connection to the COG and does not fetch any image data directly; the _only_ things known by the client are the layout of the COG tile grid and how to ask Python for more tiles.
 
 - When you pan the map, deck.gl and deck.gl-raster decide which COG tiles should be loaded for the current viewport.
-- Lonboard's TypeScript code interprets those tile requests and forwards on a request to Python for each one.
-- In turn, Lonboard's Python code calls [`GeoTIFF.fetch_tile`][async_geotiff.GeoTIFF.fetch_tile] to asynchronously fetch data for each tile index.
-- When [`GeoTIFF.fetch_tile`][async_geotiff.GeoTIFF.fetch_tile] has finished loading a tile,
-- The browser requests a tile from Python, which in turn requests a tile over the network. This is why the underlying cog client really had to be async. In order to get data fetching performance the end user expects, we couldn't use rasterio. Even if we were running rasterio in a thread pool (which is hard to do, only really possible for geotiff in specific situations, depends on the underlying gdal version if you want to use the libertiff driver, etc (link to stack stac)) it would probably have significantly slower performance than async-geotiff.
+- Lonboard's frontend code forwards those tile requests on to Python using the [Jupyter communication mechanism](https://jupyter-client.readthedocs.io/en/latest/messaging.html#).
+- Lonboard's Python code calls [`GeoTIFF.fetch_tile`][async_geotiff.GeoTIFF.fetch_tile] to _asynchronously_ fetch data for each tile index.
+- When [`GeoTIFF.fetch_tile`][async_geotiff.GeoTIFF.fetch_tile] has finished loading a tile, that's passed as input to the user's `render_tile` function.
+- The result of `render_tile` is passed _back_ to the frontend via Jupyter and rendered to screen with deck.gl and deck.gl-raster.
 
 But why fetch data through Python instead of directly from the browser? A couple reasons:
 
 ### Simpler Authentication
 
-For one, authentication. A general premise of lonboard is that users are already working with data in python and want to better understand that data through visualization. This implies that the user is already able to access the data in python, somehow.
+A general premise of Lonboard is that users are already working with data in Python and want to better understand that data through visualization. This implies that the user is already able to access the data in Python.
 
-But it's not generally possible to "serialize authentication" from Python into JavaScript. Just because Python has access to a COG doesn't mean the browser environment will also. Often user data is not publicly accessible. Accessing data on cloud storage might require calling vendor-specific sdks in the browser, which is tricky. Furthermore, passing credentials into the browser could have security implications. In some situations, if there were malicious browser extensions, the cloud storage credentials could be compromised.
+But it's not generally possible to "serialize authentication" from Python into JavaScript. Just because Python has access to a COG doesn't mean the browser environment can also access it.
 
-By leaving all data fetching to python and then proxying data responses into the browser, we can have a single, reliable value proposition: **if you can load it in python, you can visualize it in lonboard**.
+Often, user data is not publicly accessible. There's no easy way for the browser to directly access local files, especially when the Jupyter session is running on a remote machine. And having the browser directly access private cloud storage buckets would require depending on vendor-specific SDKs in the browser, which is tricky, adds complexity, and grows the bundle size.
 
-### Customize visualizations with Python code
+Furthermore, passing credentials into the browser could have security implications. In some situations, such as with malicious browser extensions, the cloud storage credentials could be compromised.
 
-Second, a core value proposition of lonboard is that you should be able to use **any Python code** to control your visualization. Pydeck, a predecessor, also implemented bindings to deckgl but it tried to serialize only the data and apply styling on the js side. This meant that you had to write complex strings representing JavaScript expressions that would be evaluated on your json data. Apart from being very hard to maintain on the pydeck side, and apart from being hard to safely execute untrusted JavaScript code, it was a horrible user API. **Python users want to be able to write Python code and whatever existing Python libraries they're familiar with**.
+By leaving all data fetching to Python and then proxying tiles into the browser, we can maintain Lonboard's first core value proposition: **if you can load it in Python, you can visualize it in Lonboard**.
 
-By proxying cog data through Python, we can maintain that same value proposition for raster data too. If you want to use Python to style your COG data, you can use python to style your COG data. Pass any sort of Python callback you'd like, as long as it returns an RGB array of data that the frontend can visualize.
+### Customize rendering with pure Python
 
-In the future we have plans for exciting new ways to customize rendering on the webgl side, but for now the python side gives you options.
+Lonboard's second core value proposition: **you should be able to use any Python code with any dependency you want to control your visualization**.
 
+In the context of vector data, [Pydeck], a predecessor binding to deck.gl, tried to serialize the raw input data to the browser and apply styling on the frontend side. This required users to write complex strings representing JavaScript expressions. Apart from being a horrible user API, this was hard to maintain and ensure that untrusted JavaScript input was being executed safely.
 
+[Pydeck]: https://deckgl.readthedocs.io/en/latest/
+
+By proxying COG data through Python, we can maintain that same value proposition for raster data too. Pass any sort of Python callback you'd like, using any dependencies you'd like, as long as it returns a PNG that the frontend can visualize.
+
+[In the future](#future-work) we'll add support for client-side rendering too, which will give you options over when to use Python-based or WebGL-based styling.
 
 ### The crucial importance of async-geotiff
 
