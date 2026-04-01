@@ -33,15 +33,12 @@ The [`RasterLayer`][lonboard.RasterLayer] now has a [`from_geotiff`][lonboard.Ra
 
 Three simple steps:
 
-1. Open a [`GeoTIFF`][async_geotiff.GeoTIFF] using [Async-GeoTIFF] and [Obstore].
-2. Create a _render function callback_ — `render_tile` — for converting NumPy array data loaded from the GeoTIFF to a PNG image. This gives you full control for how you want to visualize the GeoTIFF image data
-3. Pass both of the above into [`RasterLayer.from_geotiff`][lonboard.RasterLayer.from_geotiff] and, voilà! Your COG is rendering on the map!
+1. [Open a `GeoTIFF`][async_geotiff.GeoTIFF.open] using [Async-GeoTIFF] and [Obstore].
+2. Create a _render function_ callback for converting NumPy array data loaded from the GeoTIFF to a PNG image. This gives you full control for how you want to visualize the GeoTIFF image data
+3. Pass the `GeoTIFF` and the render function (as the `render_tile` parameter) to [`RasterLayer.from_geotiff`][lonboard.RasterLayer.from_geotiff] and, voilà! Your COG is on the map!
 
 [Async-GeoTIFF]: https://developmentseed.org/async-geotiff/latest/
 [Obstore]: https://developmentseed.org/obstore/latest/
-
-## Example
-
 
 ## Features
 
@@ -68,6 +65,90 @@ In the future, we'll add support for client-side, GPU-based visualization, allow
 
 [Titiler]: https://github.com/developmentseed/titiler
 
+
+## Example
+
+There are full notebook examples for how to render [Land Cover][nlcd_cog_example] and [RGB COGs with an alpha mask][raster-cog-rgb-server], but here we'll start with the simplest example of rendering an RGB COG without a nodata value or alpha mask.
+
+[raster-cog-rgb-server]: ../../../../../examples/raster-cog-rgb-server
+
+This example plots an RGB COG from the [New Zealand Imagery AWS Open Data bucket](https://registry.opendata.aws/nz-imagery/), provided by [Land Information New Zealand].
+
+[Land Information New Zealand]: https://www.linz.govt.nz/
+
+```py
+import io
+
+from async_geotiff import GeoTIFF, Tile
+from async_geotiff.utils import reshape_as_image
+from obstore.store import S3Store
+from PIL import Image
+
+from lonboard import Map, RasterLayer
+from lonboard.raster import EncodedImage
+
+# Create a new Obstore S3Store mounted to our desired bucket
+store = S3Store("nz-imagery", region="ap-southeast-2", skip_signature=True)
+
+# Open a GeoTIFF instance
+cog_path = "new-zealand/new-zealand_2024-2025_10m/rgb/2193/CC11.tiff"
+geotiff = await GeoTIFF.open(cog_path, store=store)
+
+
+# Define our render callback
+def render_rgb_tile(tile: Tile) -> EncodedImage:
+    """Convert the array data from the GeoTIFF to an RGB PNG."""
+
+    # Reshape from (bands, height, width) to (height, width, bands)
+    image_array = reshape_as_image(tile.array.data)
+
+    # For some COGs you may need more logic here to convert pixel data to RGB,
+    # but in this case our data is already RGB
+
+    # Encode as PNG, in this case using PIL
+    img = Image.fromarray(image_array)
+    buf = io.BytesIO()
+    img.save(buf, format="PNG")
+    return EncodedImage(data=buf.getvalue(), media_type="image/png")
+
+# Create a RasterLayer and put it on a map
+layer = RasterLayer.from_geotiff(geotiff, render_tile=render_rgb_tile)
+m = Map(layer)
+m
+```
+
+Voilà here's the COG displayed:
+
+![](../../assets/initial-cog-example.jpg)
+
+### Debugging `render_tile`
+
+If you're having problems with `render_tile` raising exceptions (which should print in red below the map instance) or not rendering in the way you expect, you can debug `render_tile` in isolation.
+
+First, use [`GeoTIFF.fetch_tile`][async_geotiff.GeoTIFF.fetch_tile] to load one tile from your GeoTIFF into memory. In this case, we load the top-left tile from the COG.
+
+```py
+tile = await geotiff.fetch_tile(0, 0)
+```
+
+Now, pass the `tile` into your `render_tile` callback:
+
+```py
+encoded_image = render_rgb_tile(tile)
+```
+
+Then use `IPython.display.display_png` (already available as a dependency in Jupyter Notebooks) to see how your encoded PNG looks.
+
+```py
+from IPython.display import display_png
+
+display_png(encoded_image.data, raw=True)
+```
+
+![](../../assets/raster-tile-debug.jpg)
+
+This is the same process happening under the hood by the `RasterLayer`. If your PNG renders correctly with `IPython.display.display_png`, it should render the same with the `RasterLayer`.
+
 ## How it works
 
 
@@ -89,7 +170,7 @@ Then, when image data for each tile arrives in the client, deck.gl-raster manage
 
 ### Python as a simple data proxy
 
-This implementation relies heavily on [Async-GeoTIFF]. In fact **all data fetching is happens through Python**. The browser has no direct connection to the COG and is not fetching any image data directly; the _only_ things known by the client are the layout of the COG tile grid and how to ask Python for more tiles.
+This implementation relies heavily on [Async-GeoTIFF]. In fact **all data fetching happens through Python**. The browser has no direct connection to the COG and is not fetching any image data directly; the _only_ things known by the client are the layout of the COG tile grid and how to ask Python for more tiles.
 
 - When you pan the map, deck.gl and deck.gl-raster decide which COG tiles should be loaded for the current viewport.
 - Lonboard's TypeScript code interprets those tile requests and forwards on a request to Python for each one.
