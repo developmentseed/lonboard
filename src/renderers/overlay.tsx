@@ -50,8 +50,8 @@ const OverlayRenderer: React.FC<MapRendererProps & OverlayRendererProps> = (
       map.flyTo({
         center: [flyToRequest.longitude, flyToRequest.latitude],
         zoom: flyToRequest.zoom,
-        pitch: flyToRequest.pitch ?? 0,
-        bearing: flyToRequest.bearing ?? 0,
+        pitch: flyToRequest.pitch ?? map.getPitch(),
+        bearing: flyToRequest.bearing ?? map.getBearing(),
         duration:
           flyToRequest.transitionDuration === "auto"
             ? undefined
