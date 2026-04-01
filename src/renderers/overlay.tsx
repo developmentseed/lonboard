@@ -42,7 +42,7 @@ const OverlayRenderer: React.FC<MapRendererProps & OverlayRendererProps> = (
     ...deckProps
   } = mapProps;
 
-  const mapRef = React.useRef<MapRef>(null);
+  const mapRef = React.useRef<MapRef | null>(null);
 
   React.useEffect(() => {
     if (flyToRequest && mapRef.current) {
