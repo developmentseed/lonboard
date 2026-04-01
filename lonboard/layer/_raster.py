@@ -341,7 +341,11 @@ class RasterLayer(BaseLayer, Generic[T]):
             geotiff: A GeoTIFF instance from [Async-GeoTIFF]. Refer to the [Async-GeoTIFF] documentation for how to create a GeoTIFF from various input sources.
 
         Keyword Args:
-            render_tile: A callback to transform a [Tile][async_geotiff.Tile] into an RGBA image. The callback must return an [EncodedImage][lonboard.raster.EncodedImage] instance
+            render_tile: A callback to transform a [Tile][async_geotiff.Tile] into a PNG-formatted image. The callback must return an [EncodedImage][lonboard.raster.EncodedImage] instance.
+
+                Keep in mind that an [`async_geotiff.RasterArray`][async_geotiff.RasterArray] stores pixel data in "band-major" order, meaning that the shape is (bands, height, width). You'll usually need to transpose the array to (height, width, bands) before converting to PNG. You can use the [async_geotiff.utils.reshape_as_image][async_geotiff.utils.reshape_as_image] utility function to do this.
+
+                Also keep in mind that the tile data is not necessarily in visual RGBA format, so you may need to do some processing in `render_tile` to convert it to RGBA. For example, you might need to apply a color map to a single-band raster, or handle alpha compositing if the GeoTIFF has an alpha channel.
             kwargs: parameters passed on to `__init__`
 
         Returns:
