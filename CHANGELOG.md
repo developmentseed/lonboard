@@ -1,5 +1,18 @@
 # Changelog
 
+## [0.16.0] - 2026-04-02
+
+### What's Changed
+
+* ci: Set up trusted publishing by @kylebarron in https://github.com/developmentseed/lonboard/pull/1141
+* feat: raster layer async geotiff integration by @kylebarron in https://github.com/developmentseed/lonboard/pull/1137
+* feat: RasterLayer: better printing of exceptions from render_tile by @kylebarron in https://github.com/developmentseed/lonboard/pull/1150
+* refactor: Clean up for RasterLayer COG integration by @kylebarron in https://github.com/developmentseed/lonboard/pull/1152
+* fix: Fix using `fly_to` in overlay/interleaved basemap mode by @kylebarron in https://github.com/developmentseed/lonboard/pull/1155
+* feat: Prepare raster for release by @kylebarron in https://github.com/developmentseed/lonboard/pull/1158
+
+**Full Changelog**: https://github.com/developmentseed/lonboard/compare/v0.15.0...v0.16.0
+
 ## [0.15.0] - 2026-03-13
 
 ### New Features
