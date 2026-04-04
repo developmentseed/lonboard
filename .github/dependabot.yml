@@ -20,8 +20,32 @@ updates:
           - "*deck*"
           - "*loaders*"
           - "*luma*"
+  - package-ecosystem: uv
+    directory: "/"
+    schedule:
+      interval: weekly
+      day: "monday"
+    groups:
+      minor-and-patch:
+        applies-to: version-updates
+        patterns:
+          - "*"
+        update-types:
+          - "minor"
+          - "patch"
+    open-pull-requests-limit: 10
+
   - package-ecosystem: github-actions
     directory: "/"
     schedule:
       interval: weekly
+      day: "monday"
+    groups:
+      minor-and-patch:
+        applies-to: version-updates
+        patterns:
+          - "*"
+        update-types:
+          - "minor"
+          - "patch"
     open-pull-requests-limit: 10
