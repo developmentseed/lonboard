@@ -65,7 +65,7 @@ lonboard = "lonboard._cli:main"
 [dependency-groups]
 docs = [
     # Workaround for https://github.com/mkdocs/mkdocs/issues/4032
-    "click<8.3",
+    "click<8.4",
     "mkdocs-material[imaging]>=9.5.49",
     "mkdocs>=1.6.1",
     "mkdocstrings[python]>=1.0",
