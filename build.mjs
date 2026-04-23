@@ -62,6 +62,8 @@ esbuild.build({
     "@luma.gl/gltf": "./node_modules/@luma.gl/gltf",
     "@luma.gl/shadertools": "./node_modules/@luma.gl/shadertools",
     "@luma.gl/webgl": "./node_modules/@luma.gl/webgl",
+    "@luma.gl/webgl/constants":
+      "./node_modules/@luma.gl/webgl/dist/constants/index.js",
   },
   platform: "browser",
   loader: {
