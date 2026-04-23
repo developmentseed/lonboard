@@ -8,7 +8,8 @@ import { BitmapLayer } from "@deck.gl/layers";
 import { apply, invert } from "@developmentseed/affine";
 import {
   RasterLayer,
-  TileMatrixSetTileset,
+  RasterTileset2D,
+  TileMatrixSetAdaptor,
 } from "@developmentseed/deck.gl-raster";
 import type { TileMatrixSet } from "@developmentseed/morecantile";
 import { tileTransform } from "@developmentseed/morecantile";
@@ -192,12 +193,14 @@ export class RasterModel extends BaseLayerModel {
     projectTo4326: (x: number, y: number) => [number, number],
     projectTo3857: (x: number, y: number) => [number, number],
   ): TileLayer {
-    class TileMatrixSetTilesetFactory extends TileMatrixSetTileset {
+    const descriptor = new TileMatrixSetAdaptor(tileMatrixSet, {
+      projectTo4326,
+      projectTo3857,
+    });
+
+    class RasterTileset2DFactory extends RasterTileset2D {
       constructor(opts: Tileset2DProps) {
-        super(opts, tileMatrixSet, {
-          projectTo4326,
-          projectTo3857,
-        });
+        super(opts, descriptor, { projectTo4326 });
       }
     }
 
@@ -205,7 +208,7 @@ export class RasterModel extends BaseLayerModel {
       ...this.baseLayerProps(),
       ...this.layerProps(),
       getTileData: this.getTileData,
-      TilesetClass: TileMatrixSetTilesetFactory,
+      TilesetClass: RasterTileset2DFactory,
       renderSubLayers: this.renderRasterSubLayer,
     });
   }
