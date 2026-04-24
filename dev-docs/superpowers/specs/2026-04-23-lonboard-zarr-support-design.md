@@ -267,10 +267,10 @@ def from_xarray(
 - `**kwargs` — standard `RasterLayer` kwargs.
 
 The DataArray's underlying store MUST support async loading (zarr-python 3,
-or any future backend that implements async `get_duck_array`). If the
-backend doesn't, the first `load_async` call raises `NotImplementedError`
-from xarray; we catch and wrap it at first-tile time with a message
-explaining that only zarr-python 3 supports async loading today.
+or any future backend that overrides `BackendArray.async_getitem`). See
+[Error handling](#error-handling) for how unsupported backends are
+detected — eagerly at construction when possible, with a first-tile
+fallback for dask-wrapped or otherwise opaque cases.
 
 ### Existing `from_geotiff`
 
@@ -283,27 +283,29 @@ Priority order, first wins:
 
 1. Explicit `crs=` / `transform=` arguments. Both must be provided together
    if either is. This is the explicit escape hatch.
-2. [rioxarray](https://corteva.github.io/rioxarray/) if installed: `da.rio.crs`
-   and `da.rio.transform()`. This is the dominant convention in practice and
-   already handles CF grid_mapping + GDAL-style attrs under the hood.
-3. GeoZarr attrs on `da.attrs`: `spatial:transform`, `spatial:shape`,
-   `proj:code`, etc., parsed via the same logic as `from_zarr`.
+2. GeoZarr attrs on `da.attrs`: `spatial:transform`, `spatial:shape`,
+   `proj:code`, etc., parsed via the same logic as `from_zarr`. Zarr-backed
+   DataArrays are the dominant Lonboard use case, and GeoZarr is the
+   native convention for describing CRS + affine in Zarr.
+3. [rioxarray](https://corteva.github.io/rioxarray/) if installed:
+   `da.rio.crs` and `da.rio.transform()`. Handles CF grid_mapping and
+   GDAL-style attrs under the hood. Used only if step (2) didn't apply.
 4. CF grid_mapping attrs (without rioxarray): `grid_mapping` attr pointing
-   to a coordinate variable with `crs_wkt` / `spatial_ref`. This is a
-   fallback for environments that don't have rioxarray.
+   to a coordinate variable with `crs_wkt` / `spatial_ref`. Fallback for
+   environments that don't have rioxarray installed.
 5. If none of the above yields a CRS + transform, raise with a message
    pointing users at the `crs=` / `transform=` arguments.
 
-**Rationale for rioxarray as the primary detection path:** it's already the
-de-facto standard in the geospatial xarray ecosystem, it handles multiple
-CF conventions transparently, and users who already have rioxarray
-installed expect it to "just work." Users who don't use rioxarray still
-get GeoZarr and CF detection as fallbacks.
+**Rationale for GeoZarr first:** the motivating use case for `from_xarray`
+is users who opened a Zarr store with `xr.open_zarr(...)`. If that store
+is GeoZarr-compliant, its attrs already describe the geospatial geometry
+correctly; going through rioxarray (which mostly serves GeoTIFF and
+CF-NetCDF conventions) adds an indirection that can only lose fidelity.
 
-**rioxarray as an optional dependency:** Lonboard should NOT require
-rioxarray at install time. Import lazily; if missing, skip step (2) and
-fall through. Document the recommendation to install rioxarray for best
-xarray support.
+**rioxarray stays strictly optional — Lonboard MUST NOT add a hard
+dependency on rioxarray or (transitively) GDAL.** Import lazily; if
+missing, skip step (3) and fall through to CF. Document rioxarray as a
+recommended extra for users working with GeoTIFF-derived DataArrays.
 
 ## Error handling
 
@@ -316,12 +318,28 @@ Following Lonboard's existing pattern for `from_geotiff` (from
   (already implemented in current `RasterModel.getTileData`).
 - Construction-time errors (missing selection, bad CRS detection, etc.)
   raise synchronously from the constructor. No partial layer state.
-- Backend-async-unsupported: if the first `load_async` call raises
-  `NotImplementedError` (the error xarray surfaces when the underlying
-  store doesn't implement async `get_duck_array`), we wrap it with a
-  message explaining that only zarr-python 3 supports async loading
-  today. This is checked at first-tile time rather than at construction
-  to avoid paying a speculative round-trip up front.
+- Backend-async-unsupported: checked eagerly at layer construction when
+  possible, with a fallback to first-tile time.
+
+  **Construction-time introspection.** Walk the DataArray's wrapped-array
+  chain (`da.variable._data`, then successive `.array` attrs) until
+  either an `xarray.backends.common.BackendArray` is found or the walk
+  bottoms out. If a `BackendArray` is found and its
+  `type(x).async_getitem is BackendArray.async_getitem` (i.e. the base
+  class's NotImplementedError-raising default is inherited, not
+  overridden), raise immediately with a message naming the backend class
+  and explaining that only zarr-python 3 supports async loading today.
+
+  The walk is internal-ish (uses `Variable._data` and `.array` attrs); if
+  it can't locate a `BackendArray` — for example, the array is dask-
+  wrapped, already computed, or the wrapping structure changed in a
+  future xarray version — skip the check silently and let the first-tile
+  error path handle it.
+
+  **First-tile fallback.** Any `NotImplementedError` raised from
+  `load_async` at tile-fetch time is caught and re-raised with the same
+  user-facing message. Defense in depth for cases the construction-time
+  check can't handle.
 
 ## Testing strategy
 
