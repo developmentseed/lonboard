@@ -1,0 +1,28 @@
+overrides:
+  # Uncomment to develop against a local sibling checkout of deck.gl-raster.
+  # Keep commented for normal work so pnpm resolves the published versions.
+  # '@developmentseed/affine': link:../deck.gl-raster/packages/affine
+  # '@developmentseed/deck.gl-geotiff': link:../deck.gl-raster/packages/deck.gl-geotiff
+  # '@developmentseed/deck.gl-raster': link:../deck.gl-raster/packages/deck.gl-raster
+  # '@developmentseed/deck.gl-zarr': link:../deck.gl-raster/packages/deck.gl-zarr
+  # '@developmentseed/epsg': link:../deck.gl-raster/packages/epsg
+  # '@developmentseed/geotiff': link:../deck.gl-raster/packages/geotiff
+  # '@developmentseed/morecantile': link:../deck.gl-raster/packages/morecantile
+  # '@developmentseed/proj': link:../deck.gl-raster/packages/proj
+  # '@developmentseed/raster-reproject': link:../deck.gl-raster/packages/raster-reproject
+  '@deck.gl/aggregation-layers': '^9.3.1'
+  '@deck.gl/core': '^9.3.1'
+  '@deck.gl/extensions': '^9.3.1'
+  '@deck.gl/geo-layers': '^9.3.1'
+  '@deck.gl/layers': '^9.3.1'
+  '@deck.gl/mapbox': '^9.3.1'
+  '@deck.gl/mesh-layers': '^9.3.1'
+  '@deck.gl/widgets': '^9.3.1'
+  '@loaders.gl/core': '^4.3.4'
+  '@luma.gl/constants': '^9.3.2'
+  '@luma.gl/core': '^9.3.2'
+  '@luma.gl/engine': '^9.3.2'
+  '@luma.gl/gltf': '^9.3.2'
+  '@luma.gl/shadertools': '^9.3.2'
+  '@luma.gl/webgl': '^9.3.2'
+  '@types/react-dom': '^19.1.9'
