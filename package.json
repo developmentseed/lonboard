@@ -53,28 +53,11 @@
     "tailwindcss": "^3.4.15",
     "typescript": "^5.7.2"
   },
-  "overrides": {
-    "@deck.gl/aggregation-layers": "^9.3.1",
-    "@deck.gl/core": "^9.3.1",
-    "@deck.gl/extensions": "^9.3.1",
-    "@deck.gl/geo-layers": "^9.3.1",
-    "@deck.gl/layers": "^9.3.1",
-    "@deck.gl/mapbox": "^9.3.1",
-    "@deck.gl/mesh-layers": "^9.3.1",
-    "@deck.gl/widgets": "^9.3.1",
-    "@loaders.gl/core": "^4.3.4",
-    "@luma.gl/constants": "^9.3.2",
-    "@luma.gl/core": "^9.3.2",
-    "@luma.gl/engine": "^9.3.2",
-    "@luma.gl/gltf": "^9.3.2",
-    "@luma.gl/shadertools": "^9.3.2",
-    "@luma.gl/webgl": "^9.3.2",
-    "@types/react-dom": "^19.1.9"
-  },
+  "packageManager": "pnpm@10.25.0",
   "scripts": {
     "build": "node ./build.mjs",
     "build:dev": "NODE_ENV=development node ./build.mjs",
-    "build:watch": "nodemon --watch src/ --exec \"npm run build:dev\" --ext js,json,ts,tsx,css",
+    "build:watch": "nodemon --watch src/ --exec \"pnpm build:dev\" --ext js,json,ts,tsx,css",
     "format": "biome format .",
     "format:fix": "biome format --write .",
     "lint": "biome lint .",
@@ -84,6 +67,6 @@
   },
   "volta": {
     "node": "22.20.0",
-    "npm": "11.6.2"
+    "pnpm": "10.25.0"
   }
 }
