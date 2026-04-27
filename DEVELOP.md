@@ -40,13 +40,13 @@ Requirements:
 Install module dependencies:
 
 ```sh
-npm install
+pnpm install
 ```
 
 We use ESBuild to bundle into an ES Module, which the Jupyter Widget will then load at runtime. The configuration for ESBuild can be found in `build.mjs`. To start watching for changes in the `/src` folder and automatically generate a new build, use:
 
 ```sh
-npm run build:watch
+pnpm build:watch
 ```
 
 ### Environment Variables
@@ -105,7 +105,7 @@ We use `juv` to store dependencies for each notebook as metadata of the notebook
 To run an example notebook with a local version of lonboard, first ensure that you have built the JavaScript bundle:
 
 ```bash
-npm run build:watch
+pnpm build:watch
 ```
 
 then use:
