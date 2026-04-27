@@ -169,6 +169,7 @@ export class RasterModel extends BaseLayerModel {
       // RasterTileLayer's getTileData type is Promise<DataT>, but the runtime
       // accepts null returns for empty/aborted tiles — see raster-tile-layer.js
       // (`if (!props.data) return layers;`).
+      // TODO: should be fixed upstream in https://github.com/developmentseed/deck.gl-raster/pull/484
       getTileData: this
         .getTileData as RasterTileLayerProps<TileData>["getTileData"],
       renderTile: (data) => ({ image: data.image }),
