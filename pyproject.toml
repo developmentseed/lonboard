@@ -7,7 +7,7 @@ license = "MIT"
 readme = "README.md"
 requires-python = ">=3.11"
 dependencies = [
-    "anywidget~=0.9.0",
+    "anywidget>=0.9,<0.12",
     # Version in Colab as of October 2024
     # Upgrading to 5.10 would be ideal to enable generic types
     "traitlets>=5.7.1",
@@ -65,7 +65,7 @@ lonboard = "lonboard._cli:main"
 [dependency-groups]
 docs = [
     # Workaround for https://github.com/mkdocs/mkdocs/issues/4032
-    "click<8.3",
+    "click<8.4",
     "mkdocs-material[imaging]>=9.5.49",
     "mkdocs>=1.6.1",
     "mkdocstrings[python]>=1.0",
