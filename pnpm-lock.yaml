@@ -51,16 +51,16 @@ importers:
         specifier: ^9.3.1
         version: 9.3.1(@deck.gl/core@9.3.1)(@deck.gl/widgets@9.3.1(@deck.gl/core@9.3.1)(@luma.gl/core@9.3.3))(react-dom@19.2.5(react@19.2.5))(react@19.2.5)
       '@developmentseed/affine':
-        specifier: ^0.6.0-beta.1
+        specifier: ^0.6.0
         version: 0.6.0
       '@developmentseed/deck.gl-raster':
-        specifier: ^0.6.0-beta.1
+        specifier: ^0.6.0
         version: 0.6.0(47009f7135e0565b3d248623ce0da1e5)
       '@developmentseed/morecantile':
-        specifier: ^0.6.0-beta.1
+        specifier: ^0.6.0
         version: 0.6.0
       '@developmentseed/raster-reproject':
-        specifier: ^0.6.0-beta.1
+        specifier: ^0.6.0
         version: 0.6.0
       '@geoarrow/deck.gl-layers':
         specifier: ^0.4.0-beta.6
