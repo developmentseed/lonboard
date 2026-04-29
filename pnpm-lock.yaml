@@ -51,17 +51,17 @@ importers:
         specifier: ^9.3.1
         version: 9.3.1(@deck.gl/core@9.3.1)(@deck.gl/widgets@9.3.1(@deck.gl/core@9.3.1)(@luma.gl/core@9.3.3))(react-dom@19.2.5(react@19.2.5))(react@19.2.5)
       '@developmentseed/affine':
-        specifier: ^0.6.0
-        version: 0.6.0
+        specifier: ^0.6.1
+        version: 0.6.1
       '@developmentseed/deck.gl-raster':
-        specifier: ^0.6.0
-        version: 0.6.0(47009f7135e0565b3d248623ce0da1e5)
+        specifier: ^0.6.1
+        version: 0.6.1(84218314b41e0a2411e206eb92fa5b46)
       '@developmentseed/morecantile':
-        specifier: ^0.6.0
-        version: 0.6.0
+        specifier: ^0.6.1
+        version: 0.6.1
       '@developmentseed/raster-reproject':
-        specifier: ^0.6.0
-        version: 0.6.0
+        specifier: ^0.6.1
+        version: 0.6.1
       '@geoarrow/deck.gl-layers':
         specifier: ^0.4.0-beta.6
         version: 0.4.0-beta.6(24ef021038da91149f61675290ab88fc)
@@ -640,28 +640,28 @@ packages:
       '@deck.gl/core': ^9.3.1
       '@luma.gl/core': ^9.3.2
 
-  '@developmentseed/affine@0.6.0':
-    resolution: {integrity: sha512-2POGBqoSc20cLHIA18ScXpS59Zsa3I6xNDBOc5Zg974p6HF2p1WSIYxPuSiiyAFhnNz6YRWd+R5PZCY/lDQBfA==}
+  '@developmentseed/affine@0.6.1':
+    resolution: {integrity: sha512-RSywOfmKAUxib61vXOYFoobIZS/vZWvaAHgUlTTwejlgAU7tK9VvViz0xTqwHF9K3BLDD12EdNB1yS/ZDpBlWQ==}
 
-  '@developmentseed/deck.gl-raster@0.6.0':
-    resolution: {integrity: sha512-Ook+qEbFl2j2PEntI8JjM/WNgETqpjRNNHRxlcuba+pWvJmYdbEhqw7hFy89+9gidb2lTxtAKMpTiMRjywCAGQ==}
+  '@developmentseed/deck.gl-raster@0.6.1':
+    resolution: {integrity: sha512-0ODeinL6G7awL8l3wa3tzdgX+CvzELaxG67qIrj6wZRIMea8qRCvXgpmhSeB41VBqbAayH8Jbl6nRYziFwbgPQ==}
     peerDependencies:
       '@deck.gl/core': ^9.3.1
       '@deck.gl/geo-layers': ^9.3.1
       '@deck.gl/layers': ^9.3.1
       '@deck.gl/mesh-layers': ^9.3.1
-      '@developmentseed/morecantile': ^0.6.0
+      '@developmentseed/morecantile': ^0.6.1
       '@luma.gl/core': ^9.3.2
       '@luma.gl/shadertools': ^9.3.2
 
-  '@developmentseed/morecantile@0.6.0':
-    resolution: {integrity: sha512-qV12AGR5e87iyj85urT1xH894MQpomCZG7tkTpZq3hJQwzcyWf8l2PmZYSmmeSyXfMFA4MzxLcmB1I1WtCPaKg==}
+  '@developmentseed/morecantile@0.6.1':
+    resolution: {integrity: sha512-65icLFsLYThYIINsii95g0gnL4enmBstTdHxmAue66UBtrOXBGm6+PccbRLhGSyrYQHXTg4YZNl7zCetdh6PYg==}
 
-  '@developmentseed/proj@0.6.0':
-    resolution: {integrity: sha512-4h5TOwY6ZxWvYFS32bM/cqVws6qsQu74mTSZp25XN6TKFPHiO5PoZVkJRqmdW3ArHQM11FOsLZAgt+Ob2Kq/Og==}
+  '@developmentseed/proj@0.6.1':
+    resolution: {integrity: sha512-2FjoFt06pcvQrgZeXbK68mixIpiUrnnGwasQqJGCzTnnATWx3f5clhGqJEpP0MPx36g1oyZLaA7qoTryx5Ggow==}
 
-  '@developmentseed/raster-reproject@0.6.0':
-    resolution: {integrity: sha512-OZV0i7rEi+MmMEy+Ipm+FPbH7QuBFnve9kbLUarUIfrRPsdxTmFo2E/SWqn5H2rILe/F+vSUBRn6pCkWSSEh+A==}
+  '@developmentseed/raster-reproject@0.6.1':
+    resolution: {integrity: sha512-1/xyCW5dpfsoiphCto7UVoV1k4Br9XOYU1K5gGtJy50gbmyjag7sOpFHrtc/Cjn/ZMKSe9DJT2XF8J25N+MDbw==}
 
   '@esbuild/aix-ppc64@0.27.7':
     resolution: {integrity: sha512-EKX3Qwmhz1eMdEJokhALr0YiD0lhQNwDqkPYyPhiSwKrh7/4KRjQc04sZ8db+5DVVnZ1LmbNDI1uAMPEUBnQPg==}
@@ -4893,33 +4893,33 @@ snapshots:
       '@luma.gl/core': 9.3.3
       preact: 10.29.1
 
-  '@developmentseed/affine@0.6.0': {}
+  '@developmentseed/affine@0.6.1': {}
 
-  '@developmentseed/deck.gl-raster@0.6.0(47009f7135e0565b3d248623ce0da1e5)':
+  '@developmentseed/deck.gl-raster@0.6.1(84218314b41e0a2411e206eb92fa5b46)':
     dependencies:
       '@deck.gl/core': 9.3.1
       '@deck.gl/geo-layers': 9.3.1(@deck.gl/core@9.3.1)(@deck.gl/extensions@9.3.1(@deck.gl/core@9.3.1)(@luma.gl/core@9.3.3)(@luma.gl/engine@9.3.3(@luma.gl/core@9.3.3)(@luma.gl/shadertools@9.3.3(@luma.gl/core@9.3.3))))(@deck.gl/layers@9.3.1(@deck.gl/core@9.3.1)(@loaders.gl/core@4.4.1)(@luma.gl/core@9.3.3)(@luma.gl/engine@9.3.3(@luma.gl/core@9.3.3)(@luma.gl/shadertools@9.3.3(@luma.gl/core@9.3.3))))(@deck.gl/mesh-layers@9.3.1(@deck.gl/core@9.3.1)(@loaders.gl/core@4.4.1)(@luma.gl/core@9.3.3)(@luma.gl/engine@9.3.3(@luma.gl/core@9.3.3)(@luma.gl/shadertools@9.3.3(@luma.gl/core@9.3.3)))(@luma.gl/gltf@9.3.3(@luma.gl/core@9.3.3)(@luma.gl/engine@9.3.3(@luma.gl/core@9.3.3)(@luma.gl/shadertools@9.3.3(@luma.gl/core@9.3.3)))(@luma.gl/shadertools@9.3.3(@luma.gl/core@9.3.3)))(@luma.gl/shadertools@9.3.3(@luma.gl/core@9.3.3)))(@loaders.gl/core@4.4.1)(@luma.gl/core@9.3.3)(@luma.gl/engine@9.3.3(@luma.gl/core@9.3.3)(@luma.gl/shadertools@9.3.3(@luma.gl/core@9.3.3)))
       '@deck.gl/layers': 9.3.1(@deck.gl/core@9.3.1)(@loaders.gl/core@4.4.1)(@luma.gl/core@9.3.3)(@luma.gl/engine@9.3.3(@luma.gl/core@9.3.3)(@luma.gl/shadertools@9.3.3(@luma.gl/core@9.3.3)))
       '@deck.gl/mesh-layers': 9.3.1(@deck.gl/core@9.3.1)(@loaders.gl/core@4.4.1)(@luma.gl/core@9.3.3)(@luma.gl/engine@9.3.3(@luma.gl/core@9.3.3)(@luma.gl/shadertools@9.3.3(@luma.gl/core@9.3.3)))(@luma.gl/gltf@9.3.3(@luma.gl/core@9.3.3)(@luma.gl/engine@9.3.3(@luma.gl/core@9.3.3)(@luma.gl/shadertools@9.3.3(@luma.gl/core@9.3.3)))(@luma.gl/shadertools@9.3.3(@luma.gl/core@9.3.3)))(@luma.gl/shadertools@9.3.3(@luma.gl/core@9.3.3))
-      '@developmentseed/affine': 0.6.0
-      '@developmentseed/morecantile': 0.6.0
-      '@developmentseed/proj': 0.6.0
-      '@developmentseed/raster-reproject': 0.6.0
+      '@developmentseed/affine': 0.6.1
+      '@developmentseed/morecantile': 0.6.1
+      '@developmentseed/proj': 0.6.1
+      '@developmentseed/raster-reproject': 0.6.1
       '@luma.gl/core': 9.3.3
       '@luma.gl/shadertools': 9.3.3(@luma.gl/core@9.3.3)
       '@math.gl/core': 4.1.0
       '@math.gl/culling': 4.1.0
       '@math.gl/web-mercator': 4.1.0
 
-  '@developmentseed/morecantile@0.6.0':
+  '@developmentseed/morecantile@0.6.1':
     dependencies:
-      '@developmentseed/affine': 0.6.0
+      '@developmentseed/affine': 0.6.1
 
-  '@developmentseed/proj@0.6.0':
+  '@developmentseed/proj@0.6.1':
     dependencies:
       wkt-parser: 1.5.5
 
-  '@developmentseed/raster-reproject@0.6.0': {}
+  '@developmentseed/raster-reproject@0.6.1': {}
 
   '@esbuild/aix-ppc64@0.27.7':
     optional: true
