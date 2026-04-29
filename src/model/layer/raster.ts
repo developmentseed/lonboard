@@ -2,10 +2,7 @@ import type { TextureSource } from "@deck.gl/core";
 import type { TileLayerProps } from "@deck.gl/geo-layers";
 import { TileLayer } from "@deck.gl/geo-layers";
 import { BitmapLayer } from "@deck.gl/layers";
-import type {
-  MinimalTileData,
-  RasterTileLayerProps,
-} from "@developmentseed/deck.gl-raster";
+import type { MinimalTileData } from "@developmentseed/deck.gl-raster";
 import {
   RasterTileLayer,
   TileMatrixSetAdaptor,
@@ -110,9 +107,9 @@ export class RasterModel extends BaseLayerModel {
     };
   }
 
-  getTileData: TileLayerProps<TileData | null>["getTileData"] = async (
-    tile,
-  ) => {
+  getTileData = async (
+    tile: Parameters<NonNullable<TileLayerProps["getTileData"]>>[0],
+  ): Promise<TileData | null> => {
     const { index } = tile;
     const { signal } = tile;
     const { x, y, z } = index;
@@ -154,7 +151,7 @@ export class RasterModel extends BaseLayerModel {
     projectFrom4326: (x: number, y: number) => [number, number],
     projectTo3857: (x: number, y: number) => [number, number],
     projectFrom3857: (x: number, y: number) => [number, number],
-  ): RasterTileLayer<TileData> {
+  ): RasterTileLayer<TileData | null> {
     const tilesetDescriptor = new TileMatrixSetAdaptor(tileMatrixSet, {
       projectTo4326,
       projectFrom4326,
@@ -162,21 +159,18 @@ export class RasterModel extends BaseLayerModel {
       projectFrom3857,
     });
 
-    return new RasterTileLayer<TileData>({
+    return new RasterTileLayer<TileData | null>({
       ...this.baseLayerProps(),
       ...this.layerProps(),
       tilesetDescriptor,
-      // RasterTileLayer's getTileData type is Promise<DataT>, but the runtime
-      // accepts null returns for empty/aborted tiles — see raster-tile-layer.js
-      // (`if (!props.data) return layers;`).
-      // TODO: should be fixed upstream in https://github.com/developmentseed/deck.gl-raster/pull/484
-      getTileData: this
-        .getTileData as RasterTileLayerProps<TileData>["getTileData"],
-      renderTile: (data) => ({ image: data.image }),
+      getTileData: this.getTileData,
+      // The upstream `_renderSubLayers` short-circuits on `!props.data` before
+      // calling `renderTile`, so this is never invoked with null in practice.
+      renderTile: (data) => ({ image: data!.image }),
     });
   }
 
-  render(): TileLayer | RasterTileLayer<TileData> {
+  render(): TileLayer | RasterTileLayer<TileData | null> {
     const tileMatrixSet = this.tileMatrixSet;
     const converters = this.converters;
     if (tileMatrixSet && converters) {
