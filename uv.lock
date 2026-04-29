@@ -369,7 +369,7 @@ wheels = [
 
 [[package]]
 name = "async-geotiff"
-version = "0.3.0"
+version = "0.4.0"
 source = { registry = "https://pypi.org/simple" }
 dependencies = [
     { name = "affine" },
@@ -377,11 +377,10 @@ dependencies = [
     { name = "defusedxml" },
     { name = "numpy" },
     { name = "pyproj" },
-    { name = "types-defusedxml" },
 ]
-sdist = { url = "https://files.pythonhosted.org/packages/9b/d4/b0c5dabce167f96cdee96d84535e9415a22b522ec84e2bc7b7c5d95b65fb/async_geotiff-0.3.0.tar.gz", hash = "sha256:ced56de707a04d8f36022972a47443fbc0d5ea67069191668792208d2404f154", size = 24263, upload-time = "2026-03-03T23:13:39.331Z" }
+sdist = { url = "https://files.pythonhosted.org/packages/12/03/68a66597ef21b4e59ee284fbe75393fb84df5f11343d63ef6c0248f4db36/async_geotiff-0.4.0.tar.gz", hash = "sha256:2386cc72e1e66cb36fdb296c6ef3100ba4c5e086950f0ce691f1a86d164fda7b", size = 26058, upload-time = "2026-03-30T19:49:49.491Z" }
 wheels = [
-    { url = "https://files.pythonhosted.org/packages/d4/7b/2e1289b52c25e60df6f3089eda85964a4477092142205b64a01dbf29ed63/async_geotiff-0.3.0-py3-none-any.whl", hash = "sha256:20a25488abc313539d6ec3089d69000e93fab30cd54c5e3de5d1746ac7b6b752", size = 30918, upload-time = "2026-03-03T23:13:38.218Z" },
+    { url = "https://files.pythonhosted.org/packages/f3/64/9b88762c3103d2749689ccd013715f03e7a578426973eb4ec24776c05018/async_geotiff-0.4.0-py3-none-any.whl", hash = "sha256:0cf262441775e48f6acabe45706dcf2a0268edcd7f52108c88dc2efb1eb76b2a", size = 33287, upload-time = "2026-03-30T19:49:48.21Z" },
 ]
 
 [[package]]
@@ -2096,7 +2095,7 @@ wheels = [
 
 [[package]]
 name = "lonboard"
-version = "0.16.0b1"
+version = "0.16.0"
 source = { editable = "." }
 dependencies = [
     { name = "anywidget" },
@@ -2182,7 +2181,7 @@ requires-dist = [
     { name = "arro3-compute", specifier = ">=0.4.1" },
     { name = "arro3-core", specifier = ">=0.4.1" },
     { name = "arro3-io", specifier = ">=0.4.1" },
-    { name = "async-geotiff", marker = "python_full_version >= '3.11' and extra == 'geotiff'", specifier = ">=0.3.0" },
+    { name = "async-geotiff", marker = "python_full_version >= '3.11' and extra == 'geotiff'", specifier = ">=0.4.0" },
     { name = "click", marker = "extra == 'cli'", specifier = ">=8.1.7" },
     { name = "geoarrow-rust-core", specifier = ">=0.5.2" },
     { name = "geopandas", marker = "extra == 'geopandas'", specifier = ">=0.13" },
@@ -4624,15 +4623,6 @@ source = { registry = "https://pypi.org/simple" }
 sdist = { url = "https://files.pythonhosted.org/packages/4f/97/d957b3a5f6da825cbbb6a02e584bcab769ea2c2a9ad67a9cc25b4bbafb30/traitlets-5.14.2.tar.gz", hash = "sha256:8cdd83c040dab7d1dee822678e5f5d100b514f7b72b01615b26fc5718916fdf9", size = 161435, upload-time = "2024-03-12T12:37:46.431Z" }
 wheels = [
     { url = "https://files.pythonhosted.org/packages/7c/c4/366a09036c07f46eb8c9b2af39c97f502ef24f11f2a6e4d763655d9f2708/traitlets-5.14.2-py3-none-any.whl", hash = "sha256:fcdf85684a772ddeba87db2f398ce00b40ff550d1528c03c14dbf6a02003cd80", size = 85371, upload-time = "2024-03-12T12:37:43.661Z" },
-]
-
-[[package]]
-name = "types-defusedxml"
-version = "0.7.0.20250822"
-source = { registry = "https://pypi.org/simple" }
-sdist = { url = "https://files.pythonhosted.org/packages/7d/4a/5b997ae87bf301d1796f72637baa4e0e10d7db17704a8a71878a9f77f0c0/types_defusedxml-0.7.0.20250822.tar.gz", hash = "sha256:ba6c395105f800c973bba8a25e41b215483e55ec79c8ca82b6fe90ba0bc3f8b2", size = 10590, upload-time = "2025-08-22T03:02:59.547Z" }
-wheels = [
-    { url = "https://files.pythonhosted.org/packages/13/73/8a36998cee9d7c9702ed64a31f0866c7f192ecffc22771d44dbcc7878f18/types_defusedxml-0.7.0.20250822-py3-none-any.whl", hash = "sha256:5ee219f8a9a79c184773599ad216123aedc62a969533ec36737ec98601f20dcf", size = 13430, upload-time = "2025-08-22T03:02:58.466Z" },
 ]
 
 [[package]]

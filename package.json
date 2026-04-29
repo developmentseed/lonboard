@@ -2,16 +2,16 @@
   "dependencies": {
     "@anywidget/react": "^0.2.0",
     "@babel/runtime": "^7.28.4",
-    "@deck.gl/core": "^9.2.11",
-    "@deck.gl/extensions": "^9.2.11",
-    "@deck.gl/layers": "^9.2.11",
-    "@deck.gl/mapbox": "^9.2.11",
-    "@deck.gl/mesh-layers": "^9.2.11",
-    "@deck.gl/react": "^9.2.11",
-    "@developmentseed/affine": "^0.5.0-beta.1",
-    "@developmentseed/deck.gl-raster": "^0.5.0-beta.1",
-    "@developmentseed/morecantile": "^0.5.0-beta.1",
-    "@developmentseed/raster-reproject": "^0.5.0-beta.1",
+    "@deck.gl/core": "^9.3.1",
+    "@deck.gl/extensions": "^9.3.1",
+    "@deck.gl/layers": "^9.3.1",
+    "@deck.gl/mapbox": "^9.3.1",
+    "@deck.gl/mesh-layers": "^9.3.1",
+    "@deck.gl/react": "^9.3.1",
+    "@developmentseed/affine": "^0.6.1",
+    "@developmentseed/deck.gl-raster": "^0.6.1",
+    "@developmentseed/morecantile": "^0.6.1",
+    "@developmentseed/raster-reproject": "^0.6.1",
     "@geoarrow/deck.gl-layers": "^0.4.0-beta.6",
     "@geoarrow/geoarrow-js": "^0.3.2",
     "@maplibre/maplibre-gl-geocoder": "^1.9.4",
@@ -53,28 +53,11 @@
     "tailwindcss": "^3.4.15",
     "typescript": "^5.7.2"
   },
-  "overrides": {
-    "@deck.gl/aggregation-layers": "^9.2.11",
-    "@deck.gl/core": "^9.2.11",
-    "@deck.gl/extensions": "^9.2.11",
-    "@deck.gl/geo-layers": "^9.2.11",
-    "@deck.gl/layers": "^9.2.11",
-    "@deck.gl/mapbox": "^9.2.11",
-    "@deck.gl/mesh-layers": "^9.2.11",
-    "@deck.gl/widgets": "^9.2.11",
-    "@loaders.gl/core": "^4.3.4",
-    "@luma.gl/constants": "^9.2.6",
-    "@luma.gl/core": "^9.2.6",
-    "@luma.gl/engine": "^9.2.6",
-    "@luma.gl/gltf": "^9.2.6",
-    "@luma.gl/shadertools": "^9.2.6",
-    "@luma.gl/webgl": "^9.2.6",
-    "@types/react-dom": "^19.1.9"
-  },
+  "packageManager": "pnpm@10.25.0",
   "scripts": {
     "build": "node ./build.mjs",
     "build:dev": "NODE_ENV=development node ./build.mjs",
-    "build:watch": "nodemon --watch src/ --exec \"npm run build:dev\" --ext js,json,ts,tsx,css",
+    "build:watch": "nodemon --watch src/ --exec \"pnpm build:dev\" --ext js,json,ts,tsx,css",
     "format": "biome format .",
     "format:fix": "biome format --write .",
     "lint": "biome lint .",
@@ -84,6 +67,6 @@
   },
   "volta": {
     "node": "22.20.0",
-    "npm": "11.6.2"
+    "pnpm": "10.25.0"
   }
 }
