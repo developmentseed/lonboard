@@ -164,9 +164,7 @@ export class RasterModel extends BaseLayerModel {
       ...this.layerProps(),
       tilesetDescriptor,
       getTileData: this.getTileData,
-      // The upstream `_renderSubLayers` short-circuits on `!props.data` before
-      // calling `renderTile`, so this is never invoked with null in practice.
-      renderTile: (data) => ({ image: data!.image }),
+      renderTile: (data) => (data ? { image: data.image } : null),
     });
   }
 
