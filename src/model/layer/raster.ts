@@ -1,19 +1,13 @@
 import type { TextureSource } from "@deck.gl/core";
-import type {
-  TileLayerProps,
-  _Tileset2DProps as Tileset2DProps,
-} from "@deck.gl/geo-layers";
+import type { TileLayerProps } from "@deck.gl/geo-layers";
 import { TileLayer } from "@deck.gl/geo-layers";
 import { BitmapLayer } from "@deck.gl/layers";
-import { apply, invert } from "@developmentseed/affine";
+import type { MinimalTileData } from "@developmentseed/deck.gl-raster";
 import {
-  RasterLayer,
-  RasterTileset2D,
+  RasterTileLayer,
   TileMatrixSetAdaptor,
 } from "@developmentseed/deck.gl-raster";
 import type { TileMatrixSet } from "@developmentseed/morecantile";
-import { tileTransform } from "@developmentseed/morecantile";
-import type { ReprojectionFns } from "@developmentseed/raster-reproject";
 import type { WidgetModel } from "@jupyter-widgets/base";
 import proj4 from "proj4";
 import type { PROJJSONDefinition } from "proj4/dist/lib/core.js";
@@ -29,10 +23,8 @@ type TileResponse =
   | { type: "encoded-image"; media_type: string }
   | { error: string };
 
-type TileData = {
+type TileData = MinimalTileData & {
   image: TextureSource;
-  forwardTransform: ReprojectionFns["forwardTransform"];
-  inverseTransform: ReprojectionFns["inverseTransform"];
 };
 
 export class RasterModel extends BaseLayerModel {
@@ -115,9 +107,9 @@ export class RasterModel extends BaseLayerModel {
     };
   }
 
-  getTileData: TileLayerProps<TileData | null>["getTileData"] = async (
-    tile,
-  ) => {
+  getTileData = async (
+    tile: Parameters<NonNullable<TileLayerProps["getTileData"]>>[0],
+  ): Promise<TileData | null> => {
     const { index } = tile;
     const { signal } = tile;
     const { x, y, z } = index;
@@ -150,77 +142,42 @@ export class RasterModel extends BaseLayerModel {
 
     const image = await dataViewToImageBitmap(buffers[0], message.media_type);
 
-    // Compute per-tile affine transforms once; cached by TileLayer
-    const tileMatrix = this.tileMatrixSet?.tileMatrices[z];
-    if (!tileMatrix) {
-      return null;
-    }
-    const tileAffine = tileTransform(tileMatrix, { col: x, row: y });
-    const invAffine = invert(tileAffine);
-    const forwardTransform = (u: number, v: number): [number, number] =>
-      apply(tileAffine, u, v);
-    const inverseTransform = (px: number, py: number): [number, number] =>
-      apply(invAffine, px, py);
-
-    return { image, forwardTransform, inverseTransform };
+    return { image, width: image.width, height: image.height };
   };
-
-  readonly renderRasterSubLayer: TileLayerProps<TileData | null>["renderSubLayers"] =
-    (props) => {
-      if (!props.data) {
-        return null;
-      }
-
-      const { image, forwardTransform, inverseTransform } = props.data;
-      const { inverseFrom4326, forwardTo4326 } = this.accessConverters();
-
-      return new RasterLayer({
-        id: `${props.id}-raster`,
-        width: image.width,
-        height: image.height,
-        image,
-        reprojectionFns: {
-          forwardTransform,
-          inverseTransform,
-          forwardReproject: forwardTo4326,
-          inverseReproject: inverseFrom4326,
-        },
-      });
-    };
 
   renderTileMatrixSet(
     tileMatrixSet: TileMatrixSet,
     projectTo4326: (x: number, y: number) => [number, number],
+    projectFrom4326: (x: number, y: number) => [number, number],
     projectTo3857: (x: number, y: number) => [number, number],
-  ): TileLayer {
-    const descriptor = new TileMatrixSetAdaptor(tileMatrixSet, {
+    projectFrom3857: (x: number, y: number) => [number, number],
+  ): RasterTileLayer<TileData | null> {
+    const tilesetDescriptor = new TileMatrixSetAdaptor(tileMatrixSet, {
       projectTo4326,
+      projectFrom4326,
       projectTo3857,
+      projectFrom3857,
     });
 
-    class RasterTileset2DFactory extends RasterTileset2D {
-      constructor(opts: Tileset2DProps) {
-        super(opts, descriptor, { projectTo4326 });
-      }
-    }
-
-    return new TileLayer<TileData | null>({
+    return new RasterTileLayer<TileData | null>({
       ...this.baseLayerProps(),
       ...this.layerProps(),
+      tilesetDescriptor,
       getTileData: this.getTileData,
-      TilesetClass: RasterTileset2DFactory,
-      renderSubLayers: this.renderRasterSubLayer,
+      renderTile: (data) => (data ? { image: data.image } : null),
     });
   }
 
-  render(): TileLayer {
+  render(): TileLayer | RasterTileLayer<TileData | null> {
     const tileMatrixSet = this.tileMatrixSet;
     const converters = this.converters;
     if (tileMatrixSet && converters) {
       return this.renderTileMatrixSet(
         tileMatrixSet,
         (x, y) => converters[4326].forward([x, y]),
+        (x, y) => converters[4326].inverse([x, y]),
         (x, y) => converters[3857].forward([x, y]),
+        (x, y) => converters[3857].inverse([x, y]),
       );
     }
 
