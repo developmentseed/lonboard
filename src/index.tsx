@@ -32,7 +32,7 @@ import SidePanel from "./sidepanel/index";
 import { useStore, useViewStateDebounced } from "./state";
 import Toolbar from "./toolbar.js";
 import { getTooltip } from "./tooltip/index.js";
-import type { Message } from "./types.js";
+import type { FlyToMessage } from "./types.js";
 import { isDefined, isGlobeView, sanitizeViewState } from "./util.js";
 
 import "maplibre-gl/dist/maplibre-gl.css";
@@ -163,20 +163,18 @@ function App() {
 
   const rendererRef = useRef<RendererRef | null>(null);
 
-  // Handle custom messages
+  // Handle imperative fly-to commands. `_fly_to_command` is a one-way synced
+  // trait (control -> map): writing it from Python (via `fly_to()`) or from an
+  // external widget repositions the rendered map. Using a trait rather than a
+  // Comm message means this also works in statically exported notebooks that
+  // have no kernel.
   useEffect(() => {
-    const handler = (msg: Message) => {
-      switch (msg.type) {
-        case "fly-to":
-          rendererRef.current?.flyTo(msg);
-          break;
-
-        default:
-          break;
-      }
+    const apply = () => {
+      const cmd = model.get("_fly_to_command") as FlyToMessage | null;
+      if (cmd) rendererRef.current?.flyTo(cmd);
     };
-    model.on("msg:custom", handler);
-    return () => model.off("msg:custom", handler);
+    model.on("change:_fly_to_command", apply);
+    return () => model.off("change:_fly_to_command", apply);
   }, [model]);
 
   // Fake state just to get react to re-render when a model callback is called

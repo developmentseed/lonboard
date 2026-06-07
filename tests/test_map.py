@@ -181,6 +181,57 @@ def test_set_view_state_orbit():
     assert m.view_state == new_view_state
 
 
+def test_fly_to_sets_command():
+    m = Map([])
+    assert m._fly_to_command is None
+
+    m.fly_to(longitude=-74.0, latitude=40.7, zoom=7)
+    assert m._fly_to_command == {
+        "type": "fly-to",
+        "longitude": -74.0,
+        "latitude": 40.7,
+        "zoom": 7,
+        "pitch": 0,
+        "bearing": 0,
+        "transitionDuration": 4000,
+        "curve": None,
+        "speed": None,
+        "screenSpeed": None,
+    }
+
+
+def test_fly_to_command_passes_optional_params():
+    m = Map([])
+    m.fly_to(
+        longitude=1,
+        latitude=2,
+        zoom=3,
+        duration=1000,
+        pitch=20,
+        bearing=45,
+        curve=1.5,
+        speed=2.0,
+        screen_speed=3.0,
+    )
+    cmd = m._fly_to_command
+    assert cmd["transitionDuration"] == 1000
+    assert cmd["pitch"] == 20
+    assert cmd["bearing"] == 45
+    assert cmd["curve"] == 1.5
+    assert cmd["speed"] == 2.0
+    assert cmd["screenSpeed"] == 3.0
+
+
+def test_fly_to_validates_numeric():
+    m = Map([])
+    with pytest.raises(TypeError, match="Expected longitude"):
+        m.fly_to(longitude="x", latitude=2, zoom=3)
+    with pytest.raises(TypeError, match="Expected latitude"):
+        m.fly_to(longitude=1, latitude="y", zoom=3)
+    with pytest.raises(TypeError, match="Expected zoom"):
+        m.fly_to(longitude=1, latitude=2, zoom="z")
+
+
 def test_map_view_validate_globe_view_basemap():
     with pytest.raises(
         TraitError,

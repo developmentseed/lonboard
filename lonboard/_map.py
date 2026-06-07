@@ -201,6 +201,15 @@ class Map(BaseAnyWidget):
     Indicates if a click handler has been registered.
     """
 
+    _fly_to_command = traitlets.Dict(allow_none=True, default_value=None).tag(sync=True)
+    """Imperative camera command consumed by the frontend (one-way: control -> map).
+
+    Keys mirror ``fly_to()``: ``type``, ``longitude``, ``latitude``, ``zoom``, ``pitch``,
+    ``bearing``, ``transitionDuration``, ``curve``, ``speed``, ``screenSpeed``. Setting
+    this trait repositions an already-rendered map, including in statically exported
+    notebooks that have no kernel. This is the mechanism external control widgets use.
+    """
+
     height = t.MapHeightTrait()
     """Height of the map in pixels, or valid CSS height property.
 
@@ -666,7 +675,7 @@ class Map(BaseAnyWidget):
             "speed": speed,
             "screenSpeed": screen_speed,
         }
-        self.send(data)
+        self._fly_to_command = data
 
     @overload
     def to_html(

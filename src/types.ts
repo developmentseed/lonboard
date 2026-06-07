@@ -10,5 +10,3 @@ export type FlyToMessage = {
   speed?: number | undefined;
   screenSpeed?: number | undefined;
 };
-
-export type Message = FlyToMessage;

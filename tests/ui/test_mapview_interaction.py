@@ -63,6 +63,42 @@ def test_jupyter_set_view_state(page_session, sample_map):
 
 
 @pytest.mark.usefixtures("solara_test")
+def test_fly_to_trait_repositions(page_session, sample_map):
+    """Writing the `_fly_to_command` trait repositions the rendered map.
+
+    This exercises the kernel-free path an external control widget (or a static
+    export) relies on: rather than calling a Python method or sending a Comm
+    message, we set the synced trait directly and assert the frontend reacts by
+    moving the camera (which deck.gl writes back to `view_state`).
+    """
+    m = sample_map
+    m.set_view_state(longitude=0, latitude=0, zoom=2)
+    display(m)
+    canvas = page_session.locator("canvas").first
+    canvas.wait_for(timeout=5000)
+    page_session.wait_for_timeout(1000)
+
+    # Write the trait directly, exactly as an external widget would.
+    m._fly_to_command = {
+        "type": "fly-to",
+        "longitude": -100,
+        "latitude": 40,
+        "zoom": 5,
+        "pitch": 0,
+        "bearing": 0,
+        "transitionDuration": 0,
+        "curve": None,
+        "speed": None,
+        "screenSpeed": None,
+    }
+    page_session.wait_for_timeout(1500)
+
+    assert abs(m.view_state.longitude - (-100)) < 1
+    assert abs(m.view_state.latitude - 40) < 1
+    assert abs(m.view_state.zoom - 5) < 1
+
+
+@pytest.mark.usefixtures("solara_test")
 def test_jupyter_manual_view_state_change(page_session, sample_map):
     """Test manual view state change in Jupyter environment."""
     m = sample_map
