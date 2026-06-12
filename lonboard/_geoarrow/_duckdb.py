@@ -3,6 +3,7 @@ from __future__ import annotations
 import json
 import re
 from typing import TYPE_CHECKING
+from warnings import warn
 
 import numpy as np
 from arro3.core import (
@@ -14,12 +15,13 @@ from arro3.core import (
     list_array,
     struct_field,
 )
+from pyproj import CRS
 
 from lonboard._constants import EXTENSION_NAME
+from lonboard._geoarrow.crs import get_field_crs
 
 if TYPE_CHECKING:
     import duckdb
-    import pyproj
 
 DUCKDB_SPATIAL_TYPES = {
     "GEOMETRY",
@@ -49,7 +51,7 @@ def _base_type_name(duckdb_type: duckdb.typing.DuckDBPyType) -> str:
 def from_duckdb(
     rel: duckdb.DuckDBPyRelation,
     *,
-    crs: str | pyproj.CRS | None = None,
+    crs: str | CRS | None = None,
 ) -> Table:
     geom_col_idxs = [
         i for i, t in enumerate(rel.types) if _base_type_name(t) in DUCKDB_SPATIAL_TYPES
@@ -113,7 +115,76 @@ def _from_geometry(
     rel: duckdb.DuckDBPyRelation,
     *,
     geom_col_idx: int,
-    crs: str | pyproj.CRS | None = None,
+    crs: str | CRS | None = None,
+) -> Table:
+    table = Table.from_arrow(rel.arrow())
+    geom_field = table.schema.field(geom_col_idx)
+    field_metadata = geom_field.metadata or {}
+
+    # DuckDB >= 1.5 exports GEOMETRY columns as spec-compliant GeoArrow WKB,
+    # including the PROJJSON CRS when the type has one encoded
+    # (e.g. `GEOMETRY('EPSG:4326')`). DuckDB 1.4 exports plain binary with no
+    # field metadata, so fall back to converting via `ST_AsWKB`.
+    if field_metadata.get(b"ARROW:extension:name") == EXTENSION_NAME.WKB:
+        return _reconcile_crs(table, geom_col_idx=geom_col_idx, crs=crs)
+
+    return _from_geometry_st_aswkb(rel, geom_col_idx=geom_col_idx, crs=crs)
+
+
+def _reconcile_crs(
+    table: Table,
+    *,
+    geom_col_idx: int,
+    crs: str | CRS | None,
+) -> Table:
+    """Apply the `crs` parameter to a GeoArrow table exported from DuckDB.
+
+    - If the column has a CRS and `crs` matches it: warn that `crs` is
+      unnecessary.
+    - If the column has a CRS and `crs` conflicts with it: raise `ValueError`.
+    - If the column has no CRS: attach `crs` (if provided) like before
+      DuckDB 1.5.
+    """
+    geom_field = table.schema.field(geom_col_idx)
+    column_crs = get_field_crs(geom_field)
+
+    if column_crs is None:
+        if crs is not None:
+            metadata = _make_geoarrow_field_metadata(EXTENSION_NAME.WKB, crs)
+            geom_field = geom_field.with_metadata(metadata)
+            return table.set_column(
+                geom_col_idx,
+                geom_field,
+                table.column(geom_col_idx),
+            )
+
+        return table
+
+    if crs is not None:
+        param_crs = CRS.from_user_input(crs)
+        if param_crs != column_crs:
+            raise ValueError(
+                f"crs parameter ({param_crs.to_string()}) does not match the "
+                "CRS encoded in the DuckDB GEOMETRY column "
+                f"({column_crs.to_string()}).",
+            )
+
+        warn(
+            "Passing `crs` is no longer needed with DuckDB >= 1.5 when using "
+            "a GEOMETRY type with a CRS encoded; the CRS is read from the "
+            "DuckDB column type automatically.",
+            UserWarning,
+            stacklevel=2,
+        )
+
+    return table
+
+
+def _from_geometry_st_aswkb(
+    rel: duckdb.DuckDBPyRelation,
+    *,
+    geom_col_idx: int,
+    crs: str | CRS | None = None,
 ) -> Table:
     from duckdb import ColumnExpression, FunctionExpression
 
@@ -155,7 +226,7 @@ def _from_geoarrow(
     *,
     extension_type: EXTENSION_NAME,
     geom_col_idx: int,
-    crs: str | pyproj.CRS | None = None,
+    crs: str | CRS | None = None,
 ) -> Table:
     table = Table.from_arrow(rel.arrow())
     metadata = _make_geoarrow_field_metadata(extension_type, crs)
@@ -167,7 +238,7 @@ def _from_box2d(
     rel: duckdb.DuckDBPyRelation,
     *,
     geom_col_idx: int,
-    crs: str | pyproj.CRS | None = None,
+    crs: str | CRS | None = None,
 ) -> Table:
     table = Table.from_arrow(rel.arrow())
     geom_col = table.column(geom_col_idx)
@@ -234,15 +305,13 @@ def _convert_box2d_to_geoarrow_polygon_array(
 # TODO: refactor, put helper in lonboard._geoarrow.crs?
 def _make_geoarrow_field_metadata(
     extension_type: EXTENSION_NAME,
-    crs: str | pyproj.CRS | None = None,
+    crs: str | CRS | None = None,
 ) -> dict[bytes, bytes]:
-    import pyproj
-
     metadata: dict[bytes, bytes] = {b"ARROW:extension:name": extension_type}
 
     if crs is not None:
         if isinstance(crs, str):
-            crs = pyproj.CRS.from_user_input(crs)
+            crs = CRS.from_user_input(crs)
 
         ext_meta = {"crs": crs.to_json_dict()}
         metadata[b"ARROW:extension:metadata"] = json.dumps(ext_meta).encode()
