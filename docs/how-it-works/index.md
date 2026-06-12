@@ -16,7 +16,7 @@ Lonboard is so fast because it moves data from Python to JavaScript (in your bro
 
 Other Python libraries for interactive maps exist (such as [`ipyleaflet`](https://github.com/jupyter-widgets/ipyleaflet)), and even existing bindings to deck.gl exist (such as [`pydeck`](https://pypi.org/project/pydeck/)). But those libraries encode data as GeoJSON to copy from Python to the browser. GeoJSON is **extremely slow** to read and write and results in a very large data file that has to be copied to the browser.
 
-With lonboard, the _entire pipeline_ is binary. In Python, GeoPandas to GeoArrow to GeoParquet avoids a text encoding like GeoJSON and results in a compressed binary buffer that can be efficiently copied to the browser. In JavaScript, GeoParquet to GeoArrow offers efficient decoding ([in WebAssembly](https://github.com/kylebarron/parquet-wasm/)). Then deck.gl is able to interpret the GeoArrow table _directly_ without any parsing (thanks to [`@geoarrow/deck.gl-layers`](https://github.com/geoarrow/deck.gl-layers)).
+With lonboard, the _entire pipeline_ is binary. In Python, GeoPandas to GeoArrow to GeoParquet avoids a text encoding like GeoJSON and results in a compressed binary buffer that can be efficiently copied to the browser. In JavaScript, GeoParquet to GeoArrow offers efficient decoding ([in WebAssembly](https://github.com/kylebarron/parquet-wasm/)). Then deck.gl is able to interpret the GeoArrow table _directly_ without any parsing (thanks to [`@geoarrow/deck.gl-geoarrow`](https://github.com/geoarrow/deck.gl-geoarrow)).
 
 [GeoPandas](https://geopandas.org/en/stable/) is the primary interface for users to add data, allowing lonboard to internally manage the conversion to GeoArrow and its transport to the browser for rendering.
 

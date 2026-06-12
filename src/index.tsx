@@ -4,7 +4,7 @@ import type { MapViewState, PickingInfo } from "@deck.gl/core";
 import type { PolygonLayerProps } from "@deck.gl/layers";
 import { PolygonLayer } from "@deck.gl/layers";
 import type { DeckGLRef } from "@deck.gl/react";
-import type { GeoArrowPickingInfo } from "@geoarrow/deck.gl-layers";
+import type { GeoArrowPickingInfo } from "@geoarrow/deck.gl-geoarrow";
 import type { IWidgetManager } from "@jupyter-widgets/base";
 import { NextUIProvider } from "@nextui-org/react";
 import debounce from "lodash.debounce";

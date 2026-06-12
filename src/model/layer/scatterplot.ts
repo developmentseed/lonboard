@@ -1,5 +1,5 @@
-import type { GeoArrowScatterplotLayerProps } from "@geoarrow/deck.gl-layers";
-import { GeoArrowScatterplotLayer } from "@geoarrow/deck.gl-layers";
+import type { GeoArrowScatterplotLayerProps } from "@geoarrow/deck.gl-geoarrow";
+import { GeoArrowScatterplotLayer } from "@geoarrow/deck.gl-geoarrow";
 import type { WidgetModel } from "@jupyter-widgets/base";
 
 import { isDefined } from "../../util.js";
