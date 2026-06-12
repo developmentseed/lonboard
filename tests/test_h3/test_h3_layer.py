@@ -1,5 +1,7 @@
 # ruff: noqa: ERA001
 
+import math
+
 import numpy as np
 import pandas as pd
 import pyarrow as pa
@@ -42,6 +44,21 @@ def test_from_geopandas():
     layer = H3HexagonLayer.from_pandas(df, get_hexagon=hex_str_pa_arr)
     m = Map(layer)
     assert isinstance(m.layers[0], H3HexagonLayer)
+
+
+def test_mixed_resolution_default_viewport():
+    # VALID_INDICES contains one cell at each resolution 0-15. h3 >= 4.5 raises
+    # H3ResMismatchError from `cells_to_geo` when given mixed-resolution cells,
+    # so the default viewport must be computed per-resolution. Pin that a layer
+    # built from mixed-resolution cells gets a real default viewport.
+    df = pd.DataFrame({"h3": VALID_INDICES})
+    layer = H3HexagonLayer.from_pandas(df, get_hexagon=VALID_INDICES)
+
+    bbox = layer._bbox
+    assert all(math.isfinite(val) for val in bbox.to_tuple())
+    assert bbox.minx < bbox.maxx
+    assert bbox.miny < bbox.maxy
+    assert layer._weighted_centroid.num_items == len(VALID_INDICES)
 
 
 # We removed invalid index checking because of spurious validation errors with
