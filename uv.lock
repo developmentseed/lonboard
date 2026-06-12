@@ -1349,14 +1349,14 @@ wheels = [
 
 [[package]]
 name = "geodatasets"
-version = "2026.1.0"
+version = "2026.5.1"
 source = { registry = "https://pypi.org/simple" }
 dependencies = [
     { name = "pooch" },
 ]
-sdist = { url = "https://files.pythonhosted.org/packages/48/13/8c32e106bdbeece787e779a72f06f2ee7c4ca03fb6f147334a7f5ab9df53/geodatasets-2026.1.0.tar.gz", hash = "sha256:28259126b58c8efd3119536038b563a178c8a7400a1d6d307460aae0f7f945c3", size = 806220, upload-time = "2026-01-01T08:22:39.137Z" }
+sdist = { url = "https://files.pythonhosted.org/packages/5a/97/b5b0b5935d4fb960b4710f46a9cb43247e1aa9a4d62da1dd7eb190ce5ece/geodatasets-2026.5.1.tar.gz", hash = "sha256:c55358e118af956605781ae4fe5dccf26c63dc89408b3298726d21b879c9b2b1", size = 1463494, upload-time = "2026-05-18T20:51:49.261Z" }
 wheels = [
-    { url = "https://files.pythonhosted.org/packages/79/5a/f749ead6d2bc42a68ce4016fe96572b90165ed690f99869732cf9c547682/geodatasets-2026.1.0-py3-none-any.whl", hash = "sha256:84c0173e92ee818783cf90d7a142c2ea76b4b4d02a0fb9451873a3de5765f90b", size = 22007, upload-time = "2026-01-01T08:22:37.647Z" },
+    { url = "https://files.pythonhosted.org/packages/0b/c8/599e5747997c8bf729beb7eff523bd45081746dab415a20d97ca27996ad9/geodatasets-2026.5.1-py3-none-any.whl", hash = "sha256:9f025682d4fda46c357c4ac0e22381bbe15214aa581eb3dae7238740abd7431b", size = 21978, upload-time = "2026-05-18T20:51:48.19Z" },
 ]
 
 [[package]]
