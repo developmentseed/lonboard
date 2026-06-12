@@ -6,7 +6,6 @@ from __future__ import annotations
 
 import json
 import warnings
-from concurrent.futures import ThreadPoolExecutor
 from functools import lru_cache, partial
 from typing import TYPE_CHECKING
 from warnings import warn
@@ -26,6 +25,7 @@ from arro3.core import (
 from pyproj import CRS, Transformer
 
 from lonboard._constants import EPSG_4326, EXTENSION_NAME, OGC_84
+from lonboard._executor import Executor
 from lonboard._geoarrow.crs import get_field_crs
 from lonboard._geoarrow.extension_types import CoordinateDimension
 from lonboard._utils import get_geometry_column_index
@@ -161,7 +161,7 @@ def _reproject_column(
     else:
         raise ValueError(f"Unexpected extension type name {extension_type_name}")
 
-    with ThreadPoolExecutor(max_workers=max_workers) as executor:
+    with Executor(max_workers=max_workers) as executor:
         return ChunkedArray(list(executor.map(func, column.chunks)))
 
 

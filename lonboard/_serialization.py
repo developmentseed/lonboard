@@ -1,7 +1,6 @@
 from __future__ import annotations
 
 import math
-from concurrent.futures import ThreadPoolExecutor
 from dataclasses import asdict
 from io import BytesIO
 from typing import TYPE_CHECKING, Any, overload
@@ -20,6 +19,7 @@ from arro3.core import (
 )
 from traitlets.traitlets import TraitError
 
+from lonboard._executor import Executor
 from lonboard._utils import timestamp_start_offset
 
 if TYPE_CHECKING:
@@ -90,7 +90,7 @@ def write_parquet_batch(record_batch: RecordBatch) -> bytes:
 def serialize_table_to_parquet(table: Table, *, max_chunksize: int) -> list[bytes]:
     assert max_chunksize > 0
 
-    with ThreadPoolExecutor() as executor:
+    with Executor() as executor:
         return list(
             executor.map(
                 write_parquet_batch,
