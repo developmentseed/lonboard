@@ -31,13 +31,23 @@ DUCKDB_SPATIAL_TYPES = {
 }
 
 
+def _base_type_name(duckdb_type: duckdb.typing.DuckDBPyType) -> str:
+    """Return the name of a DuckDB type without any type parameters.
+
+    As of DuckDB 1.5, the spatial extension's GEOMETRY type is parameterized
+    with a CRS, e.g. ``GEOMETRY('EPSG:4326')``, so an exact string comparison
+    against ``"GEOMETRY"`` no longer matches.
+    """
+    return str(duckdb_type).split("(", 1)[0]
+
+
 def from_duckdb(
     rel: duckdb.DuckDBPyRelation,
     *,
     crs: str | pyproj.CRS | None = None,
 ) -> Table:
     geom_col_idxs = [
-        i for i, t in enumerate(rel.types) if str(t) in DUCKDB_SPATIAL_TYPES
+        i for i, t in enumerate(rel.types) if _base_type_name(t) in DUCKDB_SPATIAL_TYPES
     ]
 
     if len(geom_col_idxs) == 0:
@@ -54,7 +64,7 @@ def from_duckdb(
         raise ValueError(msg)
 
     geom_col_idx = geom_col_idxs[0]
-    geom_type = rel.types[geom_col_idx]
+    geom_type = _base_type_name(rel.types[geom_col_idx])
     if geom_type == "WKB_BLOB":
         return _from_geoarrow(
             rel,

@@ -28,7 +28,8 @@ def test_viz_geometry_default_con():
         SELECT * FROM ST_Read("{cities_gdal_path}");
         """
     rel = duckdb.sql(sql)
-    assert rel.types[-1] == "GEOMETRY"
+    # DuckDB 1.5+ parameterizes GEOMETRY with a CRS, e.g. GEOMETRY('EPSG:4326')
+    assert str(rel.types[-1]).startswith("GEOMETRY")
 
     m = viz(rel)
     assert isinstance(m.layers[0], ScatterplotLayer)
@@ -45,7 +46,8 @@ def test_viz_geometry():
         SELECT * FROM ST_Read("{cities_gdal_path}");
         """
     rel = con.sql(sql)
-    assert rel.types[-1] == "GEOMETRY"
+    # DuckDB 1.5+ parameterizes GEOMETRY with a CRS, e.g. GEOMETRY('EPSG:4326')
+    assert str(rel.types[-1]).startswith("GEOMETRY")
     m = viz(rel)
     assert isinstance(m.layers[0], ScatterplotLayer)
 
@@ -58,7 +60,8 @@ def test_viz_wkb_blob():
     sql = f"""
         INSTALL spatial;
         LOAD spatial;
-        SELECT name, ST_AsWKB(geom) as geom FROM ST_Read("{cities_gdal_path}");
+        -- Cast because ST_AsWKB returns plain BLOB (not WKB_BLOB) in DuckDB 1.5+
+        SELECT name, ST_AsWKB(geom)::WKB_BLOB as geom FROM ST_Read("{cities_gdal_path}");
         """
     rel = con.sql(sql)
     assert rel.types[-1] == "WKB_BLOB"
@@ -71,7 +74,9 @@ def test_viz_point_2d():
     sql = f"""
         INSTALL spatial;
         LOAD spatial;
-        SELECT name, CAST(geom as POINT_2D) as geom FROM ST_Read("{cities_gdal_path}");
+        -- Cast via plain GEOMETRY: DuckDB 1.5+ can't cast its
+        -- CRS-parameterized GEOMETRY directly to POINT_2D
+        SELECT name, CAST(geom::GEOMETRY as POINT_2D) as geom FROM ST_Read("{cities_gdal_path}");
         """
     rel = con.sql(sql)
     assert rel.types[-1] == "POINT_2D"
@@ -112,7 +117,8 @@ def test_layer_geometry():
         SELECT * FROM ST_Read("{cities_gdal_path}");
         """
     rel = con.sql(sql)
-    assert rel.types[-1] == "GEOMETRY"
+    # DuckDB 1.5+ parameterizes GEOMETRY with a CRS, e.g. GEOMETRY('EPSG:4326')
+    assert str(rel.types[-1]).startswith("GEOMETRY")
     layer = ScatterplotLayer.from_duckdb(rel, con=con)
     assert isinstance(layer, ScatterplotLayer)
 
@@ -125,7 +131,8 @@ def test_layer_wkb_blob():
     sql = f"""
         INSTALL spatial;
         LOAD spatial;
-        SELECT name, ST_AsWKB(geom) as geom FROM ST_Read("{cities_gdal_path}");
+        -- Cast because ST_AsWKB returns plain BLOB (not WKB_BLOB) in DuckDB 1.5+
+        SELECT name, ST_AsWKB(geom)::WKB_BLOB as geom FROM ST_Read("{cities_gdal_path}");
         """
     rel = con.sql(sql)
     assert rel.types[-1] == "WKB_BLOB"
@@ -138,7 +145,9 @@ def test_layer_point_2d():
     sql = f"""
         INSTALL spatial;
         LOAD spatial;
-        SELECT name, CAST(geom as POINT_2D) as geom FROM ST_Read("{cities_gdal_path}");
+        -- Cast via plain GEOMETRY: DuckDB 1.5+ can't cast its
+        -- CRS-parameterized GEOMETRY directly to POINT_2D
+        SELECT name, CAST(geom::GEOMETRY as POINT_2D) as geom FROM ST_Read("{cities_gdal_path}");
         """
     rel = con.sql(sql)
     assert rel.types[-1] == "POINT_2D"
@@ -224,7 +233,9 @@ def test_geometry_only_column():
         INSTALL spatial;
         LOAD spatial;
         CREATE TABLE data AS
-            SELECT CAST(geom as POINT_2D) as geom FROM ST_Read("{cities_gdal_path}");
+            -- Cast via plain GEOMETRY: DuckDB 1.5+ can't cast its
+            -- CRS-parameterized GEOMETRY directly to POINT_2D
+            SELECT CAST(geom::GEOMETRY as POINT_2D) as geom FROM ST_Read("{cities_gdal_path}");
         """
     con.execute(sql)
 
