@@ -17,6 +17,8 @@ if not cities_path.exists():
 
 cities_gdal_path = f"/vsizip/{cities_path}"
 
+DUCKDB_GE_15 = tuple(int(p) for p in duckdb.__version__.split(".")[:2]) >= (1, 5)
+
 
 def test_viz_geometry_default_con():
     # For WKB parsing
@@ -277,8 +279,38 @@ def test_sanitize_column_name():
         """
     rel = con.sql(sql)
 
-    with pytest.raises(
-        AssertionError,
-        match="Expected geometry column name to match regex:",
-    ):
-        viz(rel)
+    if DUCKDB_GE_15:
+        # The native Arrow export path doesn't interpolate column names into
+        # SQL, so non-alphanumeric geometry column names are supported.
+        m = viz(rel)
+        assert isinstance(m.layers[0], ScatterplotLayer)
+    else:
+        with pytest.raises(
+            AssertionError,
+            match="Expected geometry column name to match regex:",
+        ):
+            viz(rel)
+
+
+@pytest.mark.skipif(not DUCKDB_GE_15, reason="GEOMETRY CRS requires duckdb>=1.5")
+def test_geometry_crs_used_automatically():
+    # For WKB parsing
+    pytest.importorskip("shapely")
+
+    con = duckdb.connect()
+    # EPSG:3857 coordinates of approximately (lon=1, lat=1)
+    sql = """
+        INSTALL spatial;
+        LOAD spatial;
+        SELECT
+            'a' as name,
+            ST_Point(111319.49079327357, 111325.1428663851)::GEOMETRY('EPSG:3857')
+                as geom;
+        """
+    rel = con.sql(sql)
+    m = viz(rel)
+
+    # The 3857 CRS must be picked up from the column type and the data
+    # reprojected, so the map centers near (1, 1), not at web-mercator meters.
+    assert abs(m.view_state.longitude - 1) < 1e-3
+    assert abs(m.view_state.latitude - 1) < 1e-3

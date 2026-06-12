@@ -3,6 +3,7 @@ from __future__ import annotations
 import json
 import re
 from typing import TYPE_CHECKING
+from warnings import warn
 
 import numpy as np
 from arro3.core import (
@@ -110,6 +111,79 @@ def from_duckdb(
 
 
 def _from_geometry(
+    rel: duckdb.DuckDBPyRelation,
+    *,
+    geom_col_idx: int,
+    crs: str | pyproj.CRS | None = None,
+) -> Table:
+    table = Table.from_arrow(rel.arrow())
+    geom_field = table.schema.field(geom_col_idx)
+    field_metadata = geom_field.metadata or {}
+
+    # DuckDB >= 1.5 exports GEOMETRY columns as spec-compliant GeoArrow WKB,
+    # including the PROJJSON CRS when the type has one encoded
+    # (e.g. `GEOMETRY('EPSG:4326')`). DuckDB 1.4 exports plain binary with no
+    # field metadata, so fall back to converting via `ST_AsWKB`.
+    if field_metadata.get(b"ARROW:extension:name") == EXTENSION_NAME.WKB:
+        return _reconcile_crs(table, geom_col_idx=geom_col_idx, crs=crs)
+
+    return _from_geometry_st_aswkb(rel, geom_col_idx=geom_col_idx, crs=crs)
+
+
+def _reconcile_crs(
+    table: Table,
+    *,
+    geom_col_idx: int,
+    crs: str | pyproj.CRS | None,
+) -> Table:
+    """Apply the `crs` parameter to a GeoArrow table exported from DuckDB.
+
+    - Column has a CRS and `crs` matches it: warn that `crs` is unnecessary.
+    - Column has a CRS and `crs` conflicts with it: raise `ValueError`.
+    - Column has no CRS: attach `crs` (if provided) like before DuckDB 1.5.
+    """
+    import pyproj
+
+    geom_field = table.schema.field(geom_col_idx)
+    field_metadata = geom_field.metadata or {}
+    ext_meta_bytes = field_metadata.get(b"ARROW:extension:metadata")
+    ext_meta = json.loads(ext_meta_bytes) if ext_meta_bytes else {}
+    column_crs = ext_meta.get("crs")
+
+    if column_crs is None:
+        if crs is not None:
+            metadata = _make_geoarrow_field_metadata(EXTENSION_NAME.WKB, crs)
+            geom_field = geom_field.with_metadata(metadata)
+            return table.set_column(
+                geom_col_idx,
+                geom_field,
+                table.column(geom_col_idx),
+            )
+
+        return table
+
+    if crs is not None:
+        param_crs = pyproj.CRS.from_user_input(crs)
+        column_pyproj_crs = pyproj.CRS.from_json_dict(column_crs)
+        if param_crs != column_pyproj_crs:
+            raise ValueError(
+                f"crs parameter ({param_crs.to_string()}) does not match the "
+                "CRS encoded in the DuckDB GEOMETRY column "
+                f"({column_pyproj_crs.to_string()}).",
+            )
+
+        warn(
+            "Passing `crs` is no longer needed with DuckDB >= 1.5 when using "
+            "a GEOMETRY type with a CRS encoded; the CRS is read from the "
+            "DuckDB column type automatically.",
+            UserWarning,
+            stacklevel=2,
+        )
+
+    return table
+
+
+def _from_geometry_st_aswkb(
     rel: duckdb.DuckDBPyRelation,
     *,
     geom_col_idx: int,
