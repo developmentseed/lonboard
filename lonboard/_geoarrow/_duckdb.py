@@ -6,6 +6,7 @@ from typing import TYPE_CHECKING
 from warnings import warn
 
 import numpy as np
+import pyproj
 from arro3.core import (
     Array,
     ChunkedArray,
@@ -17,10 +18,10 @@ from arro3.core import (
 )
 
 from lonboard._constants import EXTENSION_NAME
+from lonboard._geoarrow.crs import get_field_crs
 
 if TYPE_CHECKING:
     import duckdb
-    import pyproj
 
 DUCKDB_SPATIAL_TYPES = {
     "GEOMETRY",
@@ -138,17 +139,14 @@ def _reconcile_crs(
 ) -> Table:
     """Apply the `crs` parameter to a GeoArrow table exported from DuckDB.
 
-    - Column has a CRS and `crs` matches it: warn that `crs` is unnecessary.
-    - Column has a CRS and `crs` conflicts with it: raise `ValueError`.
-    - Column has no CRS: attach `crs` (if provided) like before DuckDB 1.5.
+    - If the column has a CRS and `crs` matches it: warn that `crs` is
+      unnecessary.
+    - If the column has a CRS and `crs` conflicts with it: raise `ValueError`.
+    - If the column has no CRS: attach `crs` (if provided) like before
+      DuckDB 1.5.
     """
-    import pyproj
-
     geom_field = table.schema.field(geom_col_idx)
-    field_metadata = geom_field.metadata or {}
-    ext_meta_bytes = field_metadata.get(b"ARROW:extension:metadata")
-    ext_meta = json.loads(ext_meta_bytes) if ext_meta_bytes else {}
-    column_crs = ext_meta.get("crs")
+    column_crs = get_field_crs(geom_field)
 
     if column_crs is None:
         if crs is not None:
@@ -164,12 +162,11 @@ def _reconcile_crs(
 
     if crs is not None:
         param_crs = pyproj.CRS.from_user_input(crs)
-        column_pyproj_crs = pyproj.CRS.from_json_dict(column_crs)
-        if param_crs != column_pyproj_crs:
+        if param_crs != column_crs:
             raise ValueError(
                 f"crs parameter ({param_crs.to_string()}) does not match the "
                 "CRS encoded in the DuckDB GEOMETRY column "
-                f"({column_pyproj_crs.to_string()}).",
+                f"({column_crs.to_string()}).",
             )
 
         warn(
@@ -310,8 +307,6 @@ def _make_geoarrow_field_metadata(
     extension_type: EXTENSION_NAME,
     crs: str | pyproj.CRS | None = None,
 ) -> dict[bytes, bytes]:
-    import pyproj
-
     metadata: dict[bytes, bytes] = {b"ARROW:extension:name": extension_type}
 
     if crs is not None:
