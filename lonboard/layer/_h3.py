@@ -7,6 +7,7 @@ import numpy as np
 
 import lonboard.traits as t
 from lonboard._geoarrow.ops import Bbox, WeightedCentroid
+from lonboard._h3._validate_h3_cell import get_resolution
 from lonboard._utils import auto_downcast as _auto_downcast
 from lonboard.layer._polygon import PolygonLayer
 
@@ -50,21 +51,29 @@ def default_h3_viewport(ca: ChunkedArray) -> tuple[Bbox, WeightedCentroid] | Non
         )
         return None
 
-    geo_dict = h3.cells_to_geo(sample_h3)
+    # h3 >= 4.5 raises H3ResMismatchError when `cells_to_geo` is passed cells of
+    # mixed resolutions, so group the sampled cells by resolution and call it
+    # once per resolution.
+    resolutions = get_resolution(sample_h3)
+    coord_list: list[tuple[float, float]] = []
+    for res in np.unique(resolutions):
+        geo_dict = h3.cells_to_geo(sample_h3[resolutions == res])
 
-    geom_type = geo_dict.get("type")
-    if geom_type == "Polygon":
-        polygons = [geo_dict["coordinates"]]
-    elif geom_type == "MultiPolygon":
-        polygons = geo_dict["coordinates"]
-    else:
-        # I think it should always be Polygon/MultiPolygon
+        geom_type = geo_dict.get("type")
+        if geom_type == "Polygon":
+            polygons = [geo_dict["coordinates"]]
+        elif geom_type == "MultiPolygon":
+            polygons = geo_dict["coordinates"]
+        else:
+            # I think it should always be Polygon/MultiPolygon
+            continue
+
+        coord_list.extend(pt for polygon in polygons for ring in polygon for pt in ring)
+
+    if not coord_list:
         return None
 
-    coords = np.array(
-        [pt for polygon in polygons for ring in polygon for pt in ring],
-        dtype=np.float64,
-    )
+    coords = np.array(coord_list, dtype=np.float64)
     centroid = coords.mean(axis=0)
 
     minx, miny = coords.min(axis=0)
