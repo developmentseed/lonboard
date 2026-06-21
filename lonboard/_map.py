@@ -648,6 +648,12 @@ class Map(BaseAnyWidget):
         if not isinstance(zoom, (int, float, np.number)):
             raise TypeError(f"Expected zoom to be an int or float, got {type(zoom)}")
 
+        if not isinstance(pitch, (int, float, np.number)):
+            raise TypeError(f"Expected pitch to be an int or float, got {type(pitch)}")
+
+        if not isinstance(bearing, (int, float, np.number)):
+            raise TypeError(f"Expected bearing to be an int or float, got {type(bearing)}")
+
         data = {
             "type": "fly-to",
             "longitude": longitude,
