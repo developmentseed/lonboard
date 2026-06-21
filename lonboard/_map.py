@@ -576,36 +576,30 @@ class Map(BaseAnyWidget):
 
         """
         if view_state is not None:
-            self.view_state = view_state
-            return
+            longitude = view_state.longitude
+            latitude = view_state.latitude
+            zoom = view_state.zoom
+            pitch = view_state.pitch
+            bearing = view_state.bearing
 
-        current_view_state = self.view_state
+        if longitude is None:
+            longitude = self.view_state.longitude
+        if latitude is None:
+            latitude = self.view_state.latitude
+        if zoom is None:
+            zoom = self.view_state.zoom
+        if pitch is None:
+            pitch = self.view_state.pitch
+        if bearing is None:
+            bearing = self.view_state.bearing
 
-        changes = {}
-        if longitude is not None:
-            changes["longitude"] = longitude
-        if latitude is not None:
-            changes["latitude"] = latitude
-        if zoom is not None:
-            changes["zoom"] = zoom
-
-        # Only params allowed by globe view state
-        if isinstance(current_view_state, GlobeViewState):
-            self.view_state = replace(current_view_state, **changes)
-            return
-
-        # Add more params allowed by map view state
-        if pitch is not None:
-            changes["pitch"] = pitch
-        if bearing is not None:
-            changes["bearing"] = bearing
-
-        if isinstance(current_view_state, MapViewState):
-            self.view_state = replace(current_view_state, **changes)
-            return
-
-        raise TypeError(
-            "Can only set MapViewState or GlobeViewState parameters individually via set_view_state.\nFor other view state types, pass a complete view_state object.",
+        self.fly_to(
+            longitude=longitude,
+            latitude=latitude,
+            zoom=zoom,
+            duration=0,
+            pitch=pitch,
+            bearing=bearing,
         )
 
     def fly_to(  # noqa: PLR0913
