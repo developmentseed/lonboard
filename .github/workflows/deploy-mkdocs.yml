@@ -19,7 +19,7 @@ jobs:
           private-key: ${{ secrets.DS_RELEASE_BOT_PRIVATE_KEY }}
           permission-contents: write
 
-      - uses: actions/checkout@v6
+      - uses: actions/checkout@v7
         # We need to additionally fetch the gh-pages branch for mike deploy
         with:
           fetch-depth: 0
