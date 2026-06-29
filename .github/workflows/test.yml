@@ -72,7 +72,7 @@ jobs:
       - uses: astral-sh/ruff-action@v3
 
       - name: Cache pre-commit virtualenvs
-        uses: actions/cache@v5
+        uses: actions/cache@v6
         if: "${{ matrix.python-version == 3.11 }}"
         with:
           path: ~/.cache/pre-commit
