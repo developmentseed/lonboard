@@ -8,6 +8,7 @@ https://mkdocstrings.github.io/python/usage/configuration/members/#filters
       group_by_category: false
       show_bases: false
       filters:
+      show_labels: false
 
 ::: lonboard.types.map.MapKwargs
     options:
