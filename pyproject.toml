@@ -151,6 +151,7 @@ ignore = [
     "ANN401",  # Dynamically typed expressions (typing.Any) are disallowed
     "B028",    # No explicit `stacklevel` keyword argument found
     "B011",    # Do not `assert False` (`python -O` removes these calls), raise `AssertionError()`
+    "CPY001",  # missing copyright
     "D100",    # Missing docstring in public module
     "D203",    # incorrect-blank-line-before-class
     "D213",    # multi-line-summary-second-line
