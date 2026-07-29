@@ -101,7 +101,7 @@ dev = [
     "pytest>=8.3.4",
     "pytest-ipywidgets>=1.54.0",
     "rasterio>=1.4.3",
-    "ruff>=0.15.0",
+    "ruff>=0.16.0",
     "sidecar>=0.7.0",
     "types-geopandas>=1.1.1.20250708",
     "types-shapely>=2.1.0.20250512",
@@ -151,6 +151,7 @@ ignore = [
     "ANN401",  # Dynamically typed expressions (typing.Any) are disallowed
     "B028",    # No explicit `stacklevel` keyword argument found
     "B011",    # Do not `assert False` (`python -O` removes these calls), raise `AssertionError()`
+    "CPY001",  # missing copyright
     "D100",    # Missing docstring in public module
     "D203",    # incorrect-blank-line-before-class
     "D213",    # multi-line-summary-second-line
