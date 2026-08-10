@@ -3261,7 +3261,7 @@ name = "pexpect"
 version = "4.9.0"
 source = { registry = "https://pypi.org/simple" }
 dependencies = [
-    { name = "ptyprocess", marker = "sys_platform != 'emscripten' and sys_platform != 'win32'" },
+    { name = "ptyprocess" },
 ]
 sdist = { url = "https://files.pythonhosted.org/packages/42/92/cc564bf6381ff43ce1f4d06852fc19a2f11d180f23dc32d9588bee2f149d/pexpect-4.9.0.tar.gz", hash = "sha256:ee7d41123f3c9911050ea2c2dac107568dc43b2d3b0c7557a33212c398ead30f", size = 166450, upload-time = "2023-11-25T09:07:26.339Z" }
 wheels = [
@@ -3980,7 +3980,7 @@ wheels = [
 
 [[package]]
 name = "pytest-ipywidgets"
-version = "1.60.3"
+version = "1.61.0"
 source = { registry = "https://pypi.org/simple" }
 dependencies = [
     { name = "pillow" },
@@ -3991,9 +3991,9 @@ dependencies = [
     { name = "solara-server", extra = ["starlette"] },
     { name = "solara-ui" },
 ]
-sdist = { url = "https://files.pythonhosted.org/packages/ef/37/86dfac372f0aa658b6249b70f8aa8730c32e2a5cadb89de52e201b13cece/pytest_ipywidgets-1.60.3.tar.gz", hash = "sha256:68e83e59e1783c5755a9ddf4bf970092ef1475aa245f8f4501873cff3b226599", size = 2911, upload-time = "2026-07-10T13:39:32.681Z" }
+sdist = { url = "https://files.pythonhosted.org/packages/e8/9a/24a3e382a65acee0050f942b5f737f8747b05785510e29a9655e0972096a/pytest_ipywidgets-1.61.0.tar.gz", hash = "sha256:47f0cab5ca9206283c36e85a3bdeaa23f5633e75afe1d66d053d2019def00ef4", size = 2912, upload-time = "2026-08-05T14:36:31.005Z" }
 wheels = [
-    { url = "https://files.pythonhosted.org/packages/40/a6/8fe6f8b3ed7189f23ab01916e08c957af58253050b1690cbb758d9490eb1/pytest_ipywidgets-1.60.3-py3-none-any.whl", hash = "sha256:0ca5df719dd1c3a5a4d323d1b3832aa78f6c015649fc2c4e5ad23f9d5640a774", size = 4221, upload-time = "2026-07-10T13:39:31.747Z" },
+    { url = "https://files.pythonhosted.org/packages/21/48/4127b51ae5e26ca2e72a8ddea070b0c8a980bb1757a3cd84593fcf03d3ea/pytest_ipywidgets-1.61.0-py3-none-any.whl", hash = "sha256:10dc96d44d5d3a30384f46fdd5c040ef327cd96d2a51e92df9857944476a3113", size = 4223, upload-time = "2026-08-05T14:36:29.721Z" },
 ]
 
 [[package]]
@@ -4645,7 +4645,7 @@ wheels = [
 
 [[package]]
 name = "solara-server"
-version = "1.60.3"
+version = "1.61.0"
 source = { registry = "https://pypi.org/simple" }
 dependencies = [
     { name = "click" },
@@ -4657,9 +4657,9 @@ dependencies = [
     { name = "rich-click" },
     { name = "solara-ui" },
 ]
-sdist = { url = "https://files.pythonhosted.org/packages/25/d8/e0a93cdc6c72865d5bde302467bc85cb483aed2b25c798cb2c6c5df5697f/solara_server-1.60.3.tar.gz", hash = "sha256:0eb1134473fd880d1b823b3c9e9e43dae6b08345319e10137e4a2f4ea73e1554", size = 2583, upload-time = "2026-07-10T13:39:20.417Z" }
+sdist = { url = "https://files.pythonhosted.org/packages/2e/b4/c6a9ab6b73c665050288d64189009337c5f3b86827481def0bdf373ae9b3/solara_server-1.61.0.tar.gz", hash = "sha256:169d4d329eb8b8ad5f0d4ab75a20b764e12cff2836eb84e5a0b33d828ae12d04", size = 2581, upload-time = "2026-08-05T14:36:18.879Z" }
 wheels = [
-    { url = "https://files.pythonhosted.org/packages/1d/e0/5efa8523b97d33aa7b58bd373569d4be3a34befc4192e94b7bba265f69fd/solara_server-1.60.3-py3-none-any.whl", hash = "sha256:4a3c397e4d087a2007288d744b3830a843c6080b0131490c87734f52b6a7b5cb", size = 3924, upload-time = "2026-07-10T13:39:21.179Z" },
+    { url = "https://files.pythonhosted.org/packages/3a/9a/137edc3899c9f814462af0d812fe5274093d3d71a02f7ad69d8ebf592d2c/solara_server-1.61.0-py3-none-any.whl", hash = "sha256:5eb38233868c787e49c230fc96291aef043cecb217828069341c497e5b184be3", size = 3925, upload-time = "2026-08-05T14:36:18.082Z" },
 ]
 
 [package.optional-dependencies]
@@ -4671,7 +4671,7 @@ starlette = [
 
 [[package]]
 name = "solara-ui"
-version = "1.60.3"
+version = "1.61.0"
 source = { registry = "https://pypi.org/simple" }
 dependencies = [
     { name = "executing" },
@@ -4682,9 +4682,9 @@ dependencies = [
     { name = "reacton" },
     { name = "requests" },
 ]
-sdist = { url = "https://files.pythonhosted.org/packages/d8/a4/49f891a147e7613cf681e1e66dd7124ba50765c86558c4695eede72d57bd/solara_ui-1.60.3.tar.gz", hash = "sha256:7d2b861e9c2a486c97f19d1290ec973b0222590c7b03687ce3ee4cfd20fde45f", size = 1422829, upload-time = "2026-07-10T13:39:18.923Z" }
+sdist = { url = "https://files.pythonhosted.org/packages/8b/a6/0918f8a9cd70471a4d7b0f0b20bc1582587049ec29366b94cd9d6c25a091/solara_ui-1.61.0.tar.gz", hash = "sha256:0405e42955168407976853a1d832c816a6a7f18b57044287b3d8e2184fc6922a", size = 1435092, upload-time = "2026-08-05T14:36:16.727Z" }
 wheels = [
-    { url = "https://files.pythonhosted.org/packages/da/8c/87d26069d442d84c43dc6192e3d4936dfd8edfba05e4ff0368dad82ecbba/solara_ui-1.60.3-py3-none-any.whl", hash = "sha256:b0fc7f1c022ad721e3f072a6c1c0134b82ff669a423e4dfd0edd5243495aed62", size = 1421614, upload-time = "2026-07-10T13:39:17.559Z" },
+    { url = "https://files.pythonhosted.org/packages/3b/be/ab36a3e1066bbd1dfb397b8d87dc4edbeda8806122848e49476e06ec680b/solara_ui-1.61.0-py3-none-any.whl", hash = "sha256:c1d5db173978fa1adc51adf2e98462f06b2cebdd2ef6d916186b7637b3eede54", size = 1440467, upload-time = "2026-08-05T14:36:15.213Z" },
 ]
 
 [[package]]
@@ -4777,11 +4777,11 @@ wheels = [
 
 [[package]]
 name = "traitlets"
-version = "5.15.1"
+version = "5.16.1"
 source = { registry = "https://pypi.org/simple" }
-sdist = { url = "https://files.pythonhosted.org/packages/57/a9/a2584b8313b89f94869ddb3c4074617a691de1812a614d2d50e32ca5a7a6/traitlets-5.15.1.tar.gz", hash = "sha256:7b1c07854fe25acb39e009bae49f11b79ff6cbb2f27999104e9110e7a6b53722", size = 163344, upload-time = "2026-06-03T12:26:06.181Z" }
+sdist = { url = "https://files.pythonhosted.org/packages/2c/2e/a7fbfe268c8a3b32546930c0297c101d65a4a14c304ad5790a9f478f0e4e/traitlets-5.16.1.tar.gz", hash = "sha256:ed900c2b631aa3a112811139fa97b8d2c3bad5e989656bba4b7e52c7852c18c1", size = 166137, upload-time = "2026-08-03T08:32:36.848Z" }
 wheels = [
-    { url = "https://files.pythonhosted.org/packages/96/8d/1080ee4c231f361b6ce4470d556c8c435b67c7e0753aaa641497ee92f88b/traitlets-5.15.1-py3-none-any.whl", hash = "sha256:770a53705f84b81ac107e83a1b3328ff2dae16094d8fc3cfc004e4b22dfd8e92", size = 85858, upload-time = "2026-06-03T12:26:04.395Z" },
+    { url = "https://files.pythonhosted.org/packages/ad/66/0d785f0bc5e4315a96c989bb476d0fc07ea4f85132550c7b156ca2035d52/traitlets-5.16.1-py3-none-any.whl", hash = "sha256:f775618166caa0396c8e337099240f2bd3e5e917d203b2e6fbe21a58d3cb1f6b", size = 86211, upload-time = "2026-08-03T08:32:34.48Z" },
 ]
 
 [[package]]
