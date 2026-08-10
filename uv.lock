@@ -3261,7 +3261,7 @@ name = "pexpect"
 version = "4.9.0"
 source = { registry = "https://pypi.org/simple" }
 dependencies = [
-    { name = "ptyprocess", marker = "sys_platform != 'emscripten' and sys_platform != 'win32'" },
+    { name = "ptyprocess" },
 ]
 sdist = { url = "https://files.pythonhosted.org/packages/42/92/cc564bf6381ff43ce1f4d06852fc19a2f11d180f23dc32d9588bee2f149d/pexpect-4.9.0.tar.gz", hash = "sha256:ee7d41123f3c9911050ea2c2dac107568dc43b2d3b0c7557a33212c398ead30f", size = 166450, upload-time = "2023-11-25T09:07:26.339Z" }
 wheels = [
@@ -4786,7 +4786,7 @@ wheels = [
 
 [[package]]
 name = "types-geopandas"
-version = "1.1.4.20260728"
+version = "1.1.4.20260807"
 source = { registry = "https://pypi.org/simple" }
 dependencies = [
     { name = "numpy" },
@@ -4794,9 +4794,9 @@ dependencies = [
     { name = "pyproj" },
     { name = "types-shapely" },
 ]
-sdist = { url = "https://files.pythonhosted.org/packages/e6/4e/d2b939b984991bfa5c2b2776d0e9e46b306d9f64bb2b7d58e719d2d45668/types_geopandas-1.1.4.20260728.tar.gz", hash = "sha256:b3c534e2a3c66a579a3db86ad6e9b0bfaef5694f89683067e610c375c4d14bb1", size = 24471, upload-time = "2026-07-28T04:52:10.669Z" }
+sdist = { url = "https://files.pythonhosted.org/packages/38/4e/9b45a17fc9238b346737efc1ced3e4ad1612215b2264a2763c774fc8b717/types_geopandas-1.1.4.20260807.tar.gz", hash = "sha256:e7cbf93306473421ba7da82481124a96a81ac219acf6c5381d701f2508d27358", size = 24581, upload-time = "2026-08-07T04:17:52.108Z" }
 wheels = [
-    { url = "https://files.pythonhosted.org/packages/5d/f4/797a55aef7ffc48d02a571a9edd32d76e08a676122d87d04eef95d603794/types_geopandas-1.1.4.20260728-py3-none-any.whl", hash = "sha256:91a7f3f0a2d408ddc88130ac4a0b83f5091086ba474d3b44cb75fadab9995a94", size = 31882, upload-time = "2026-07-28T04:52:09.602Z" },
+    { url = "https://files.pythonhosted.org/packages/d8/f3/620e70e9832bc6de1cea75abf0c030c8d81fd146943407ad08a949ca4a64/types_geopandas-1.1.4.20260807-py3-none-any.whl", hash = "sha256:34b43a62ccb3cffa0da4682ea3b73134a2fdf43c5bdecf2e18923e9570e64af5", size = 31962, upload-time = "2026-08-07T04:17:51.207Z" },
 ]
 
 [[package]]
