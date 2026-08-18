@@ -28,4 +28,15 @@ function createEarcutPool(earcutWorkerPoolSize: number): Pool<FunctionThread> {
  *
  * [earcut]: https://github.com/mapbox/earcut
  */
-export const EARCUT_WORKER_POOL = createEarcutPool(DEFAULT_POOL_SIZE);
+const OWNED_EARCUT_WORKER_POOL = createEarcutPool(DEFAULT_POOL_SIZE);
+
+export const EARCUT_WORKER_POOL: Pool<FunctionThread> = {
+  completed: (...args) => OWNED_EARCUT_WORKER_POOL.completed(...args),
+  settled: (...args) => OWNED_EARCUT_WORKER_POOL.settled(...args),
+  events: () => OWNED_EARCUT_WORKER_POOL.events(),
+  queue: (task) => OWNED_EARCUT_WORKER_POOL.queue(task),
+
+  // Lonboard owns this shared pool for the lifetime of the frontend.
+  // GeoArrow polygon layers borrow it and must not terminate it when finalized.
+  terminate: async () => {},
+};
