@@ -55,6 +55,7 @@ nav:
       - examples/interleaved-labels.ipynb
       - examples/linked-maps.ipynb
       - examples/clicked-point.ipynb
+      - examples/geohash-layer.ipynb
       - NYC Taxi Trips: examples/marimo/nyc_taxi_trips.md
       - Integrations:
           - examples/duckdb.ipynb
