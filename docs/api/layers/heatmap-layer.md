@@ -7,3 +7,4 @@
 ::: lonboard.HeatmapLayer
     options:
       inherited_members: true
+      show_labels: false
