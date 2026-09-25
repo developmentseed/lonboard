@@ -7,7 +7,6 @@ from arro3.core import (
     DataType,
     Field,
     Table,
-    fixed_size_list_array,
     struct_field,
 )
 
@@ -19,6 +18,7 @@ from lonboard._geoarrow.ops.reproject import (
     _map_coords_nest_2,
     _map_coords_nest_3,
 )
+from lonboard._geoarrow.utils import fixed_size_list_from_numpy
 from lonboard._utils import get_geometry_column_index
 
 
@@ -93,7 +93,7 @@ def _transpose_coords(arr: Array) -> Array:
         x = struct_field(arr, [0]).to_numpy()
         y = struct_field(arr, [1]).to_numpy()
         coords = np.column_stack([x, y]).ravel("C")
-        return fixed_size_list_array(
+        return fixed_size_list_from_numpy(
             coords,
             2,
             type=coord_storage_type(interleaved=True, dims=CoordinateDimension.XY),
@@ -104,7 +104,7 @@ def _transpose_coords(arr: Array) -> Array:
         y = struct_field(arr, [1]).to_numpy()
         z = struct_field(arr, [2]).to_numpy()
         coords = np.column_stack([x, y, z]).ravel("C")
-        return fixed_size_list_array(
+        return fixed_size_list_from_numpy(
             coords,
             3,
             type=coord_storage_type(interleaved=True, dims=CoordinateDimension.XYZ),

@@ -18,6 +18,7 @@ from lonboard._geoarrow.extension_types import construct_geometry_array
 from lonboard._geoarrow.geopandas_interop import geopandas_to_geoarrow
 from lonboard._geoarrow.parse_wkb import parse_serialized_table
 from lonboard._geoarrow.row_index import add_positional_row_index
+from lonboard._geoarrow.utils import remove_empty_batches
 from lonboard._map import Map
 from lonboard._utils import (
     get_geometry_column_index,
@@ -460,6 +461,10 @@ def _viz_geoarrow_table(
     path_kwargs: PathLayerKwargs | None = None,
     polygon_kwargs: PolygonLayerKwargs | None = None,
 ) -> list[ScatterplotLayer | PathLayer | PolygonLayer]:
+    if table.num_rows == 0:
+        raise ValueError("Cannot visualize a table with no rows.")
+
+    table = remove_empty_batches(table)
     parsed_tables = parse_serialized_table(table)
     if len(parsed_tables) > 1:
         output: list[ScatterplotLayer | PathLayer | PolygonLayer] = []

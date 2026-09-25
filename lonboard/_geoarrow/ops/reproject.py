@@ -17,7 +17,6 @@ from arro3.core import (
     DataType,
     Field,
     Table,
-    fixed_size_list_array,
     list_array,
     list_flatten,
     list_offsets,
@@ -28,6 +27,7 @@ from lonboard._constants import EPSG_4326, EXTENSION_NAME, OGC_84
 from lonboard._executor import Executor
 from lonboard._geoarrow.crs import get_field_crs
 from lonboard._geoarrow.extension_types import CoordinateDimension
+from lonboard._geoarrow.utils import fixed_size_list_from_numpy
 from lonboard._utils import get_geometry_column_index
 
 TransformerFromCRS = lru_cache(Transformer.from_crs)
@@ -184,7 +184,11 @@ def _reproject_coords(arr: Array, transformer: Transformer) -> Array:
         raise ValueError(f"Unexpected list size {list_size}")
 
     coord_field = DataType.list(Field(dims, DataType.float64()), len(dims))
-    return fixed_size_list_array(output_np_arr.ravel("C"), len(dims), type=coord_field)
+    return fixed_size_list_from_numpy(
+        output_np_arr.ravel("C"),
+        len(dims),
+        type=coord_field,
+    )
 
 
 def _reproject_chunk_nest_0(arr: Array, transformer: Transformer) -> Array:

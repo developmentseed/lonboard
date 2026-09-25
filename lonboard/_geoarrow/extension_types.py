@@ -5,9 +5,10 @@ from enum import StrEnum
 from typing import TYPE_CHECKING
 
 import numpy as np
-from arro3.core import Array, DataType, Field, fixed_size_list_array, list_array
+from arro3.core import Array, DataType, Field, list_array
 
 from lonboard._geoarrow.crs import serialize_crs
+from lonboard._geoarrow.utils import fixed_size_list_from_numpy
 
 if TYPE_CHECKING:
     from collections.abc import Sequence
@@ -232,7 +233,7 @@ def construct_geometry_array(  # noqa: PLR0915
         extension_metadata["ARROW:extension:metadata"] = json.dumps(serialize_crs(crs))
 
     if geom_type == GeometryType.POINT:
-        arrow_coords = fixed_size_list_array(coords.ravel("C"), len(dims)).cast(
+        arrow_coords = fixed_size_list_from_numpy(coords.ravel("C"), len(dims)).cast(
             coord_storage_type(interleaved=True, dims=dims),
         )
         extension_metadata["ARROW:extension:name"] = "geoarrow.point"
@@ -247,7 +248,7 @@ def construct_geometry_array(  # noqa: PLR0915
     if geom_type == GeometryType.LINESTRING:
         assert len(offsets) == 1, "Expected one offsets array"
         (geom_offsets,) = offsets
-        arrow_coords = fixed_size_list_array(coords.ravel("C"), len(dims))
+        arrow_coords = fixed_size_list_from_numpy(coords.ravel("C"), len(dims))
         arrow_geoms = list_array(geom_offsets, arrow_coords).cast(
             linestring_storage_type(
                 interleaved=True,
@@ -267,7 +268,7 @@ def construct_geometry_array(  # noqa: PLR0915
     if geom_type == GeometryType.POLYGON:
         assert len(offsets) == 2, "Expected two offsets arrays"
         ring_offsets, geom_offsets = offsets
-        arrow_coords = fixed_size_list_array(coords.ravel("C"), len(dims))
+        arrow_coords = fixed_size_list_from_numpy(coords.ravel("C"), len(dims))
         arrow_rings = list_array(ring_offsets, arrow_coords)
         arrow_geoms = list_array(geom_offsets, arrow_rings).cast(
             polygon_storage_type(
@@ -288,7 +289,7 @@ def construct_geometry_array(  # noqa: PLR0915
     if geom_type == GeometryType.MULTIPOINT:
         assert len(offsets) == 1, "Expected one offsets array"
         (geom_offsets,) = offsets
-        arrow_coords = fixed_size_list_array(coords.ravel("C"), len(dims))
+        arrow_coords = fixed_size_list_from_numpy(coords.ravel("C"), len(dims))
         arrow_geoms = list_array(geom_offsets, arrow_coords).cast(
             multipoint_storage_type(
                 interleaved=True,
@@ -308,7 +309,7 @@ def construct_geometry_array(  # noqa: PLR0915
     if geom_type == GeometryType.MULTILINESTRING:
         assert len(offsets) == 2, "Expected two offsets arrays"
         ring_offsets, geom_offsets = offsets
-        arrow_coords = fixed_size_list_array(coords.ravel("C"), len(dims))
+        arrow_coords = fixed_size_list_from_numpy(coords.ravel("C"), len(dims))
         arrow_rings = list_array(ring_offsets, arrow_coords)
         arrow_geoms = list_array(geom_offsets, arrow_rings).cast(
             multilinestring_storage_type(
@@ -329,7 +330,7 @@ def construct_geometry_array(  # noqa: PLR0915
     if geom_type == GeometryType.MULTIPOLYGON:
         assert len(offsets) == 3, "Expected three offsets arrays"
         ring_offsets, polygon_offsets, geom_offsets = offsets
-        arrow_coords = fixed_size_list_array(coords.ravel("C"), len(dims))
+        arrow_coords = fixed_size_list_from_numpy(coords.ravel("C"), len(dims))
         arrow_rings = list_array(ring_offsets, arrow_coords)
         arrow_polygons = list_array(polygon_offsets, arrow_rings)
         arrow_geoms = list_array(geom_offsets, arrow_polygons).cast(
