@@ -15,19 +15,19 @@ jobs:
         python-version: ["3.11", "3.12", "3.13"]
 
     steps:
-      - uses: actions/checkout@v6
+      - uses: actions/checkout@v7
 
       - name: Set up Python ${{ matrix.python-version }}
         id: setup-python
-        uses: actions/setup-python@v6
+        uses: actions/setup-python@v7
         with:
           python-version: ${{ matrix.python-version }}
 
-      - uses: pnpm/action-setup@v4
+      - uses: pnpm/action-setup@v6
 
       # Note: this should stay synced with the volta-pinned version in
       # package.json
-      - uses: actions/setup-node@v6
+      - uses: actions/setup-node@v7
         with:
           node-version: "22"
           cache: "pnpm"
@@ -72,7 +72,7 @@ jobs:
       - uses: astral-sh/ruff-action@v3
 
       - name: Cache pre-commit virtualenvs
-        uses: actions/cache@v5
+        uses: actions/cache@v6
         if: "${{ matrix.python-version == 3.11 }}"
         with:
           path: ~/.cache/pre-commit

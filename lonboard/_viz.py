@@ -135,8 +135,10 @@ def viz(
 
         !!! info
 
-            DuckDB Spatial does not currently expose coordinate reference system
-            information, so the user must ensure that data has been reprojected to
+            With DuckDB >= 1.5, the CRS of a `GEOMETRY` column is read
+            automatically from the column type. For `WKB_BLOB` or 2D columns,
+            DuckDB older than 1.5, or a `GEOMETRY` column without a CRS
+            encoded, the user must ensure that data has been reprojected to
             EPSG:4326.
 
     - Any Python class with a `__geo_interface__` property conforming to the

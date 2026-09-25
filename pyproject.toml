@@ -1,13 +1,13 @@
 [project]
 name = "lonboard"
-version = "0.16.0"
+version = "0.17.0-beta.1"
 description = "Fast, interactive geospatial data visualization in Jupyter."
 authors = [{ name = "Kyle Barron", email = "kyle@developmentseed.org" }]
 license = "MIT"
 readme = "README.md"
 requires-python = ">=3.11"
 dependencies = [
-    "anywidget~=0.9.0",
+    "anywidget>=0.9,<0.12",
     # Version in Colab as of October 2024
     # Upgrading to 5.10 would be ideal to enable generic types
     "traitlets>=5.7.1",
@@ -65,7 +65,7 @@ lonboard = "lonboard._cli:main"
 [dependency-groups]
 docs = [
     # Workaround for https://github.com/mkdocs/mkdocs/issues/4032
-    "click<8.3",
+    "click<8.5",
     "mkdocs-material[imaging]>=9.5.49",
     "mkdocs>=1.6.1",
     "mkdocstrings[python]>=1.0",
@@ -101,7 +101,7 @@ dev = [
     "pytest>=8.3.4",
     "pytest-ipywidgets>=1.54.0",
     "rasterio>=1.4.3",
-    "ruff>=0.15.0",
+    "ruff>=0.16.0",
     "sidecar>=0.7.0",
     "types-geopandas>=1.1.1.20250708",
     "types-shapely>=2.1.0.20250512",
@@ -151,6 +151,7 @@ ignore = [
     "ANN401",  # Dynamically typed expressions (typing.Any) are disallowed
     "B028",    # No explicit `stacklevel` keyword argument found
     "B011",    # Do not `assert False` (`python -O` removes these calls), raise `AssertionError()`
+    "CPY001",  # missing copyright
     "D100",    # Missing docstring in public module
     "D203",    # incorrect-blank-line-before-class
     "D213",    # multi-line-summary-second-line
