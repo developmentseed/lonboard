@@ -1,5 +1,5 @@
-import type { GeoArrowTripsLayerProps } from "@geoarrow/deck.gl-layers";
-import { GeoArrowTripsLayer } from "@geoarrow/deck.gl-layers";
+import type { GeoArrowTripsLayerProps } from "@geoarrow/deck.gl-geoarrow";
+import { GeoArrowTripsLayer } from "@geoarrow/deck.gl-geoarrow";
 import type { WidgetModel } from "@jupyter-widgets/base";
 
 import { isDefined } from "../../util.js";

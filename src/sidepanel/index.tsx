@@ -1,4 +1,4 @@
-import type { GeoArrowPickingInfo } from "@geoarrow/deck.gl-layers";
+import type { GeoArrowPickingInfo } from "@geoarrow/deck.gl-geoarrow";
 import { Button } from "@nextui-org/react";
 import React from "react";
 

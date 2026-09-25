@@ -62,9 +62,9 @@ importers:
       '@developmentseed/raster-reproject':
         specifier: ^0.6.1
         version: 0.6.1
-      '@geoarrow/deck.gl-layers':
-        specifier: ^0.4.0-beta.6
-        version: 0.4.0-beta.6(2194b990d64d8004a0b7e2aa060e2422)
+      '@geoarrow/deck.gl-geoarrow':
+        specifier: ^0.4.2
+        version: 0.4.2(2194b990d64d8004a0b7e2aa060e2422)
       '@geoarrow/geoarrow-js':
         specifier: ^0.3.2
         version: 0.3.3(apache-arrow@21.1.0)
@@ -849,9 +849,8 @@ packages:
   '@formatjs/intl-localematcher@0.6.2':
     resolution: {integrity: sha512-XOMO2Hupl0wdd172Y06h6kLpBz6Dv+J4okPLl4LPtzbr8f66WbIoy4ev98EBuZ6ZK4h5ydTN6XneT4QVpD7cdA==}
 
-  '@geoarrow/deck.gl-layers@0.4.0-beta.6':
-    resolution: {integrity: sha512-figzvJOeH2zND7lnvCBZkSk+PvfNpyKTRmLqNdbT55Ju+hjf4CWorDbpSeQNYUnPKm+iAidx2yFFABHXzii7uA==}
-    deprecated: This package has been renamed to @geoarrow/deck.gl-geoarrow
+  '@geoarrow/deck.gl-geoarrow@0.4.2':
+    resolution: {integrity: sha512-yf3KxpDs7e43PAUmf7IL4DtcRVxrp4VxsRJMD1ccbdvLBRiuagjdU0gD8lKLPukEQXfmYUoQJqqBqgK1GdciTQ==}
     peerDependencies:
       '@deck.gl/aggregation-layers': ^9.3.1
       '@deck.gl/core': ^9.3.1
@@ -5074,7 +5073,7 @@ snapshots:
     dependencies:
       tslib: 2.8.1
 
-  '@geoarrow/deck.gl-layers@0.4.0-beta.6(2194b990d64d8004a0b7e2aa060e2422)':
+  '@geoarrow/deck.gl-geoarrow@0.4.2(2194b990d64d8004a0b7e2aa060e2422)':
     dependencies:
       '@deck.gl/aggregation-layers': 9.3.1(@deck.gl/core@9.3.7)(@deck.gl/layers@9.3.7(@deck.gl/core@9.3.7)(@loaders.gl/core@4.4.3)(@luma.gl/core@9.3.6)(@luma.gl/engine@9.3.6(@luma.gl/core@9.3.6)(@luma.gl/shadertools@9.3.6(@luma.gl/core@9.3.6))))(@luma.gl/core@9.3.6)(@luma.gl/engine@9.3.6(@luma.gl/core@9.3.6)(@luma.gl/shadertools@9.3.6(@luma.gl/core@9.3.6)))
       '@deck.gl/core': 9.3.7

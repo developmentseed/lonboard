@@ -12,7 +12,7 @@ updates:
           - "*loaders*"
           - "*luma*"
         exclude-patterns:
-          - "@geoarrow/deck.gl-layers"
+          - "@geoarrow/deck.gl-geoarrow"
       other:
         patterns:
           - "*"

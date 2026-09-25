@@ -5,7 +5,7 @@
 #   serialized to JS as `null` and will not be passed into the GeoArrow model (see the
 #   lengthy assignments of type `..(isDefined(this.param) && { param: this.param })`).
 #   Then the default value in the JS GeoArrow layer (defined in
-#   `@geoarrow/deck.gl-layers`) will be used.
+#   `@geoarrow/deck.gl-geoarrow`) will be used.
 
 from ._a5 import A5Layer
 from ._arc import ArcLayer

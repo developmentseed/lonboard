@@ -1,7 +1,4 @@
-import type {
-  ColorAccessor,
-  FloatAccessor,
-} from "@geoarrow/deck.gl-layers/src/types";
+import type { ColorAccessor, FloatAccessor } from "@geoarrow/deck.gl-geoarrow";
 import type * as ga from "@geoarrow/geoarrow-js";
 import type {
   FixedSizeList,

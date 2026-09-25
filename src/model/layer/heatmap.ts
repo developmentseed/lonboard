@@ -1,5 +1,5 @@
-import type { GeoArrowHeatmapLayerProps } from "@geoarrow/deck.gl-layers";
-import { GeoArrowHeatmapLayer } from "@geoarrow/deck.gl-layers";
+import type { GeoArrowHeatmapLayerProps } from "@geoarrow/deck.gl-geoarrow";
+import { GeoArrowHeatmapLayer } from "@geoarrow/deck.gl-geoarrow";
 import type { WidgetModel } from "@jupyter-widgets/base";
 
 import { isDefined } from "../../util.js";

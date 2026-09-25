@@ -1,5 +1,5 @@
-import type { _GeoArrowTextLayerProps as GeoArrowTextLayerProps } from "@geoarrow/deck.gl-layers";
-import { _GeoArrowTextLayer as GeoArrowTextLayer } from "@geoarrow/deck.gl-layers";
+import type { _GeoArrowTextLayerProps as GeoArrowTextLayerProps } from "@geoarrow/deck.gl-geoarrow";
+import { _GeoArrowTextLayer as GeoArrowTextLayer } from "@geoarrow/deck.gl-geoarrow";
 import type { WidgetModel } from "@jupyter-widgets/base";
 
 import { isDefined } from "../../util.js";

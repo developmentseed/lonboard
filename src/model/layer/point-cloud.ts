@@ -1,5 +1,5 @@
-import type { GeoArrowPointCloudLayerProps } from "@geoarrow/deck.gl-layers";
-import { GeoArrowPointCloudLayer } from "@geoarrow/deck.gl-layers";
+import type { GeoArrowPointCloudLayerProps } from "@geoarrow/deck.gl-geoarrow";
+import { GeoArrowPointCloudLayer } from "@geoarrow/deck.gl-geoarrow";
 import type { WidgetModel } from "@jupyter-widgets/base";
 
 import { isDefined } from "../../util.js";

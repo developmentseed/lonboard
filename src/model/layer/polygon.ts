@@ -5,7 +5,7 @@ import type {
   GeoArrowPolygonLayerProps,
   GeoArrowS2LayerProps,
   GeoArrowSolidPolygonLayerProps,
-} from "@geoarrow/deck.gl-layers";
+} from "@geoarrow/deck.gl-geoarrow";
 import {
   GeoArrowA5Layer,
   GeoArrowGeohashLayer,
@@ -13,7 +13,7 @@ import {
   GeoArrowPolygonLayer,
   GeoArrowS2Layer,
   GeoArrowSolidPolygonLayer,
-} from "@geoarrow/deck.gl-layers";
+} from "@geoarrow/deck.gl-geoarrow";
 import type { WidgetModel } from "@jupyter-widgets/base";
 import type * as arrow from "apache-arrow";
 
