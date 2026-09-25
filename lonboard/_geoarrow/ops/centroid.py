@@ -8,6 +8,7 @@ import numpy as np
 from arro3.core import Array, ChunkedArray, DataType, Field, list_flatten, struct_field
 
 from lonboard._constants import EXTENSION_NAME
+from lonboard._geoarrow.utils import drop_nan_coords
 
 
 @dataclass
@@ -62,8 +63,12 @@ class WeightedCentroid:
         list_size = coords.type.list_size
         assert list_size is not None
 
-        np_arr = list_flatten(coords).to_numpy().reshape(-1, list_size)
+        np_arr = drop_nan_coords(list_flatten(coords).to_numpy().reshape(-1, list_size))
         new_chunk_len = np_arr.shape[0]
+
+        # No coordinates, e.g. from empty geometries
+        if new_chunk_len == 0:
+            return
 
         if self.x is None or self.y is None:
             assert self.x is None and self.y is None and self.num_items == 0
