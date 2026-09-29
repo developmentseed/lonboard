@@ -10,7 +10,7 @@ import {
 import type { TileMatrixSet } from "@developmentseed/morecantile";
 import type { WidgetModel } from "@jupyter-widgets/base";
 import proj4 from "proj4";
-import type { PROJJSONDefinition } from "proj4/dist/lib/core.js";
+import type { Converter, PROJJSONDefinition } from "proj4/dist/lib/core.js";
 import { isDefined } from "../../util.js";
 import { invoke } from "../dispatch.js";
 import { BaseLayerModel } from "./base.js";
@@ -43,8 +43,8 @@ export class RasterModel extends BaseLayerModel {
 
   /** proj4 converters from the source CRS to EPSG:4326 and EPSG:3857 */
   protected converters?: {
-    4326: proj4.Converter;
-    3857: proj4.Converter;
+    4326: Converter;
+    3857: Converter;
   };
 
   constructor(model: WidgetModel, updateStateCallback: () => void) {
