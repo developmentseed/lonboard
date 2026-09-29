@@ -234,7 +234,7 @@ export class H3HexagonModel extends BasePolygonModel {
     for (let batchIdx = 0; batchIdx < this.table.batches.length; batchIdx++) {
       layers.push(
         new GeoArrowH3HexagonLayer({
-          ...this.baseLayerProps(),
+          ...this.baseLayerProps(batchIdx),
           ...this.layerProps(batchIdx),
         }),
       );
@@ -266,7 +266,7 @@ export class A5Model extends BasePolygonModel {
     for (let batchIdx = 0; batchIdx < this.table.batches.length; batchIdx++) {
       layers.push(
         new GeoArrowA5Layer({
-          ...this.baseLayerProps(),
+          ...this.baseLayerProps(batchIdx),
           ...this.layerProps(batchIdx),
         }),
       );
@@ -298,7 +298,7 @@ export class GeohashModel extends BasePolygonModel {
     for (let batchIdx = 0; batchIdx < this.table.batches.length; batchIdx++) {
       layers.push(
         new GeoArrowGeohashLayer({
-          ...this.baseLayerProps(),
+          ...this.baseLayerProps(batchIdx),
           ...this.layerProps(batchIdx),
         }),
       );
@@ -330,7 +330,7 @@ export class S2Model extends BasePolygonModel {
     for (let batchIdx = 0; batchIdx < this.table.batches.length; batchIdx++) {
       layers.push(
         new GeoArrowS2Layer({
-          ...this.baseLayerProps(),
+          ...this.baseLayerProps(batchIdx),
           ...this.layerProps(batchIdx),
         }),
       );
