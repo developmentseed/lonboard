@@ -85,14 +85,9 @@ export class BitmapTileModel extends BaseLayerModel {
     this.initRegularAttribute("tint_color", "tintColor");
   }
 
-  /**
-   * Props for the `BitmapLayer` that renders each tile.
-   *
-   * This doesn't set an `id`: the `TileLayer` gives the sub-layer of each tile
-   * an id of its own, and deck.gl requires layer ids to be unique.
-   */
-  bitmapLayerProps(): Omit<BitmapLayerProps, "data" | "id"> {
+  bitmapLayerProps(): Omit<BitmapLayerProps, "data"> {
     return {
+      // Don't set layer id because a unique one is set by TileLayer
       ...(isDefined(this.desaturate) && { desaturate: this.desaturate }),
       ...(isDefined(this.transparentColor) && {
         transparentColor: this.transparentColor,

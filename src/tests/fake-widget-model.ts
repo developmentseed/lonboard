@@ -10,7 +10,6 @@ type Listener = () => void;
  * callback removes every listener for that event.
  */
 export class FakeWidgetModel {
-  model_id = "fake-model-id";
   widget_manager: { get_model: (modelId: string) => Promise<WidgetModel> };
 
   private state: Record<string, unknown>;
