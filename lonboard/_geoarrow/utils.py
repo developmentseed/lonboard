@@ -39,11 +39,11 @@ def drop_nan_coords(coords: np.ndarray) -> np.ndarray:
 
     GeoArrow stores an empty point as a coordinate of NaN values.
     """
-    # Summing avoids allocating a mask in the common case of no NaNs
-    if not np.isnan(coords.sum()):
+    has_nan = np.isnan(coords).any(axis=1)
+    if not has_nan.any():
         return coords
 
-    return coords[~np.isnan(coords).any(axis=1)]
+    return coords[~has_nan]
 
 
 def remove_empty_batches(table: Table) -> Table:
