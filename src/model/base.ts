@@ -69,7 +69,7 @@ export abstract class BaseModel {
    * Finalize any resources held by the model
    */
   finalize(): void {
-    for (const [changeKey, callback] of Object.entries(this.callbacks)) {
+    for (const [changeKey, callback] of this.callbacks) {
       this.model.off(changeKey, callback);
     }
   }

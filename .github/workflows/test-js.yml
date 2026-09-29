@@ -32,3 +32,6 @@ jobs:
 
       - name: Biome check
         run: pnpm run check
+
+      - name: Test
+        run: pnpm run test

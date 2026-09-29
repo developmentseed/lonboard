@@ -55,7 +55,8 @@
     "postcss-modules": "^6.0.1",
     "postcss-preset-env": "^10.1.1",
     "tailwindcss": "^3.4.15",
-    "typescript": "^5.7.2"
+    "typescript": "^5.7.2",
+    "vitest": "^5.0.2"
   },
   "packageManager": "pnpm@10.25.0",
   "scripts": {
@@ -67,7 +68,8 @@
     "lint": "biome lint .",
     "lint:fix": "biome lint --write .",
     "check": "biome check .",
-    "check:fix": "biome check --write ."
+    "check:fix": "biome check --write .",
+    "test": "vitest run"
   },
   "volta": {
     "node": "22.20.0",

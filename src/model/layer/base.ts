@@ -142,6 +142,17 @@ export abstract class BaseLayerModel extends BaseModel {
 
     this.callbacks.set(`change:extensions`, initExtensionsCallback);
   }
+
+  /**
+   * Finalize any resources held by the layer and its extensions
+   */
+  finalize(): void {
+    super.finalize();
+
+    for (const extension of Object.values(this.extensions)) {
+      extension.finalize();
+    }
+  }
 }
 
 /**
