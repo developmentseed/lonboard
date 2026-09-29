@@ -20,8 +20,9 @@ def fixed_size_list_from_numpy(
     """Construct a FixedSizeList array from a flat numpy array.
 
     Unlike `arro3.core.fixed_size_list_array`, this also accepts zero-length input
-    (such as the coordinates of empty geometries), which arro3 can't import from
-    numpy.
+    (such as the coordinates of empty geometries), which arro3 can't yet import from
+    numpy. This can be removed once arro3 supports it:
+    https://github.com/kylebarron/arro3/issues/519
     """
     if values.size == 0:
         # Slice a one-element Arrow array to zero length to keep the numpy dtype
