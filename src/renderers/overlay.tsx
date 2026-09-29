@@ -1,3 +1,4 @@
+import type { MapViewState } from "@deck.gl/core";
 import type { MapLibreOverlayProps } from "@deck.gl/maplibre";
 import { MapLibreOverlay } from "@deck.gl/maplibre";
 import React from "react";
@@ -10,6 +11,32 @@ import type {
   OverlayRendererProps,
   RendererRef,
 } from "./types";
+
+/** The parts of a view state that position the MapLibre camera. */
+const CAMERA_KEYS = [
+  "longitude",
+  "latitude",
+  "zoom",
+  "pitch",
+  "bearing",
+] as const;
+
+type Camera = Partial<Pick<MapViewState, (typeof CAMERA_KEYS)[number]>>;
+
+/**
+ * Whether `viewState` positions the camera where `reported` does.
+ *
+ * Keys that `viewState` doesn't define are not compared, because not every
+ * view state has all of them. E.g. a globe view state has no pitch or bearing.
+ */
+function isSameCamera(viewState: Camera, reported: Camera | null): boolean {
+  return (
+    reported !== null &&
+    CAMERA_KEYS.every(
+      (key) => viewState[key] == null || viewState[key] === reported[key],
+    )
+  );
+}
 
 /**
  * DeckGLOverlay component that integrates deck.gl with react-map-gl
@@ -67,6 +94,38 @@ const OverlayRenderer = React.forwardRef<
 
   const mapRef = React.useRef<MapRef>(null);
 
+  // The view state that the map last reported to Python. Python sends it back
+  // with default values filled in, which must not move the map.
+  const reportedViewState = React.useRef<Camera | null>(null);
+  // True while the map moves to a view state set from Python, which must not
+  // be reported back to Python.
+  const isSettingViewState = React.useRef(false);
+
+  // MapLibre only reads `initialViewState` when the map is created, so a view
+  // state that Python sets later has to be applied to the map here.
+  React.useEffect(() => {
+    const map = mapRef.current?.getMap();
+    const viewState = initialViewState as Camera | null | undefined;
+    if (!map || !viewState) return;
+
+    const { longitude, latitude, zoom, pitch, bearing } = viewState;
+    if (longitude == null || latitude == null) return;
+    if (isSameCamera(viewState, reportedViewState.current)) return;
+
+    reportedViewState.current = null;
+    isSettingViewState.current = true;
+    try {
+      map.jumpTo({
+        center: [longitude, latitude],
+        ...(zoom != null && { zoom }),
+        ...(pitch != null && { pitch }),
+        ...(bearing != null && { bearing }),
+      });
+    } finally {
+      isSettingViewState.current = false;
+    }
+  }, [initialViewState]);
+
   React.useImperativeHandle(ref, () => ({
     flyTo(msg: FlyToMessage) {
       const map = mapRef.current?.getMap();
@@ -91,6 +150,8 @@ const OverlayRenderer = React.forwardRef<
 
   const onMoveEnd = onViewStateChange
     ? (evt: ViewStateChangeEvent) => {
+        if (isSettingViewState.current) return;
+
         const viewState = {
           longitude: evt.viewState.longitude,
           latitude: evt.viewState.latitude,
@@ -98,6 +159,7 @@ const OverlayRenderer = React.forwardRef<
           pitch: evt.viewState.pitch,
           bearing: evt.viewState.bearing,
         };
+        reportedViewState.current = viewState;
         onViewStateChange({ viewId: "mapLibreId", viewState });
       }
     : undefined;
