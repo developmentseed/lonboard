@@ -2270,7 +2270,7 @@ watchfiles = [
 
 [package.metadata]
 requires-dist = [
-    { name = "anywidget", specifier = ">=0.9,<0.12" },
+    { name = "anywidget", specifier = ">=0.9" },
     { name = "arro3-compute", specifier = ">=0.4.1" },
     { name = "arro3-core", specifier = ">=0.4.1" },
     { name = "arro3-io", specifier = ">=0.4.1" },
