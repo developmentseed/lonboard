@@ -70,13 +70,6 @@ export abstract class BaseLayerModel extends BaseModel {
     return props;
   }
 
-  onClick(pickingInfo: PickingInfo) {
-    if (!pickingInfo.index) return;
-
-    this.model.set("selected_index", pickingInfo.index);
-    this.model.save_changes();
-  }
-
   baseLayerProps(batchIndex?: number): Omit<LayerProps, "id"> {
     return {
       extensions: this.extensionInstances(),
@@ -88,7 +81,6 @@ export abstract class BaseLayerModel extends BaseModel {
       ...(isDefined(this.highlightColor) && {
         highlightColor: this.highlightColor,
       }),
-      onClick: this.onClick.bind(this),
       ...(isDefined(this.beforeId) && {
         beforeId: this.beforeId,
       }),
@@ -165,6 +157,33 @@ export abstract class BaseArrowLayerModel extends BaseLayerModel {
     super(model, updateStateCallback);
 
     this.initTable("table");
+  }
+
+  /**
+   * Set `selected_index` to the position of the clicked row in the table.
+   *
+   * Each record batch is rendered as its own deck.gl layer, so the picked index
+   * is the position of the row within the batch at `batchIndex`.
+   */
+  onClick(pickingInfo: PickingInfo, batchIndex: number) {
+    // deck.gl uses -1 when nothing was picked; 0 is the first row
+    if (pickingInfo.index < 0) return;
+
+    let selectedIndex = pickingInfo.index;
+    for (const batch of this.table.batches.slice(0, batchIndex)) {
+      selectedIndex += batch.numRows;
+    }
+
+    this.model.set("selected_index", selectedIndex);
+    this.model.save_changes();
+  }
+
+  baseLayerProps(batchIndex: number): Omit<LayerProps, "id"> {
+    return {
+      ...super.baseLayerProps(batchIndex),
+      onClick: (pickingInfo: PickingInfo) =>
+        this.onClick(pickingInfo, batchIndex),
+    };
   }
 
   /**

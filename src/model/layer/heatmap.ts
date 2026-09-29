@@ -74,6 +74,9 @@ export class HeatmapModel extends BaseArrowLayerModel {
         new GeoArrowHeatmapLayer({
           ...this.baseLayerProps(batchIdx),
           ...this.layerProps(batchIdx),
+          // deck.gl's HeatmapLayer doesn't support picking. It draws the heatmap
+          // colors in the picking pass, which decode to an arbitrary index.
+          pickable: false,
         }),
       );
     }
