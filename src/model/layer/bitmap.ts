@@ -85,7 +85,7 @@ export class BitmapTileModel extends BaseLayerModel {
     this.initRegularAttribute("tint_color", "tintColor");
   }
 
-  bitmapLayerProps(): Omit<BitmapLayerProps, "data"> {
+  bitmapLayerProps(): Omit<BitmapLayerProps, "data" | "id"> {
     return {
       // Don't set layer id because a unique one is set by TileLayer
       ...(isDefined(this.desaturate) && { desaturate: this.desaturate }),
