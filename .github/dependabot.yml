@@ -11,6 +11,9 @@ updates:
           - "*deck*"
           - "*loaders*"
           - "*luma*"
+          # deck.gl-raster and its sibling packages are versioned together and
+          # track deck.gl releases
+          - "@developmentseed/*"
         exclude-patterns:
           - "@geoarrow/deck.gl-geoarrow"
       other:
@@ -20,6 +23,7 @@ updates:
           - "*deck*"
           - "*loaders*"
           - "*luma*"
+          - "@developmentseed/*"
   - package-ecosystem: uv
     directory: "/"
     schedule:
