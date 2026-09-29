@@ -5,7 +5,10 @@ https://github.com/developmentseed/lonboard/issues/1024
 """
 
 import io
+import threading
 import time
+from collections.abc import Iterator
+from contextlib import contextmanager
 
 import geopandas as gpd
 import ipywidgets
@@ -117,6 +120,20 @@ def assert_centered_on(
     )
 
 
+def assert_stays_centered_on(
+    page: Page,
+    element: Locator,
+    expected: tuple[int, int, int],
+    message: str,
+    duration: float = 1,
+) -> None:
+    """Check the pixel at the center of `element` repeatedly for `duration` seconds."""
+    deadline = time.monotonic() + duration
+    while time.monotonic() < deadline:
+        assert_centered_on(page, element, expected, message, timeout=0)
+        page.wait_for_timeout(100)
+
+
 def wait_for_initial_view(page: Page, element: Locator) -> None:
     """Wait until the map in `element` is displayed and in sync with Python."""
     assert_centered_on(
@@ -149,6 +166,33 @@ def record_view_states_from_browser(monkeypatch: pytest.MonkeyPatch, m: Map) -> 
 
     monkeypatch.setattr(m, "set_state", record_and_set_state)
     return view_states
+
+
+@contextmanager
+def hold_view_states_from_browser(
+    monkeypatch: pytest.MonkeyPatch,
+    m: Map,
+) -> Iterator[threading.Semaphore]:
+    """Make Python wait before it handles a view state that the browser sends.
+
+    This is what a slow kernel looks like to the map. Python handles one view state,
+    and sends it back to the map, for every `release()` of the semaphore.
+    """
+    held_view_states = threading.Semaphore(0)
+    set_state = m.set_state
+
+    def wait_and_set_state(sync_data: dict) -> None:
+        if "view_state" in sync_data:
+            held_view_states.acquire(timeout=30)
+        set_state(sync_data)
+
+    monkeypatch.setattr(m, "set_state", wait_and_set_state)
+    try:
+        yield held_view_states
+    finally:
+        # Don't keep Python waiting when the test has failed
+        monkeypatch.setattr(m, "set_state", set_state)
+        held_view_states.release(16)
 
 
 def display_side_by_side(page: Page, map_a: Map, map_b: Map) -> tuple[Locator, Locator]:
@@ -263,6 +307,58 @@ def test_pan_is_not_reverted_by_python(page_session: Page, mode: str):
 
 
 @pytest.mark.usefixtures("solara_test")
+@pytest.mark.parametrize("mode", ["overlaid", "interleaved"])
+def test_pan_is_not_reverted_by_late_python(
+    page_session: Page,
+    monkeypatch: pytest.MonkeyPatch,
+    mode: str,
+):
+    """Python sending a pan back after the next pan has ended doesn't move the map."""
+    # Only the center of the view after panning twice is inside of the polygon
+    m = make_map(mode, target_polygon=box(29, -5, 41, 5))
+    canvas = setup_map_widget(page_session, m)
+    wait_for_initial_view(page_session, canvas)
+
+    with hold_view_states_from_browser(monkeypatch, m) as held_view_states:
+        drag(page_session, canvas, dx=-DRAG_PIXELS)
+        # Longer than the debounce, so that the map sends the first pan on its own
+        page_session.wait_for_timeout(TIMEOUT_VIEW_STATE_SYNC)
+        drag(page_session, canvas, dx=-DRAG_PIXELS)
+        page_session.wait_for_timeout(TIMEOUT_VIEW_STATE_SYNC)
+        assert_centered_on(
+            page_session,
+            canvas,
+            TARGET_COLOR,
+            "Map did not pan",
+            timeout=0,
+        )
+        assert_view_state(m, INITIAL_VIEW_STATE)
+
+        # Python handles the first pan only now, and sends it back to the map
+        held_view_states.release()
+        assert_stays_centered_on(
+            page_session,
+            canvas,
+            TARGET_COLOR,
+            "Map moved back to the first pan",
+        )
+        assert isinstance(m.view_state, MapViewState)
+        assert m.view_state.longitude == pytest.approx(DRAG_DEGREES, abs=1)
+
+        # Then Python handles the second pan
+        held_view_states.release()
+        assert_stays_centered_on(
+            page_session,
+            canvas,
+            TARGET_COLOR,
+            "Map moved after the second pan",
+        )
+
+    assert isinstance(m.view_state, MapViewState)
+    assert m.view_state.longitude == pytest.approx(2 * DRAG_DEGREES, abs=1)
+
+
+@pytest.mark.usefixtures("solara_test")
 @pytest.mark.parametrize("mode", BASEMAP_MODES)
 def test_set_view_state_back_to_panned_view(page_session: Page, mode: str):
     """Python can move the map back to a view that the map was panned to before."""
@@ -292,6 +388,36 @@ def test_set_view_state_back_to_panned_view(page_session: Page, mode: str):
         canvas,
         TARGET_COLOR,
         "Map did not move back to the panned view",
+    )
+
+
+@pytest.mark.usefixtures("solara_test")
+@pytest.mark.parametrize("mode", BASEMAP_MODES)
+def test_set_view_state_back_to_earlier_pan(page_session: Page, mode: str):
+    """Python can move the map back to a view from before the map was panned again."""
+    # Only the center of the view after panning once is inside of the polygon
+    m = make_map(mode, target_polygon=box(10, -5, 25, 5))
+    canvas = setup_map_widget(page_session, m)
+    wait_for_initial_view(page_session, canvas)
+
+    drag(page_session, canvas, dx=-DRAG_PIXELS)
+    assert_centered_on(page_session, canvas, TARGET_COLOR, "Map did not pan")
+    page_session.wait_for_timeout(TIMEOUT_VIEW_STATE_SYNC)
+    first_pan_view_state = m.view_state
+    assert isinstance(first_pan_view_state, MapViewState)
+    assert first_pan_view_state.longitude == pytest.approx(DRAG_DEGREES, abs=2)
+
+    drag(page_session, canvas, dx=-DRAG_PIXELS)
+    page_session.wait_for_timeout(TIMEOUT_VIEW_STATE_SYNC)
+    assert isinstance(m.view_state, MapViewState)
+    assert m.view_state.longitude > first_pan_view_state.longitude + 10
+
+    m.set_view_state(first_pan_view_state)
+    assert_centered_on(
+        page_session,
+        canvas,
+        TARGET_COLOR,
+        "Map did not move back to the first pan",
     )
 
 

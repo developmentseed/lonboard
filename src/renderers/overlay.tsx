@@ -23,18 +23,18 @@ const CAMERA_KEYS = [
 
 type Camera = Partial<Pick<MapViewState, (typeof CAMERA_KEYS)[number]>>;
 
+/** How many reported cameras to remember when Python doesn't send them back. */
+const MAX_REPORTED_CAMERAS = 16;
+
 /**
  * Whether `viewState` positions the camera where `reported` does.
  *
  * Keys that `viewState` doesn't define are not compared, because not every
  * view state has all of them. E.g. a globe view state has no pitch or bearing.
  */
-function isSameCamera(viewState: Camera, reported: Camera | null): boolean {
-  return (
-    reported !== null &&
-    CAMERA_KEYS.every(
-      (key) => viewState[key] == null || viewState[key] === reported[key],
-    )
+function isSameCamera(viewState: Camera, reported: Camera): boolean {
+  return CAMERA_KEYS.every(
+    (key) => viewState[key] == null || viewState[key] === reported[key],
   );
 }
 
@@ -94,9 +94,17 @@ const OverlayRenderer = React.forwardRef<
 
   const mapRef = React.useRef<MapRef>(null);
 
-  // The view state that the map last reported to Python. Python sends it back
-  // with default values filled in, which must not move the map.
-  const reportedViewState = React.useRef<Camera | null>(null);
+  // The cameras that the map reported to Python and that Python can still send
+  // back, oldest first. Python sends every reported view state back with
+  // default values filled in, which must not move the map.
+  //
+  // Limits: reports, including the map's own one below, are recognised by
+  // value. Only the last 16 are kept, so the map moves when Python sends back
+  // an older one, e.g. when the kernel was busy during many pans.
+  const reportedCameras = React.useRef<Camera[]>([]);
+  // The camera that the map reported last, until it has come back through
+  // `initialViewState`. It does so right away, before Python has seen it.
+  const ownReport = React.useRef<Camera | null>(null);
   // True while the map moves to a view state set from Python, which must not
   // be reported back to Python.
   const isSettingViewState = React.useRef(false);
@@ -110,9 +118,23 @@ const OverlayRenderer = React.forwardRef<
 
     const { longitude, latitude, zoom, pitch, bearing } = viewState;
     if (longitude == null || latitude == null) return;
-    if (isSameCamera(viewState, reportedViewState.current)) return;
+    if (ownReport.current && isSameCamera(viewState, ownReport.current)) {
+      ownReport.current = null;
+      return;
+    }
 
-    reportedViewState.current = null;
+    // Python sends the reported view states back in the order that it received
+    // them, so nothing older than the one it sent back is still to come.
+    const index = reportedCameras.current.findIndex((reported) =>
+      isSameCamera(viewState, reported),
+    );
+    if (index >= 0) {
+      reportedCameras.current = reportedCameras.current.slice(index);
+      return;
+    }
+
+    reportedCameras.current = [];
+    ownReport.current = null;
     isSettingViewState.current = true;
     try {
       map.jumpTo({
@@ -159,7 +181,10 @@ const OverlayRenderer = React.forwardRef<
           pitch: evt.viewState.pitch,
           bearing: evt.viewState.bearing,
         };
-        reportedViewState.current = viewState;
+        reportedCameras.current = [...reportedCameras.current, viewState].slice(
+          -MAX_REPORTED_CAMERAS,
+        );
+        ownReport.current = viewState;
         onViewStateChange({ viewId: "mapLibreId", viewState });
       }
     : undefined;
