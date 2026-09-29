@@ -18,6 +18,7 @@ import {
   useLayersState,
   useViewsState,
 } from "./hooks/index.js";
+import { initMaplibreWorker } from "./maplibre-worker.js";
 import { DEFAULT_MAP_STYLE } from "./model/basemap.js";
 import { initParquetWasm } from "./parquet.js";
 import DeckFirstRenderer from "./renderers/deck-first.js";
@@ -40,6 +41,7 @@ import "./globals.css";
 import "@maplibre/maplibre-gl-geocoder/dist/maplibre-gl-geocoder.css";
 
 await initParquetWasm();
+initMaplibreWorker();
 
 function App() {
   // =========================================================================

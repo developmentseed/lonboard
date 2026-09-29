@@ -15,7 +15,7 @@ overrides:
   '@deck.gl/extensions': '^9.4.0'
   '@deck.gl/geo-layers': '^9.4.0'
   '@deck.gl/layers': '^9.4.0'
-  '@deck.gl/mapbox': '^9.4.0'
+  '@deck.gl/maplibre': '^9.4.0'
   '@deck.gl/mesh-layers': '^9.4.0'
   '@deck.gl/widgets': '^9.4.0'
   # Keep every loaders.gl package on one version. @luma.gl/gltf 9.4 requires
