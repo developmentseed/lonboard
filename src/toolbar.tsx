@@ -1,4 +1,4 @@
-import { Button, ButtonGroup, Tooltip } from "@nextui-org/react";
+import { Button, ButtonGroup, Tooltip } from "@heroui/react";
 import type React from "react";
 
 import { SquareIcon, XMarkIcon } from "./icons";

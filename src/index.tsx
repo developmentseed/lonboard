@@ -5,8 +5,8 @@ import type { PolygonLayerProps } from "@deck.gl/layers";
 import { PolygonLayer } from "@deck.gl/layers";
 import type { DeckGLRef } from "@deck.gl/react";
 import type { GeoArrowPickingInfo } from "@geoarrow/deck.gl-geoarrow";
+import { HeroUIProvider } from "@heroui/react";
 import type { IWidgetManager } from "@jupyter-widgets/base";
-import { NextUIProvider } from "@nextui-org/react";
 import debounce from "lodash.debounce";
 import throttle from "lodash.throttle";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
@@ -361,9 +361,9 @@ function App() {
 }
 
 const WrappedApp = () => (
-  <NextUIProvider>
+  <HeroUIProvider>
     <App />
-  </NextUIProvider>
+  </HeroUIProvider>
 );
 
 const module: { render: Render; initialize?: Initialize } = {

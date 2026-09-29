@@ -1,10 +1,10 @@
+import tailwindcss from "@tailwindcss/postcss";
 import autoprefixer from "autoprefixer";
 import dotenv from "dotenv";
 import esbuild from "esbuild";
 import { sassPlugin } from "esbuild-sass-plugin";
 import postcss from "postcss";
 import postcssPresetEnv from "postcss-preset-env";
-import tailwindcss from "tailwindcss";
 
 // Load environment variables from .env file
 dotenv.config();
@@ -31,12 +31,19 @@ esbuild.build({
   define: defineEnv,
   plugins: [
     sassPlugin({
-      async transform(source) {
+      async transform(source, _resolveDir, filePath) {
         const { css } = await postcss([
           tailwindcss,
           autoprefixer,
-          postcssPresetEnv({ stage: 0 }),
-        ]).process(source, { from: undefined });
+          postcssPresetEnv({
+            stage: 0,
+            // The polyfill for cascade layers raises the specificity of every
+            // style outside of a layer, which makes ours override the styles
+            // of maplibre-gl's and deck.gl's controls.
+            features: { "cascade-layers": false },
+          }),
+          // Tailwind resolves the paths in a stylesheet relative to that file
+        ]).process(source, { from: filePath });
         return css;
       },
     }),

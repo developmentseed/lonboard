@@ -19,7 +19,7 @@
     "@geoarrow/geoarrow-js": "^0.3.2",
     "@luma.gl/core": "^9.4.2",
     "@maplibre/maplibre-gl-geocoder": "^1.9.4",
-    "@nextui-org/react": "^2.4.8",
+    "@heroui/react": "^2.8.10",
     "apache-arrow": "^21.2.0",
     "esbuild-sass-plugin": "^3.3.1",
     "framer-motion": "^13.4.4",
@@ -54,7 +54,7 @@
     "postcss": "^8.5.28",
     "postcss-modules": "^9.0.1",
     "postcss-preset-env": "^11.5.4",
-    "tailwindcss": "^3.4.15",
+    "tailwindcss": "^4.3.3",
     "typescript": "^7.0.2",
     "vitest": "^5.0.2"
   },
