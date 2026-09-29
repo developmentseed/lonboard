@@ -119,8 +119,8 @@ importers:
         specifier: ^6.0.0
         version: 6.0.0
       parquet-wasm:
-        specifier: 0.7.1
-        version: 0.7.1
+        specifier: 0.9.0
+        version: 0.9.0
       proj4:
         specifier: ^2.20.4
         version: 2.20.8
@@ -3587,8 +3587,8 @@ packages:
   pako@1.0.11:
     resolution: {integrity: sha512-4hLB8Py4zZce5s4yd9XzopqwVv/yGNhV1Bl8NTmCq1763HeK2+EwVTv+leGeL13Dnh2wfbqowVPXCIO0z4taYw==}
 
-  parquet-wasm@0.7.1:
-    resolution: {integrity: sha512-fjEGpMApzt3mpI2pUxdRgQGu5G+s4nr0vm5xn43JO7jxdYzzu2fHrVrTHtfeEhtB6vfvTzJBz0WydDYzLWvszQ==}
+  parquet-wasm@0.9.0:
+    resolution: {integrity: sha512-3txonYEwEymakuL1WBsljZDvlke103pHzsp/xZzyRuyYeE9pGVLqYMe4L8/a2H+n+d7XEnmcIFBUJ5BYbyEhtg==}
 
   partysocket@0.0.25:
     resolution: {integrity: sha512-1oCGA65fydX/FgdnsiBh68buOvfxuteoZVSb3Paci2kRp/7lhF0HyA8EDb5X/O6FxId1e+usPTQNRuzFEvkJbQ==}
@@ -8941,7 +8941,7 @@ snapshots:
 
   pako@1.0.11: {}
 
-  parquet-wasm@0.7.1: {}
+  parquet-wasm@0.9.0: {}
 
   partysocket@0.0.25:
     dependencies:
