@@ -1,7 +1,5 @@
 div.lonboard {
-  color: #11181c;
   color: hsl(var(--nextui-foreground));
-  background-color: #fff;
   background-color: hsl(var(--nextui-background));
   margin: 0;
   line-height: 1.5;
