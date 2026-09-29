@@ -9,6 +9,7 @@ from test_utils import TestConstants, setup_map_widget
 
 from lonboard import (
     H3HexagonLayer,
+    HeatmapLayer,
     Map,
     PathLayer,
     PolygonLayer,
@@ -200,5 +201,19 @@ def test_click_on_empty_map_does_not_set_selected_index(page_session):
     m = Map(layer, view_state={"longitude": 0, "latitude": 0, "zoom": 3})
     # All features are on the equator, so there is nothing below the center
     click_map(page_session, m, offset_y=150)
+
+    assert wait_for_selected_index(page_session, layer) is None
+
+
+@pytest.mark.usefixtures("solara_test")
+def test_click_heatmap_does_not_set_selected_index(page_session):
+    # A heatmap is an aggregation of all rows, so a click can't select one of them
+    geoms = [Point(0, 0), Point(0.1, 0), Point(0, 0.1)]
+    layer = HeatmapLayer.from_geopandas(
+        gpd.GeoDataFrame(geometry=geoms, crs="EPSG:4326"),
+        radius_pixels=60,
+    )
+    m = Map(layer, view_state={"longitude": 0, "latitude": 0, "zoom": 3})
+    click_map(page_session, m)
 
     assert wait_for_selected_index(page_session, layer) is None
