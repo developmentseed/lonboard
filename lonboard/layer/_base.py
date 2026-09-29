@@ -24,6 +24,7 @@ from lonboard._geoarrow.ops import (
 from lonboard._geoarrow.ops.coord_layout import make_geometry_interleaved
 from lonboard._geoarrow.parse_wkb import parse_serialized_table
 from lonboard._geoarrow.row_index import add_positional_row_index
+from lonboard._geoarrow.utils import remove_empty_batches
 from lonboard._serialization import infer_rows_per_chunk
 from lonboard._utils import auto_downcast as _auto_downcast
 from lonboard._utils import get_geometry_column_index, remove_extension_kwargs
@@ -376,6 +377,11 @@ class BaseArrowLayer(BaseLayer):
             schema = Schema([imported_stream.field.with_name("geometry")])
             table_o3 = Table.from_arrays([imported_stream], schema=schema)
             table_o3 = add_positional_row_index(table_o3)
+
+        if table_o3.num_rows == 0:
+            raise ValueError("Cannot create a layer from a table with no rows.")
+
+        table_o3 = remove_empty_batches(table_o3)
 
         parsed_tables = parse_serialized_table(table_o3)
         assert len(parsed_tables) == 1, (

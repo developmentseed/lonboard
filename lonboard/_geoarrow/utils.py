@@ -2,10 +2,55 @@ from __future__ import annotations
 
 from typing import TYPE_CHECKING
 
+import numpy as np
+from arro3.core import Array, Table, fixed_size_list_array
+
 from lonboard._constants import EXTENSION_NAME
 
 if TYPE_CHECKING:
-    from arro3.core import Field
+    from arro3.core import DataType, Field
+
+
+def fixed_size_list_from_numpy(
+    values: np.ndarray,
+    list_size: int,
+    *,
+    type: DataType | Field | None = None,  # noqa: A002
+) -> Array:
+    """Construct a FixedSizeList array from a flat numpy array.
+
+    Unlike `arro3.core.fixed_size_list_array`, this also accepts zero-length input
+    (such as the coordinates of empty geometries), which arro3 can't yet import from
+    numpy. This can be removed once arro3 supports it:
+    https://github.com/kylebarron/arro3/issues/519
+    """
+    if values.size == 0:
+        # Slice a one-element Arrow array to zero length to keep the numpy dtype
+        return fixed_size_list_array(
+            Array(np.zeros(1, dtype=values.dtype)).slice(0, 0),
+            list_size,
+            type=type,
+        )
+
+    return fixed_size_list_array(values, list_size, type=type)
+
+
+def drop_nan_coords(coords: np.ndarray) -> np.ndarray:
+    """Remove rows of a 2D coordinate array that contain NaN.
+
+    GeoArrow stores an empty point as a coordinate of NaN values.
+    """
+    has_nan = np.isnan(coords).any(axis=1)
+    if not has_nan.any():
+        return coords
+
+    return coords[~has_nan]
+
+
+def remove_empty_batches(table: Table) -> Table:
+    """Remove record batches with no rows from a table."""
+    batches = [batch for batch in table.to_batches() if batch.num_rows > 0]
+    return Table.from_batches(batches, schema=table.schema)
 
 
 def is_primitive_geoarrow(field: Field) -> bool:
