@@ -49,6 +49,12 @@ We use ESBuild to bundle into an ES Module, which the Jupyter Widget will then l
 pnpm build:watch
 ```
 
+Unit tests for the TypeScript code live in `src/tests/` and use [Vitest](https://vitest.dev/). To run them:
+
+```sh
+pnpm test
+```
+
 ### Environment Variables
 
 To use custom environment variables, you can create a file `.env`:

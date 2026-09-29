@@ -27,7 +27,7 @@
     "lodash.throttle": "^4.1.1",
     "maplibre-gl": "^5.9.0",
     "memoize-one": "^6.0.0",
-    "parquet-wasm": "0.7.1",
+    "parquet-wasm": "0.9.0",
     "proj4": "^2.22.0",
     "react": "^19.3.0",
     "react-dom": "^19.3.0",
@@ -39,7 +39,7 @@
   "type": "module",
   "devDependencies": {
     "@anywidget/types": "^0.4.0",
-    "@biomejs/biome": "2.3.10",
+    "@biomejs/biome": "2.5.14",
     "@jupyter-widgets/base": "^6.0.12",
     "@statelyai/inspect": "^0.7.2",
     "@tailwindcss/postcss": "^4.3.3",
@@ -55,7 +55,8 @@
     "postcss-modules": "^9.0.1",
     "postcss-preset-env": "^11.5.4",
     "tailwindcss": "^3.4.15",
-    "typescript": "^5.7.2"
+    "typescript": "^5.7.2",
+    "vitest": "^5.0.2"
   },
   "packageManager": "pnpm@10.25.0",
   "scripts": {
@@ -67,7 +68,8 @@
     "lint": "biome lint .",
     "lint:fix": "biome lint --write .",
     "check": "biome check .",
-    "check:fix": "biome check --write ."
+    "check:fix": "biome check --write .",
+    "test": "vitest run"
   },
   "volta": {
     "node": "22.20.0",
