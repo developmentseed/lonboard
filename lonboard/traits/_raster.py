@@ -50,8 +50,11 @@ class ProjectionTrait(FixedErrorTraitType):
             self.error(obj, value, info="to be a valid CRS input (e.g. EPSG:4326)")
 
 
-def serialize_tile_matrix_set(tms: TileMatrixSet, _obj: Any) -> dict:
+def serialize_tile_matrix_set(tms: TileMatrixSet | None, _obj: Any) -> dict | None:
     """Serialize a TileMatrixSet object to a dict."""
+    if tms is None:
+        return None
+
     return tms.model_dump(mode="json", exclude_none=True)
 
 
