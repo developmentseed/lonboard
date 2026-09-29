@@ -24,6 +24,14 @@ updates:
           - "*loaders*"
           - "*luma*"
           - "@developmentseed/*"
+          # The wasm binary is loaded from a CDN at a version pinned in
+          # src/parquet.ts, which has to be bumped by hand in the same PR
+          - "parquet-wasm"
+        # Major updates get their own PRs, so that one breaking change doesn't
+        # block every other update in the group
+        update-types:
+          - "minor"
+          - "patch"
   - package-ecosystem: uv
     directory: "/"
     schedule:
