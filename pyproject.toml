@@ -7,10 +7,6 @@ license = "MIT"
 readme = "README.md"
 requires-python = ">=3.11"
 dependencies = [
-    # No upper bound: a cap here can't keep the kernel's anywidget in step with
-    # the anywidget frontend installed in the Jupyter server environment, and it
-    # blocks installing lonboard next to widgets that need a newer anywidget.
-    # https://github.com/developmentseed/lonboard/issues/1271
     "anywidget>=0.9",
     # Version in Colab as of October 2024
     # Upgrading to 5.10 would be ideal to enable generic types
