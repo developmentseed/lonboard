@@ -318,6 +318,10 @@ class RasterLayer(BaseLayer, Generic[T]):
         kwargs.pop("extent", None)
 
         return RasterLayer(
+            # PMTiles archives use standard Web Mercator XYZ tiles, which the
+            # frontend renders when there's no tile matrix set.
+            _tile_matrix_set=None,
+            _crs="EPSG:3857",
             _fetch_tile=fetch_tile,
             _render_tile=render_tile,
             min_zoom=reader.minzoom,
