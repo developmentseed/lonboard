@@ -57,8 +57,9 @@ def _coords_bbox(arr: Array) -> Bbox:
     list_size = arr.type.list_size
     assert list_size is not None
 
-    np_arr = drop_nan_coords(list_flatten(arr).to_numpy().reshape(-1, list_size))
-    # No coordinates, e.g. from empty geometries
+    np_arr = list_flatten(arr).to_numpy().reshape(-1, list_size)
+    np_arr = drop_nan_coords(np_arr)
+
     if len(np_arr) == 0:
         return Bbox()
 

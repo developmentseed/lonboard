@@ -63,10 +63,10 @@ class WeightedCentroid:
         list_size = coords.type.list_size
         assert list_size is not None
 
-        np_arr = drop_nan_coords(list_flatten(coords).to_numpy().reshape(-1, list_size))
+        np_arr = list_flatten(coords).to_numpy().reshape(-1, list_size)
+        np_arr = drop_nan_coords(np_arr)
         new_chunk_len = np_arr.shape[0]
 
-        # No coordinates, e.g. from empty geometries
         if new_chunk_len == 0:
             return
 
