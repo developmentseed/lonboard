@@ -1,8 +1,8 @@
-import type { MapboxOverlayProps } from "@deck.gl/mapbox";
-import { MapboxOverlay } from "@deck.gl/mapbox";
+import type { MapLibreOverlayProps } from "@deck.gl/maplibre";
+import { MapLibreOverlay } from "@deck.gl/maplibre";
 import React from "react";
 import type { MapRef, ViewStateChangeEvent } from "react-map-gl/maplibre";
-import MapGL, { useControl } from "react-map-gl/maplibre";
+import MapGL, { useControl, useMap } from "react-map-gl/maplibre";
 import type { FlyToMessage } from "../types";
 import { isGlobeView, omitUndefined } from "../util";
 import type {
@@ -14,12 +14,31 @@ import type {
 /**
  * DeckGLOverlay component that integrates deck.gl with react-map-gl
  *
- * Uses the useControl hook to create a MapboxOverlay instance that
+ * Uses the useControl hook to create a MapLibreOverlay instance that
  * renders deck.gl layers on top of the base map.
  */
-function DeckGLOverlay(props: MapboxOverlayProps) {
-  const overlay = useControl(() => new MapboxOverlay(props));
+function DeckGLOverlay(props: MapLibreOverlayProps) {
+  const overlay = useControl(() => new MapLibreOverlay(props));
   overlay.setProps(props);
+
+  // Workaround for https://github.com/visgl/deck.gl/issues/10733
+  //
+  // In interleaved mode the overlay adds its layers to the map's style when
+  // the props change, but only if the basemap has finished loading. On first
+  // load it hasn't, so the layers are drawn over the labels and under the
+  // water. Pass the props again whenever the map has finished loading.
+  const { current: map } = useMap();
+  const propsRef = React.useRef(props);
+  propsRef.current = props;
+  React.useEffect(() => {
+    if (!map) return;
+    const onIdle = () => overlay.setProps(propsRef.current);
+    map.on("idle", onIdle);
+    return () => {
+      map.off("idle", onIdle);
+    };
+  }, [map, overlay]);
+
   return null;
 }
 
@@ -28,7 +47,7 @@ function DeckGLOverlay(props: MapboxOverlayProps) {
  *
  * In this rendering mode, the map is the parent component that controls
  * the view state, with deck.gl layers rendered as an overlay using the
- * MapboxOverlay. This approach gives the base map more control and can
+ * MapLibreOverlay. This approach gives the base map more control and can
  * enable features like interleaved rendering between map and deck layers.
  */
 const OverlayRenderer = React.forwardRef<

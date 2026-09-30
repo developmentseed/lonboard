@@ -11,11 +11,24 @@ dotenv.config();
 
 const node_env = process.env.NODE_ENV || "production";
 
+// maplibre-gl ships its worker as a separate file, which it expects to load
+// from a URL. We ship a single file, so bundle the worker into a string that is
+// started from a Blob URL at runtime. See src/maplibre-worker.ts
+const maplibreWorker = await esbuild.build({
+  entryPoints: ["./node_modules/maplibre-gl/dist/maplibre-gl-worker.mjs"],
+  bundle: true,
+  format: "iife",
+  target: ["es2022"],
+  minify: node_env === "production",
+  write: false,
+});
+
 // List of environment variables to expose to the build
 const defineEnv = {
   // Ref https://github.com/manzt/anywidget/issues/369#issuecomment-1792376003
   "define.amd": "false",
   "process.env.NODE_ENV": JSON.stringify(node_env),
+  MAPLIBRE_WORKER_SOURCE: JSON.stringify(maplibreWorker.outputFiles[0].text),
 };
 
 esbuild.build({
@@ -52,7 +65,7 @@ esbuild.build({
     "@deck.gl/extensions": "./node_modules/@deck.gl/extensions",
     "@deck.gl/geo-layers": "./node_modules/@deck.gl/geo-layers",
     "@deck.gl/layers": "./node_modules/@deck.gl/layers",
-    "@deck.gl/mapbox": "./node_modules/@deck.gl/mapbox",
+    "@deck.gl/maplibre": "./node_modules/@deck.gl/maplibre",
     "@deck.gl/mesh-layers": "./node_modules/@deck.gl/mesh-layers",
     "@deck.gl/react": "./node_modules/@deck.gl/react",
     "@deck.gl/widgets": "./node_modules/@deck.gl/widgets",
