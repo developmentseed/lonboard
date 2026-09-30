@@ -10,6 +10,7 @@ Pay attention to the ["Efficient updates"](https://shiny.posit.co/py/docs/jupyte
 ![](../assets/shiny-example.gif)
 
 ```py
+import geodatasets
 import geopandas as gpd
 from shiny import reactive
 from shiny.express import input, ui
@@ -28,8 +29,7 @@ ui.input_select("color_select", "Color", choices=list(colors.keys()))
 
 @render_widget
 def layer():
-    url = "https://naciscdn.org/naturalearth/110m/cultural/ne_110m_populated_places_simple.zip"
-    gdf = gpd.read_file(url)
+    gdf = gpd.read_file(geodatasets.get_path("naturalearth.cities"))
     return ScatterplotLayer.from_geopandas(gdf, radius_min_pixels=2)
 
 
