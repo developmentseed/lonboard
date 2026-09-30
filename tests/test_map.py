@@ -1,9 +1,13 @@
+import warnings
+
 import geopandas as gpd
+import numpy as np
 import pytest
+import shapely
 from geodatasets import get_path
 from traitlets import TraitError
 
-from lonboard import Map, ScatterplotLayer, SolidPolygonLayer, viz
+from lonboard import BitmapTileLayer, Map, ScatterplotLayer, SolidPolygonLayer, viz
 from lonboard.basemap import MaplibreBasemap
 from lonboard.experimental.view import FirstPersonView, GlobeView, OrthographicView
 from lonboard.view_state import (
@@ -213,3 +217,58 @@ def test_default_view_state_inferred():
     assert view_state.longitude - (-73.90) < 1e-2
     assert view_state.latitude - 40.67 < 1e-2
     assert view_state.zoom == 9
+
+
+def point_layer(num_chunks: int, **kwargs: bool) -> ScatterplotLayer:
+    """Create a layer of points where each point is in its own chunk."""
+    points = shapely.points(np.linspace(-10, 10, num_chunks), 0)
+    gdf = gpd.GeoDataFrame(geometry=points, crs="EPSG:4326")
+    return ScatterplotLayer.from_geopandas(gdf, _rows_per_chunk=1, **kwargs)
+
+
+def test_warns_when_chunks_exceed_picking_limit():
+    layer = point_layer(256)
+    with pytest.warns(UserWarning, match="256 chunks"):
+        Map(layer)
+
+
+def test_no_warning_at_picking_limit():
+    layer = point_layer(255)
+    with warnings.catch_warnings():
+        warnings.simplefilter("error")
+        Map(layer)
+
+
+def test_chunks_of_all_layers_count_towards_picking_limit():
+    layers = [point_layer(200), point_layer(56)]
+    with pytest.warns(UserWarning, match="256 chunks"):
+        Map(layers)
+
+
+def test_layer_without_table_counts_as_one_chunk():
+    tile_layer = BitmapTileLayer(data="https://example.com/{z}/{x}/{y}.png")
+    layers = [tile_layer, point_layer(255)]
+    with pytest.warns(UserWarning, match="256 chunks"):
+        Map(layers)
+
+
+def test_add_layer_warns_when_chunks_exceed_picking_limit():
+    m = Map(point_layer(255))
+    new_layer = point_layer(1)
+    with pytest.warns(UserWarning, match="256 chunks"):
+        m.add_layer(new_layer)
+
+
+def test_assigning_layers_warns_when_chunks_exceed_picking_limit():
+    m = Map([])
+    layer = point_layer(256)
+    with pytest.warns(UserWarning, match="256 chunks"):
+        m.layers = [layer]
+
+
+@pytest.mark.parametrize("trait", ["pickable", "visible"])
+def test_layers_that_cannot_be_picked_do_not_count_towards_picking_limit(trait: str):
+    layers = [point_layer(255), point_layer(255, **{trait: False})]
+    with warnings.catch_warnings():
+        warnings.simplefilter("error")
+        Map(layers)
