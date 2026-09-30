@@ -117,7 +117,8 @@ def _from_geometry(
     geom_col_idx: int,
     crs: str | CRS | None = None,
 ) -> Table:
-    table = Table.from_arrow(rel.arrow())
+    # Import via the Arrow PyCapsule Interface because `rel.arrow()` needs pyarrow
+    table = Table.from_arrow(rel)
     geom_field = table.schema.field(geom_col_idx)
     field_metadata = geom_field.metadata or {}
 
@@ -190,7 +191,7 @@ def _from_geometry_st_aswkb(
 
     other_col_names = [name for i, name in enumerate(rel.columns) if i != geom_col_idx]
     if other_col_names:
-        non_geo_table = Table.from_arrow(rel.select(*other_col_names).arrow())
+        non_geo_table = Table.from_arrow(rel.select(*other_col_names))
     else:
         non_geo_table = None
     geom_col_name = rel.columns[geom_col_idx]
@@ -208,7 +209,7 @@ def _from_geometry_st_aswkb(
             FunctionExpression("st_aswkb", ColumnExpression(geom_col_name)).alias(
                 geom_col_name,
             ),
-        ).arrow(),
+        ),
     )
 
     metadata = _make_geoarrow_field_metadata(EXTENSION_NAME.WKB, crs)
@@ -228,7 +229,7 @@ def _from_geoarrow(
     geom_col_idx: int,
     crs: str | CRS | None = None,
 ) -> Table:
-    table = Table.from_arrow(rel.arrow())
+    table = Table.from_arrow(rel)
     metadata = _make_geoarrow_field_metadata(extension_type, crs)
     geom_field = table.schema.field(geom_col_idx).with_metadata(metadata)
     return table.set_column(geom_col_idx, geom_field, table.column(geom_col_idx))
@@ -240,7 +241,7 @@ def _from_box2d(
     geom_col_idx: int,
     crs: str | CRS | None = None,
 ) -> Table:
-    table = Table.from_arrow(rel.arrow())
+    table = Table.from_arrow(rel)
     geom_col = table.column(geom_col_idx)
 
     polygon_chunks: list[Array] = []
