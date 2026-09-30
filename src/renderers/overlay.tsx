@@ -1,10 +1,11 @@
-import type { MapViewState } from "@deck.gl/core";
 import type { MapLibreOverlayProps } from "@deck.gl/maplibre";
 import { MapLibreOverlay } from "@deck.gl/maplibre";
+import type { Map as MaplibreMap } from "maplibre-gl";
 import React from "react";
 import type { MapRef, ViewStateChangeEvent } from "react-map-gl/maplibre";
 import MapGL, { useControl, useMap } from "react-map-gl/maplibre";
 import type { FlyToMessage } from "../types";
+import type { Camera } from "../util";
 import { getRepeat, isGlobeView, omitUndefined } from "../util";
 import type {
   MapRendererProps,
@@ -12,29 +13,23 @@ import type {
   RendererRef,
 } from "./types";
 
-/** The parts of a view state that position the MapLibre camera. */
-const CAMERA_KEYS = [
-  "longitude",
-  "latitude",
-  "zoom",
-  "pitch",
-  "bearing",
-] as const;
-
-type Camera = Partial<Pick<MapViewState, (typeof CAMERA_KEYS)[number]>>;
-
-/** How many reported cameras to remember when Python doesn't send them back. */
-const MAX_REPORTED_CAMERAS = 16;
-
 /**
- * Whether `viewState` positions the camera where `reported` does.
+ * Whether the map's camera is already at `viewState`.
  *
  * Keys that `viewState` doesn't define are not compared, because not every
  * view state has all of them. E.g. a globe view state has no pitch or bearing.
  */
-function isSameCamera(viewState: Camera, reported: Camera): boolean {
-  return CAMERA_KEYS.every(
-    (key) => viewState[key] == null || viewState[key] === reported[key],
+function isAtViewState(map: MaplibreMap, viewState: Camera): boolean {
+  const { lng, lat } = map.getCenter();
+  const camera: Required<Camera> = {
+    longitude: lng,
+    latitude: lat,
+    zoom: map.getZoom(),
+    pitch: map.getPitch(),
+    bearing: map.getBearing(),
+  };
+  return (Object.keys(camera) as (keyof Camera)[]).every(
+    (key) => viewState[key] == null || viewState[key] === camera[key],
   );
 }
 
@@ -88,29 +83,22 @@ const OverlayRenderer = React.forwardRef<
     customAttribution,
     initialViewState,
     views,
-    onViewStateChange,
+    // The map reports its camera with `saveCamera` instead
+    onViewStateChange: _onViewStateChange,
+    saveCamera,
     ...deckProps
   } = mapProps;
 
   const mapRef = React.useRef<MapRef>(null);
 
-  // The cameras that the map reported to Python and that Python can still send
-  // back, oldest first. Python sends every reported view state back with
-  // default values filled in, which must not move the map.
-  //
-  // Limits: reports, including the map's own one below, are recognised by
-  // value. Only the last 16 are kept, so the map moves when Python sends back
-  // an older one, e.g. when the kernel was busy during many pans.
-  const reportedCameras = React.useRef<Camera[]>([]);
-  // The camera that the map reported last, until it has come back through
-  // `initialViewState`. It does so right away, before Python has seen it.
-  const ownReport = React.useRef<Camera | null>(null);
-  // True while the map moves to a view state set from Python, which must not
+  // True while the map moves to a view state that it was given, which must not
   // be reported back to Python.
   const isSettingViewState = React.useRef(false);
 
   // MapLibre only reads `initialViewState` when the map is created, so a view
-  // state that Python sets later has to be applied to the map here.
+  // state set later, from Python or by `jslink`, has to be applied here. The
+  // map's own reports come back here too, and are skipped because the map is
+  // already there.
   React.useEffect(() => {
     const map = mapRef.current?.getMap();
     const viewState = initialViewState as Camera | null | undefined;
@@ -118,23 +106,8 @@ const OverlayRenderer = React.forwardRef<
 
     const { longitude, latitude, zoom, pitch, bearing } = viewState;
     if (longitude == null || latitude == null) return;
-    if (ownReport.current && isSameCamera(viewState, ownReport.current)) {
-      ownReport.current = null;
-      return;
-    }
+    if (isAtViewState(map, viewState)) return;
 
-    // Python sends the reported view states back in the order that it received
-    // them, so nothing older than the one it sent back is still to come.
-    const index = reportedCameras.current.findIndex((reported) =>
-      isSameCamera(viewState, reported),
-    );
-    if (index >= 0) {
-      reportedCameras.current = reportedCameras.current.slice(index);
-      return;
-    }
-
-    reportedCameras.current = [];
-    ownReport.current = null;
     isSettingViewState.current = true;
     try {
       map.jumpTo({
@@ -170,24 +143,18 @@ const OverlayRenderer = React.forwardRef<
     },
   }));
 
-  const onMoveEnd = onViewStateChange
-    ? (evt: ViewStateChangeEvent) => {
-        if (isSettingViewState.current) return;
+  const onMoveEnd = (evt: ViewStateChangeEvent) => {
+    if (isSettingViewState.current) return;
 
-        const viewState = {
-          longitude: evt.viewState.longitude,
-          latitude: evt.viewState.latitude,
-          zoom: evt.viewState.zoom,
-          pitch: evt.viewState.pitch,
-          bearing: evt.viewState.bearing,
-        };
-        reportedCameras.current = [...reportedCameras.current, viewState].slice(
-          -MAX_REPORTED_CAMERAS,
-        );
-        ownReport.current = viewState;
-        onViewStateChange({ viewId: "mapLibreId", viewState });
-      }
-    : undefined;
+    saveCamera({
+      longitude: evt.viewState.longitude,
+      latitude: evt.viewState.latitude,
+      zoom: evt.viewState.zoom,
+      pitch: evt.viewState.pitch,
+      bearing: evt.viewState.bearing,
+    });
+  };
+
   return (
     <MapGL
       ref={mapRef}

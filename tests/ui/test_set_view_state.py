@@ -7,7 +7,7 @@ https://github.com/developmentseed/lonboard/issues/1024
 import io
 import threading
 import time
-from collections.abc import Iterator
+from collections.abc import Callable, Iterator
 from contextlib import contextmanager
 
 import geopandas as gpd
@@ -281,8 +281,8 @@ def test_pan_is_not_reverted_by_python(page_session: Page, mode: str):
     wait_for_initial_view(page_session, canvas)
 
     drag(page_session, canvas, dx=-DRAG_PIXELS)
-    # Python sends the view state of the first pan back to the map while the mouse
-    # button is still down for the second pan
+    # In reverse-controlled mode, which debounces the first pan, Python sends it
+    # back to the map while the mouse button is still down for the second pan
     press_and_drag(page_session, canvas, dx=-DRAG_PIXELS)
     page_session.wait_for_timeout(TIMEOUT_VIEW_STATE_SYNC)
     assert_centered_on(
@@ -321,7 +321,7 @@ def test_pan_is_not_reverted_by_late_python(
 
     with hold_view_states_from_browser(monkeypatch, m) as held_view_states:
         drag(page_session, canvas, dx=-DRAG_PIXELS)
-        # Longer than the debounce, so that the map sends the first pan on its own
+        # So that the map sends the first pan to Python before the second pan starts
         page_session.wait_for_timeout(TIMEOUT_VIEW_STATE_SYNC)
         drag(page_session, canvas, dx=-DRAG_PIXELS)
         page_session.wait_for_timeout(TIMEOUT_VIEW_STATE_SYNC)
@@ -443,13 +443,8 @@ def test_linked_maps_set_from_python(page_session: Page, mode: str):
     assert_view_state(map_b, TARGET_VIEW_STATE)
 
 
-@pytest.mark.usefixtures("solara_test")
-@pytest.mark.parametrize("mode", BASEMAP_MODES)
-def test_linked_maps_pan_in_browser(page_session: Page, mode: str):
-    """Panning one map moves the other one, as in `examples/linked-maps.ipynb`."""
-    # Only the center of the view after panning once is inside of the polygon
-    map_a = make_map(mode, target_polygon=box(10, -5, 25, 5))
-    map_b = make_map(mode, target_polygon=box(10, -5, 25, 5))
+def link_in_python(map_a: Map, map_b: Map) -> None:
+    """Link the view states of two maps, as `examples/linked-maps.ipynb` does."""
     map_a.observe(
         lambda change: map_b.set_view_state(change["new"]),
         names="view_state",
@@ -458,6 +453,38 @@ def test_linked_maps_pan_in_browser(page_session: Page, mode: str):
         lambda change: map_a.set_view_state(change["new"]),
         names="view_state",
     )
+
+
+def link_in_browser(map_a: Map, map_b: Map) -> None:
+    """Link the view states of two maps without a round trip to Python."""
+    ipywidgets.jslink((map_a, "view_state"), (map_b, "view_state"))
+
+
+@pytest.mark.usefixtures("solara_test")
+@pytest.mark.parametrize(
+    "link",
+    [link_in_python, link_in_browser],
+    ids=["observe", "jslink"],
+)
+@pytest.mark.parametrize("mode", BASEMAP_MODES)
+def test_linked_maps_pan_in_browser(
+    page_session: Page,
+    request: pytest.FixtureRequest,
+    mode: str,
+    link: Callable[[Map, Map], None],
+):
+    """Panning one map moves the other one."""
+    if mode == "reverse-controlled" and link is link_in_browser:
+        request.applymarker(
+            pytest.mark.xfail(
+                reason="Deck-first maps linked by jslink send each other older view "
+                "states while one is dragged, so part of the drag is lost",
+            ),
+        )
+    # Only the center of the view after panning once is inside of the polygon
+    map_a = make_map(mode, target_polygon=box(10, -5, 25, 5))
+    map_b = make_map(mode, target_polygon=box(10, -5, 25, 5))
+    link(map_a, map_b)
     element_a, element_b = display_side_by_side(page_session, map_a, map_b)
     wait_for_initial_view(page_session, element_a)
     wait_for_initial_view(page_session, element_b)
