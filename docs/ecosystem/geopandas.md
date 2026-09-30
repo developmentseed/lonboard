@@ -51,7 +51,8 @@ import numpy as np
 
 from lonboard import Map, ScatterplotLayer
 
-gdf = gpd.read_file(gpd.datasets.get_path("naturalearth_cities"))
+url = "https://naciscdn.org/naturalearth/110m/cultural/ne_110m_populated_places_simple.zip"
+gdf = gpd.read_file(url)
 radii = np.random.random(len(gdf))
 layer = ScatterplotLayer.from_geopandas(
     gdf,

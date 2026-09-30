@@ -27,13 +27,18 @@ ui.input_select("color_select", "Color", choices=list(colors.keys()))
 
 
 @render_widget
+def layer():
+    url = "https://naciscdn.org/naturalearth/110m/cultural/ne_110m_populated_places_simple.zip"
+    gdf = gpd.read_file(url)
+    return ScatterplotLayer.from_geopandas(gdf, radius_min_pixels=2)
+
+
+@render_widget
 def map():
-    gdf = gpd.read_file(gpd.datasets.get_path("naturalearth_cities"))
-    layer = ScatterplotLayer.from_geopandas(gdf, radius_min_pixels=2)
-    return Map(layer)
+    return Map(layer.widget)
 
 
 @reactive.effect
 def set_fill_color():
-    map.widget.layers[0].get_fill_color = colors[input.color_select()]
+    layer.widget.get_fill_color = colors[input.color_select()]
 ```
