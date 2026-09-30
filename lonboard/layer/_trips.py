@@ -236,12 +236,17 @@ class TripsLayer(BaseArrowLayer):
             kwargs: Extra args passed down as TripsLayer attributes.
 
         """
+        # `current_time` is a property, not a trait, so traitlets can't set it
+        current_time = kwargs.pop("current_time", None)
         super().__init__(
             table=table,
             _rows_per_chunk=_rows_per_chunk,
             get_timestamps=get_timestamps,  # type: ignore
             **kwargs,
         )
+        # The setter reads `get_timestamps`, so it has to run after it's set
+        if current_time is not None:
+            self.current_time = current_time
 
     @classmethod
     def from_geopandas(  # type: ignore

@@ -1,4 +1,5 @@
 from datetime import UTC, date, datetime, timedelta
+from typing import Any
 from zoneinfo import ZoneInfo
 
 import numpy as np
@@ -25,7 +26,7 @@ STEP = {
 }
 
 
-def trips_layer(time_unit: str, tz: str | None = None) -> TripsLayer:
+def trips_layer(time_unit: str, tz: str | None = None, **kwargs: Any) -> TripsLayer:
     """Create a layer with two trips that together span 9,000 time units."""
     coords = np.array([[0, 0], [1, 1], [2, 2], [3, 3]], dtype=np.float64)
     offsets = np.array([0, 2, 4], dtype=np.int32)
@@ -38,7 +39,13 @@ def trips_layer(time_unit: str, tz: str | None = None) -> TripsLayer:
         type=pa.list_(pa.int64()),
     ).cast(pa.list_(pa.timestamp(time_unit, tz=tz)))
 
-    return TripsLayer(table, get_timestamps=timestamps)
+    return TripsLayer(table, get_timestamps=timestamps, **kwargs)
+
+
+def test_current_time_kwarg():
+    current_time = START + timedelta(seconds=30)
+    layer = trips_layer("s", current_time=current_time)
+    assert layer.current_time == current_time
 
 
 @pytest.mark.parametrize("time_unit", ["s", "ms", "us", "ns"])

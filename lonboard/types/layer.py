@@ -18,6 +18,7 @@ else:
 
 if TYPE_CHECKING:
     from collections.abc import Sequence
+    from datetime import datetime
 
     import pandas as pd
     import pyarrow as pa
@@ -274,6 +275,7 @@ class TripsLayerKwargs(BaseLayerKwargs, total=False):
     billboard: bool
     fade_trail: bool
     trail_length: IntFloat
+    current_time: datetime
     get_color: ColorAccessorInput
     get_width: FloatAccessorInput
 
