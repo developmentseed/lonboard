@@ -232,10 +232,14 @@ export class NavigationControlModel extends BaseMapControlModel {
   }
 
   renderDeck() {
+    // Python sends `null` when these aren't set. Show both widgets then, as
+    // MapLibre does by default for its navigation control.
     return (
       <div>
-        {this.showZoom && <ZoomWidget {...this.baseDeckProps()} />}
-        {this.showCompass && <CompassWidget {...this.baseDeckProps()} />}
+        {this.showZoom !== false && <ZoomWidget {...this.baseDeckProps()} />}
+        {this.showCompass !== false && (
+          <CompassWidget {...this.baseDeckProps()} />
+        )}
       </div>
     );
   }
