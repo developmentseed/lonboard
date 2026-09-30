@@ -152,7 +152,7 @@ Note that the path in `--with` is relative to the notebook itself.
 
 ### Screenshots in notebooks
 
-Don't paste screenshots into Markdown cells. Jupyter stores them inside the notebook as base64, and every docs release then publishes a fresh copy of each example page, which is what made the `gh-pages` branch so large. Save the image to `assets/` instead and link to it relative to the notebook, e.g. `![](../assets/duckdb-heatmap.jpg)`. The mkdocs hook in `scripts/mkdocs_notebook_links.py` adjusts such links for the site's directory URLs.
+Don't paste screenshots into Markdown cells. Jupyter stores them inside the notebook as base64, and every docs release then publishes a fresh copy of each example page, which is [what made the `gh-pages` branch so large](https://github.com/developmentseed/lonboard/issues/1160). Save the image to `assets/` instead and link to it relative to the notebook, e.g. `![](../assets/duckdb-heatmap.jpg)`. The mkdocs hook in `scripts/mkdocs_notebook_links.py` adjusts such links for the site's directory URLs.
 
 Widget state saved in a notebook ("Save Widget State" in JupyterLab) is stripped by the `scripts/normalize_notebook.py` pre-commit hook, since it only holds a copy of the JS bundle and can't render the maps on the docs site anyway.
 
