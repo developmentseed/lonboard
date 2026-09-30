@@ -1,6 +1,7 @@
 from __future__ import annotations
 
-from datetime import datetime, timedelta
+import math
+from datetime import UTC, datetime, timedelta
 from typing import TYPE_CHECKING, Any
 
 import ipywidgets
@@ -414,7 +415,29 @@ class TripsLayer(BaseArrowLayer):
 
     @property
     def current_time(self) -> datetime:
-        """Get the current time of the map as a `datetime` object.
+        """The current time of the map as a `datetime` object.
+
+        The `datetime` has the timezone of the
+        [`get_timestamps`][lonboard.TripsLayer.get_timestamps] column, or no timezone
+        if that column has none.
+
+        Set this to a `datetime` to render the trips at that time:
+
+        ```py
+        layer.current_time = datetime(2024, 1, 1, 12, 30)
+        ```
+
+        The `datetime` must have a timezone if the `get_timestamps` column has one, and
+        must not have a timezone if that column has none. Any precision finer than the
+        time unit of the `get_timestamps` column is dropped.
+
+        While the `Play` widget of [`animate`][lonboard.TripsLayer.animate] is playing,
+        it keeps advancing the time from the frontend, which replaces the time set here.
+
+        Raises:
+            TypeError: when set to a value that is not a `datetime`, or to a `datetime`
+                with a timezone when the `get_timestamps` column has none, or the
+                reverse.
 
         Returns:
             datetime object with current time.
@@ -422,13 +445,65 @@ class TripsLayer(BaseArrowLayer):
         """
         return self._current_time_to_datetime(self._current_time)
 
+    @current_time.setter
+    def current_time(self, value: datetime) -> None:
+        self._current_time = self._datetime_to_current_time(value)
+
     def _current_time_to_datetime(self, current_time: float) -> datetime:
         start_offset = timestamp_start_offset(self.get_timestamps)
-        timestamp_int = int(current_time - start_offset)
+        # Subtract as integers: a float can't hold nanosecond timestamps exactly
+        timestamp_int = math.floor(current_time) - start_offset
         timestamp_scalar = Scalar(timestamp_int, type=DataType.int64()).cast(
             self.get_timestamps.type.value_type,
         )
         return timestamp_scalar.as_py()
+
+    def _datetime_to_current_time(self, value: datetime) -> float:
+        """Convert a datetime to `_current_time`.
+
+        This is the inverse of `_current_time_to_datetime`.
+        """
+        if not isinstance(value, datetime):
+            raise TypeError(
+                f"Expected current_time to be a datetime, got {type(value).__name__}.",
+            )
+
+        timestamp_type = self.get_timestamps.type.value_type
+        time_unit = timestamp_type.time_unit
+        tz = timestamp_type.tz
+
+        # Don't guess a timezone: a wrong guess would render another time
+        if tz is None:
+            if value.utcoffset() is not None:
+                raise TypeError(
+                    "Expected current_time to be a datetime without a timezone, "
+                    "because the timestamps of this layer have no timezone.",
+                )
+            # Timestamps without a timezone count from the epoch as those in UTC do
+            value = value.replace(tzinfo=UTC)
+        elif value.utcoffset() is None:
+            raise TypeError(
+                "Expected current_time to be a datetime with a timezone, because the "
+                f"timestamps of this layer have the timezone {tz}.",
+            )
+
+        since_epoch = value - datetime(1970, 1, 1, tzinfo=UTC)
+
+        # Divide as integers: a float can't hold nanosecond timestamps exactly
+        if time_unit == "s":
+            timestamp_int = since_epoch // timedelta(seconds=1)
+        elif time_unit == "ms":
+            timestamp_int = since_epoch // timedelta(milliseconds=1)
+        elif time_unit == "us":
+            timestamp_int = since_epoch // timedelta(microseconds=1)
+        elif time_unit == "ns":
+            # A datetime has no precision finer than microseconds
+            timestamp_int = (since_epoch // timedelta(microseconds=1)) * 1000
+        else:
+            assert False, f"Unexpected time unit {time_unit}"
+
+        start_offset = timestamp_start_offset(self.get_timestamps)
+        return float(timestamp_int + start_offset)
 
     def stop_animation(self) -> None:
         """Stop any existing animation.

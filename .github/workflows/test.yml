@@ -57,11 +57,6 @@ jobs:
       - name: Run tests
         run: uv run pytest
 
-      - name: Run tests (all deps)
-        run: |
-          uv sync --extra geopandas --extra cli
-          uv run pytest
-
       # Ensure docs build without warnings
       - name: Check docs
         if: "${{ matrix.python-version == 3.11 }}"

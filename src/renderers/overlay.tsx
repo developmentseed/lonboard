@@ -4,7 +4,7 @@ import React from "react";
 import type { MapRef, ViewStateChangeEvent } from "react-map-gl/maplibre";
 import MapGL, { useControl, useMap } from "react-map-gl/maplibre";
 import type { FlyToMessage } from "../types";
-import { isGlobeView, omitUndefined } from "../util";
+import { getRepeat, isGlobeView, omitUndefined } from "../util";
 import type {
   MapRendererProps,
   OverlayRendererProps,
@@ -111,6 +111,8 @@ const OverlayRenderer = React.forwardRef<
       style={{ width: "100%", height: "100%" }}
       onMoveEnd={onMoveEnd}
       {...(isGlobeView(views) && { projection: "globe" })}
+      // MapLibre repeats the world by default, so only pass `repeat` when set
+      {...omitUndefined({ renderWorldCopies: getRepeat(views) })}
     >
       {controls.map((control) => control.renderMaplibre())}
       <DeckGLOverlay {...deckProps} />
