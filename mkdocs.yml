@@ -171,6 +171,9 @@ theme:
     - search.suggest
     - search.share
 
+hooks:
+  - scripts/mkdocs_notebook_links.py
+
 plugins:
   - autorefs:
       resolve_closest: true
