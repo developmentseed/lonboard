@@ -38,6 +38,11 @@ export function isMapView(views: MapRendererProps["views"]) {
   return firstView instanceof MapView;
 }
 
+export function getRepeat(views: MapRendererProps["views"]) {
+  const firstView = Array.isArray(views) ? views[0] : views;
+  return firstView instanceof MapView ? firstView.props.repeat : undefined;
+}
+
 export function sanitizeViewState(
   _views: MapRendererProps["views"],
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
