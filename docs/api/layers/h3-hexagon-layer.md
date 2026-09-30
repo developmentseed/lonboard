@@ -7,3 +7,4 @@
 ::: lonboard.H3HexagonLayer
     options:
       inherited_members: true
+      show_labels: false
