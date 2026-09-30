@@ -84,6 +84,32 @@ pnpm link ../deck.gl-raster/packages/*
 You'll also want to ensure that deck.gl versions in both projects are pinned
 exactly the same.
 
+## Linting and formatting
+
+We use [pre-commit](https://pre-commit.com/) to run a few fast checks before each commit. [Ruff](https://docs.astral.sh/ruff/) lints and formats the Python code, and other hooks remove trailing whitespace and reset the kernel name of the example notebooks. The hooks are defined in [`.pre-commit-config.yaml`](./.pre-commit-config.yaml).
+
+Install the hooks once after cloning the repository:
+
+```
+uv run pre-commit install
+```
+
+To run the hooks on every file without making a commit:
+
+```
+uv run pre-commit run --all-files
+```
+
+CI runs the same command.
+
+pre-commit runs each hook in an environment of its own, without the dependencies of the project. So the hooks only do checks that need nothing but the source files, and they don't run the tests.
+
+The hooks don't check the JavaScript code. [Biome](https://biomejs.dev/) lints and formats it, and CI fails if `pnpm check` reports a problem. To apply the fixes that Biome can make by itself:
+
+```sh
+pnpm check:fix
+```
+
 ## Publishing
 
 Push a new tag to the main branch of the format `v*`. A new version will be published to PyPI automatically.
