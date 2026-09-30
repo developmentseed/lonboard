@@ -142,7 +142,12 @@ class Map(BaseAnyWidget):
         container = VBox([self, error_vbox])
         return container._repr_mimebundle_(**kwargs)
 
-    def on_click(self, callback: Callable, *, remove: bool = False) -> None:
+    def on_click(
+        self,
+        callback: Callable[[tuple[float, float]], None],
+        *,
+        remove: bool = False,
+    ) -> None:
         """Register a callback to execute when the map is clicked.
 
         The callback will be called with one argument, a tuple of the coordinate
