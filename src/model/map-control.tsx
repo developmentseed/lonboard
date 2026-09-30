@@ -22,7 +22,7 @@ import {
   useControl,
 } from "react-map-gl/maplibre";
 
-import { isDefined } from "../util";
+import { omitUndefined } from "../util";
 import { BaseModel } from "./base";
 import { invoke } from "./dispatch";
 
@@ -42,15 +42,11 @@ export abstract class BaseMapControlModel extends BaseModel {
   }
 
   baseDeckProps() {
-    return {
-      ...(isDefined(this.position) ? { placement: this.position } : {}),
-    };
+    return omitUndefined({ placement: this.position });
   }
 
   baseMaplibreProps() {
-    return {
-      ...(isDefined(this.position) ? { position: this.position } : {}),
-    };
+    return omitUndefined({ position: this.position });
   }
 
   abstract renderDeck(): React.JSX.Element | null;
@@ -248,12 +244,10 @@ export class NavigationControlModel extends BaseMapControlModel {
   renderMaplibre() {
     const props = {
       ...this.baseMaplibreProps(),
-      ...(isDefined(this.showCompass) && { showCompass: this.showCompass }),
-      ...(isDefined(this.showZoom) && { showZoom: this.showZoom }),
-      ...(isDefined(this.visualizePitch) && {
+      ...omitUndefined({
+        showCompass: this.showCompass,
+        showZoom: this.showZoom,
         visualizePitch: this.visualizePitch,
-      }),
-      ...(isDefined(this.visualizeRoll) && {
         visualizeRoll: this.visualizeRoll,
       }),
     };
@@ -281,8 +275,7 @@ export class ScaleControlModel extends BaseMapControlModel {
   renderMaplibre() {
     const props = {
       ...this.baseMaplibreProps(),
-      ...(isDefined(this.maxWidth) && { maxWidth: this.maxWidth }),
-      ...(isDefined(this.unit) && { unit: this.unit }),
+      ...omitUndefined({ maxWidth: this.maxWidth, unit: this.unit }),
     };
     return <div>{<ScaleControl {...props} />}</div>;
   }

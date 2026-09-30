@@ -1,13 +1,27 @@
-/** Check for null and undefined */
-
 import type { GlobeViewState, MapViewState } from "@deck.gl/core";
 import { _GlobeView as GlobeView, MapView } from "@deck.gl/core";
 
 import type { MapRendererProps } from "./renderers";
 
-// https://stackoverflow.com/a/52097445
-export function isDefined<T>(value: T | undefined | null): value is T {
-  return value !== undefined && value !== null;
+/**
+ * Drop keys whose value is `null` or `undefined`.
+ *
+ * deck.gl copies an explicit `undefined` over a layer's default props, so
+ * passing an unset prop through as `undefined` would shadow the default
+ * instead of falling back to it. Passing only the defined props lets deck.gl's
+ * defaults apply.
+ */
+export function omitUndefined<T extends object>(
+  obj: T,
+): { [K in keyof T]?: NonNullable<T[K]> } {
+  const result: { [K in keyof T]?: NonNullable<T[K]> } = {};
+  for (const key in obj) {
+    const value = obj[key];
+    if (value !== undefined && value !== null) {
+      result[key] = value;
+    }
+  }
+  return result;
 }
 
 export function makePolygon(pt1: number[], pt2: number[]) {

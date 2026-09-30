@@ -1,7 +1,7 @@
 import type { GeoArrowColumnLayerProps } from "@geoarrow/deck.gl-geoarrow";
 import { GeoArrowColumnLayer } from "@geoarrow/deck.gl-geoarrow";
 import type { WidgetModel } from "@jupyter-widgets/base";
-import { isDefined } from "../../util.js";
+import { omitUndefined } from "../../util.js";
 import type {
   ColorAccessorInput,
   FloatAccessorInput,
@@ -78,50 +78,29 @@ export class ColumnModel extends BaseArrowLayerModel {
     return {
       id: `${this.model.model_id}-${batchIndex}`,
       data: this.table.batches[batchIndex],
-      ...(isDefined(this.diskResolution) && {
+      ...omitUndefined({
         diskResolution: this.diskResolution,
-      }),
-      ...(isDefined(this.radius) && { radius: this.radius }),
-      ...(isDefined(this.angle) && { angle: this.angle }),
-      // ...(isDefined(this.vertices) &&
-      //   this.vertices !== undefined && { vertices: this.vertices }),
-      ...(isDefined(this.offset) && { offset: this.offset }),
-      ...(isDefined(this.coverage) && { coverage: this.coverage }),
-      ...(isDefined(this.elevationScale) && {
+        radius: this.radius,
+        angle: this.angle,
+        // vertices: this.vertices,
+        offset: this.offset,
+        coverage: this.coverage,
         elevationScale: this.elevationScale,
-      }),
-      ...(isDefined(this.filled) && { filled: this.filled }),
-      ...(isDefined(this.stroked) && { stroked: this.stroked }),
-      ...(isDefined(this.extruded) && { extruded: this.extruded }),
-      ...(isDefined(this.wireframe) && { wireframe: this.wireframe }),
-      ...(isDefined(this.flatShading) && { flatShading: this.flatShading }),
-      ...(isDefined(this.radiusUnits) && { radiusUnits: this.radiusUnits }),
-      ...(isDefined(this.lineWidthUnits) && {
+        filled: this.filled,
+        stroked: this.stroked,
+        extruded: this.extruded,
+        wireframe: this.wireframe,
+        flatShading: this.flatShading,
+        radiusUnits: this.radiusUnits,
         lineWidthUnits: this.lineWidthUnits,
-      }),
-      ...(isDefined(this.lineWidthScale) && {
         lineWidthScale: this.lineWidthScale,
-      }),
-      ...(isDefined(this.lineWidthMinPixels) && {
         lineWidthMinPixels: this.lineWidthMinPixels,
-      }),
-      ...(isDefined(this.lineWidthMaxPixels) && {
         lineWidthMaxPixels: this.lineWidthMaxPixels,
-      }),
-      // ...(isDefined(this.material) && { material: this.material }),
-      ...(isDefined(this.getPosition) && {
-        getPosition: this.getPosition.data[batchIndex],
-      }),
-      ...(isDefined(this.getFillColor) && {
+        // material: this.material,
+        getPosition: this.getPosition?.data[batchIndex],
         getFillColor: accessColorData(this.getFillColor, batchIndex),
-      }),
-      ...(isDefined(this.getLineColor) && {
         getLineColor: accessColorData(this.getLineColor, batchIndex),
-      }),
-      ...(isDefined(this.getElevation) && {
         getElevation: accessFloatData(this.getElevation, batchIndex),
-      }),
-      ...(isDefined(this.getLineWidth) && {
         getLineWidth: accessFloatData(this.getLineWidth, batchIndex),
       }),
     };

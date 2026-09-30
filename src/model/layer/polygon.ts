@@ -17,7 +17,7 @@ import {
 import type { WidgetModel } from "@jupyter-widgets/base";
 import type * as arrow from "apache-arrow";
 
-import { isDefined } from "../../util.js";
+import { omitUndefined } from "../../util.js";
 import { EARCUT_WORKER_POOL } from "../earcut-pool.js";
 import type { ColorAccessorInput, FloatAccessorInput } from "../types.js";
 import { accessColorData, accessFloatData } from "../types.js";
@@ -55,19 +55,13 @@ export class SolidPolygonModel extends BaseArrowLayerModel {
       id: `${this.model.model_id}-${batchIndex}`,
       data: this.table.batches[batchIndex],
       earcutWorkerPool: EARCUT_WORKER_POOL,
-      ...(isDefined(this.filled) && { filled: this.filled }),
-      ...(isDefined(this.extruded) && { extruded: this.extruded }),
-      ...(isDefined(this.wireframe) && { wireframe: this.wireframe }),
-      ...(isDefined(this.elevationScale) && {
+      ...omitUndefined({
+        filled: this.filled,
+        extruded: this.extruded,
+        wireframe: this.wireframe,
         elevationScale: this.elevationScale,
-      }),
-      ...(isDefined(this.getElevation) && {
         getElevation: accessFloatData(this.getElevation, batchIndex),
-      }),
-      ...(isDefined(this.getFillColor) && {
         getFillColor: accessColorData(this.getFillColor, batchIndex),
-      }),
-      ...(isDefined(this.getLineColor) && {
         getLineColor: accessColorData(this.getLineColor, batchIndex),
       }),
     };
@@ -139,41 +133,21 @@ export abstract class BasePolygonModel extends BaseArrowLayerModel {
       id: `${this.model.model_id}-${batchIndex}`,
       data: this.table.batches[batchIndex],
       earcutWorkerPool: EARCUT_WORKER_POOL,
-      ...(isDefined(this.stroked) && { stroked: this.stroked }),
-      ...(isDefined(this.filled) && { filled: this.filled }),
-      ...(isDefined(this.extruded) && { extruded: this.extruded }),
-      ...(isDefined(this.wireframe) && { wireframe: this.wireframe }),
-      ...(isDefined(this.elevationScale) && {
+      ...omitUndefined({
+        stroked: this.stroked,
+        filled: this.filled,
+        extruded: this.extruded,
+        wireframe: this.wireframe,
         elevationScale: this.elevationScale,
-      }),
-      ...(isDefined(this.lineWidthUnits) && {
         lineWidthUnits: this.lineWidthUnits,
-      }),
-      ...(isDefined(this.lineWidthScale) && {
         lineWidthScale: this.lineWidthScale,
-      }),
-      ...(isDefined(this.lineWidthMinPixels) && {
         lineWidthMinPixels: this.lineWidthMinPixels,
-      }),
-      ...(isDefined(this.lineWidthMaxPixels) && {
         lineWidthMaxPixels: this.lineWidthMaxPixels,
-      }),
-      ...(isDefined(this.lineJointRounded) && {
         lineJointRounded: this.lineJointRounded,
-      }),
-      ...(isDefined(this.lineMiterLimit) && {
         lineMiterLimit: this.lineMiterLimit,
-      }),
-      ...(isDefined(this.getFillColor) && {
         getFillColor: accessColorData(this.getFillColor, batchIndex),
-      }),
-      ...(isDefined(this.getLineColor) && {
         getLineColor: accessColorData(this.getLineColor, batchIndex),
-      }),
-      ...(isDefined(this.getLineWidth) && {
         getLineWidth: accessFloatData(this.getLineWidth, batchIndex),
-      }),
-      ...(isDefined(this.getElevation) && {
         getElevation: accessFloatData(this.getElevation, batchIndex),
       }),
     };
@@ -221,10 +195,10 @@ export class H3HexagonModel extends BasePolygonModel {
   layerProps(batchIndex: number): GeoArrowH3HexagonLayerProps {
     return {
       getHexagon: this.getHexagon.data[batchIndex],
-      ...(isDefined(this.highPrecision) && {
+      ...omitUndefined({
         highPrecision: this.highPrecision,
+        coverage: this.coverage,
       }),
-      ...(isDefined(this.coverage) && { coverage: this.coverage }),
       ...this.basePolygonLayerProps(batchIndex),
     };
   }

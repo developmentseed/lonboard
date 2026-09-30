@@ -3,7 +3,7 @@ import { TileLayer } from "@deck.gl/geo-layers";
 import type { BitmapLayerProps } from "@deck.gl/layers";
 import { BitmapLayer } from "@deck.gl/layers";
 import type { WidgetModel } from "@jupyter-widgets/base";
-import { isDefined } from "../../util.js";
+import { omitUndefined } from "../../util.js";
 import { BaseLayerModel } from "./base.js";
 
 export class BitmapModel extends BaseLayerModel {
@@ -28,13 +28,13 @@ export class BitmapModel extends BaseLayerModel {
   layerProps(): Omit<BitmapLayerProps, "data"> {
     return {
       id: this.model.model_id,
-      ...(isDefined(this.image) && { image: this.image }),
-      ...(isDefined(this.bounds) && { bounds: this.bounds }),
-      ...(isDefined(this.desaturate) && { desaturate: this.desaturate }),
-      ...(isDefined(this.transparentColor) && {
+      ...omitUndefined({
+        image: this.image,
+        bounds: this.bounds,
+        desaturate: this.desaturate,
         transparentColor: this.transparentColor,
+        tintColor: this.tintColor,
       }),
-      ...(isDefined(this.tintColor) && { tintColor: this.tintColor }),
     };
   }
 
@@ -86,33 +86,29 @@ export class BitmapTileModel extends BaseLayerModel {
   }
 
   bitmapLayerProps(): Omit<BitmapLayerProps, "data" | "id"> {
-    return {
-      // Don't set layer id because a unique one is set by TileLayer
-      ...(isDefined(this.desaturate) && { desaturate: this.desaturate }),
-      ...(isDefined(this.transparentColor) && {
-        transparentColor: this.transparentColor,
-      }),
-      ...(isDefined(this.tintColor) && { tintColor: this.tintColor }),
-    };
+    // Don't set layer id because a unique one is set by TileLayer
+    return omitUndefined({
+      desaturate: this.desaturate,
+      transparentColor: this.transparentColor,
+      tintColor: this.tintColor,
+    });
   }
 
   layerProps(): TileLayerProps {
     return {
       id: this.model.model_id,
       data: this.data,
-      ...(isDefined(this.tileSize) && { tileSize: this.tileSize }),
-      ...(isDefined(this.zoomOffset) && { zoomOffset: this.zoomOffset }),
-      ...(isDefined(this.maxZoom) && { maxZoom: this.maxZoom }),
-      ...(isDefined(this.minZoom) && { minZoom: this.minZoom }),
-      ...(isDefined(this.extent) && { extent: this.extent }),
-      ...(isDefined(this.maxCacheSize) && { maxCacheSize: this.maxCacheSize }),
-      ...(isDefined(this.maxCacheByteSize) && {
+      ...omitUndefined({
+        tileSize: this.tileSize,
+        zoomOffset: this.zoomOffset,
+        maxZoom: this.maxZoom,
+        minZoom: this.minZoom,
+        extent: this.extent,
+        maxCacheSize: this.maxCacheSize,
         maxCacheByteSize: this.maxCacheByteSize,
-      }),
-      ...(isDefined(this.refinementStrategy) && {
         refinementStrategy: this.refinementStrategy,
+        maxRequests: this.maxRequests,
       }),
-      ...(isDefined(this.maxRequests) && { maxRequests: this.maxRequests }),
     };
   }
 

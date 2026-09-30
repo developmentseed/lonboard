@@ -6,7 +6,7 @@ import {
   PathStyleExtension as _PathStyleExtension,
 } from "@deck.gl/extensions";
 import type { WidgetModel } from "@jupyter-widgets/base";
-import { isDefined } from "../util.js";
+import { omitUndefined } from "../util.js";
 import { BaseModel } from "./base.js";
 import type { BaseLayerModel } from "./layer/base.js";
 
@@ -142,19 +142,15 @@ export class DataFilterExtension extends BaseExtensionModel {
   }
 
   extensionInstance(): _DataFilterExtension | null {
-    if (isDefined(this.filterSize) || isDefined(this.categorySize)) {
-      const props = {
-        ...(isDefined(this.filterSize)
-          ? { filterSize: this.filterSize !== null ? this.filterSize : 0 }
-          : {}),
-        ...(isDefined(this.categorySize)
-          ? { categorySize: this.categorySize !== null ? this.categorySize : 0 }
-          : {}),
-      };
-      return new _DataFilterExtension(props);
-    } else {
+    if (this.filterSize == null && this.categorySize == null) {
       return null;
     }
+    return new _DataFilterExtension(
+      omitUndefined({
+        filterSize: this.filterSize,
+        categorySize: this.categorySize,
+      }),
+    );
   }
 }
 
@@ -195,13 +191,13 @@ export class PathStyleExtension extends BaseExtensionModel {
   }
 
   extensionInstance(): _PathStyleExtension {
-    return new _PathStyleExtension({
-      ...(isDefined(this.dash) ? { dash: this.dash } : {}),
-      ...(isDefined(this.highPrecisionDash)
-        ? { highPrecisionDash: this.highPrecisionDash }
-        : {}),
-      ...(isDefined(this.offset) ? { offset: this.offset } : {}),
-    });
+    return new _PathStyleExtension(
+      omitUndefined({
+        dash: this.dash,
+        highPrecisionDash: this.highPrecisionDash,
+        offset: this.offset,
+      }),
+    );
   }
 }
 
