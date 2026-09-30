@@ -34,7 +34,7 @@ DEFAULT_PARQUET_CHUNK_SIZE = 2**16
 DEFAULT_ARROW_CHUNK_BYTES_SIZE = 5 * 1024 * 1024  # 5MB
 
 # Maximum number of separate chunks/row groups to allow splitting an input layer into
-# Deck.gl can pick from a maximum of 256 layers, and a user could have many layers, so
+# Deck.gl can pick from a maximum of 255 layers, and a user could have many layers, so
 # we don't want to use too many layers per data file.
 DEFAULT_MAX_NUM_CHUNKS = 32
 
