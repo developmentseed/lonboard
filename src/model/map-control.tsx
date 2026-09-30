@@ -59,7 +59,6 @@ export class FullscreenControlModel extends BaseMapControlModel {
   renderDeck() {
     const { placement, ...otherProps } = this.baseDeckProps();
     const props = { placement: placement || "top-right", ...otherProps };
-    console.log(placement);
     return <div>{<FullscreenWidget {...props} />}</div>;
   }
 

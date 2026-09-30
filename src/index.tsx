@@ -39,6 +39,7 @@ import { isGlobeView, omitUndefined, sanitizeViewState } from "./util.js";
 import "maplibre-gl/dist/maplibre-gl.css";
 import "./globals.css";
 import "@maplibre/maplibre-gl-geocoder/dist/maplibre-gl-geocoder.css";
+import "@deck.gl/widgets/dist/stylesheet.css";
 
 await initParquetWasm();
 initMaplibreWorker();
