@@ -62,5 +62,11 @@ div.lonboard .maplibregl-ctrl-geocoder--input {
   background: #fff;
 }
 
+/* deck.gl's FullscreenWidget fullscreens this transparent wrapper, so without a
+ * background the browser's black ::backdrop shows through on a map with no basemap. */
+div.lonboard #deckgl-wrapper:fullscreen {
+  background-color: hsl(var(--nextui-background));
+}
+
 @tailwind components;
 @tailwind utilities;
