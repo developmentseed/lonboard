@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+import math
 from datetime import datetime, timedelta
 from typing import TYPE_CHECKING, Any
 
@@ -424,7 +425,8 @@ class TripsLayer(BaseArrowLayer):
 
     def _current_time_to_datetime(self, current_time: float) -> datetime:
         start_offset = timestamp_start_offset(self.get_timestamps)
-        timestamp_int = int(current_time - start_offset)
+        # Subtract as integers: a float can't hold nanosecond timestamps exactly
+        timestamp_int = math.floor(current_time) - start_offset
         timestamp_scalar = Scalar(timestamp_int, type=DataType.int64()).cast(
             self.get_timestamps.type.value_type,
         )
