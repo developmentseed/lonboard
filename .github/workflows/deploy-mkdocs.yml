@@ -45,5 +45,8 @@ jobs:
           # Only push docs if no letters in git tag after the first character
           # (usually the git tag will have v as the first character)
           if ! echo $VERSION | sed 's/^.//' | grep -q "[A-Za-z]"; then
-            uv run --group docs mike deploy $VERSION latest --update-aliases --push
+            # Publish under the minor version (v0.17.2 -> v0.17) so a patch
+            # release replaces its minor's docs instead of adding a copy.
+            MINOR=${VERSION%.*}
+            uv run --group docs mike deploy $MINOR latest --update-aliases --push
           fi
