@@ -3,12 +3,13 @@ from __future__ import annotations
 from typing import TYPE_CHECKING
 
 import numpy as np
-from arro3.core import Array, Table, fixed_size_list_array
+from arro3.core import Array, DataType, Table, fixed_size_list_array
 
 from lonboard._constants import EXTENSION_NAME
+from lonboard._utils import get_geometry_column_index
 
 if TYPE_CHECKING:
-    from arro3.core import DataType, Field
+    from arro3.core import Field
 
 
 def fixed_size_list_from_numpy(
@@ -71,3 +72,37 @@ def is_primitive_geoarrow(field: Field) -> bool:
         EXTENSION_NAME.MULTIPOLYGON,
         EXTENSION_NAME.BOX,
     }
+
+
+def check_float_coords(table: Table) -> None:
+    """Raise if the geometry column of a table has coordinates that aren't floating point.
+
+    GeoArrow requires floating point coordinates, and integer coordinates render
+    nothing: https://github.com/developmentseed/lonboard/issues/608
+
+    Only native GeoArrow columns are checked. WKB and WKT columns don't have a
+    coordinate type until they're parsed.
+    """
+    geom_col_idx = get_geometry_column_index(table.schema)
+    if geom_col_idx is None:
+        return
+
+    field = table.schema.field(geom_col_idx)
+    if not is_primitive_geoarrow(field):
+        return
+
+    # Descend through the lists around the coordinates, including the fixed size list
+    # of interleaved coordinates
+    typ = field.type
+    while typ.value_type is not None:
+        typ = typ.value_type
+
+    # Separated coordinates and boxes are a struct with one field per dimension
+    coord_types = [f.type for f in typ.fields] if DataType.is_struct(typ) else [typ]
+
+    for coord_type in coord_types:
+        if not DataType.is_floating(coord_type):
+            raise ValueError(
+                "GeoArrow coordinates must be floating point, got "
+                f"{str(coord_type).strip()}. Cast the coordinates to float64.",
+            )

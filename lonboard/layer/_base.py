@@ -24,7 +24,7 @@ from lonboard._geoarrow.ops import (
 from lonboard._geoarrow.ops.coord_layout import make_geometry_interleaved
 from lonboard._geoarrow.parse_wkb import parse_serialized_table
 from lonboard._geoarrow.row_index import add_positional_row_index
-from lonboard._geoarrow.utils import remove_empty_batches
+from lonboard._geoarrow.utils import check_float_coords, remove_empty_batches
 from lonboard._serialization import infer_rows_per_chunk
 from lonboard._utils import auto_downcast as _auto_downcast
 from lonboard._utils import get_geometry_column_index, remove_extension_kwargs
@@ -389,6 +389,9 @@ class BaseArrowLayer(BaseLayer):
             "level viz() function or separate your geometry types in advance."
         )
         table_o3 = parsed_tables[0]
+        # Must happen before the steps below, which either fail on or cast the
+        # coordinates
+        check_float_coords(table_o3)
         table_o3 = make_geometry_interleaved(table_o3)
 
         # Reproject table to WGS84 if needed
