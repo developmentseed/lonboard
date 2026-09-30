@@ -9,7 +9,7 @@ import type * as arrow from "apache-arrow";
 import { Vector } from "apache-arrow";
 
 import { parseParquetBuffers } from "../../parquet.js";
-import { isDefined } from "../../util.js";
+import { isDefined, omitUndefined } from "../../util.js";
 import { BaseModel } from "../base.js";
 import type { BaseExtensionModel } from "../extension.js";
 import { initializeExtension } from "../extension.js";
@@ -78,10 +78,8 @@ export abstract class BaseLayerModel extends BaseModel {
       visible: this.visible,
       opacity: this.opacity,
       autoHighlight: this.autoHighlight,
-      ...(isDefined(this.highlightColor) && {
+      ...omitUndefined({
         highlightColor: this.highlightColor,
-      }),
-      ...(isDefined(this.beforeId) && {
         beforeId: this.beforeId,
       }),
     };

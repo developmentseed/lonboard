@@ -2,7 +2,7 @@ import type { _GeoArrowTextLayerProps as GeoArrowTextLayerProps } from "@geoarro
 import { _GeoArrowTextLayer as GeoArrowTextLayer } from "@geoarrow/deck.gl-geoarrow";
 import type { WidgetModel } from "@jupyter-widgets/base";
 
-import { isDefined } from "../../util.js";
+import { isDefined, omitUndefined } from "../../util.js";
 import type {
   ColorAccessorInput,
   FloatAccessorInput,
@@ -101,28 +101,24 @@ export class TextModel extends BaseArrowLayerModel {
       data: this.table.batches[batchIndex],
       // Always provided
       getText: this.getText.data[batchIndex],
-      ...(isDefined(this.billboard) && { billboard: this.billboard }),
-      ...(isDefined(this.sizeScale) && { sizeScale: this.sizeScale }),
-      ...(isDefined(this.sizeUnits) && { sizeUnits: this.sizeUnits }),
-      ...(isDefined(this.sizeMinPixels) && {
+      ...omitUndefined({
+        billboard: this.billboard,
+        sizeScale: this.sizeScale,
+        sizeUnits: this.sizeUnits,
         sizeMinPixels: this.sizeMinPixels,
-      }),
-      ...(isDefined(this.sizeMaxPixels) && {
         sizeMaxPixels: this.sizeMaxPixels,
-      }),
-      // ...(isDefined(this.background) && {background: this.background}),
-      ...(isDefined(this.backgroundPadding) && {
+        // background: this.background,
         backgroundPadding: this.backgroundPadding,
+        characterSet: this.characterSet,
+        fontFamily: this.fontFamily,
+        fontWeight: this.fontWeight,
+        lineHeight: this.lineHeight,
+        outlineWidth: this.outlineWidth,
+        outlineColor: this.outlineColor,
+        fontSettings: this.fontSettings,
+        wordBreak: this.wordBreak,
+        maxWidth: this.maxWidth,
       }),
-      ...(isDefined(this.characterSet) && { characterSet: this.characterSet }),
-      ...(isDefined(this.fontFamily) && { fontFamily: this.fontFamily }),
-      ...(isDefined(this.fontWeight) && { fontWeight: this.fontWeight }),
-      ...(isDefined(this.lineHeight) && { lineHeight: this.lineHeight }),
-      ...(isDefined(this.outlineWidth) && { outlineWidth: this.outlineWidth }),
-      ...(isDefined(this.outlineColor) && { outlineColor: this.outlineColor }),
-      ...(isDefined(this.fontSettings) && { fontSettings: this.fontSettings }),
-      ...(isDefined(this.wordBreak) && { wordBreak: this.wordBreak }),
-      ...(isDefined(this.maxWidth) && { maxWidth: this.maxWidth }),
 
       ...(isDefined(this.getBackgroundColor) && {
         getBackgroundColor: accessColorData(

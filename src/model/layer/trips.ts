@@ -2,7 +2,7 @@ import type { GeoArrowTripsLayerProps } from "@geoarrow/deck.gl-geoarrow";
 import { GeoArrowTripsLayer } from "@geoarrow/deck.gl-geoarrow";
 import type { WidgetModel } from "@jupyter-widgets/base";
 
-import { isDefined } from "../../util.js";
+import { isDefined, omitUndefined } from "../../util.js";
 import type {
   ColorAccessorInput,
   FloatAccessorInput,
@@ -56,21 +56,19 @@ export class TripsModel extends BaseArrowLayerModel {
       data: this.table.batches[batchIndex],
       // Required argument
       getTimestamps: this.getTimestamps.data[batchIndex],
-      ...(isDefined(this.widthUnits) && { widthUnits: this.widthUnits }),
-      ...(isDefined(this.widthScale) && { widthScale: this.widthScale }),
-      ...(isDefined(this.widthMinPixels) && {
+      ...omitUndefined({
+        widthUnits: this.widthUnits,
+        widthScale: this.widthScale,
         widthMinPixels: this.widthMinPixels,
-      }),
-      ...(isDefined(this.widthMaxPixels) && {
         widthMaxPixels: this.widthMaxPixels,
+        jointRounded: this.jointRounded,
+        capRounded: this.capRounded,
+        miterLimit: this.miterLimit,
+        billboard: this.billboard,
+        fadeTrail: this.fadeTrail,
+        trailLength: this.trailLength,
+        currentTime: this.currentTime,
       }),
-      ...(isDefined(this.jointRounded) && { jointRounded: this.jointRounded }),
-      ...(isDefined(this.capRounded) && { capRounded: this.capRounded }),
-      ...(isDefined(this.miterLimit) && { miterLimit: this.miterLimit }),
-      ...(isDefined(this.billboard) && { billboard: this.billboard }),
-      ...(isDefined(this.fadeTrail) && { fadeTrail: this.fadeTrail }),
-      ...(isDefined(this.trailLength) && { trailLength: this.trailLength }),
-      ...(isDefined(this.currentTime) && { currentTime: this.currentTime }),
       ...(isDefined(this.getColor) && {
         getColor: accessColorData(this.getColor, batchIndex),
       }),

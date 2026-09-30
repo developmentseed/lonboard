@@ -33,7 +33,7 @@ import { useStore, useViewStateDebounced } from "./state";
 import Toolbar from "./toolbar.js";
 import { getTooltip } from "./tooltip/index.js";
 import type { Message } from "./types.js";
-import { isDefined, isGlobeView, sanitizeViewState } from "./util.js";
+import { isGlobeView, omitUndefined, sanitizeViewState } from "./util.js";
 
 import "maplibre-gl/dist/maplibre-gl.css";
 import "./globals.css";
@@ -285,7 +285,7 @@ function App() {
     pickingRadius: pickingRadius,
     onClick: onMapClickHandler,
     onHover: onMapHoverHandler,
-    ...(isDefined(useDevicePixels) && { useDevicePixels }),
+    ...omitUndefined({ useDevicePixels }),
     // This is a hack to force a react re-render when the canvas is resized
     // https://github.com/developmentseed/lonboard/issues/994
     // until the upstream is resolved:

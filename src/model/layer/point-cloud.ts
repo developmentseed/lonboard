@@ -2,7 +2,7 @@ import type { GeoArrowPointCloudLayerProps } from "@geoarrow/deck.gl-geoarrow";
 import { GeoArrowPointCloudLayer } from "@geoarrow/deck.gl-geoarrow";
 import type { WidgetModel } from "@jupyter-widgets/base";
 
-import { isDefined } from "../../util.js";
+import { isDefined, omitUndefined } from "../../util.js";
 import type { ColorAccessorInput, NormalVector } from "../types.js";
 import { accessColorData } from "../types.js";
 import { BaseArrowLayerModel } from "./base.js";
@@ -31,8 +31,10 @@ export class PointCloudModel extends BaseArrowLayerModel {
     return {
       id: `${this.model.model_id}-${batchIndex}`,
       data: this.table.batches[batchIndex],
-      ...(isDefined(this.sizeUnits) && { sizeUnits: this.sizeUnits }),
-      ...(isDefined(this.pointSize) && { pointSize: this.pointSize }),
+      ...omitUndefined({
+        sizeUnits: this.sizeUnits,
+        pointSize: this.pointSize,
+      }),
       ...(isDefined(this.getColor) && {
         getColor: accessColorData(this.getColor, batchIndex),
       }),

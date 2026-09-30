@@ -2,7 +2,7 @@ import type { GeoArrowPathLayerProps } from "@geoarrow/deck.gl-geoarrow";
 import { GeoArrowPathLayer } from "@geoarrow/deck.gl-geoarrow";
 import type { WidgetModel } from "@jupyter-widgets/base";
 
-import { isDefined } from "../../util.js";
+import { isDefined, omitUndefined } from "../../util.js";
 import type { ColorAccessorInput, FloatAccessorInput } from "../types.js";
 import { accessColorData, accessFloatData } from "../types.js";
 import { BaseArrowLayerModel } from "./base.js";
@@ -42,18 +42,16 @@ export class PathModel extends BaseArrowLayerModel {
     return {
       id: `${this.model.model_id}-${batchIndex}`,
       data: this.table.batches[batchIndex],
-      ...(isDefined(this.widthUnits) && { widthUnits: this.widthUnits }),
-      ...(isDefined(this.widthScale) && { widthScale: this.widthScale }),
-      ...(isDefined(this.widthMinPixels) && {
+      ...omitUndefined({
+        widthUnits: this.widthUnits,
+        widthScale: this.widthScale,
         widthMinPixels: this.widthMinPixels,
-      }),
-      ...(isDefined(this.widthMaxPixels) && {
         widthMaxPixels: this.widthMaxPixels,
+        jointRounded: this.jointRounded,
+        capRounded: this.capRounded,
+        miterLimit: this.miterLimit,
+        billboard: this.billboard,
       }),
-      ...(isDefined(this.jointRounded) && { jointRounded: this.jointRounded }),
-      ...(isDefined(this.capRounded) && { capRounded: this.capRounded }),
-      ...(isDefined(this.miterLimit) && { miterLimit: this.miterLimit }),
-      ...(isDefined(this.billboard) && { billboard: this.billboard }),
       ...(isDefined(this.getColor) && {
         getColor: accessColorData(this.getColor, batchIndex),
       }),

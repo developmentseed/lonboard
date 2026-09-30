@@ -11,7 +11,7 @@ import type { TileMatrixSet } from "@developmentseed/morecantile";
 import type { WidgetModel } from "@jupyter-widgets/base";
 import proj4 from "proj4";
 import type { Converter, PROJJSONDefinition } from "proj4/dist/lib/core.js";
-import { isDefined } from "../../util.js";
+import { omitUndefined } from "../../util.js";
 import { invoke } from "../dispatch.js";
 import { BaseLayerModel } from "./base.js";
 
@@ -111,13 +111,15 @@ export class RasterModel extends BaseLayerModel {
     return {
       id: `${this.model.model_id}`,
       data: null,
-      ...(isDefined(this.tileSize) && { tileSize: this.tileSize }),
-      ...(isDefined(this.zoomOffset) && { zoomOffset: this.zoomOffset }),
-      ...(isDefined(this.maxZoom) && { maxZoom: this.maxZoom }),
-      ...(isDefined(this.minZoom) && { minZoom: this.minZoom }),
-      ...(isDefined(this.extent) && { extent: this.extent }),
-      ...(isDefined(this.maxCacheSize) && { maxCacheSize: this.maxCacheSize }),
-      ...(isDefined(this.debounceTime) && { debounceTime: this.debounceTime }),
+      ...omitUndefined({
+        tileSize: this.tileSize,
+        zoomOffset: this.zoomOffset,
+        maxZoom: this.maxZoom,
+        minZoom: this.minZoom,
+        extent: this.extent,
+        maxCacheSize: this.maxCacheSize,
+        debounceTime: this.debounceTime,
+      }),
     };
   }
 

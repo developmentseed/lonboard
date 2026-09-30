@@ -2,7 +2,7 @@ import type { GeoArrowScatterplotLayerProps } from "@geoarrow/deck.gl-geoarrow";
 import { GeoArrowScatterplotLayer } from "@geoarrow/deck.gl-geoarrow";
 import type { WidgetModel } from "@jupyter-widgets/base";
 
-import { isDefined } from "../../util.js";
+import { isDefined, omitUndefined } from "../../util.js";
 import type { ColorAccessorInput, FloatAccessorInput } from "../types.js";
 import { accessColorData, accessFloatData } from "../types.js";
 import { BaseArrowLayerModel } from "./base.js";
@@ -66,30 +66,20 @@ export class ScatterplotModel extends BaseArrowLayerModel {
     return {
       id: `${this.model.model_id}-${batchIndex}`,
       data: this.table.batches[batchIndex],
-      ...(isDefined(this.radiusUnits) && { radiusUnits: this.radiusUnits }),
-      ...(isDefined(this.radiusScale) && { radiusScale: this.radiusScale }),
-      ...(isDefined(this.radiusMinPixels) && {
+      ...omitUndefined({
+        radiusUnits: this.radiusUnits,
+        radiusScale: this.radiusScale,
         radiusMinPixels: this.radiusMinPixels,
-      }),
-      ...(isDefined(this.radiusMaxPixels) && {
         radiusMaxPixels: this.radiusMaxPixels,
-      }),
-      ...(isDefined(this.lineWidthUnits) && {
         lineWidthUnits: this.lineWidthUnits,
-      }),
-      ...(isDefined(this.lineWidthScale) && {
         lineWidthScale: this.lineWidthScale,
-      }),
-      ...(isDefined(this.lineWidthMinPixels) && {
         lineWidthMinPixels: this.lineWidthMinPixels,
-      }),
-      ...(isDefined(this.lineWidthMaxPixels) && {
         lineWidthMaxPixels: this.lineWidthMaxPixels,
+        stroked: this.stroked,
+        filled: this.filled,
+        billboard: this.billboard,
+        antialiasing: this.antialiasing,
       }),
-      ...(isDefined(this.stroked) && { stroked: this.stroked }),
-      ...(isDefined(this.filled) && { filled: this.filled }),
-      ...(isDefined(this.billboard) && { billboard: this.billboard }),
-      ...(isDefined(this.antialiasing) && { antialiasing: this.antialiasing }),
       ...(isDefined(this.getRadius) && {
         getRadius: accessFloatData(this.getRadius, batchIndex),
       }),
