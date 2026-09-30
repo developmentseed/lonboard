@@ -17,7 +17,7 @@ import {
 import type { WidgetModel } from "@jupyter-widgets/base";
 import type * as arrow from "apache-arrow";
 
-import { isDefined, omitUndefined } from "../../util.js";
+import { omitUndefined } from "../../util.js";
 import { EARCUT_WORKER_POOL } from "../earcut-pool.js";
 import type { ColorAccessorInput, FloatAccessorInput } from "../types.js";
 import { accessColorData, accessFloatData } from "../types.js";
@@ -60,14 +60,8 @@ export class SolidPolygonModel extends BaseArrowLayerModel {
         extruded: this.extruded,
         wireframe: this.wireframe,
         elevationScale: this.elevationScale,
-      }),
-      ...(isDefined(this.getElevation) && {
         getElevation: accessFloatData(this.getElevation, batchIndex),
-      }),
-      ...(isDefined(this.getFillColor) && {
         getFillColor: accessColorData(this.getFillColor, batchIndex),
-      }),
-      ...(isDefined(this.getLineColor) && {
         getLineColor: accessColorData(this.getLineColor, batchIndex),
       }),
     };
@@ -151,17 +145,9 @@ export abstract class BasePolygonModel extends BaseArrowLayerModel {
         lineWidthMaxPixels: this.lineWidthMaxPixels,
         lineJointRounded: this.lineJointRounded,
         lineMiterLimit: this.lineMiterLimit,
-      }),
-      ...(isDefined(this.getFillColor) && {
         getFillColor: accessColorData(this.getFillColor, batchIndex),
-      }),
-      ...(isDefined(this.getLineColor) && {
         getLineColor: accessColorData(this.getLineColor, batchIndex),
-      }),
-      ...(isDefined(this.getLineWidth) && {
         getLineWidth: accessFloatData(this.getLineWidth, batchIndex),
-      }),
-      ...(isDefined(this.getElevation) && {
         getElevation: accessFloatData(this.getElevation, batchIndex),
       }),
     };

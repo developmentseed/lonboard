@@ -1,7 +1,7 @@
 import type { GeoArrowColumnLayerProps } from "@geoarrow/deck.gl-geoarrow";
 import { GeoArrowColumnLayer } from "@geoarrow/deck.gl-geoarrow";
 import type { WidgetModel } from "@jupyter-widgets/base";
-import { isDefined, omitUndefined } from "../../util.js";
+import { omitUndefined } from "../../util.js";
 import type {
   ColorAccessorInput,
   FloatAccessorInput,
@@ -97,20 +97,10 @@ export class ColumnModel extends BaseArrowLayerModel {
         lineWidthMinPixels: this.lineWidthMinPixels,
         lineWidthMaxPixels: this.lineWidthMaxPixels,
         // material: this.material,
-      }),
-      ...(isDefined(this.getPosition) && {
-        getPosition: this.getPosition.data[batchIndex],
-      }),
-      ...(isDefined(this.getFillColor) && {
+        getPosition: this.getPosition?.data[batchIndex],
         getFillColor: accessColorData(this.getFillColor, batchIndex),
-      }),
-      ...(isDefined(this.getLineColor) && {
         getLineColor: accessColorData(this.getLineColor, batchIndex),
-      }),
-      ...(isDefined(this.getElevation) && {
         getElevation: accessFloatData(this.getElevation, batchIndex),
-      }),
-      ...(isDefined(this.getLineWidth) && {
         getLineWidth: accessFloatData(this.getLineWidth, batchIndex),
       }),
     };

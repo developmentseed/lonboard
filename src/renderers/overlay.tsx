@@ -4,7 +4,7 @@ import React from "react";
 import type { MapRef, ViewStateChangeEvent } from "react-map-gl/maplibre";
 import MapGL, { useControl } from "react-map-gl/maplibre";
 import type { FlyToMessage } from "../types";
-import { isGlobeView } from "../util";
+import { isGlobeView, omitUndefined } from "../util";
 import type {
   MapRendererProps,
   OverlayRendererProps,
@@ -59,11 +59,13 @@ const OverlayRenderer = React.forwardRef<
           msg.transitionDuration === "auto"
             ? undefined
             : msg.transitionDuration,
-        ...(msg.pitch != null && { pitch: msg.pitch }),
-        ...(msg.bearing != null && { bearing: msg.bearing }),
-        ...(msg.curve != null && { curve: msg.curve }),
-        ...(msg.speed != null && { speed: msg.speed }),
-        ...(msg.screenSpeed != null && { screenSpeed: msg.screenSpeed }),
+        ...omitUndefined({
+          pitch: msg.pitch,
+          bearing: msg.bearing,
+          curve: msg.curve,
+          speed: msg.speed,
+          screenSpeed: msg.screenSpeed,
+        }),
       });
     },
   }));

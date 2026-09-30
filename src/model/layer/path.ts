@@ -2,7 +2,7 @@ import type { GeoArrowPathLayerProps } from "@geoarrow/deck.gl-geoarrow";
 import { GeoArrowPathLayer } from "@geoarrow/deck.gl-geoarrow";
 import type { WidgetModel } from "@jupyter-widgets/base";
 
-import { isDefined, omitUndefined } from "../../util.js";
+import { omitUndefined } from "../../util.js";
 import type { ColorAccessorInput, FloatAccessorInput } from "../types.js";
 import { accessColorData, accessFloatData } from "../types.js";
 import { BaseArrowLayerModel } from "./base.js";
@@ -51,11 +51,7 @@ export class PathModel extends BaseArrowLayerModel {
         capRounded: this.capRounded,
         miterLimit: this.miterLimit,
         billboard: this.billboard,
-      }),
-      ...(isDefined(this.getColor) && {
         getColor: accessColorData(this.getColor, batchIndex),
-      }),
-      ...(isDefined(this.getWidth) && {
         getWidth: accessFloatData(this.getWidth, batchIndex),
       }),
     };

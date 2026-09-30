@@ -6,7 +6,7 @@ import {
   PathStyleExtension as _PathStyleExtension,
 } from "@deck.gl/extensions";
 import type { WidgetModel } from "@jupyter-widgets/base";
-import { isDefined, omitUndefined } from "../util.js";
+import { omitUndefined } from "../util.js";
 import { BaseModel } from "./base.js";
 import type { BaseLayerModel } from "./layer/base.js";
 
@@ -142,16 +142,15 @@ export class DataFilterExtension extends BaseExtensionModel {
   }
 
   extensionInstance(): _DataFilterExtension | null {
-    if (isDefined(this.filterSize) || isDefined(this.categorySize)) {
-      return new _DataFilterExtension(
-        omitUndefined({
-          filterSize: this.filterSize,
-          categorySize: this.categorySize,
-        }),
-      );
-    } else {
+    if (this.filterSize == null && this.categorySize == null) {
       return null;
     }
+    return new _DataFilterExtension(
+      omitUndefined({
+        filterSize: this.filterSize,
+        categorySize: this.categorySize,
+      }),
+    );
   }
 }
 

@@ -1,14 +1,7 @@
-/** Check for null and undefined */
-
 import type { GlobeViewState, MapViewState } from "@deck.gl/core";
 import { _GlobeView as GlobeView, MapView } from "@deck.gl/core";
 
 import type { MapRendererProps } from "./renderers";
-
-// https://stackoverflow.com/a/52097445
-export function isDefined<T>(value: T | undefined | null): value is T {
-  return value !== undefined && value !== null;
-}
 
 /**
  * Drop keys whose value is `null` or `undefined`.

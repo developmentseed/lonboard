@@ -2,7 +2,7 @@ import type { _GeoArrowTextLayerProps as GeoArrowTextLayerProps } from "@geoarro
 import { _GeoArrowTextLayer as GeoArrowTextLayer } from "@geoarrow/deck.gl-geoarrow";
 import type { WidgetModel } from "@jupyter-widgets/base";
 
-import { isDefined, omitUndefined } from "../../util.js";
+import { omitUndefined } from "../../util.js";
 import type {
   ColorAccessorInput,
   FloatAccessorInput,
@@ -118,48 +118,27 @@ export class TextModel extends BaseArrowLayerModel {
         fontSettings: this.fontSettings,
         wordBreak: this.wordBreak,
         maxWidth: this.maxWidth,
-      }),
-
-      ...(isDefined(this.getBackgroundColor) && {
         getBackgroundColor: accessColorData(
           this.getBackgroundColor,
           batchIndex,
         ),
-      }),
-      ...(isDefined(this.getBorderColor) && {
         getBorderColor: accessColorData(this.getBorderColor, batchIndex),
-      }),
-      ...(isDefined(this.getBorderWidth) && {
         getBorderWidth: accessFloatData(this.getBorderWidth, batchIndex),
-      }),
-      ...(isDefined(this.getPosition) && {
-        getPosition: this.getPosition.data[batchIndex],
-      }),
-      ...(isDefined(this.getColor) && {
+        getPosition: this.getPosition?.data[batchIndex],
         getColor: accessColorData(this.getColor, batchIndex),
-      }),
-      ...(isDefined(this.getSize) && {
         getSize: accessFloatData(this.getSize, batchIndex),
-      }),
-      ...(isDefined(this.getAngle) && {
         getAngle: accessFloatData(this.getAngle, batchIndex),
-      }),
-      ...(isDefined(this.getTextAnchor) && {
         getTextAnchor:
           typeof this.getTextAnchor === "string"
             ? (this.getTextAnchor as "start" | "middle" | "end")
-            : this.getTextAnchor.data[batchIndex],
-      }),
-      ...(isDefined(this.getAlignmentBaseline) && {
+            : this.getTextAnchor?.data[batchIndex],
         getAlignmentBaseline:
           typeof this.getAlignmentBaseline === "string"
             ? (this.getAlignmentBaseline as "top" | "center" | "bottom")
-            : this.getAlignmentBaseline.data[batchIndex],
-      }),
-      ...(isDefined(this.getPixelOffset) && {
+            : this.getAlignmentBaseline?.data[batchIndex],
         getPixelOffset: Array.isArray(this.getPixelOffset)
           ? this.getPixelOffset
-          : this.getPixelOffset.data[batchIndex],
+          : this.getPixelOffset?.data[batchIndex],
       }),
     };
   }

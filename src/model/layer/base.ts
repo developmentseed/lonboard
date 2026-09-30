@@ -9,7 +9,7 @@ import type * as arrow from "apache-arrow";
 import { Vector } from "apache-arrow";
 
 import { parseParquetBuffers } from "../../parquet.js";
-import { isDefined, omitUndefined } from "../../util.js";
+import { omitUndefined } from "../../util.js";
 import { BaseModel } from "../base.js";
 import type { BaseExtensionModel } from "../extension.js";
 import { initializeExtension } from "../extension.js";
@@ -58,16 +58,11 @@ export abstract class BaseLayerModel extends BaseModel {
     const props: Record<string, unknown> = {};
     for (const layerPropertyName of this.extensionLayerPropertyNames) {
       const value = this[layerPropertyName as keyof this];
-      if (isDefined(value)) {
-        if (value instanceof Vector) {
-          props[layerPropertyName] = value.data[batchIndex ?? 0];
-        } else {
-          props[layerPropertyName] = value;
-        }
-      }
+      props[layerPropertyName] =
+        value instanceof Vector ? value.data[batchIndex ?? 0] : value;
     }
     // console.log("extension props", props);
-    return props;
+    return omitUndefined(props);
   }
 
   baseLayerProps(batchIndex?: number): Omit<LayerProps, "id"> {

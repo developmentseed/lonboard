@@ -2,7 +2,7 @@ import type { GeoArrowScatterplotLayerProps } from "@geoarrow/deck.gl-geoarrow";
 import { GeoArrowScatterplotLayer } from "@geoarrow/deck.gl-geoarrow";
 import type { WidgetModel } from "@jupyter-widgets/base";
 
-import { isDefined, omitUndefined } from "../../util.js";
+import { omitUndefined } from "../../util.js";
 import type { ColorAccessorInput, FloatAccessorInput } from "../types.js";
 import { accessColorData, accessFloatData } from "../types.js";
 import { BaseArrowLayerModel } from "./base.js";
@@ -79,17 +79,9 @@ export class ScatterplotModel extends BaseArrowLayerModel {
         filled: this.filled,
         billboard: this.billboard,
         antialiasing: this.antialiasing,
-      }),
-      ...(isDefined(this.getRadius) && {
         getRadius: accessFloatData(this.getRadius, batchIndex),
-      }),
-      ...(isDefined(this.getFillColor) && {
         getFillColor: accessColorData(this.getFillColor, batchIndex),
-      }),
-      ...(isDefined(this.getLineColor) && {
         getLineColor: accessColorData(this.getLineColor, batchIndex),
-      }),
-      ...(isDefined(this.getLineWidth) && {
         getLineWidth: accessFloatData(this.getLineWidth, batchIndex),
       }),
     };

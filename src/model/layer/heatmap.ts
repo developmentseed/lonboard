@@ -2,7 +2,7 @@ import type { GeoArrowHeatmapLayerProps } from "@geoarrow/deck.gl-geoarrow";
 import { GeoArrowHeatmapLayer } from "@geoarrow/deck.gl-geoarrow";
 import type { WidgetModel } from "@jupyter-widgets/base";
 
-import { isDefined, omitUndefined } from "../../util.js";
+import { omitUndefined } from "../../util.js";
 import type { FloatAccessorInput, PointVector } from "../types.js";
 import { accessFloatData } from "../types.js";
 import { BaseArrowLayerModel } from "./base.js";
@@ -55,11 +55,7 @@ export class HeatmapModel extends BaseArrowLayerModel {
         aggregation: this.aggregation,
         weightsTextureSize: this.weightsTextureSize,
         debounceTimeout: this.debounceTimeout,
-      }),
-      ...(isDefined(this.getPosition) && {
-        getPosition: this.getPosition.data[batchIndex],
-      }),
-      ...(isDefined(this.getWeight) && {
+        getPosition: this.getPosition?.data[batchIndex],
         getWeight: accessFloatData(this.getWeight, batchIndex),
       }),
     };

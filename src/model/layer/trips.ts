@@ -2,7 +2,7 @@ import type { GeoArrowTripsLayerProps } from "@geoarrow/deck.gl-geoarrow";
 import { GeoArrowTripsLayer } from "@geoarrow/deck.gl-geoarrow";
 import type { WidgetModel } from "@jupyter-widgets/base";
 
-import { isDefined, omitUndefined } from "../../util.js";
+import { omitUndefined } from "../../util.js";
 import type {
   ColorAccessorInput,
   FloatAccessorInput,
@@ -68,11 +68,7 @@ export class TripsModel extends BaseArrowLayerModel {
         fadeTrail: this.fadeTrail,
         trailLength: this.trailLength,
         currentTime: this.currentTime,
-      }),
-      ...(isDefined(this.getColor) && {
         getColor: accessColorData(this.getColor, batchIndex),
-      }),
-      ...(isDefined(this.getWidth) && {
         getWidth: accessFloatData(this.getWidth, batchIndex),
       }),
     };

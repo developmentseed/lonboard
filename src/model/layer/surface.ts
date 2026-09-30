@@ -2,7 +2,7 @@ import type { SimpleMeshLayerProps } from "@deck.gl/mesh-layers";
 import { SimpleMeshLayer } from "@deck.gl/mesh-layers";
 import type { WidgetModel } from "@jupyter-widgets/base";
 import type * as arrow from "apache-arrow";
-import { isDefined, omitUndefined } from "../../util.js";
+import { omitUndefined } from "../../util.js";
 import { BaseLayerModel } from "./base.js";
 
 export class SurfaceModel extends BaseLayerModel {
@@ -42,7 +42,7 @@ export class SurfaceModel extends BaseLayerModel {
    * WebGL errors. For now, it's simplest to go through an ImageData object.
    */
   prepareTexture(): SimpleMeshLayerProps["texture"] {
-    if (!isDefined(this.texture)) {
+    if (this.texture == null) {
       return undefined;
     }
 
@@ -85,8 +85,10 @@ export class SurfaceModel extends BaseLayerModel {
           },
         },
       },
-      ...(isDefined(this.texture) && { texture: this.prepareTexture() }),
-      ...omitUndefined({ wireframe: this.wireframe }),
+      ...omitUndefined({
+        texture: this.prepareTexture(),
+        wireframe: this.wireframe,
+      }),
       // We're only rendering a single mesh, without instancing
       // https://github.com/visgl/deck.gl/blob/93111b667b919148da06ff1918410cf66381904f/modules/geo-layers/src/terrain-layer/terrain-layer.ts#L244
       _instanced: false,

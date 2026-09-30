@@ -1,7 +1,7 @@
 import type { GeoArrowArcLayerProps } from "@geoarrow/deck.gl-geoarrow";
 import { GeoArrowArcLayer } from "@geoarrow/deck.gl-geoarrow";
 import type { WidgetModel } from "@jupyter-widgets/base";
-import { isDefined, omitUndefined } from "../../util.js";
+import { omitUndefined } from "../../util.js";
 import type {
   ColorAccessorInput,
   FloatAccessorInput,
@@ -61,20 +61,10 @@ export class ArcModel extends BaseArrowLayerModel {
         widthScale: this.widthScale,
         widthMinPixels: this.widthMinPixels,
         widthMaxPixels: this.widthMaxPixels,
-      }),
-      ...(isDefined(this.getSourceColor) && {
         getSourceColor: accessColorData(this.getSourceColor, batchIndex),
-      }),
-      ...(isDefined(this.getTargetColor) && {
         getTargetColor: accessColorData(this.getTargetColor, batchIndex),
-      }),
-      ...(isDefined(this.getWidth) && {
         getWidth: accessFloatData(this.getWidth, batchIndex),
-      }),
-      ...(isDefined(this.getHeight) && {
         getHeight: accessFloatData(this.getHeight, batchIndex),
-      }),
-      ...(isDefined(this.getTilt) && {
         getTilt: accessFloatData(this.getTilt, batchIndex),
       }),
     };
