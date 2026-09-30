@@ -117,7 +117,6 @@ def _from_geometry(
     geom_col_idx: int,
     crs: str | CRS | None = None,
 ) -> Table:
-    # Import via the Arrow PyCapsule Interface because `rel.arrow()` needs pyarrow
     table = Table.from_arrow(rel)
     geom_field = table.schema.field(geom_col_idx)
     field_metadata = geom_field.metadata or {}
