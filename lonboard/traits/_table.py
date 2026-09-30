@@ -70,7 +70,6 @@ class ArrowTableTrait(FixedErrorTraitType):
         if geometry_required and geom_col_idx is None:
             return self.error(obj, value, info="geometry column in table")
 
-        # Must happen before boxes are converted to polygons, which casts them
         try:
             check_float_coords(value)
         except ValueError as err:

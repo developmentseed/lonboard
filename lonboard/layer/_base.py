@@ -389,8 +389,6 @@ class BaseArrowLayer(BaseLayer):
             "level viz() function or separate your geometry types in advance."
         )
         table_o3 = parsed_tables[0]
-        # Must happen before the steps below, which either fail on or cast the
-        # coordinates
         check_float_coords(table_o3)
         table_o3 = make_geometry_interleaved(table_o3)
 

@@ -1,6 +1,7 @@
 import json
 from tempfile import NamedTemporaryFile
 
+import geoarrow.pyarrow as ga
 import geodatasets
 import geopandas as gpd
 import numpy as np
@@ -174,15 +175,32 @@ def test_geoarrow_string_view_column():
     assert isinstance(m.layers[0], ScatterplotLayer)
 
 
-# Number of lists around the coordinates of each native GeoArrow geometry type
-COORD_NESTING = {
-    "point": 0,
-    "linestring": 1,
-    "multipoint": 1,
-    "polygon": 2,
-    "multilinestring": 2,
-    "multipolygon": 3,
+# One geometry of each native GeoArrow type, on the same closed ring
+WKT = {
+    "point": "POINT (0 0)",
+    "linestring": "LINESTRING (0 0, 1 0, 1 1, 0 0)",
+    "polygon": "POLYGON ((0 0, 1 0, 1 1, 0 0))",
+    "multipoint": "MULTIPOINT (0 0, 1 0, 1 1, 0 0)",
+    "multilinestring": "MULTILINESTRING ((0 0, 1 0, 1 1, 0 0))",
+    "multipolygon": "MULTIPOLYGON (((0 0, 1 0, 1 1, 0 0)))",
 }
+
+
+def with_coord_type(typ: pa.DataType, coord_type: pa.DataType) -> pa.DataType:
+    """Return `typ` with its float64 coordinates replaced by `coord_type`."""
+    if pa.types.is_float64(typ):
+        return coord_type
+    if pa.types.is_fixed_size_list(typ):
+        child = typ.value_field.with_type(with_coord_type(typ.value_type, coord_type))
+        return pa.list_(child, typ.list_size)
+    if pa.types.is_list(typ):
+        child = typ.value_field.with_type(with_coord_type(typ.value_type, coord_type))
+        return pa.list_(child)
+    if pa.types.is_struct(typ):
+        return pa.struct(
+            [f.with_type(with_coord_type(f.type, coord_type)) for f in typ],
+        )
+    raise TypeError(f"Unexpected type in a GeoArrow array: {typ}")
 
 
 def native_geometry_table(
@@ -191,28 +209,29 @@ def native_geometry_table(
     *,
     interleaved: bool,
 ) -> pa.Table:
-    """Make a table of native GeoArrow geometries with the given coordinate type."""
-    # A closed ring, so that the coordinates are valid for every geometry type
-    if interleaved:
-        xy = pa.array([0, 0, 1, 0, 1, 1, 0, 0], coord_type)
-        geometry = pa.FixedSizeListArray.from_arrays(xy, 2)
-    else:
-        x = pa.array([0, 1, 1, 0], coord_type)
-        y = pa.array([0, 0, 1, 0], coord_type)
-        geometry = pa.StructArray.from_arrays([x, y], names=["x", "y"])
+    """Make a table of one native GeoArrow geometry with the given coordinate type.
 
-    for _ in range(COORD_NESTING[geom_type]):
-        geometry = pa.ListArray.from_arrays([0, len(geometry)], geometry)
+    geoarrow.pyarrow only makes float64 coordinates, so the storage array is cast to
+    `coord_type` afterwards.
+    """
+    wkt = WKT["polygon"] if geom_type == "box" else WKT[geom_type]
+    wkb = shapely.to_wkb(np.array([shapely.from_wkt(wkt)]))
+    layout = ga.CoordType.INTERLEAVED if interleaved else ga.CoordType.SEPARATED
+    geometry = ga.as_geoarrow(wkb, coord_type=layout)
+    if geom_type == "box":
+        geometry = ga.box(geometry)
 
+    storage = geometry.storage
+    storage = storage.cast(with_coord_type(storage.type, coord_type))
     field = pa.field(
         "geometry",
-        geometry.type,
-        metadata={"ARROW:extension:name": f"geoarrow.{geom_type}"},
+        storage.type,
+        metadata={"ARROW:extension:name": geometry.type.extension_name},
     )
-    return pa.Table.from_arrays([geometry], schema=pa.schema([field]))
+    return pa.Table.from_arrays([storage], schema=pa.schema([field]))
 
 
-@pytest.mark.parametrize("geom_type", list(COORD_NESTING))
+@pytest.mark.parametrize("geom_type", list(WKT))
 @pytest.mark.parametrize("interleaved", [True, False])
 def test_viz_integer_coords_raise(geom_type: str, *, interleaved: bool):
     """See https://github.com/developmentseed/lonboard/issues/608"""
@@ -235,17 +254,7 @@ def test_layer_integer_coords_raise(layer_cls, geom_type: str, *, interleaved: b
 
 
 def test_viz_integer_box_coords_raise():
-    names = ["xmin", "ymin", "xmax", "ymax"]
-    boxes = pa.StructArray.from_arrays(
-        [pa.array([value], pa.int64()) for value in [0, 0, 1, 1]],
-        names=names,
-    )
-    field = pa.field(
-        "geometry",
-        boxes.type,
-        metadata={"ARROW:extension:name": "geoarrow.box"},
-    )
-    table = pa.Table.from_arrays([boxes], schema=pa.schema([field]))
+    table = native_geometry_table("box", pa.int64(), interleaved=True)
 
     with pytest.raises(ValueError, match=r"must be floating point, got .*Int64"):
         viz(table)
@@ -261,7 +270,7 @@ def test_assigning_table_integer_coords_raises():
         layer.table = Table.from_arrow(table)
 
 
-@pytest.mark.parametrize("geom_type", list(COORD_NESTING))
+@pytest.mark.parametrize("geom_type", list(WKT))
 @pytest.mark.parametrize("interleaved", [True, False])
 def test_viz_float64_coords_accepted(geom_type: str, *, interleaved: bool):
     table = native_geometry_table(geom_type, pa.float64(), interleaved=interleaved)
@@ -271,7 +280,7 @@ def test_viz_float64_coords_accepted(geom_type: str, *, interleaved: bool):
     assert m.layers[0].table.num_rows == table.num_rows
 
 
-@pytest.mark.parametrize("geom_type", list(COORD_NESTING))
+@pytest.mark.parametrize("geom_type", list(WKT))
 @pytest.mark.parametrize("interleaved", [True, False])
 def test_float32_coords_pass_check(geom_type: str, *, interleaved: bool):
     # Only the check is tested: a layer can't always convert or serialize float32
