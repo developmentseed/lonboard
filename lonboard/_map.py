@@ -1,6 +1,5 @@
 from __future__ import annotations
 
-import warnings
 from dataclasses import replace
 from pathlib import Path
 from typing import IO, TYPE_CHECKING, Any, TextIO, overload
@@ -15,7 +14,7 @@ import lonboard.traits as t
 from lonboard._base import BaseAnyWidget
 from lonboard._html_export import map_to_html
 from lonboard._viewport import compute_view
-from lonboard.basemap import CartoStyle, MaplibreBasemap
+from lonboard.basemap import MaplibreBasemap
 from lonboard.controls import (
     BaseControl,
     FullscreenControl,
@@ -76,8 +75,6 @@ class Map(BaseAnyWidget):
     def __init__(
         self,
         layers: BaseLayer | Sequence[BaseLayer],
-        *,
-        basemap_style: str | CartoStyle | None = None,
         **kwargs: Unpack[MapKwargs],
     ) -> None:
         """Create a new Map.
@@ -89,28 +86,12 @@ class Map(BaseAnyWidget):
             layers: One or more layers to render on this map.
 
         Keyword Args:
-            basemap_style: DEPRECATED. Use `basemap` instead. A URL to a MapLibre-compatible basemap style.
-
-                Various styles are provided in [`lonboard.basemap`](https://developmentseed.org/lonboard/latest/api/basemap/).
-
             kwargs: Passed on to class variables. For example, you can pass `height=600` to pass that value on to the [`height`][lonboard.Map.height] attribute.
 
         Returns:
             A Map object.
 
         """
-        if basemap_style is not None:
-            warnings.warn(
-                "`basemap_style` is deprecated and will be removed in 0.14. Use `basemap` instead.",
-                DeprecationWarning,
-                stacklevel=2,
-            )
-            if "basemap" in kwargs:
-                raise ValueError(
-                    "Cannot pass both `basemap_style` and `basemap`. Use only `basemap`.",
-                )
-            kwargs["basemap"] = MaplibreBasemap(style=basemap_style)
-
         if isinstance(layers, BaseLayer):
             layers = [layers]
 
@@ -330,29 +311,6 @@ class Map(BaseAnyWidget):
 
         return proposal["value"]
 
-    @property
-    def basemap_style(self) -> str | None:
-        """The URL of the basemap style in use."""
-        warnings.warn(
-            "`basemap_style` is deprecated and will be removed in 0.14. Use `basemap` instead.",
-            DeprecationWarning,
-            stacklevel=2,
-        )
-
-        if self.basemap is not None:
-            return self.basemap.style
-
-        return None
-
-    @basemap_style.setter
-    def basemap_style(self, value: str | CartoStyle) -> None:
-        warnings.warn(
-            "`basemap_style` is deprecated and will be removed in 0.14. Use `basemap` instead.",
-            DeprecationWarning,
-            stacklevel=2,
-        )
-        self.basemap = MaplibreBasemap(style=value)
-
     custom_attribution = t.Union(
         [
             t.Unicode(allow_none=True),
@@ -534,7 +492,7 @@ class Map(BaseAnyWidget):
                 Defaults to False.
 
         Raises:
-            ValueError: _description_
+            ValueError: If both `focus` and `reset_zoom` are set.
 
         """
         if focus and reset_zoom:
