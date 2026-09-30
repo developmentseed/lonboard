@@ -1,6 +1,5 @@
 from __future__ import annotations
 
-import inspect
 import warnings
 from dataclasses import replace
 from pathlib import Path
@@ -49,23 +48,6 @@ bundler_output_dir = Path(__file__).parent / "static"
 # deck.gl stores which layer was picked in the 8-bit alpha channel of its picking
 # buffer, where 0 means that nothing was picked.
 MAX_PICKABLE_DECK_LAYERS = 255
-
-# Packages with frames between the user's code and an observer of a `Map` trait
-INTERNAL_PACKAGES = ("lonboard", "traitlets", "ipywidgets", "anywidget")
-
-
-def _user_stacklevel() -> int:
-    """Find the `stacklevel` with which a warning points at the user's code."""
-    current_frame = inspect.currentframe()
-    frame = current_frame.f_back if current_frame is not None else None
-    stacklevel = 1
-    while frame is not None:
-        package = frame.f_globals.get("__name__", "").partition(".")[0]
-        if package not in INTERNAL_PACKAGES:
-            break
-        frame = frame.f_back
-        stacklevel += 1
-    return stacklevel
 
 
 class Map(BaseAnyWidget):
@@ -261,7 +243,6 @@ class Map(BaseAnyWidget):
                 "`pickable=False` on layers that don't need picking, or combine the "
                 "data into fewer layers.",
                 UserWarning,
-                stacklevel=_user_stacklevel(),
             )
 
     controls = t.VariableLengthTuple(

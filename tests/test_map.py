@@ -272,19 +272,3 @@ def test_layers_that_cannot_be_picked_do_not_count_towards_picking_limit(trait: 
     with warnings.catch_warnings():
         warnings.simplefilter("error")
         Map(layers)
-
-
-@pytest.mark.parametrize(
-    "set_layers",
-    [
-        pytest.param(Map, id="init"),
-        pytest.param(lambda layer: setattr(Map([]), "layers", [layer]), id="assign"),
-        pytest.param(lambda layer: Map([]).add_layer(layer), id="add_layer"),
-    ],
-)
-def test_picking_limit_warning_points_to_caller(set_layers):
-    layer = point_layer(256)
-    with pytest.warns(UserWarning, match="256 chunks") as record:
-        set_layers(layer)
-
-    assert record[0].filename == __file__
