@@ -19,8 +19,14 @@ if TYPE_CHECKING:
     from mkdocs.structure.pages import Page
 
 # The `src` of an <img> unless it's a URL, an absolute path, a data URI or an
-# anchor.
-_RELATIVE_IMG_SRC = re.compile(r'(<img\b[^>]*?\ssrc=")(?![a-zA-Z][a-zA-Z0-9+.-]*:|/|#)')
+# anchor. A regex is enough here: the input is nbconvert's output, we only
+# insert a prefix into one attribute, and a miss leaves a link that was
+# already broken on the site. Parsing and re-serializing the page instead
+# would rewrite all of its markup.
+_RELATIVE_IMG_SRC = re.compile(
+    r"""(<img\b[^>]*?\ssrc=["'])(?![a-zA-Z][a-zA-Z0-9+.-]*:|/|#)""",
+    re.IGNORECASE,
+)
 
 
 def on_page_content(

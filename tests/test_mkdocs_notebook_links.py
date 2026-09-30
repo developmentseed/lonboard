@@ -33,6 +33,14 @@ def test_relative_image_in_notebook_page_goes_up_one_more_level():
     )
 
 
+def test_handles_hand_written_img_tags():
+    # Raw HTML in a Markdown cell passes through nbconvert as written.
+    html = "<IMG SRC='../assets/duckdb.png' width=400>"
+    assert _render(html, "examples/duckdb.ipynb") == (
+        "<IMG SRC='../../assets/duckdb.png' width=400>"
+    )
+
+
 def test_absolute_and_data_urls_are_untouched():
     html = (
         '<img src="https://example.com/a.png">'
