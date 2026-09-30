@@ -274,7 +274,6 @@ class TripsLayerKwargs(BaseLayerKwargs, total=False):
     billboard: bool
     fade_trail: bool
     trail_length: IntFloat
-    current_time: IntFloat
     get_color: ColorAccessorInput
     get_width: FloatAccessorInput
 
