@@ -12,6 +12,7 @@
 - [Global boundaries ![](../assets/boundaries.png)](../examples/global-boundaries) using [`PolygonLayer`][lonboard.PolygonLayer]
 - [Raster PMTiles ![](../assets/raster-pmtiles.jpg)](../examples/raster-pmtiles) using [`RasterLayer`][lonboard.RasterLayer]
 - [H3 Population Data ![](../assets/kontur-h3.jpg)](../examples/kontur_pop) using [`H3HexagonLayer`][lonboard.H3HexagonLayer]
+- [NYC 311 Data ![](../assets/geohash-layer.jpeg)](../examples/geohash-layer) using [`GeohashLayer`][lonboard.GeohashLayer]
 - [U.S. County-to-County Migration ![](../assets/arc-layer-migration-example.gif)](../examples/migration) using [`ArcLayer`][lonboard.ArcLayer] and [`BrushingExtension`][lonboard.layer_extension.BrushingExtension]
 - [Scatterplot with GPU data filtering ![](../assets/data-filter-extension.gif)](../examples/data-filter-extension) using [`ScatterplotLayer`][lonboard.ScatterplotLayer] and [`DataFilterExtension`][lonboard.layer_extension.DataFilterExtension]
 - [Categorical Filtering ![](../assets/data-filter-extension-categorical.gif)](../examples/data-filter-extension-categorical) using [`ScatterplotLayer`][lonboard.ScatterplotLayer] and [`DataFilterExtension`][lonboard.layer_extension.DataFilterExtension]

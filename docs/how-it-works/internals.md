@@ -33,7 +33,7 @@ This experience informs the target user of Lonboard:
 
 The `Map` class is the primary and only widget associated with JavaScript that renders anything. `Map` subclasses from `anywidget.AnyWidget`, which dynamically fetches Lonboard's JavaScript ESM bundle. The `Map` class emulates deck.gl's `Deck` class. It synchronizes map state and can be passed a sequence of `Layer` objects.
 
-`Layer` classes are designed to map to each underlying deck.gl layer. Most `Layer` classes subclass from `BaseArrowLayer`, which stores a `pyarrow.Table` in the dataclass. This data object gets serialized to Parquet and rendered in a layer provided by `@geoarrow/deck.gl-layers` as described later on. The primary API for each of these Arrow-based layers is `from_geopandas`, which converts a `GeoDataFrame` to a `pyarrow.Table` with a [GeoArrow](https://geoarrow.org/)-represented geometry column. A few layers are not Arrow-based and do not subclass from `BaseArrowLayer`: primarily `BitmapLayer` and `BitmapTileLayer`. These pass user data input directly into a core deck.gl layer.
+`Layer` classes are designed to map to each underlying deck.gl layer. Most `Layer` classes subclass from `BaseArrowLayer`, which stores a `pyarrow.Table` in the dataclass. This data object gets serialized to Parquet and rendered in a layer provided by `@geoarrow/deck.gl-geoarrow` as described later on. The primary API for each of these Arrow-based layers is `from_geopandas`, which converts a `GeoDataFrame` to a `pyarrow.Table` with a [GeoArrow](https://geoarrow.org/)-represented geometry column. A few layers are not Arrow-based and do not subclass from `BaseArrowLayer`: primarily `BitmapLayer` and `BitmapTileLayer`. These pass user data input directly into a core deck.gl layer.
 
 These `Layer` classes subclass from `ipywidgets.Widget` but are _not_ associated with any JavaScript of their own. But by being widgets themselves, their data is synced with JavaScript and Python data changes are propagated as events to the core `Map` object.
 
@@ -73,7 +73,7 @@ In contrast, having the JavaScript side load data directly from a URL requires s
 
 ### Layer Creation
 
-With the exception of the `BitmapLayer`, no _direct_ deck.gl layers are used. deck.gl layers are used _exclusively_ through the [`@geoarrow/deck.gl-layers`](https://github.com/geoarrow/deck.gl-layers) glue library. This library connects GeoArrow data to the low-level binary data API of each deck.gl layer. **All** accessors are passed in directly as binary buffers.
+With the exception of the `BitmapLayer`, no _direct_ deck.gl layers are used. deck.gl layers are used _exclusively_ through the [`@geoarrow/deck.gl-geoarrow`](https://github.com/geoarrow/deck.gl-geoarrow) glue library. This library connects GeoArrow data to the low-level binary data API of each deck.gl layer. **All** accessors are passed in directly as binary buffers.
 
 This means that in JavaScript the data _never_ leaves an Arrow binary representation. It's parsed from Parquet to Arrow in WebAssembly, the Arrow buffers are copied out of WebAssembly memory, but never parsed to JSON strings or JavaScript objects.
 

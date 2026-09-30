@@ -219,7 +219,7 @@ class GeocoderControl(BaseControl):
             msg = (
                 "The geopy geocoder must be created in async mode.\n"
                 "Pass `adapter_factory=AioHTTPAdapter` to the geocoder constructor.\n"
-                "See https://geopy.readthedocs.io/en/stable/#async-mode for more info.",
+                "See https://geopy.readthedocs.io/en/stable/#async-mode for more info."
             )
             raise TypeError(msg)
 

@@ -2,7 +2,7 @@ import type { MapViewState } from "@deck.gl/core";
 import { FlyToInterpolator } from "@deck.gl/core";
 
 import type { FlyToMessage } from "../types";
-import { isDefined } from "../util";
+import { omitUndefined } from "../util";
 
 export function flyTo(
   msg: FlyToMessage,
@@ -20,9 +20,7 @@ export function flyTo(
     screenSpeed,
   } = msg;
   const transitionInterpolator = new FlyToInterpolator({
-    ...(isDefined(curve) && { curve }),
-    ...(isDefined(speed) && { speed }),
-    ...(isDefined(screenSpeed) && { screenSpeed }),
+    ...omitUndefined({ curve, speed, screenSpeed }),
   });
   setInitialViewState({
     longitude,

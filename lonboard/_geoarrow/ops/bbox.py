@@ -3,13 +3,14 @@
 from __future__ import annotations
 
 import math
-from concurrent.futures import ThreadPoolExecutor
 from dataclasses import dataclass
 
 import numpy as np
 from arro3.core import Array, ChunkedArray, DataType, Field, list_flatten, struct_field
 
 from lonboard._constants import EXTENSION_NAME
+from lonboard._executor import Executor
+from lonboard._geoarrow.utils import drop_nan_coords
 
 
 @dataclass
@@ -57,6 +58,11 @@ def _coords_bbox(arr: Array) -> Bbox:
     assert list_size is not None
 
     np_arr = list_flatten(arr).to_numpy().reshape(-1, list_size)
+    np_arr = drop_nan_coords(np_arr)
+
+    if len(np_arr) == 0:
+        return Bbox()
+
     min_vals = np.min(np_arr, axis=0)
     max_vals = np.max(np_arr, axis=0)
     return Bbox(minx=min_vals[0], miny=min_vals[1], maxx=max_vals[0], maxy=max_vals[1])
@@ -65,7 +71,7 @@ def _coords_bbox(arr: Array) -> Bbox:
 def _total_bounds_nest_0(column: ChunkedArray) -> Bbox:
     bbox = Bbox()
 
-    with ThreadPoolExecutor() as executor:
+    with Executor() as executor:
         bboxes = list(executor.map(_coords_bbox, column.chunks))
 
     for other in bboxes:
@@ -78,7 +84,7 @@ def _total_bounds_nest_1(column: ChunkedArray) -> Bbox:
     bbox = Bbox()
     flat_array = list_flatten(column)
 
-    with ThreadPoolExecutor() as executor:
+    with Executor() as executor:
         bboxes = list(executor.map(_coords_bbox, flat_array))
 
     for other in bboxes:
@@ -91,7 +97,7 @@ def _total_bounds_nest_2(column: ChunkedArray) -> Bbox:
     bbox = Bbox()
     flat_array = list_flatten(list_flatten(column))
 
-    with ThreadPoolExecutor() as executor:
+    with Executor() as executor:
         bboxes = list(executor.map(_coords_bbox, flat_array))
 
     for other in bboxes:
@@ -104,7 +110,7 @@ def _total_bounds_nest_3(column: ChunkedArray) -> Bbox:
     bbox = Bbox()
     flat_array = list_flatten(list_flatten(list_flatten(column)))
 
-    with ThreadPoolExecutor() as executor:
+    with Executor() as executor:
         bboxes = list(executor.map(_coords_bbox, flat_array))
 
     for other in bboxes:
@@ -141,7 +147,7 @@ def _total_bounds_box(column: ChunkedArray) -> Bbox:
     """Compute the total bounds of a geoarrow.box column."""
     bbox = Bbox()
 
-    with ThreadPoolExecutor() as executor:
+    with Executor() as executor:
         bboxes = list(executor.map(_coords_bbox_struct, column.chunks))
 
     for other in bboxes:

@@ -18,8 +18,19 @@ repos:
         args: ["--maxkb=5500"]
 
   - repo: https://github.com/astral-sh/ruff-pre-commit
-    rev: v0.15.0
+    rev: v0.16.0
     hooks:
       - id: ruff
         args: ["--fix"]
       - id: ruff-format
+
+  - repo: local
+    hooks:
+      - id: normalize-notebook-kernelspec
+        name: normalize notebook kernelspec
+        description: >
+          Reset notebooks to the generic `python3` kernel so a machine-specific
+          kernel doesn't override the environment `juv run` builds for them.
+        entry: python3 scripts/normalize_notebook_kernelspec.py
+        language: system
+        files: \.ipynb$

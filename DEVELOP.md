@@ -49,6 +49,12 @@ We use ESBuild to bundle into an ES Module, which the Jupyter Widget will then l
 pnpm build:watch
 ```
 
+Unit tests for the TypeScript code live in `src/tests/` and use [Vitest](https://vitest.dev/). To run them:
+
+```sh
+pnpm test
+```
+
 ### Environment Variables
 
 To use custom environment variables, you can create a file `.env`:
@@ -77,6 +83,34 @@ pnpm link ../deck.gl-raster/packages/*
 
 You'll also want to ensure that deck.gl versions in both projects are pinned
 exactly the same.
+
+## Linting and formatting
+
+We use [pre-commit](https://pre-commit.com/) to run a few fast checks before each commit. The hooks are defined in [`.pre-commit-config.yaml`](./.pre-commit-config.yaml).
+
+Install the hooks once after cloning the repository:
+
+```
+uv run pre-commit install
+```
+
+To run the hooks on every file without making a commit:
+
+```
+uv run pre-commit run --all-files
+```
+
+CI runs the same command.
+
+pre-commit runs each hook in an environment of its own, without the dependencies of the project. So the hooks only do checks that need nothing but the source files, and they don't run the tests.
+
+### Javascript
+
+The hooks don't check the JavaScript code. [Biome](https://biomejs.dev/) lints and formats it, and CI fails if `pnpm check` reports a problem. To apply the fixes that Biome can make by itself:
+
+```sh
+pnpm check:fix
+```
 
 ## Publishing
 

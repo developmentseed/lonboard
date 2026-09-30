@@ -10,8 +10,8 @@ import {
 import type { TileMatrixSet } from "@developmentseed/morecantile";
 import type { WidgetModel } from "@jupyter-widgets/base";
 import proj4 from "proj4";
-import type { PROJJSONDefinition } from "proj4/dist/lib/core.js";
-import { isDefined } from "../../util.js";
+import type { Converter, PROJJSONDefinition } from "proj4/dist/lib/core.js";
+import { omitUndefined } from "../../util.js";
 import { invoke } from "../dispatch.js";
 import { BaseLayerModel } from "./base.js";
 
@@ -43,15 +43,15 @@ export class RasterModel extends BaseLayerModel {
 
   /** proj4 converters from the source CRS to EPSG:4326 and EPSG:3857 */
   protected converters?: {
-    4326: proj4.Converter;
-    3857: proj4.Converter;
+    4326: Converter;
+    3857: Converter;
   };
 
   constructor(model: WidgetModel, updateStateCallback: () => void) {
     super(model, updateStateCallback);
 
     this.initRegularAttribute("_tile_matrix_set", "tileMatrixSet");
-    this.initRegularAttribute("_crs", "crs");
+    this.initCrs("_crs");
     this.initRegularAttribute("_tile_size", "tileSize");
     this.initRegularAttribute("zoom_offset", "zoomOffset");
     this.initRegularAttribute("max_zoom", "maxZoom");
@@ -59,22 +59,36 @@ export class RasterModel extends BaseLayerModel {
     this.initRegularAttribute("extent", "extent");
     this.initRegularAttribute("max_cache_size", "maxCacheSize");
     this.initRegularAttribute("debounce_time", "debounceTime");
+  }
 
-    if (this.crs) {
-      this.converters = {
-        4326: proj4(this.crs, "EPSG:4326"),
-        3857: proj4(this.crs, "EPSG:3857"),
-      };
-    }
+  /**
+   * Initialize the CRS on the model, along with the proj4 converters derived
+   * from it.
+   *
+   * This also watches for changes on the Jupyter model and propagates those
+   * changes to this class' internal state.
+   *
+   * @param   {string}  pythonName  Name of attribute on Python model (usually snake-cased)
+   */
+  initCrs(pythonName: string) {
+    const callback = () => {
+      const crs = this.model.get(pythonName);
+      this.crs = crs;
+      this.converters = crs
+        ? {
+            4326: proj4(crs, "EPSG:4326"),
+            3857: proj4(crs, "EPSG:3857"),
+          }
+        : undefined;
+    };
+    callback();
 
-    // Note: if we change the name to public "crs" we'll have to change it here
-    this.model.on("change:_crs", () => {
-      const crs = this.model.get("_crs");
-      this.converters = {
-        4326: proj4(crs, "EPSG:4326"),
-        3857: proj4(crs, "EPSG:3857"),
-      };
-    });
+    // Remove all existing change callbacks for this attribute
+    this.model.off(`change:${pythonName}`);
+
+    this.model.on(`change:${pythonName}`, callback);
+
+    this.callbacks.set(`change:${pythonName}`, callback);
   }
 
   accessConverters() {
@@ -97,13 +111,15 @@ export class RasterModel extends BaseLayerModel {
     return {
       id: `${this.model.model_id}`,
       data: null,
-      ...(isDefined(this.tileSize) && { tileSize: this.tileSize }),
-      ...(isDefined(this.zoomOffset) && { zoomOffset: this.zoomOffset }),
-      ...(isDefined(this.maxZoom) && { maxZoom: this.maxZoom }),
-      ...(isDefined(this.minZoom) && { minZoom: this.minZoom }),
-      ...(isDefined(this.extent) && { extent: this.extent }),
-      ...(isDefined(this.maxCacheSize) && { maxCacheSize: this.maxCacheSize }),
-      ...(isDefined(this.debounceTime) && { debounceTime: this.debounceTime }),
+      ...omitUndefined({
+        tileSize: this.tileSize,
+        zoomOffset: this.zoomOffset,
+        maxZoom: this.maxZoom,
+        minZoom: this.minZoom,
+        extent: this.extent,
+        maxCacheSize: this.maxCacheSize,
+        debounceTime: this.debounceTime,
+      }),
     };
   }
 

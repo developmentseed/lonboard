@@ -1,8 +1,8 @@
-import type { _GeoArrowTextLayerProps as GeoArrowTextLayerProps } from "@geoarrow/deck.gl-layers";
-import { _GeoArrowTextLayer as GeoArrowTextLayer } from "@geoarrow/deck.gl-layers";
+import type { _GeoArrowTextLayerProps as GeoArrowTextLayerProps } from "@geoarrow/deck.gl-geoarrow";
+import { _GeoArrowTextLayer as GeoArrowTextLayer } from "@geoarrow/deck.gl-geoarrow";
 import type { WidgetModel } from "@jupyter-widgets/base";
 
-import { isDefined } from "../../util.js";
+import { omitUndefined } from "../../util.js";
 import type {
   ColorAccessorInput,
   FloatAccessorInput,
@@ -101,69 +101,44 @@ export class TextModel extends BaseArrowLayerModel {
       data: this.table.batches[batchIndex],
       // Always provided
       getText: this.getText.data[batchIndex],
-      ...(isDefined(this.billboard) && { billboard: this.billboard }),
-      ...(isDefined(this.sizeScale) && { sizeScale: this.sizeScale }),
-      ...(isDefined(this.sizeUnits) && { sizeUnits: this.sizeUnits }),
-      ...(isDefined(this.sizeMinPixels) && {
+      ...omitUndefined({
+        billboard: this.billboard,
+        sizeScale: this.sizeScale,
+        sizeUnits: this.sizeUnits,
         sizeMinPixels: this.sizeMinPixels,
-      }),
-      ...(isDefined(this.sizeMaxPixels) && {
         sizeMaxPixels: this.sizeMaxPixels,
-      }),
-      // ...(isDefined(this.background) && {background: this.background}),
-      ...(isDefined(this.backgroundPadding) && {
+        // background: this.background,
         backgroundPadding: this.backgroundPadding,
-      }),
-      ...(isDefined(this.characterSet) && { characterSet: this.characterSet }),
-      ...(isDefined(this.fontFamily) && { fontFamily: this.fontFamily }),
-      ...(isDefined(this.fontWeight) && { fontWeight: this.fontWeight }),
-      ...(isDefined(this.lineHeight) && { lineHeight: this.lineHeight }),
-      ...(isDefined(this.outlineWidth) && { outlineWidth: this.outlineWidth }),
-      ...(isDefined(this.outlineColor) && { outlineColor: this.outlineColor }),
-      ...(isDefined(this.fontSettings) && { fontSettings: this.fontSettings }),
-      ...(isDefined(this.wordBreak) && { wordBreak: this.wordBreak }),
-      ...(isDefined(this.maxWidth) && { maxWidth: this.maxWidth }),
-
-      ...(isDefined(this.getBackgroundColor) && {
+        characterSet: this.characterSet,
+        fontFamily: this.fontFamily,
+        fontWeight: this.fontWeight,
+        lineHeight: this.lineHeight,
+        outlineWidth: this.outlineWidth,
+        outlineColor: this.outlineColor,
+        fontSettings: this.fontSettings,
+        wordBreak: this.wordBreak,
+        maxWidth: this.maxWidth,
         getBackgroundColor: accessColorData(
           this.getBackgroundColor,
           batchIndex,
         ),
-      }),
-      ...(isDefined(this.getBorderColor) && {
         getBorderColor: accessColorData(this.getBorderColor, batchIndex),
-      }),
-      ...(isDefined(this.getBorderWidth) && {
         getBorderWidth: accessFloatData(this.getBorderWidth, batchIndex),
-      }),
-      ...(isDefined(this.getPosition) && {
-        getPosition: this.getPosition.data[batchIndex],
-      }),
-      ...(isDefined(this.getColor) && {
+        getPosition: this.getPosition?.data[batchIndex],
         getColor: accessColorData(this.getColor, batchIndex),
-      }),
-      ...(isDefined(this.getSize) && {
         getSize: accessFloatData(this.getSize, batchIndex),
-      }),
-      ...(isDefined(this.getAngle) && {
         getAngle: accessFloatData(this.getAngle, batchIndex),
-      }),
-      ...(isDefined(this.getTextAnchor) && {
         getTextAnchor:
           typeof this.getTextAnchor === "string"
             ? (this.getTextAnchor as "start" | "middle" | "end")
-            : this.getTextAnchor.data[batchIndex],
-      }),
-      ...(isDefined(this.getAlignmentBaseline) && {
+            : this.getTextAnchor?.data[batchIndex],
         getAlignmentBaseline:
           typeof this.getAlignmentBaseline === "string"
             ? (this.getAlignmentBaseline as "top" | "center" | "bottom")
-            : this.getAlignmentBaseline.data[batchIndex],
-      }),
-      ...(isDefined(this.getPixelOffset) && {
+            : this.getAlignmentBaseline?.data[batchIndex],
         getPixelOffset: Array.isArray(this.getPixelOffset)
           ? this.getPixelOffset
-          : this.getPixelOffset.data[batchIndex],
+          : this.getPixelOffset?.data[batchIndex],
       }),
     };
   }

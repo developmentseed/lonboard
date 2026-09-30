@@ -1,5 +1,5 @@
-import type { GeoArrowPickingInfo } from "@geoarrow/deck.gl-layers";
-import { Button } from "@nextui-org/react";
+import type { GeoArrowPickingInfo } from "@geoarrow/deck.gl-geoarrow";
+import { Button } from "@heroui/react";
 import React from "react";
 
 import { XMarkIcon } from "../icons";

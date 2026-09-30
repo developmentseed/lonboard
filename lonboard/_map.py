@@ -9,13 +9,13 @@ import ipywidgets
 import numpy as np
 import traitlets
 from ipywidgets import CallbackDispatcher, VBox
-from traitlets.traitlets import Instance, TraitError, default, validate
+from traitlets.traitlets import Instance, TraitError, default, observe, validate
 
 import lonboard.traits as t
 from lonboard._base import BaseAnyWidget
 from lonboard._html_export import map_to_html
 from lonboard._viewport import compute_view
-from lonboard.basemap import CartoStyle, MaplibreBasemap
+from lonboard.basemap import MaplibreBasemap
 from lonboard.controls import (
     BaseControl,
     FullscreenControl,
@@ -23,7 +23,7 @@ from lonboard.controls import (
     ScaleControl,
 )
 from lonboard.experimental.view import BaseView, GlobeView, MapView
-from lonboard.layer import BaseLayer
+from lonboard.layer import BaseArrowLayer, BaseLayer
 from lonboard.view_state import BaseViewState, GlobeViewState, MapViewState
 
 if TYPE_CHECKING:
@@ -44,6 +44,10 @@ if TYPE_CHECKING:
 
 # bundler yields lonboard/static/{index.js,styles.css}
 bundler_output_dir = Path(__file__).parent / "static"
+
+# deck.gl stores which layer was picked in the 8-bit alpha channel of its picking
+# buffer, where 0 means that nothing was picked.
+MAX_PICKABLE_DECK_LAYERS = 255
 
 
 class Map(BaseAnyWidget):
@@ -76,8 +80,6 @@ class Map(BaseAnyWidget):
     def __init__(
         self,
         layers: BaseLayer | Sequence[BaseLayer],
-        *,
-        basemap_style: str | CartoStyle | None = None,
         **kwargs: Unpack[MapKwargs],
     ) -> None:
         """Create a new Map.
@@ -89,28 +91,12 @@ class Map(BaseAnyWidget):
             layers: One or more layers to render on this map.
 
         Keyword Args:
-            basemap_style: DEPRECATED. Use `basemap` instead. A URL to a MapLibre-compatible basemap style.
-
-                Various styles are provided in [`lonboard.basemap`](https://developmentseed.org/lonboard/latest/api/basemap/).
-
             kwargs: Passed on to class variables. For example, you can pass `height=600` to pass that value on to the [`height`][lonboard.Map.height] attribute.
 
         Returns:
             A Map object.
 
         """
-        if basemap_style is not None:
-            warnings.warn(
-                "`basemap_style` is deprecated and will be removed in 0.14. Use `basemap` instead.",
-                DeprecationWarning,
-                stacklevel=2,
-            )
-            if "basemap" in kwargs:
-                raise ValueError(
-                    "Cannot pass both `basemap_style` and `basemap`. Use only `basemap`.",
-                )
-            kwargs["basemap"] = MaplibreBasemap(style=basemap_style)
-
         if isinstance(layers, BaseLayer):
             layers = [layers]
 
@@ -142,7 +128,12 @@ class Map(BaseAnyWidget):
         container = VBox([self, error_vbox])
         return container._repr_mimebundle_(**kwargs)
 
-    def on_click(self, callback: Callable, *, remove: bool = False) -> None:
+    def on_click(
+        self,
+        callback: Callable[[tuple[float, float]], None],
+        *,
+        remove: bool = False,
+    ) -> None:
         """Register a callback to execute when the map is clicked.
 
         The callback will be called with one argument, a tuple of the coordinate
@@ -215,6 +206,31 @@ class Map(BaseAnyWidget):
     )
     """One or more [`Layer`][lonboard.BaseLayer] objects to display on this map.
     """
+
+    @observe("layers")
+    def _warn_on_picking_limit(self, change: dict[str, Any]) -> None:
+        # deck.gl only picks from layers that are pickable and visible. A layer without
+        # a table counts as one chunk.
+        #
+        # This is a lower bound of the number of deck.gl layers: some layers render
+        # each chunk as two, such as a `GeohashLayer` with a fill and a stroke.
+        # Tiled layers render many individual layers in the viewport.
+        num_chunks = sum(
+            len(layer.table.chunk_lengths) if isinstance(layer, BaseArrowLayer) else 1
+            for layer in change["new"]
+            if layer.pickable and layer.visible
+        )
+        if num_chunks > MAX_PICKABLE_DECK_LAYERS:
+            warnings.warn(
+                "Picking (i.e. clicking/hovering) will not work for some of the data "
+                f"on this map. The map has {num_chunks} chunks of data in layers that "
+                "are pickable and visible. Each chunk is rendered as one or more "
+                "deck.gl layers, and deck.gl can only pick from the first "
+                f"{MAX_PICKABLE_DECK_LAYERS} layers. To avoid this, set "
+                "`pickable=False` on layers that don't need picking, or combine the "
+                "data into fewer layers.",
+                UserWarning,
+            )
 
     controls = t.VariableLengthTuple(
         Instance(BaseControl),
@@ -324,29 +340,6 @@ class Map(BaseAnyWidget):
             )
 
         return proposal["value"]
-
-    @property
-    def basemap_style(self) -> str | None:
-        """The URL of the basemap style in use."""
-        warnings.warn(
-            "`basemap_style` is deprecated and will be removed in 0.14. Use `basemap` instead.",
-            DeprecationWarning,
-            stacklevel=2,
-        )
-
-        if self.basemap is not None:
-            return self.basemap.style
-
-        return None
-
-    @basemap_style.setter
-    def basemap_style(self, value: str | CartoStyle) -> None:
-        warnings.warn(
-            "`basemap_style` is deprecated and will be removed in 0.14. Use `basemap` instead.",
-            DeprecationWarning,
-            stacklevel=2,
-        )
-        self.basemap = MaplibreBasemap(style=value)
 
     custom_attribution = t.Union(
         [
@@ -529,7 +522,7 @@ class Map(BaseAnyWidget):
                 Defaults to False.
 
         Raises:
-            ValueError: _description_
+            ValueError: If both `focus` and `reset_zoom` are set.
 
         """
         if focus and reset_zoom:

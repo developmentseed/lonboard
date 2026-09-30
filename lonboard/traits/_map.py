@@ -82,7 +82,7 @@ class ViewStateTrait(FixedErrorTraitType):
         super().__init__(*args, **kwargs)
         self.tag(sync=True, to_json=serialize_view_state)
 
-    def validate(self, obj: Map, value: Any) -> None | BaseViewState:
+    def validate(self, obj: Map, value: Any) -> BaseViewState | None:
         if value is None:
             return None
 

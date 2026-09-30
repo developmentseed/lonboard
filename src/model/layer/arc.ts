@@ -1,7 +1,7 @@
-import type { GeoArrowArcLayerProps } from "@geoarrow/deck.gl-layers";
-import { GeoArrowArcLayer } from "@geoarrow/deck.gl-layers";
+import type { GeoArrowArcLayerProps } from "@geoarrow/deck.gl-geoarrow";
+import { GeoArrowArcLayer } from "@geoarrow/deck.gl-geoarrow";
 import type { WidgetModel } from "@jupyter-widgets/base";
-import { isDefined } from "../../util.js";
+import { omitUndefined } from "../../util.js";
 import type {
   ColorAccessorInput,
   FloatAccessorInput,
@@ -54,29 +54,17 @@ export class ArcModel extends BaseArrowLayerModel {
       // Always provided
       getSourcePosition: this.getSourcePosition.data[batchIndex],
       getTargetPosition: this.getTargetPosition.data[batchIndex],
-      ...(isDefined(this.greatCircle) && { greatCircle: this.greatCircle }),
-      ...(isDefined(this.numSegments) && { numSegments: this.numSegments }),
-      ...(isDefined(this.widthUnits) && { widthUnits: this.widthUnits }),
-      ...(isDefined(this.widthScale) && { widthScale: this.widthScale }),
-      ...(isDefined(this.widthMinPixels) && {
+      ...omitUndefined({
+        greatCircle: this.greatCircle,
+        numSegments: this.numSegments,
+        widthUnits: this.widthUnits,
+        widthScale: this.widthScale,
         widthMinPixels: this.widthMinPixels,
-      }),
-      ...(isDefined(this.widthMaxPixels) && {
         widthMaxPixels: this.widthMaxPixels,
-      }),
-      ...(isDefined(this.getSourceColor) && {
         getSourceColor: accessColorData(this.getSourceColor, batchIndex),
-      }),
-      ...(isDefined(this.getTargetColor) && {
         getTargetColor: accessColorData(this.getTargetColor, batchIndex),
-      }),
-      ...(isDefined(this.getWidth) && {
         getWidth: accessFloatData(this.getWidth, batchIndex),
-      }),
-      ...(isDefined(this.getHeight) && {
         getHeight: accessFloatData(this.getHeight, batchIndex),
-      }),
-      ...(isDefined(this.getTilt) && {
         getTilt: accessFloatData(this.getTilt, batchIndex),
       }),
     };

@@ -24,6 +24,7 @@ from lonboard._geoarrow.ops import (
 from lonboard._geoarrow.ops.coord_layout import make_geometry_interleaved
 from lonboard._geoarrow.parse_wkb import parse_serialized_table
 from lonboard._geoarrow.row_index import add_positional_row_index
+from lonboard._geoarrow.utils import check_float_coords, remove_empty_batches
 from lonboard._serialization import infer_rows_per_chunk
 from lonboard._utils import auto_downcast as _auto_downcast
 from lonboard._utils import get_geometry_column_index, remove_extension_kwargs
@@ -377,12 +378,18 @@ class BaseArrowLayer(BaseLayer):
             table_o3 = Table.from_arrays([imported_stream], schema=schema)
             table_o3 = add_positional_row_index(table_o3)
 
+        if table_o3.num_rows == 0:
+            raise ValueError("Cannot create a layer from a table with no rows.")
+
+        table_o3 = remove_empty_batches(table_o3)
+
         parsed_tables = parse_serialized_table(table_o3)
         assert len(parsed_tables) == 1, (
             "Mixed geometry type input not supported here. Use the top "
             "level viz() function or separate your geometry types in advance."
         )
         table_o3 = parsed_tables[0]
+        check_float_coords(table_o3)
         table_o3 = make_geometry_interleaved(table_o3)
 
         # Reproject table to WGS84 if needed
@@ -449,9 +456,16 @@ class BaseArrowLayer(BaseLayer):
     ) -> Self:
         """Construct a Layer from a duckdb-spatial query.
 
-        DuckDB Spatial does not currently expose coordinate reference system
-        information, so **the user must ensure that data has been reprojected to
-        EPSG:4326** or pass in the existing CRS of the data in the `crs` keyword
+        With DuckDB >= 1.5, the CRS of a `GEOMETRY` column is read
+        automatically from the column type (e.g. `GEOMETRY('EPSG:3857')`) and
+        the data is reprojected to EPSG:4326 as needed.
+
+        The `crs` keyword parameter is deprecated for such input and is only
+        needed when the data cannot describe its own CRS: `WKB_BLOB` or 2D
+        columns (`POINT_2D`, `LINESTRING_2D`, `POLYGON_2D`, `BOX_2D`), DuckDB
+        older than 1.5, or a `GEOMETRY` column without a CRS encoded. In those
+        cases, **the user must ensure that data has been reprojected to
+        EPSG:4326** or pass the existing CRS of the data in the `crs` keyword
         parameter.
 
         Args:
@@ -461,8 +475,11 @@ class BaseArrowLayer(BaseLayer):
                 the `sql` parameter.
 
         Keyword Args:
-            crs: The CRS of the input data. This can either be a string passed to
-                `pyproj.CRS.from_user_input` or a `pyproj.CRS` object. Defaults to None.
+            crs: The CRS of the input data, for input that cannot describe its
+                own CRS (see above). This can either be a string passed to
+                `pyproj.CRS.from_user_input` or a `pyproj.CRS` object. Errors
+                if it conflicts with the CRS encoded in a DuckDB >= 1.5
+                `GEOMETRY` column. Defaults to None.
             kwargs: parameters passed on to `__init__`
 
         Returns:

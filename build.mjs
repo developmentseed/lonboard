@@ -1,21 +1,34 @@
+import tailwindcss from "@tailwindcss/postcss";
 import autoprefixer from "autoprefixer";
 import dotenv from "dotenv";
 import esbuild from "esbuild";
 import { sassPlugin } from "esbuild-sass-plugin";
 import postcss from "postcss";
 import postcssPresetEnv from "postcss-preset-env";
-import tailwindcss from "tailwindcss";
 
 // Load environment variables from .env file
 dotenv.config();
 
 const node_env = process.env.NODE_ENV || "production";
 
+// maplibre-gl ships its worker as a separate file, which it expects to load
+// from a URL. We ship a single file, so bundle the worker into a string that is
+// started from a Blob URL at runtime. See src/maplibre-worker.ts
+const maplibreWorker = await esbuild.build({
+  entryPoints: ["./node_modules/maplibre-gl/dist/maplibre-gl-worker.mjs"],
+  bundle: true,
+  format: "iife",
+  target: ["es2022"],
+  minify: node_env === "production",
+  write: false,
+});
+
 // List of environment variables to expose to the build
 const defineEnv = {
   // Ref https://github.com/manzt/anywidget/issues/369#issuecomment-1792376003
   "define.amd": "false",
   "process.env.NODE_ENV": JSON.stringify(node_env),
+  MAPLIBRE_WORKER_SOURCE: JSON.stringify(maplibreWorker.outputFiles[0].text),
 };
 
 esbuild.build({
@@ -31,12 +44,19 @@ esbuild.build({
   define: defineEnv,
   plugins: [
     sassPlugin({
-      async transform(source) {
+      async transform(source, _resolveDir, filePath) {
         const { css } = await postcss([
           tailwindcss,
           autoprefixer,
-          postcssPresetEnv({ stage: 0 }),
-        ]).process(source, { from: undefined });
+          postcssPresetEnv({
+            stage: 0,
+            // The polyfill for cascade layers raises the specificity of every
+            // style outside of a layer, which makes ours override the styles
+            // of maplibre-gl's and deck.gl's controls.
+            features: { "cascade-layers": false },
+          }),
+          // Tailwind resolves the paths in a stylesheet relative to that file
+        ]).process(source, { from: filePath });
         return css;
       },
     }),
@@ -52,7 +72,7 @@ esbuild.build({
     "@deck.gl/extensions": "./node_modules/@deck.gl/extensions",
     "@deck.gl/geo-layers": "./node_modules/@deck.gl/geo-layers",
     "@deck.gl/layers": "./node_modules/@deck.gl/layers",
-    "@deck.gl/mapbox": "./node_modules/@deck.gl/mapbox",
+    "@deck.gl/maplibre": "./node_modules/@deck.gl/maplibre",
     "@deck.gl/mesh-layers": "./node_modules/@deck.gl/mesh-layers",
     "@deck.gl/react": "./node_modules/@deck.gl/react",
     "@deck.gl/widgets": "./node_modules/@deck.gl/widgets",

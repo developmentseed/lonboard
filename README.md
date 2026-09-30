@@ -24,7 +24,7 @@
     <em>Fast, interactive geospatial data visualization in Jupyter.</em>
 </p>
 
-Building on cutting-edge technologies like [GeoArrow](https://github.com/geoarrow/geoarrow) and [GeoParquet](https://github.com/opengeospatial/geoparquet) in conjunction with [GPU-based map rendering](https://deck.gl/), Lonboard aims to enable visualizing large geospatial datasets interactively through a simple interface.
+Building on cutting-edge technologies like [GeoArrow](https://github.com/geoarrow/geoarrow) and [GeoParquet](https://github.com/opengeospatial/geoparquet) in conjunction with [GPU-based map rendering](https://deck.gl/), Lonboard enables visualizing large geospatial datasets interactively through a simple interface.
 
 ![](assets/hero-animated.gif)
 

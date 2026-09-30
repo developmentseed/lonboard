@@ -29,10 +29,12 @@ def movingpandas_to_geoarrow(  # noqa: PLR0915
     """Convert a MovingPandas TrajectoryCollection to GeoArrow.
 
     Args:
-        traj_collection: _description_
+        traj_collection: The trajectories to convert.
 
     Returns:
-        _description_
+        A table with one row per trajectory, holding a `geoarrow.linestring`
+            geometry column and the attribute columns as lists, and the timestamps
+            of each coordinate as a list-typed column.
 
     """
     import pyarrow as pa

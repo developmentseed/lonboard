@@ -9,7 +9,7 @@ import type * as arrow from "apache-arrow";
 import { Vector } from "apache-arrow";
 
 import { parseParquetBuffers } from "../../parquet.js";
-import { isDefined } from "../../util.js";
+import { omitUndefined } from "../../util.js";
 import { BaseModel } from "../base.js";
 import type { BaseExtensionModel } from "../extension.js";
 import { initializeExtension } from "../extension.js";
@@ -58,23 +58,11 @@ export abstract class BaseLayerModel extends BaseModel {
     const props: Record<string, unknown> = {};
     for (const layerPropertyName of this.extensionLayerPropertyNames) {
       const value = this[layerPropertyName as keyof this];
-      if (isDefined(value)) {
-        if (value instanceof Vector) {
-          props[layerPropertyName] = value.data[batchIndex ?? 0];
-        } else {
-          props[layerPropertyName] = value;
-        }
-      }
+      props[layerPropertyName] =
+        value instanceof Vector ? value.data[batchIndex ?? 0] : value;
     }
     // console.log("extension props", props);
-    return props;
-  }
-
-  onClick(pickingInfo: PickingInfo) {
-    if (!pickingInfo.index) return;
-
-    this.model.set("selected_index", pickingInfo.index);
-    this.model.save_changes();
+    return omitUndefined(props);
   }
 
   baseLayerProps(batchIndex?: number): Omit<LayerProps, "id"> {
@@ -85,11 +73,8 @@ export abstract class BaseLayerModel extends BaseModel {
       visible: this.visible,
       opacity: this.opacity,
       autoHighlight: this.autoHighlight,
-      ...(isDefined(this.highlightColor) && {
+      ...omitUndefined({
         highlightColor: this.highlightColor,
-      }),
-      onClick: this.onClick.bind(this),
-      ...(isDefined(this.beforeId) && {
         beforeId: this.beforeId,
       }),
     };
@@ -142,6 +127,17 @@ export abstract class BaseLayerModel extends BaseModel {
 
     this.callbacks.set(`change:extensions`, initExtensionsCallback);
   }
+
+  /**
+   * Finalize any resources held by the layer and its extensions
+   */
+  finalize(): void {
+    super.finalize();
+
+    for (const extension of Object.values(this.extensions)) {
+      extension.finalize();
+    }
+  }
 }
 
 /**
@@ -154,6 +150,33 @@ export abstract class BaseArrowLayerModel extends BaseLayerModel {
     super(model, updateStateCallback);
 
     this.initTable("table");
+  }
+
+  /**
+   * Set `selected_index` to the position of the clicked row in the table.
+   *
+   * Each record batch is rendered as its own deck.gl layer, so the picked index
+   * is the position of the row within the batch at `batchIndex`.
+   */
+  onClick(pickingInfo: PickingInfo, batchIndex: number) {
+    // deck.gl uses -1 when nothing was picked; 0 is the first row
+    if (pickingInfo.index < 0) return;
+
+    let selectedIndex = pickingInfo.index;
+    for (const batch of this.table.batches.slice(0, batchIndex)) {
+      selectedIndex += batch.numRows;
+    }
+
+    this.model.set("selected_index", selectedIndex);
+    this.model.save_changes();
+  }
+
+  baseLayerProps(batchIndex: number): Omit<LayerProps, "id"> {
+    return {
+      ...super.baseLayerProps(batchIndex),
+      onClick: (pickingInfo: PickingInfo) =>
+        this.onClick(pickingInfo, batchIndex),
+    };
   }
 
   /**
