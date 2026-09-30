@@ -227,6 +227,7 @@ class Map(BaseAnyWidget):
         #
         # This is a lower bound of the number of deck.gl layers: some layers render
         # each chunk as two, such as a `GeohashLayer` with a fill and a stroke.
+        # Tiled layers render many individual layers in the viewport.
         num_chunks = sum(
             len(layer.table.chunk_lengths) if isinstance(layer, BaseArrowLayer) else 1
             for layer in change["new"]
@@ -234,10 +235,9 @@ class Map(BaseAnyWidget):
         )
         if num_chunks > MAX_PICKABLE_DECK_LAYERS:
             warnings.warn(
-                "Picking will not work for some of the data on this map: hovering "
-                "over or clicking on it will not show a tooltip or side panel, or set "
-                f"`selected_index`. The map has {num_chunks} chunks of data in layers "
-                "that are pickable and visible. Each chunk is rendered as one or more "
+                "Picking (i.e. clicking/hovering) will not work for some of the data "
+                f"on this map. The map has {num_chunks} chunks of data in layers that "
+                "are pickable and visible. Each chunk is rendered as one or more "
                 "deck.gl layers, and deck.gl can only pick from the first "
                 f"{MAX_PICKABLE_DECK_LAYERS} layers. To avoid this, set "
                 "`pickable=False` on layers that don't need picking, or combine the "
