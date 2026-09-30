@@ -204,7 +204,7 @@ def viz(
 
     map_kwargs = map_kwargs or {}
 
-    if "basemap_style" not in map_kwargs and "basemap" not in map_kwargs:
+    if "basemap" not in map_kwargs:
         map_kwargs["basemap"] = MaplibreBasemap(
             mode="interleaved",
             style=CartoStyle.DarkMatter,
