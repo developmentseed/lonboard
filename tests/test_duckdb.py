@@ -1,3 +1,4 @@
+import sys
 from pathlib import Path
 from tempfile import TemporaryDirectory
 from urllib.request import urlretrieve
@@ -373,3 +374,29 @@ def test_crs_param_applied_when_column_has_no_crs():
     field = table.schema.field(0)
     ext_meta = json.loads(field.metadata[b"ARROW:extension:metadata"])
     assert ext_meta["crs"]["id"] == {"authority": "EPSG", "code": 3857}
+
+
+@pytest.mark.parametrize(
+    "geom_sql",
+    [
+        "ST_Point(1.0, 2.0)",
+        "ST_AsWKB(ST_Point(1.0, 2.0))::WKB_BLOB",
+        "ST_Point(1.0, 2.0)::POINT_2D",
+        "ST_Extent(ST_Point(1.0, 2.0))",
+    ],
+    ids=["GEOMETRY", "WKB_BLOB", "POINT_2D", "BOX_2D"],
+)
+def test_pyarrow_not_required(monkeypatch: pytest.MonkeyPatch, geom_sql: str):
+    from lonboard._geoarrow._duckdb import from_duckdb
+
+    # Make `import pyarrow` fail, as if it weren't installed
+    monkeypatch.setitem(sys.modules, "pyarrow", None)
+
+    con = duckdb.connect()
+    sql = f"""
+        INSTALL spatial;
+        LOAD spatial;
+        SELECT 'a' as name, {geom_sql} as geom;
+        """
+    table = from_duckdb(con.sql(sql))
+    assert table.num_rows == 1
