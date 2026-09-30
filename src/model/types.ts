@@ -37,12 +37,14 @@ export type StringAccessorInput = StringVector | string;
  * If the input is a constant array, it is returned as-is. (This is a scalar)
  *
  * If the input is an Arrow vector, we access the data array at the given index.
+ *
+ * If the input is unset, returns `undefined`.
  */
 export function accessColorData(
-  accessor: ColorAccessorInput,
+  accessor: ColorAccessorInput | null | undefined,
   index: number,
-): ColorAccessor {
-  return Array.isArray(accessor) ? accessor : accessor.data[index];
+): ColorAccessor | undefined {
+  return Array.isArray(accessor) ? accessor : accessor?.data[index];
 }
 
 /** Convert float accessor input to a FloatAccessor
@@ -50,10 +52,12 @@ export function accessColorData(
  * If the input is a constant number, it is returned as-is. (This is a scalar)
  *
  * If the input is an Arrow vector, we access the data array at the given index.
+ *
+ * If the input is unset, returns `undefined`.
  */
 export function accessFloatData(
-  accessor: FloatAccessorInput,
+  accessor: FloatAccessorInput | null | undefined,
   index: number,
-): FloatAccessor {
-  return typeof accessor === "number" ? accessor : accessor.data[index];
+): FloatAccessor | undefined {
+  return typeof accessor === "number" ? accessor : accessor?.data[index];
 }

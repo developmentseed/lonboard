@@ -46,12 +46,13 @@ For example, we can render a random radius for each point in this
 passing it into `get_radius`.
 
 ```py
+import geodatasets
 import geopandas as gpd
 import numpy as np
 
 from lonboard import Map, ScatterplotLayer
 
-gdf = gpd.read_file(gpd.datasets.get_path("naturalearth_cities"))
+gdf = gpd.read_file(geodatasets.get_path("naturalearth.cities"))
 radii = np.random.random(len(gdf))
 layer = ScatterplotLayer.from_geopandas(
     gdf,

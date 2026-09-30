@@ -2,7 +2,7 @@ import type { GeoArrowHeatmapLayerProps } from "@geoarrow/deck.gl-geoarrow";
 import { GeoArrowHeatmapLayer } from "@geoarrow/deck.gl-geoarrow";
 import type { WidgetModel } from "@jupyter-widgets/base";
 
-import { isDefined } from "../../util.js";
+import { omitUndefined } from "../../util.js";
 import type { FloatAccessorInput, PointVector } from "../types.js";
 import { accessFloatData } from "../types.js";
 import { BaseArrowLayerModel } from "./base.js";
@@ -46,22 +46,16 @@ export class HeatmapModel extends BaseArrowLayerModel {
     return {
       id: `${this.model.model_id}-${batchIndex}`,
       data: this.table.batches[batchIndex],
-      ...(isDefined(this.radiusPixels) && { radiusPixels: this.radiusPixels }),
-      ...(isDefined(this.colorRange) && { colorRange: this.colorRange }),
-      ...(isDefined(this.intensity) && { intensity: this.intensity }),
-      ...(isDefined(this.threshold) && { threshold: this.threshold }),
-      ...(isDefined(this.colorDomain) && { colorDomain: this.colorDomain }),
-      ...(isDefined(this.aggregation) && { aggregation: this.aggregation }),
-      ...(isDefined(this.weightsTextureSize) && {
+      ...omitUndefined({
+        radiusPixels: this.radiusPixels,
+        colorRange: this.colorRange,
+        intensity: this.intensity,
+        threshold: this.threshold,
+        colorDomain: this.colorDomain,
+        aggregation: this.aggregation,
         weightsTextureSize: this.weightsTextureSize,
-      }),
-      ...(isDefined(this.debounceTimeout) && {
         debounceTimeout: this.debounceTimeout,
-      }),
-      ...(isDefined(this.getPosition) && {
-        getPosition: this.getPosition.data[batchIndex],
-      }),
-      ...(isDefined(this.getWeight) && {
+        getPosition: this.getPosition?.data[batchIndex],
         getWeight: accessFloatData(this.getWeight, batchIndex),
       }),
     };

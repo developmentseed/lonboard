@@ -18,6 +18,7 @@ import {
   useLayersState,
   useViewsState,
 } from "./hooks/index.js";
+import { initMaplibreWorker } from "./maplibre-worker.js";
 import { DEFAULT_MAP_STYLE } from "./model/basemap.js";
 import { initParquetWasm } from "./parquet.js";
 import DeckFirstRenderer from "./renderers/deck-first.js";
@@ -33,13 +34,15 @@ import { useStore, useViewStateDebounced } from "./state";
 import Toolbar from "./toolbar.js";
 import { getTooltip } from "./tooltip/index.js";
 import type { Message } from "./types.js";
-import { isDefined, isGlobeView, sanitizeViewState } from "./util.js";
+import { isGlobeView, omitUndefined, sanitizeViewState } from "./util.js";
 
 import "maplibre-gl/dist/maplibre-gl.css";
 import "./globals.css";
 import "@maplibre/maplibre-gl-geocoder/dist/maplibre-gl-geocoder.css";
+import "@deck.gl/widgets/dist/stylesheet.css";
 
 await initParquetWasm();
+initMaplibreWorker();
 
 function App() {
   // =========================================================================
@@ -285,7 +288,7 @@ function App() {
     pickingRadius: pickingRadius,
     onClick: onMapClickHandler,
     onHover: onMapHoverHandler,
-    ...(isDefined(useDevicePixels) && { useDevicePixels }),
+    ...omitUndefined({ useDevicePixels }),
     // This is a hack to force a react re-render when the canvas is resized
     // https://github.com/developmentseed/lonboard/issues/994
     // until the upstream is resolved:

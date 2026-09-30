@@ -22,7 +22,7 @@ import {
   useControl,
 } from "react-map-gl/maplibre";
 
-import { isDefined } from "../util";
+import { omitUndefined } from "../util";
 import { BaseModel } from "./base";
 import { invoke } from "./dispatch";
 
@@ -42,15 +42,11 @@ export abstract class BaseMapControlModel extends BaseModel {
   }
 
   baseDeckProps() {
-    return {
-      ...(isDefined(this.position) ? { placement: this.position } : {}),
-    };
+    return omitUndefined({ placement: this.position });
   }
 
   baseMaplibreProps() {
-    return {
-      ...(isDefined(this.position) ? { position: this.position } : {}),
-    };
+    return omitUndefined({ position: this.position });
   }
 
   abstract renderDeck(): React.JSX.Element | null;
@@ -63,7 +59,6 @@ export class FullscreenControlModel extends BaseMapControlModel {
   renderDeck() {
     const { placement, ...otherProps } = this.baseDeckProps();
     const props = { placement: placement || "top-right", ...otherProps };
-    console.log(placement);
     return <div>{<FullscreenWidget {...props} />}</div>;
   }
 
@@ -237,10 +232,15 @@ export class NavigationControlModel extends BaseMapControlModel {
   }
 
   renderDeck() {
+    // Default to top-right, where MapLibre puts its navigation control
+    const { placement, ...otherProps } = this.baseDeckProps();
+    const props = { placement: placement || "top-right", ...otherProps };
+    // Python sends `null` when these aren't set. Show both widgets then, as
+    // MapLibre does by default for its navigation control.
     return (
       <div>
-        {this.showZoom && <ZoomWidget {...this.baseDeckProps()} />}
-        {this.showCompass && <CompassWidget {...this.baseDeckProps()} />}
+        {this.showZoom !== false && <ZoomWidget {...props} />}
+        {this.showCompass !== false && <CompassWidget {...props} />}
       </div>
     );
   }
@@ -248,12 +248,10 @@ export class NavigationControlModel extends BaseMapControlModel {
   renderMaplibre() {
     const props = {
       ...this.baseMaplibreProps(),
-      ...(isDefined(this.showCompass) && { showCompass: this.showCompass }),
-      ...(isDefined(this.showZoom) && { showZoom: this.showZoom }),
-      ...(isDefined(this.visualizePitch) && {
+      ...omitUndefined({
+        showCompass: this.showCompass,
+        showZoom: this.showZoom,
         visualizePitch: this.visualizePitch,
-      }),
-      ...(isDefined(this.visualizeRoll) && {
         visualizeRoll: this.visualizeRoll,
       }),
     };
@@ -281,8 +279,7 @@ export class ScaleControlModel extends BaseMapControlModel {
   renderMaplibre() {
     const props = {
       ...this.baseMaplibreProps(),
-      ...(isDefined(this.maxWidth) && { maxWidth: this.maxWidth }),
-      ...(isDefined(this.unit) && { unit: this.unit }),
+      ...omitUndefined({ maxWidth: this.maxWidth, unit: this.unit }),
     };
     return <div>{<ScaleControl {...props} />}</div>;
   }

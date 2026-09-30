@@ -21,7 +21,7 @@ import {
 import type { CommonViewProps } from "@deck.gl/core/dist/views/view";
 import type { WidgetModel } from "@jupyter-widgets/base";
 
-import { isDefined } from "../util";
+import { omitUndefined } from "../util";
 import { BaseModel } from "./base";
 
 export abstract class BaseViewModel<ViewState> extends BaseModel {
@@ -44,11 +44,13 @@ export abstract class BaseViewModel<ViewState> extends BaseModel {
   baseViewProps<T>(): CommonViewProps<T> {
     return {
       id: this.model.model_id,
-      ...(isDefined(this.x) && { x: this.x }),
-      ...(isDefined(this.y) && { y: this.y }),
-      ...(isDefined(this.width) && { width: this.width }),
-      ...(isDefined(this.height) && { height: this.height }),
-      ...(isDefined(this.padding) && { padding: this.padding }),
+      ...omitUndefined({
+        x: this.x,
+        y: this.y,
+        width: this.width,
+        height: this.height,
+        padding: this.padding,
+      }),
     };
   }
 
@@ -77,17 +79,13 @@ export class FirstPersonViewModel extends BaseViewModel<FirstPersonViewState> {
   }
 
   viewProps(): Omit<FirstPersonViewProps, "id"> {
-    return {
-      ...(isDefined(this.projectionMatrix) && {
-        projectionMatrix: this.projectionMatrix,
-      }),
-      ...(isDefined(this.fovy) && { fovy: this.fovy }),
-      ...(isDefined(this.near) && { near: this.near }),
-      ...(isDefined(this.far) && { far: this.far }),
-      ...(isDefined(this.focalDistance) && {
-        focalDistance: this.focalDistance,
-      }),
-    };
+    return omitUndefined({
+      projectionMatrix: this.projectionMatrix,
+      fovy: this.fovy,
+      near: this.near,
+      far: this.far,
+      focalDistance: this.focalDistance,
+    });
   }
 
   build(): FirstPersonView {
@@ -114,15 +112,11 @@ export class GlobeViewModel extends BaseViewModel<GlobeViewState> {
   }
 
   viewProps(): Omit<GlobeViewProps, "id"> {
-    return {
-      ...(isDefined(this.resolution) && { resolution: this.resolution }),
-      ...(isDefined(this.nearZMultiplier) && {
-        nearZMultiplier: this.nearZMultiplier,
-      }),
-      ...(isDefined(this.farZMultiplier) && {
-        farZMultiplier: this.farZMultiplier,
-      }),
-    };
+    return omitUndefined({
+      resolution: this.resolution,
+      nearZMultiplier: this.nearZMultiplier,
+      farZMultiplier: this.farZMultiplier,
+    });
   }
 
   build(): GlobeView {
@@ -157,21 +151,15 @@ export class MapViewModel extends BaseViewModel<MapViewState> {
   }
 
   viewProps(): Omit<MapViewProps, "id"> {
-    return {
-      ...(isDefined(this.repeat) && { repeat: this.repeat }),
-      ...(isDefined(this.nearZMultiplier) && {
-        nearZMultiplier: this.nearZMultiplier,
-      }),
-      ...(isDefined(this.farZMultiplier) && {
-        farZMultiplier: this.farZMultiplier,
-      }),
-      ...(isDefined(this.projectionMatrix) && {
-        projectionMatrix: this.projectionMatrix,
-      }),
-      ...(isDefined(this.fovy) && { fovy: this.fovy }),
-      ...(isDefined(this.altitude) && { altitude: this.altitude }),
-      ...(isDefined(this.orthographic) && { orthographic: this.orthographic }),
-    };
+    return omitUndefined({
+      repeat: this.repeat,
+      nearZMultiplier: this.nearZMultiplier,
+      farZMultiplier: this.farZMultiplier,
+      projectionMatrix: this.projectionMatrix,
+      fovy: this.fovy,
+      altitude: this.altitude,
+      orthographic: this.orthographic,
+    });
   }
 
   build(): MapView {
@@ -204,16 +192,14 @@ export class OrbitViewModel extends BaseViewModel<OrbitViewState> {
   }
 
   viewProps(): Omit<OrbitViewProps, "id"> {
-    return {
-      ...(isDefined(this.orbitAxis) && { orbitAxis: this.orbitAxis }),
-      ...(isDefined(this.projectionMatrix) && {
-        projectionMatrix: this.projectionMatrix,
-      }),
-      ...(isDefined(this.fovy) && { fovy: this.fovy }),
-      ...(isDefined(this.near) && { near: this.near }),
-      ...(isDefined(this.far) && { far: this.far }),
-      ...(isDefined(this.orthographic) && { orthographic: this.orthographic }),
-    };
+    return omitUndefined({
+      orbitAxis: this.orbitAxis,
+      projectionMatrix: this.projectionMatrix,
+      fovy: this.fovy,
+      near: this.near,
+      far: this.far,
+      orthographic: this.orthographic,
+    });
   }
 
   build(): OrbitView {
@@ -240,11 +226,7 @@ export class OrthographicViewModel extends BaseViewModel<OrthographicViewState> 
   }
 
   viewProps(): Omit<OrthographicViewProps, "id"> {
-    return {
-      ...(isDefined(this.flipY) && { flipY: this.flipY }),
-      ...(isDefined(this.near) && { near: this.near }),
-      ...(isDefined(this.far) && { far: this.far }),
-    };
+    return omitUndefined({ flipY: this.flipY, near: this.near, far: this.far });
   }
 
   build(): OrthographicView {
