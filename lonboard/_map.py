@@ -258,9 +258,8 @@ class Map(BaseAnyWidget):
                 "that are pickable and visible. Each chunk is rendered as one or more "
                 "deck.gl layers, and deck.gl can only pick from the first "
                 f"{MAX_PICKABLE_DECK_LAYERS} layers. To avoid this, set "
-                "`pickable=False` on layers that don't need picking, combine the data "
-                "into fewer layers, or pass a larger `_rows_per_chunk` when creating a "
-                "layer so that it has fewer chunks.",
+                "`pickable=False` on layers that don't need picking, or combine the "
+                "data into fewer layers.",
                 UserWarning,
                 stacklevel=_user_stacklevel(),
             )
