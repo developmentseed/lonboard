@@ -84,6 +84,34 @@ pnpm link ../deck.gl-raster/packages/*
 You'll also want to ensure that deck.gl versions in both projects are pinned
 exactly the same.
 
+## Linting and formatting
+
+We use [pre-commit](https://pre-commit.com/) to run a few fast checks before each commit. The hooks are defined in [`.pre-commit-config.yaml`](./.pre-commit-config.yaml).
+
+Install the hooks once after cloning the repository:
+
+```
+uv run pre-commit install
+```
+
+To run the hooks on every file without making a commit:
+
+```
+uv run pre-commit run --all-files
+```
+
+CI runs the same command.
+
+pre-commit runs each hook in an environment of its own, without the dependencies of the project. So the hooks only do checks that need nothing but the source files, and they don't run the tests.
+
+### Javascript
+
+The hooks don't check the JavaScript code. [Biome](https://biomejs.dev/) lints and formats it, and CI fails if `pnpm check` reports a problem. To apply the fixes that Biome can make by itself:
+
+```sh
+pnpm check:fix
+```
+
 ## Publishing
 
 Push a new tag to the main branch of the format `v*`. A new version will be published to PyPI automatically.
@@ -121,6 +149,12 @@ ANYWIDGET_HMR=1 uvx juv run --with="../" examples/air-traffic-control.ipynb
 ```
 
 Note that the path in `--with` is relative to the notebook itself.
+
+### Screenshots in notebooks
+
+Don't paste screenshots into Markdown cells. Jupyter stores them inside the notebook as base64, and every docs release then publishes a fresh copy of each example page, which is [what made the `gh-pages` branch so large](https://github.com/developmentseed/lonboard/issues/1160). Save the image to `assets/` instead and link to it relative to the notebook, e.g. `![](../assets/duckdb-heatmap.jpg)`. The mkdocs hook in `scripts/mkdocs_notebook_links.py` adjusts such links for the site's directory URLs.
+
+Widget state saved in a notebook ("Save Widget State" in JupyterLab) is stripped by the `scripts/normalize_notebook.py` pre-commit hook, since it only holds a copy of the JS bundle and can't render the maps on the docs site anyway.
 
 ## Profiling
 

@@ -1,6 +1,6 @@
 from __future__ import annotations
 
-from dataclasses import dataclass
+from dataclasses import dataclass, field
 from typing import TYPE_CHECKING, Any, Literal
 
 if TYPE_CHECKING:
@@ -16,7 +16,9 @@ if TYPE_CHECKING:
 class EncodedImage:
     """An encoded image in a specific format."""
 
-    data: Buffer
+    # Keep the raw bytes out of the repr; a single tile's repr would otherwise
+    # run to megabytes when displayed in a notebook.
+    data: Buffer = field(repr=False)
     """Image data as a bytes-like object, such as bytes or memoryview."""
 
     media_type: Literal["image/png", "image/jpeg", "image/webp", "image/avif"]

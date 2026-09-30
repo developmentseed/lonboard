@@ -20,7 +20,7 @@ viz(arrow_table)
 # Or, customize the visualization by constructing the layer directly
 # This assumes the FlatGeobuf contains LineString or MultiLineString data
 layer = PathLayer(
-    geo_table,
+    arrow_table,
     get_width=20,
     get_color=[0, 0, 255],
     width_units="meters",

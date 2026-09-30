@@ -23,3 +23,15 @@ repos:
       - id: ruff
         args: ["--fix"]
       - id: ruff-format
+
+  - repo: local
+    hooks:
+      - id: normalize-notebook
+        name: normalize notebook metadata
+        description: >
+          Reset notebooks to the generic `python3` kernel so a machine-specific
+          kernel doesn't override the environment `juv run` builds for them,
+          and drop saved widget state, which only bloats the notebook.
+        entry: python3 scripts/normalize_notebook.py
+        language: system
+        files: \.ipynb$

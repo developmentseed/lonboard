@@ -148,7 +148,7 @@ def apply_continuous_cmap(
     return colors
 
 
-def apply_categorical_cmap(  # noqa: C901
+def apply_categorical_cmap(  # noqa: C901, PLR0912
     values: (
         NDArray
         | pd.Series
@@ -202,6 +202,11 @@ def apply_categorical_cmap(  # noqa: C901
         pass
 
     values = ChunkedArray(values)
+
+    # arro3's `dictionary_encode` doesn't support boolean arrays. Python treats `0` and
+    # `1` as the same dict keys as `False` and `True`, so the `cmap` lookup still works.
+    if DataType.is_boolean(values.type):
+        values = values.cast(DataType.uint8())
 
     if not DataType.is_dictionary(values.type):
         values = ChunkedArray(dictionary_encode(values))

@@ -157,6 +157,34 @@ def viz(
     If you want to easily add more data to an existing map, you can pass the output of
     `viz` into [`Map.add_layer`][lonboard.Map.add_layer].
 
+    `viz` returns a regular [`Map`][lonboard.Map], whose layers are in
+    [`Map.layers`][lonboard.Map.layers]. So you can change how the data looks after
+    calling `viz` by setting attributes on the map or on its layers. A map that is
+    already displayed updates in place.
+
+    ```py
+    import geodatasets
+    import geopandas as gpd
+    from lonboard import viz
+
+    # New York City boroughs
+    gdf = gpd.read_file(geodatasets.get_path("nybb"))
+    m = viz(gdf)
+    m
+    ```
+
+    Then, in a later cell:
+
+    ```py
+    # `viz` created one `PolygonLayer` for this data
+    layer = m.layers[0]
+    layer.get_fill_color = [255, 0, 0]
+    layer.get_line_color = [255, 255, 255]
+    ```
+
+    `viz` creates one layer per geometry type in each input, so check the type of each
+    layer in `m.layers` when you pass mixed geometries or more than one input.
+
     Args:
         data: a data object of any supported type.
 
@@ -204,7 +232,7 @@ def viz(
 
     map_kwargs = map_kwargs or {}
 
-    if "basemap_style" not in map_kwargs and "basemap" not in map_kwargs:
+    if "basemap" not in map_kwargs:
         map_kwargs["basemap"] = MaplibreBasemap(
             mode="interleaved",
             style=CartoStyle.DarkMatter,

@@ -5,8 +5,8 @@ import type { PolygonLayerProps } from "@deck.gl/layers";
 import { PolygonLayer } from "@deck.gl/layers";
 import type { DeckGLRef } from "@deck.gl/react";
 import type { GeoArrowPickingInfo } from "@geoarrow/deck.gl-geoarrow";
+import { HeroUIProvider } from "@heroui/react";
 import type { IWidgetManager } from "@jupyter-widgets/base";
-import { NextUIProvider } from "@nextui-org/react";
 import debounce from "lodash.debounce";
 import throttle from "lodash.throttle";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
@@ -39,6 +39,7 @@ import { isGlobeView, omitUndefined, sanitizeViewState } from "./util.js";
 import "maplibre-gl/dist/maplibre-gl.css";
 import "./globals.css";
 import "@maplibre/maplibre-gl-geocoder/dist/maplibre-gl-geocoder.css";
+import "@deck.gl/widgets/dist/stylesheet.css";
 
 await initParquetWasm();
 initMaplibreWorker();
@@ -363,9 +364,9 @@ function App() {
 }
 
 const WrappedApp = () => (
-  <NextUIProvider>
+  <HeroUIProvider>
     <App />
-  </NextUIProvider>
+  </HeroUIProvider>
 );
 
 const module: { render: Render; initialize?: Initialize } = {
