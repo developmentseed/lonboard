@@ -144,7 +144,7 @@ class Map(BaseAnyWidget):
 
     def on_click(
         self,
-        callback: Callable[[tuple[float, float]], object],
+        callback: Callable[[tuple[float, float]], None],
         *,
         remove: bool = False,
     ) -> None:
