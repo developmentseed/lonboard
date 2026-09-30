@@ -232,14 +232,15 @@ export class NavigationControlModel extends BaseMapControlModel {
   }
 
   renderDeck() {
+    // Default to top-right, where MapLibre puts its navigation control
+    const { placement, ...otherProps } = this.baseDeckProps();
+    const props = { placement: placement || "top-right", ...otherProps };
     // Python sends `null` when these aren't set. Show both widgets then, as
     // MapLibre does by default for its navigation control.
     return (
       <div>
-        {this.showZoom !== false && <ZoomWidget {...this.baseDeckProps()} />}
-        {this.showCompass !== false && (
-          <CompassWidget {...this.baseDeckProps()} />
-        )}
+        {this.showZoom !== false && <ZoomWidget {...props} />}
+        {this.showCompass !== false && <CompassWidget {...props} />}
       </div>
     );
   }
