@@ -124,7 +124,7 @@ The documentation website is generated with `mkdocs` and [`mkdocs-material`](htt
 uv run --group docs mkdocs serve
 ```
 
-Publishing documentation happens automatically via CI when a new tag is published of the format `v*`. It can also be triggered manually through the Github Actions dashboard on [this page](https://github.com/developmentseed/lonboard/actions/workflows/deploy-mkdocs.yml). Note that publishing docs manually is **not advised if there have been new code additions since the last release** as the new functionality will be associated in the documentation with the tag of the _previous_ release. In this case, prefer publishing a new patch or minor release, which will publish both a new Python package and the new documentation for it.
+Publishing documentation happens automatically via CI when a new tag is published of the format `v*`. Docs are published per minor version (`v0.17`, not `v0.17.2`), so a patch release replaces the docs of its minor rather than adding another copy to the `gh-pages` branch. It can also be triggered manually through the Github Actions dashboard on [this page](https://github.com/developmentseed/lonboard/actions/workflows/deploy-mkdocs.yml). Note that publishing docs manually is **not advised if there have been new code additions since the last release** as the new functionality will be associated in the documentation with the tag of the _previous_ release. In this case, prefer publishing a new patch or minor release, which will publish both a new Python package and the new documentation for it.
 
 Note that the `jupyter-mkdocs` plugin is only turned on when the `CI` env variable is set. If you're inspecting the docs with a Jupyter notebook, start the local dev server with:
 

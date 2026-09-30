@@ -11,3 +11,4 @@
         - "!from_duckdb"
         - "!from_geopandas"
       inherited_members: true
+      show_labels: false
