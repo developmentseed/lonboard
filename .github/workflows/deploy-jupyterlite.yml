@@ -1,0 +1,83 @@
+name: Publish JupyterLite site via GitHub Pages
+
+# Builds the JupyterLite site in jupyterlite/ and publishes it, unversioned, to
+# the jupyterlite/ folder of the gh-pages branch:
+# https://developmentseed.org/lonboard/jupyterlite/
+#
+# The `jupyterlite` job in deploy-mkdocs.yml calls this after it publishes a
+# stable release's docs. It can also be run by hand from main, to republish the
+# site without redeploying the docs. The notebook installs the latest lonboard
+# from PyPI, so don't run it by hand while the newest release isn't on PyPI yet.
+on:
+  workflow_call:
+  workflow_dispatch:
+
+# This only limits GITHUB_TOKEN. The push to gh-pages authenticates with the
+# release bot's app token, which is minted after the build, below.
+permissions:
+  contents: read
+
+jobs:
+  deploy:
+    name: Build and deploy
+    runs-on: ubuntu-latest
+    # Publish only from main branch or a release tag
+    if: github.ref == 'refs/heads/main' || startsWith(github.ref, 'refs/tags/v')
+    steps:
+      # A called workflow runs at the caller's ref, so on a release this checks
+      # out the release tag
+      - uses: actions/checkout@v7
+
+      - name: Install a specific version of uv
+        uses: astral-sh/setup-uv@v7
+        with:
+          enable-cache: true
+          version: "0.4.x"
+
+      # --frozen rather than --locked: uv.lock records lonboard's own version,
+      # and a release that bumps it without re-locking mustn't block this
+      # deploy. The PR build in test.yml uses --locked to catch a stale lock.
+      - name: Build JupyterLite site
+        run: uv run --frozen --only-group jupyterlite python scripts/build_jupyterlite.py --output-dir "$RUNNER_TEMP/jupyterlite-site"
+
+      # Minted after the build, so the build's third-party code never runs
+      # while this job holds a write token
+      - uses: actions/create-github-app-token@v3.2.0
+        id: app-token
+        with:
+          app-id: ${{ secrets.DS_RELEASE_BOT_ID }}
+          private-key: ${{ secrets.DS_RELEASE_BOT_PRIVATE_KEY }}
+          permission-contents: write
+
+      # gh-pages holds every docs version, about 1 GB, so check out only the
+      # jupyterlite/ folder
+      - uses: actions/checkout@v7
+        with:
+          ref: refs/heads/gh-pages
+          path: gh-pages
+          sparse-checkout: jupyterlite
+          token: ${{ steps.app-token.outputs.token }}
+
+      - name: Publish to gh-pages
+        working-directory: gh-pages
+        env:
+          GIT_AUTHOR_NAME: CI
+          GIT_AUTHOR_EMAIL: ci-bot@example.com
+          GIT_COMMITTER_NAME: CI
+          GIT_COMMITTER_EMAIL: ci-bot@example.com
+        run: |
+          # Replace the whole folder: rsync's size and mtime check could skip a
+          # changed file
+          rm -rf jupyterlite
+          cp -R "$RUNNER_TEMP/jupyterlite-site" jupyterlite
+          git add -A jupyterlite
+
+          if git diff --cached --quiet; then
+            echo "The JupyterLite site is unchanged, nothing to publish"
+            exit 0
+          fi
+
+          git commit -m "Deployed ${GITHUB_SHA::7} to jupyterlite"
+          # Never force. If something else pushed to gh-pages first, this
+          # fails, and re-running the job starts again from the new tip.
+          git push origin HEAD:gh-pages

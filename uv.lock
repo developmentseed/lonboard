@@ -996,6 +996,15 @@ wheels = [
 ]
 
 [[package]]
+name = "doit"
+version = "0.37.0"
+source = { registry = "https://pypi.org/simple" }
+sdist = { url = "https://files.pythonhosted.org/packages/35/f6/3a817d438799bda4d4e5fd136175cf7c328c074fadc1422dec3b374907e7/doit-0.37.0.tar.gz", hash = "sha256:d3c72e0e46a8fa1ddabea8f830762402dee090caf33c30c2295ac7010db8f09c", size = 1450967, upload-time = "2026-02-09T07:02:15.578Z" }
+wheels = [
+    { url = "https://files.pythonhosted.org/packages/9c/38/3d6dcbf8379cb86d71a2325210ca3469a33767d8254b74d8c343db26ce87/doit-0.37.0-py3-none-any.whl", hash = "sha256:a9f181566aa90faac515e276f85e6526019554ed7e13c12cf9dc094ffecf3e1b", size = 85780, upload-time = "2026-02-09T07:02:10.155Z" },
+]
+
+[[package]]
 name = "duckdb"
 version = "1.5.5"
 source = { registry = "https://pypi.org/simple" }
@@ -2056,6 +2065,38 @@ wheels = [
 ]
 
 [[package]]
+name = "jupyterlite-core"
+version = "0.8.5"
+source = { registry = "https://pypi.org/simple" }
+dependencies = [
+    { name = "doit" },
+    { name = "jupyter-core" },
+    { name = "pycparser", marker = "platform_python_implementation == 'PyPy'" },
+]
+sdist = { url = "https://files.pythonhosted.org/packages/e9/0d/76609e89f8e891fdea1203c383cce3a888da72a771c0d51ff45bd95a653d/jupyterlite_core-0.8.5.tar.gz", hash = "sha256:7ee0d20ea5591700d9b87b8f27be01f4f05404cabdf0346d3eff3ec935094f24", size = 15802385, upload-time = "2026-09-28T13:51:15.934Z" }
+wheels = [
+    { url = "https://files.pythonhosted.org/packages/29/8c/0a4a982d2fc79755ce2844ab96aaec90fd7d132503182fd43424e932568b/jupyterlite_core-0.8.5-py3-none-any.whl", hash = "sha256:296767f7f8a99b493a83b8a75439e8969fe38b6d3d1816925d374755ccc78871", size = 15816221, upload-time = "2026-09-28T13:51:12.869Z" },
+]
+
+[package.optional-dependencies]
+contents = [
+    { name = "jupyter-server" },
+]
+
+[[package]]
+name = "jupyterlite-pyodide-kernel"
+version = "0.8.6"
+source = { registry = "https://pypi.org/simple" }
+dependencies = [
+    { name = "jupyterlite-core" },
+    { name = "pkginfo" },
+]
+sdist = { url = "https://files.pythonhosted.org/packages/e5/d8/ee2e0ce2dbe1a3d4efe4af38aee3f3a7fcef832d9b064c786c7e9acec7aa/jupyterlite_pyodide_kernel-0.8.6.tar.gz", hash = "sha256:ef53c638b1034473d72549642feb2fb9b8bfded970c7d5908551896c2b9b1268", size = 209172, upload-time = "2026-09-10T14:02:14.396Z" }
+wheels = [
+    { url = "https://files.pythonhosted.org/packages/3c/59/95d3f962ea620eea8e0ad8fbcde3e66745be6afc0f864c5534c9c53979e7/jupyterlite_pyodide_kernel-0.8.6-py3-none-any.whl", hash = "sha256:c9e698420e7f95f156c09c1474898ee6727b35b1740b369cb5f5aaa59ea73d3f", size = 222455, upload-time = "2026-09-10T14:02:12.218Z" },
+]
+
+[[package]]
 name = "jupytext"
 version = "1.19.3"
 source = { registry = "https://pypi.org/simple" }
@@ -2264,6 +2305,12 @@ docs = [
     { name = "mkdocs-material", extra = ["imaging"] },
     { name = "mkdocstrings", extra = ["python"] },
 ]
+jupyterlite = [
+    { name = "anywidget" },
+    { name = "ipywidgets" },
+    { name = "jupyterlite-core", extra = ["contents"] },
+    { name = "jupyterlite-pyodide-kernel" },
+]
 watchfiles = [
     { name = "watchfiles" },
 ]
@@ -2333,6 +2380,12 @@ docs = [
     { name = "mkdocs-jupyter", specifier = ">=0.24.8" },
     { name = "mkdocs-material", extras = ["imaging"], specifier = ">=9.5.49" },
     { name = "mkdocstrings", extras = ["python"], specifier = ">=1.0" },
+]
+jupyterlite = [
+    { name = "anywidget", specifier = ">=0.9" },
+    { name = "ipywidgets", specifier = ">=8" },
+    { name = "jupyterlite-core", extras = ["contents"], specifier = ">=0.8.5" },
+    { name = "jupyterlite-pyodide-kernel", specifier = ">=0.8.6,<0.9" },
 ]
 watchfiles = [{ name = "watchfiles", specifier = ">=0.24.0" }]
 
@@ -3243,7 +3296,7 @@ name = "pexpect"
 version = "4.9.0"
 source = { registry = "https://pypi.org/simple" }
 dependencies = [
-    { name = "ptyprocess" },
+    { name = "ptyprocess", marker = "sys_platform != 'emscripten' and sys_platform != 'win32'" },
 ]
 sdist = { url = "https://files.pythonhosted.org/packages/42/92/cc564bf6381ff43ce1f4d06852fc19a2f11d180f23dc32d9588bee2f149d/pexpect-4.9.0.tar.gz", hash = "sha256:ee7d41123f3c9911050ea2c2dac107568dc43b2d3b0c7557a33212c398ead30f", size = 166450, upload-time = "2023-11-25T09:07:26.339Z" }
 wheels = [
@@ -3344,6 +3397,15 @@ source = { registry = "https://pypi.org/simple" }
 sdist = { url = "https://files.pythonhosted.org/packages/b5/ef/d69a0c50f812326d3b54f8aea0536733d650cc2fb47c6510a2abe54df81d/pixelmatch-0.4.0.tar.gz", hash = "sha256:80a9ae1084941569f0e8cc7fe70b50c02312b4dbaf4b37b710e0f75f9667fa32", size = 7224, upload-time = "2026-03-07T08:55:54.81Z" }
 wheels = [
     { url = "https://files.pythonhosted.org/packages/f2/7e/8958796e5077a2473780c9368a0d7f360d1de62c96608b84170c916e4b23/pixelmatch-0.4.0-py3-none-any.whl", hash = "sha256:d40e49e05eab0531bc7665f40309d90f5708c3edd121b3fd63385864005b81a8", size = 9728, upload-time = "2026-03-07T08:55:53.212Z" },
+]
+
+[[package]]
+name = "pkginfo"
+version = "1.13"
+source = { registry = "https://pypi.org/simple" }
+sdist = { url = "https://files.pythonhosted.org/packages/3e/ad/97538d5a1041d8d3ba155075b0b35248cf8538e1f1ec764f1d117962b01d/pkginfo-1.13.tar.gz", hash = "sha256:4f70471c643f71fe84a06230c0e33c5c5b12a33b2fd21bff14ddaef5a974adb1", size = 453525, upload-time = "2026-08-30T02:45:07.804Z" }
+wheels = [
+    { url = "https://files.pythonhosted.org/packages/ed/ad/2e9e8a7bb014758af9453b3d818848d50852592296aceb8817f2a937fa71/pkginfo-1.13-py3-none-any.whl", hash = "sha256:37e1bfb7b5b149829e6f140a225b517c4c8808d8d164f68137b9492023874061", size = 32769, upload-time = "2026-08-30T02:45:06.55Z" },
 ]
 
 [[package]]

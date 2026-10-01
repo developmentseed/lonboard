@@ -35,3 +35,6 @@ repos:
         entry: python3 scripts/normalize_notebook.py
         language: system
         files: \.ipynb$
+        # The JupyterLite notebooks need the Pyodide kernelspec;
+        # scripts/build_jupyterlite.py checks them instead
+        exclude: ^jupyterlite/

@@ -106,6 +106,15 @@ dev = [
     "types-geopandas>=1.1.1.20250708",
     "types-shapely>=2.1.0.20250512",
 ]
+# Deps for building the JupyterLite site
+jupyterlite = [
+    "anywidget>=0.9",
+    "ipywidgets>=8",
+    # [contents] brings jupyter-server, which the build needs to add notebooks
+    "jupyterlite-core[contents]>=0.8.5",
+    # We cap the minor version, since a new version could change the Pyodide ABI
+    "jupyterlite-pyodide-kernel>=0.8.6,<0.9",
+]
 # Note: this is defined as a separate group so that it can be not installed in
 # CI. See:
 # https://github.com/developmentseed/lonboard/pull/234
@@ -184,6 +193,10 @@ ignore = [
     "S113",   # Probable use of `requests` call without timeout
     "T201",   # `print` found
     "UP",
+]
+"jupyterlite/*" = [
+    "S108", # /tmp is deliberate: the working directory, /drive, syncs into the visitor's browser storage
+    "S113", # Probable use of `requests` call without timeout
 ]
 "lonboard/*" = [
     "PT", # pytest

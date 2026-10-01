@@ -38,6 +38,7 @@
 -  [JupyterLab Sidecar integration ![](../assets/jupyter-sidecar.jpg)](../examples/integrations/sidecar/) using [`ScatterplotLayer`][lonboard.ScatterplotLayer] and [`JupyterLab Sidecar`](https://github.com/jupyter-widgets/jupyterlab-sidecar)
 -  [MovingPandas ![](../assets/ais-movingpandas.gif)](../examples/ais-movingpandas) using [`TripsLayer`][lonboard.TripsLayer]
 -  [Geocoder with GeoPy ![](../assets/geocoder-control.jpg)](../examples/geocoder-control/) using [`GeocoderControl`][lonboard.controls.GeocoderControl]
+-  [Lonboard in your browser ![](../assets/lonboard-jupyterlite.jpg)](../ecosystem/pyodide/) with [JupyterLite](https://jupyterlite.readthedocs.io/)
 
 
 </div>

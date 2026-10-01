@@ -1,21 +1,46 @@
 # Pyodide
 
-As of Lonboard version 0.10, it's possible to use Lonboard in [Pyodide](https://pyodide.org/en/stable/), where Python is running _inside your web browser_ in WebAssembly.
+Lonboard works in [Pyodide](https://pyodide.org/), which runs Python _inside your web browser_ with WebAssembly. That includes [JupyterLite](https://jupyterlite.readthedocs.io/), a Jupyter environment that needs no server and no install.
 
-[![](../assets/lonboard-jupyterlite.png)][Jupyterlite demo]
+[Try it in your browser](https://developmentseed.org/lonboard/jupyterlite/lab/index.html?path=getting-started.ipynb){ .md-button .md-button--primary }
 
-[**Demo notebook**][Jupyterlite demo].
+[![Lonboard mapping the boroughs of New York City in JupyterLite](../assets/lonboard-jupyterlite.jpg)](https://developmentseed.org/lonboard/jupyterlite/lab/index.html?path=getting-started.ipynb)
 
-[Jupyterlite demo]: https://jupyterlite.ds.io/lab/index.html?path=lonboard%2Fdata-filter-extension.ipynb
+The demo notebook installs Lonboard and maps the boroughs of New York City:
 
-There's a few things to keep in mind:
+```py
+%pip install lonboard geopandas requests pyarrow
 
-### Pyodide-specific dependencies
+from io import BytesIO
+from zipfile import ZipFile
 
-Not all Python libraries work out of the box in Pyodide. Any Python libraries that use compiled code need to be loaded in Pyodide with special wheels.
+import geopandas as gpd
+import requests
 
-Lonboard does not use compiled code itself, but some of its dependencies — namely [`arro3`](https://github.com/kylebarron/arro3) — use compiled code. You may need to manually load `arro3` wheels before importing `lonboard`. Refer to the demo notebook for an example.
+import lonboard
 
-### Memory limits
+url = "https://cdn.jsdelivr.net/gh/geopandas/geodatasets@2026.5.1/data_backup/nybb_16a.zip"
+r = requests.get(url)
+with ZipFile(BytesIO(r.content)) as z:
+    z.extractall("/tmp/nybb")
+
+gdf = gpd.read_file("/tmp/nybb/nybb_16a/nybb.shp").to_crs("EPSG:4326")
+lonboard.viz(gdf)
+```
+
+## What to expect
+
+- The first run downloads Python and any dependencies. Your browser caches them for repeat visits.
+- The notebook is read-only. You can edit and run any cell, but your changes are lost when you reload, and your browser warns you before you leave. To keep them, use **File > Save As**, then choose **Discard** when JupyterLite asks about `getting-started.ipynb`.
+
+## Installing packages
+
+Install packages with `%pip install` in a notebook cell:
+
+- Pure-Python packages work as they are. Packages with compiled code need wheels built for Pyodide, either [included in Pyodide](https://pyodide.org/en/stable/usage/packages-in-pyodide.html) or published on PyPI.
+- Lonboard needs `pyarrow` to read a GeoDataFrame, so install it alongside.
+- `%pip install --pre lonboard` installs the latest pre-release, if you want to try a beta.
+
+## Memory limits
 
 Pyodide has stricter memory limits than normal Python environments. Take care to delete Python objects you're no longer using with `del`.
