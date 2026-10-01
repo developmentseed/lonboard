@@ -37,8 +37,11 @@ jobs:
           enable-cache: true
           version: "0.4.x"
 
+      # --frozen rather than --locked: uv.lock records lonboard's own version,
+      # and a release that bumps it without re-locking mustn't block this
+      # deploy. The PR build in test.yml uses --locked to catch a stale lock.
       - name: Build JupyterLite site
-        run: uv run --locked --only-group jupyterlite python scripts/build_jupyterlite.py --output-dir "$RUNNER_TEMP/jupyterlite-site"
+        run: uv run --frozen --only-group jupyterlite python scripts/build_jupyterlite.py --output-dir "$RUNNER_TEMP/jupyterlite-site"
 
       # Minted after the build, so the build's third-party code never runs
       # while this job holds a write token

@@ -114,6 +114,8 @@ pnpm check:fix
 
 ## Publishing
 
+Bump the version with `uv version <new version>`, which updates `pyproject.toml` and `uv.lock` together. If you edit `pyproject.toml` by hand, run `uv lock` afterwards. Otherwise the JupyterLite build check, which runs uv with `--locked`, fails on the stale lock.
+
 Push a new tag to the main branch of the format `v*`. A new version will be published to PyPI automatically.
 
 ## Documentation website

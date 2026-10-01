@@ -41,6 +41,9 @@ DEFAULT_OUTPUT_DIR = LITE_DIR / "_output"
 DOIT_DB = LITE_DIR / ".jupyterlite.doit.db"
 
 BUNDLED_PACKAGE = "anywidget"
+# Files at the root of every built site. jupyter-lite.json alone isn't enough:
+# JupyterLite also reads one from the source directory.
+BUILD_MARKERS = ("jupyter-lite.json", "config-utils.js")
 PYODIDE_KERNELSPEC = {
     "display_name": "Python (Pyodide)",
     "language": "python",
@@ -112,7 +115,7 @@ def remove_previous_build(output_dir: Path) -> None:
     """
     if not output_dir.exists() or not any(output_dir.iterdir()):
         return
-    if not (output_dir / "jupyter-lite.json").is_file():
+    if not all((output_dir / name).is_file() for name in BUILD_MARKERS):
         msg = (
             f"Refusing to delete {output_dir}: "
             "it isn't empty and doesn't hold a JupyterLite build"

@@ -192,7 +192,8 @@ def test_read_only_copy_skips_checkpoints(tmp_path: Path):
 def test_remove_previous_build_deletes_an_earlier_site(tmp_path: Path):
     site = tmp_path / "site"
     (site / "files").mkdir(parents=True)
-    (site / "jupyter-lite.json").write_text("{}", encoding="utf-8")
+    for name in script.BUILD_MARKERS:
+        (site / name).write_text("{}", encoding="utf-8")
     old = site / "files" / "nb.ipynb"
     old.write_text("{}", encoding="utf-8")
     old.chmod(0o444)
@@ -215,6 +216,22 @@ def test_remove_previous_build_refuses_other_dirs(tmp_path: Path, name: str):
     with pytest.raises(ValueError, match="Refusing"):
         script.remove_previous_build(tmp_path)
     assert (tmp_path / name).exists()
+
+
+def test_remove_previous_build_refuses_a_source_dir_with_jupyter_lite_json(
+    tmp_path: Path,
+):
+    # JupyterLite also reads a jupyter-lite.json from the directory the build
+    # runs in, so the source directory can have one too
+    lite = tmp_path / "jupyterlite"
+    draft = _write_notebook(lite / "content" / "draft.ipynb")
+    (lite / "jupyter_lite_config.json").write_text("{}", encoding="utf-8")
+    (lite / "jupyter-lite.json").write_text("{}", encoding="utf-8")
+
+    with pytest.raises(ValueError, match="Refusing"):
+        script.remove_previous_build(lite)
+
+    assert draft.exists()
 
 
 def _fake_site(
@@ -318,3 +335,26 @@ def test_committed_notebooks_are_publishable(tmp_path: Path):
     assert notebooks, f"no notebooks in {content}"
     for notebook in notebooks:
         assert script.notebook_problems(content / notebook) == []
+
+
+def _build_command(workflow: Path) -> list[str]:
+    lines = [
+        line
+        for line in workflow.read_text(encoding="utf-8").splitlines()
+        if "scripts/build_jupyterlite.py" in line
+    ]
+    assert len(lines) == 1, f"expected one build step in {workflow}"
+    return lines[0].split()
+
+
+def test_deploy_installs_from_the_lock_without_rechecking_it():
+    # A release bumps lonboard's version in pyproject.toml, and uv.lock records
+    # that version too. With `--locked`, a lock that wasn't refreshed would fail
+    # the tag's deploy, so the deploy uses `--frozen`. The PR build keeps
+    # `--locked`, so a stale lock still fails a PR.
+    workflows = SCRIPT.parents[1] / ".github" / "workflows"
+    deploy = _build_command(workflows / "deploy-jupyterlite.yml")
+    pr_check = _build_command(workflows / "test.yml")
+    assert "--frozen" in deploy
+    assert "--locked" not in deploy
+    assert "--locked" in pr_check

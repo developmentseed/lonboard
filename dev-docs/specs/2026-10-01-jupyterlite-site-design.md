@@ -206,8 +206,14 @@ deploy. Visitors can still edit and run the notebook, and File > Save As keeps
 a copy.
 
 **Lock file.** Regenerate `uv.lock` with a current uv. uv 0.4.30 would rewrite it
-in an older format. `--locked` makes a stale lock fail the build, instead of
-building from versions nobody reviewed.
+in an older format.
+
+- **The PR check builds with `--locked`,** so a stale lock fails the PR instead
+  of building from versions nobody reviewed.
+- **The deploy builds with `--frozen`.** `uv.lock` also records lonboard's own
+  version, and a release that bumps it without re-locking mustn't block the
+  tag's deploy. Bump versions with `uv version <version>`, which updates both
+  files.
 
 ### Deploy
 
