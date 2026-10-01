@@ -310,3 +310,11 @@ def test_missing_bundled_index_is_a_problem(tmp_path: Path):
     problems = script.output_problems(site, NOTEBOOKS, "0.11.0")
     assert len(problems) == 1
     assert "pypi/all.json" in problems[0]
+
+
+def test_committed_notebooks_are_publishable(tmp_path: Path):
+    content = SCRIPT.parents[1] / "jupyterlite" / "content"
+    notebooks = script.read_only_copy(content, tmp_path / "content")
+    assert notebooks, f"no notebooks in {content}"
+    for notebook in notebooks:
+        assert script.notebook_problems(content / notebook) == []

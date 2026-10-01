@@ -39,3 +39,7 @@ node_modules
 test-results/
 playwright-report/
 tests/e2e/fixtures/.ipynb_checkpoints
+
+# JupyterLite site, built by scripts/build_jupyterlite.py
+jupyterlite/_output
+.jupyterlite.doit.db

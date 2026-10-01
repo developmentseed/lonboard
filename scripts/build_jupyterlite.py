@@ -21,12 +21,24 @@ Two things differ from a plain `jupyter lite build`:
 
 from __future__ import annotations
 
+import argparse
 import json
 import shutil
-from typing import TYPE_CHECKING
+import subprocess
+import sys
+import tempfile
+import urllib.request
+from importlib.metadata import version
+from pathlib import Path
 
-if TYPE_CHECKING:
-    from pathlib import Path
+ROOT = Path(__file__).resolve().parent.parent
+LITE_DIR = ROOT / "jupyterlite"
+CONTENT_DIR = LITE_DIR / "content"
+DEFAULT_OUTPUT_DIR = LITE_DIR / "_output"
+# JupyterLite's build cache, written to the directory the build runs in. A
+# stale cache can skip copying the notebooks, which the site then lists as
+# writable.
+DOIT_DB = LITE_DIR / ".jupyterlite.doit.db"
 
 BUNDLED_PACKAGE = "anywidget"
 PYODIDE_KERNELSPEC = {
@@ -139,3 +151,70 @@ def output_problems(
     if bundled != expected:
         problems.append(f"pypi/all.json should bundle {expected}, not {bundled}")
     return problems
+
+
+def fetch_release(name: str, release_version: str) -> dict:
+    """Return PyPI's JSON description of one release of a package."""
+    url = f"https://pypi.org/pypi/{name}/{release_version}/json"
+    with urllib.request.urlopen(url, timeout=30) as response:
+        return json.load(response)
+
+
+def main() -> None:
+    """Build the site, and fail unless it can be published."""
+    parser = argparse.ArgumentParser(description="Build the JupyterLite site.")
+    parser.add_argument(
+        "--output-dir",
+        type=Path,
+        default=DEFAULT_OUTPUT_DIR,
+        help="where to write the site (default: jupyterlite/_output)",
+    )
+    # Resolve against the directory the script runs from: the build itself
+    # runs in jupyterlite/
+    output_dir = parser.parse_args().output_dir.resolve()
+
+    anywidget_version = version(BUNDLED_PACKAGE)
+    release = fetch_release(BUNDLED_PACKAGE, anywidget_version)
+    wheel = wheel_url(release, BUNDLED_PACKAGE)
+    print(f"Bundling {BUNDLED_PACKAGE} {anywidget_version}: {wheel}")
+
+    with tempfile.TemporaryDirectory() as tmp:
+        content = Path(tmp) / "content"
+        notebooks = read_only_copy(CONTENT_DIR, content)
+        problems = [
+            problem
+            for notebook in notebooks
+            for problem in notebook_problems(CONTENT_DIR / notebook)
+        ]
+        if problems:
+            raise SystemExit("\n".join(problems))
+        try:
+            remove_previous_build(output_dir)
+        except ValueError as e:
+            raise SystemExit(str(e)) from e
+        DOIT_DB.unlink(missing_ok=True)
+        subprocess.run(  # noqa: S603
+            [
+                sys.executable,
+                "-m",
+                "jupyterlite_core",
+                "build",
+                "--contents",
+                str(content),
+                "--output-dir",
+                str(output_dir),
+                "--piplite-wheels",
+                wheel,
+            ],
+            cwd=LITE_DIR,
+            check=True,
+        )
+
+    problems = output_problems(output_dir, notebooks, anywidget_version)
+    if problems:
+        raise SystemExit("\n".join(problems))
+    print(f"Built the JupyterLite site in {output_dir}")
+
+
+if __name__ == "__main__":
+    main()
