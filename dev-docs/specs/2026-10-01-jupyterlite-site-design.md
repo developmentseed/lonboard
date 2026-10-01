@@ -22,7 +22,7 @@ don't show this:
 
 ## Decisions
 
-Agreed in conversation on 2026-09-30 and 2026-10-01.
+Agreed in conversation on 2026-09-30 and 2026-10-01:
 
 - **Alongside, not embedded.** The docs link to a JupyterLite site. No notebook
   is embedded in a docs page.
@@ -34,279 +34,392 @@ Agreed in conversation on 2026-09-30 and 2026-10-01.
 - **Deployed with the docs** on stable release tags, plus a manual trigger.
 - **Ships with 0.17.0.** The release moves from 2026-10-01 to 2026-10-02.
 
-## Verified facts
+Proposed in this spec, and not agreed yet:
 
-Checked on 2026-10-01 with throwaway builds, a real browser, and the GitHub API.
+1. **Bundle the matching anywidget and ipywidgets wheels.** The site serves
+   wheels that match the widget frontends it bundles (see Build), so a new
+   anywidget release can't stop the map from rendering. The cost: the site can
+   only install lonboard releases that accept those versions. That fits "latest
+   only". One reviewer would defer this to a follow-up because no new anywidget
+   minor is pending. It has been tested in a browser.
+2. **Serve the notebook read-only.** Otherwise a visitor's autosaved copy hides
+   every later deploy.
+3. **Rehearse both workflows before tagging,** using a `dry_run` input on the
+   new one. Otherwise their first real run is the tag push.
+4. **A Dependabot ignore rule** for minor and major updates of
+   `jupyterlite-pyodide-kernel`, which can move the site to a new Pyodide ABI.
 
-- **mike leaves the folder alone.** Each `mike deploy` commit starts from the
-  current `gh-pages` tip and deletes only its own version folder(s), then
-  rewrites `versions.json` and `.nojekyll`. A root `jupyterlite/` folder
-  survives docs releases.
-- **The stack works.** The planned build (jupyterlite-core 0.8.5,
-  jupyterlite-pyodide-kernel 0.8.6, Pyodide 314.0.6, Python 3.14), served under
-  `/lonboard/jupyterlite/`, renders the notebook's map with lonboard 0.17.0b1.
-  The relative URLs and the service worker scope both work under that subpath,
-  and GitHub Pages needs no COOP/COEP headers. jupyterlite.ds.io, on Pyodide
-  314.0.0, renders it too.
-- **What comes from where at runtime:**
-  - Pyodide, and its builds of numpy, pandas, pyarrow, pyproj, shapely,
-    geopandas and fiona, come from jsDelivr.
-  - lonboard comes from PyPI.
-  - arro3-core, arro3-compute, arro3-io and geoarrow-rust-core come from PyPI
-    as `cp314-pyemscripten_2026_0` wheels.
-  - The basemap comes from CARTO.
-  - geopandas reads the shapefile with fiona; pyogrio isn't available in
-    Pyodide.
-  - A first visit downloads about 45-65 MB. On a fast machine the map appears
-    about 8 s after Run All.
-- **0.16.0 doesn't work there.** Until 0.17.0 is on PyPI, `%pip install
-  lonboard` installs 0.16.0, which fails at `viz()` with "can't start new
-  thread" (fixed in #1204). 0.16.0 also pins `anywidget~=0.9.0`, which the
-  site's anywidget 0.11 frontend can't render.
-- **anywidget's two halves must match.** anywidget's Python side asks for a
-  frontend `~{major}.{minor}.*`. The site bundles the frontend from its build
-  environment, while `%pip` installs anywidget from PyPI. 0.17.0 drops the
-  anywidget cap (#1282). So without a fix, an anywidget 0.12 release would stop
-  the map from rendering until the site is rebuilt.
-- **A bundled wheel beats PyPI.** When the site bundles a wheel (piplite index),
-  `%pip install` takes that package only from the bundle, whatever PyPI has.
-- **Saved copies hide redeploys.** JupyterLite autosaves an opened, run notebook
-  into the browser after about 120 s. From then on that copy hides every later
-  deploy. A notebook whose file is read-only at build time is served with
-  `"writable": false`: it can't be saved in place, so visitors always see the
-  deployed version, and Save As still works.
-- **Storage is per path.** Browser storage is named per site path
-  (`JupyterLite Storage - /lonboard/jupyterlite/`), so it doesn't collide with
-  other sites on developmentseed.org.
-- **Kernel selection.** A notebook with kernelspec `python3` (what
-  `normalize-notebook` writes) still starts the Pyodide kernel, but only through
-  JupyterLab's fallback on `language_info.name`. Without `language_info` a
-  "Select Kernel" dialog appears.
-- **uv 0.4.30 is enough.** CI's `setup-uv` pin `0.4.x` gives uv 0.4.30, which
-  supports `uv run --only-group` (added in 0.4.27). That installs only the group:
-  not lonboard, its dependencies, or the dev group. This matters because the
-  build bundles every JupyterLab extension in its environment.
-- **Size.** Built with `no_sourcemaps`, the site is about 21.5 MB in 550 files.
-  With source maps it's 72 MB. Each deploy replaces the folder, so it doesn't
-  grow per release.
-- **Release timing.** On a `v*` tag, PyPI has the wheel about 1 min after the
-  push. The docs deploy runs in parallel, and the JupyterLite job runs after it,
-  so the site goes live after PyPI has the release.
+## What we know
+
+Checked on 2026-10-01 with throwaway builds, Chrome, a Node replay of the
+Pyodide kernel, the GitHub API and mike's source. "Tested" means it was run.
+"From source" means it was read in the code but not reproduced.
+
+- **mike leaves the folder alone** (from source, mike 2.2.0). Each deploy builds
+  its commit on the current `gh-pages` tip and deletes only its own version
+  folder(s). It then rewrites `versions.json` and `.nojekyll`, and pushes
+  without force.
+- **The design works** (tested). A prototype of this build was served under
+  `/lonboard/jupyterlite/`. It used jupyterlite-core 0.8.5 and
+  jupyterlite-pyodide-kernel 0.8.6, which gives Pyodide 314.0.6 and Python 3.14,
+  bundled anywidget 0.11.0 and ipywidgets 8.1.9, and served the notebook
+  read-only. Results:
+  - It rendered the map with lonboard 0.17.0b1.
+  - anywidget and ipywidgets loaded only from the site's own index.
+  - The notebook showed a read-only badge, Save was disabled, and nothing was
+    autosaved after 130 s. Save As made a writable copy.
+- **Where everything comes from at runtime** (tested):
+  - jsDelivr serves Pyodide and its builds of numpy, pandas, pyarrow, pyproj,
+    shapely, geopandas and fiona, plus parquet-wasm and the data.
+  - PyPI serves lonboard and the `cp314-pyemscripten_2026_0` wheels of arro3
+    and geoarrow-rust-core.
+  - CARTO serves the basemap.
+  - A first visit downloads about 65 MB. The map appears about 8 s after Run
+    All, on a fast machine and connection.
+- **Before 0.17.0 is on PyPI the notebook fails** (tested). `%pip install
+  lonboard` resolves 0.16.0, which pins `anywidget~=0.9.0`. The site serves
+  anywidget 0.11.0, so the first cell fails with "Can't find a pure Python 3
+  wheel for 'anywidget~=0.9.0'". Without bundling, 0.16.0 would install and
+  then fail at `viz()` with "can't start new thread", which #1204 fixed.
+- **Saved copies hide redeploys** (tested). JupyterLite autosaves a run,
+  writable notebook after 120 s. From then on that visitor sees their browser
+  copy, not the deployed file.
+- **anywidget's frontend has to match** (from source). anywidget's Python side
+  asks for frontend `~{major}.{minor}.*`, and #1282 dropped lonboard's anywidget
+  cap. Without bundling, a new anywidget minor release would stop the map from
+  rendering until `uv.lock` is bumped and the site redeployed. No anywidget 0.12
+  exists to test this with.
+- **A bundled wheel is the only source for its package** (tested). `%pip` never
+  falls back to PyPI for a name the site's index has.
+- **Storage is named by site path** (tested), as
+  `JupyterLite Storage - /lonboard/jupyterlite/`. Other sites on
+  developmentseed.org don't share it.
+- **Kernel selection** (tested). A `python3` kernelspec, which is what
+  `normalize-notebook` writes, still starts the Pyodide kernel, through
+  JupyterLab's fallback on `language_info.name`. Without `language_info`, every
+  visitor gets a "Select Kernel" dialog.
+- **CI's uv is new enough** (tested). CI pins `setup-uv` to `0.4.x`, which is uv
+  0.4.30. It supports `uv run --locked --only-group`, and that installs only
+  the group. This matters because the build bundles every JupyterLab extension
+  in its environment, so the dev group has to stay out.
+- **Size** (tested). With `no_sourcemaps` the site is about 22 MB in about 550
+  files; with source maps it is 72 MB. Each deploy replaces the folder, so the
+  published site doesn't grow per release. Branch history grows by about
+  6.5 MB, compressed, per deploy that changes the assets.
+- **Publish step** (tested locally). A simulation against a partial-clone remote
+  confirmed:
+  - Other folders are untouched, and deleted files are removed.
+  - A first deploy works, and an unchanged rebuild is a no-op.
+  - A non-fast-forward push is rejected cleanly.
+
+  actionlint passes drafts of all three workflow changes.
+- **Release timing** (observed on past releases). PyPI has the wheel about 1 min
+  after the tag push, and the docs push lands about 1 min after it. The two
+  workflows are independent, so that order is usual, not guaranteed.
 
 ## Design
 
-### Repository layout
+### Files
 
-- `jupyterlite/jupyter_lite_config.json`:
-  `{"LiteBuildConfig": {"contents": ["content"], "no_sourcemaps": true}}`. Leave
-  `output_dir` out: a relative one resolves against the current directory, not
-  this folder.
-- `jupyterlite/content/getting-started.ipynb`: the notebook from
-  developmentseed/jupyterlite (`content/lonboard_example/lonboard-0.17.ipynb`),
-  with these changes:
-  - `%pip install lonboard geopandas requests pyarrow`, with no pin.
-  - Outputs cleared and imports sorted.
-  - kernelspec stays `python` / "Python (Pyodide)", and `language_info.name`
-    stays `python`.
-  - A short Markdown intro.
+- **New:**
+  - `jupyterlite/jupyter_lite_config.json`
+  - `jupyterlite/content/getting-started.ipynb`. Force-add it: `.gitignore`
+    has `*.ipynb`.
+  - `scripts/build_jupyterlite.py`
+  - `.github/workflows/deploy-jupyterlite.yml`
+- **Changed:** `.github/workflows/deploy-mkdocs.yml`,
+  `.github/workflows/test.yml`, `.github/dependabot.yml`, `pyproject.toml`,
+  `uv.lock`, `.pre-commit-config.yaml`, `.gitignore`, `docs/ecosystem/pyodide.md`,
+  `examples/index.md` (served as `docs/examples/index.md`, which is a symlink),
+  `README.md` and `DEVELOP.md`.
+- **Replaced:** `assets/lonboard-jupyterlite.png` (2.1 MB, used only by the
+  Pyodide page) becomes a compressed JPEG of the new notebook, used by both the
+  Pyodide page and the examples card. Every docs version gets its own copy of
+  `assets/`, so it should be small.
 
-  It's force-added, because `.gitignore` has `*.ipynb`.
-- `scripts/build_jupyterlite.py`: the build, shared by both workflows and by
-  local builds (see Build).
-- `pyproject.toml`: a new `jupyterlite` dependency group,
-  `jupyterlite-core[contents]>=0.8.5,<0.9`,
-  `jupyterlite-pyodide-kernel>=0.8.6,<0.9`, `anywidget` and `ipywidgets`. The
-  `[contents]` extra pulls in jupyter-server, which the build needs to add
-  notebooks. The `<0.9` caps make a move to a new Pyodide ABI a deliberate,
-  reviewed change. Regenerate `uv.lock` with the maintainer's uv, not 0.4.30:
-  0.4.30 rewrites the lock in its older format.
-- `pyproject.toml` ruff config: a per-file-ignores entry for `jupyterlite/`,
-  like the one `examples/*` already has, for S113 (`requests` without timeout)
-  and S108 (`/tmp` paths). The plan checks with `ruff check` that the glob
-  matches the notebook.
-- `.pre-commit-config.yaml`: `exclude: ^jupyterlite/` on `normalize-notebook`.
-  CI runs pre-commit with `--all-files`, and the hook would otherwise rewrite the
-  kernelspec to `python3`.
-- `.gitignore`: `jupyterlite/_output` and `.jupyterlite.doit.db`.
+### The notebook
+
+Copied from developmentseed/jupyterlite's `lonboard-0.17.ipynb`, with these
+changes:
+
+- **Install line:** `%pip install lonboard geopandas requests pyarrow`, with no
+  pin. pyarrow is listed because only lonboard imports it, so the kernel can't
+  detect that it's needed.
+- **Data:** loaded from a geodatasets tag (`@2026.5.1`, which jsDelivr caches
+  as immutable) instead of `@main`.
+- **Reprojection:** `.to_crs(4326)` before `viz`, so there's no reprojection
+  warning.
+- **Cleanup:** a short intro, and outputs cleared.
+- **Metadata:** kernelspec `python` / "Python (Pyodide)", and
+  `language_info.name` `python`.
+
+Two lint changes go with it:
+
+- **Ruff:** add `"jupyterlite/*" = ["S108", "S113"]` to the ruff
+  per-file-ignores. Extracting to `/tmp` is deliberate: the working directory,
+  `/drive`, syncs into the visitor's browser storage. And leaving out a request
+  timeout keeps the demo short.
+- **Pre-commit:** the `normalize-notebook` hook gets `exclude: ^jupyterlite/`.
+  CI runs pre-commit on all files, and the hook would rewrite the kernelspec.
+  The build script takes over its checks for these notebooks.
 
 ### Build
 
-`uv run --only-group jupyterlite python scripts/build_jupyterlite.py [--output-dir DIR]`
-does the following:
+`uv run --locked --only-group jupyterlite python scripts/build_jupyterlite.py
+[--output-dir DIR]` runs these steps. The default output is
+`jupyterlite/_output`.
 
-1. **Bundles the matching anywidget and ipywidgets wheels.** It reads the
-   anywidget and ipywidgets versions installed in the build environment, looks
-   up their `py3-none-any` wheels with PyPI's JSON API
-   (`https://pypi.org/pypi/<name>/<version>/json`), and passes the wheel URLs to
-   the build as `--piplite-wheels`. The site then serves `%pip` the same
-   versions as the frontends it bundles: anywidget's, and jupyterlab_widgets'
-   for ipywidgets. Since `uv.lock` resolves one anywidget for the whole project,
-   the bundled version always satisfies the lonboard release that deploys it.
-2. **Makes the notebooks read-only** (`chmod a-w`) for the build and restores
-   them afterwards, so that saved browser copies can't hide later deploys.
-3. **Runs `jupyter lite build`** with `jupyterlite/` as the working directory,
-   so `.jupyterlite.doit.db` and the default `_output/` stay in that folder. It
-   first resolves `--output-dir` against the directory the script was run from.
-4. **Fails if the notebook is missing** from `<output>/files/`. If the config
-   isn't read, the build exits 0 without the notebook.
+1. **Checks each notebook** in `jupyterlite/content/`: no outputs, the Pyodide
+   kernelspec, and `language_info.name == "python"`.
+2. **Deletes the build cache** (`jupyterlite/.jupyterlite.doit.db`) and the
+   output directory, so every build is a full build (about 5 s). It deletes the
+   output directory only if it holds an earlier JupyterLite build. Without this,
+   JupyterLite's cache can keep a stale `"writable": true` or stale wheels.
+3. **Makes read-only copies** of `content/` in a temporary directory and builds
+   from those. jupyter-server then lists the notebooks as `"writable": false`,
+   and the source files are never touched.
+4. **Bundles the matching wheels.** It looks up the `py3-none-any` wheels of the
+   anywidget and ipywidgets versions installed in the build environment, using
+   PyPI's JSON API with only the standard library. It passes their URLs as
+   `--piplite-wheels`.
+5. **Runs `jupyter lite build`** with `jupyterlite/` as the working directory.
+6. **Fails unless the output is right:** each notebook is in `<output>/files/`
+   with `"writable": false` in `api/contents/all.json`, and `pypi/all.json` lists
+   only anywidget and ipywidgets.
 
-The site does not bundle a lonboard wheel. A bundled wheel would freeze the site
-on that version.
+**Why bundle.** `%pip` resolves anywidget and ipywidgets from PyPI at runtime,
+but their frontends are bundled at build time. Serving the matching wheels keeps
+the two halves at the same version. `uv.lock` has one anywidget for the whole
+project, so a tag's bundle always satisfies that release. The site can't install
+older lonboard releases, and a beta that raises the anywidget or ipywidgets floor
+needs a deploy from `main` before `--pre` works there.
+
+**Why read-only.** Otherwise a visitor's autosaved copy hides every later
+deploy. Visitors can still edit and run the notebook, and File > Save As keeps
+a copy.
+
+**Lock file.** Regenerate `uv.lock` with a current uv. uv 0.4.30 would rewrite it
+in an older format. `--locked` makes a stale lock fail the build, instead of
+building from versions nobody reviewed.
 
 ### Deploy
 
-**New `.github/workflows/deploy-jupyterlite.yml`**, triggered by
-`workflow_call` and `workflow_dispatch`:
+**New `.github/workflows/deploy-jupyterlite.yml`.** It's a separate workflow so
+that the site can be redeployed without redeploying the docs.
 
-- **Permissions and guard.** `permissions: contents: read`. The job runs only
-  when `github.ref` is `refs/heads/main` or a `refs/tags/v*` tag, so nobody can
-  publish a branch's notebook.
-- **Its own token.** It mints its own token with
-  `actions/create-github-app-token`, from `DS_RELEASE_BOT_ID` and
-  `DS_RELEASE_BOT_PRIVATE_KEY` (org secrets, passed with `secrets: inherit`). A
-  token can't be handed over from the docs job, and `GITHUB_TOKEN` is read-only
-  in this repo.
-- **Build steps:**
-  1. Check out the repo at the caller's ref (the release tag when called).
+- **Triggers:** `workflow_call`, from deploy-mkdocs, and `workflow_dispatch`
+  with a boolean `dry_run` input. Called runs always publish.
+- **Permissions and guard:** `permissions: contents: read`. The job only runs
+  from `refs/heads/main` or a `refs/tags/v*` tag, so a manual run from a feature
+  branch can't publish that branch's notebook by accident. Such a run is
+  skipped.
+- **Steps, in order:**
+  1. Check out the triggering ref: the release tag when called on a release,
+     or the chosen branch or tag when run by hand.
   2. Run `setup-uv` with `0.4.x`.
-  3. Run the build script into `$RUNNER_TEMP/jupyterlite-site`.
-- **Publish steps:**
-  1. Check out `gh-pages` into `gh-pages/` with `sparse-checkout: jupyterlite`
-     and the app token. The branch is about 945 MB, so a full checkout would be
-     wasteful.
-  2. Run `rm -rf jupyterlite`, `cp -R` the build into its place, and
-     `git add -A jupyterlite`. Don't use rsync: its size+mtime check can skip
-     changed files.
-  3. Skip the commit if `git diff --cached --quiet` reports no changes.
-  4. Commit as `CI <ci-bot@example.com>`, the docs job's identity. Set both
-     `GIT_AUTHOR_*` and `GIT_COMMITTER_*`.
-  5. Push without `--force`. If `gh-pages` moved in the meantime, the push is
-     rejected, and re-running the job starts again from the new tip.
+  3. Build into `$RUNNER_TEMP`.
+  4. Mint the app token with `actions/create-github-app-token`, from
+     `DS_RELEASE_BOT_ID` and `DS_RELEASE_BOT_PRIVATE_KEY` (org secrets, passed
+     by `secrets: inherit`) and with `permission-contents: write`.
+  5. Check out `refs/heads/gh-pages` into `gh-pages/`, with
+     `sparse-checkout: jupyterlite` and the app token. The branch is about
+     945 MB.
+  6. Run `rm -rf jupyterlite`, `cp -R` the build in its place, and
+     `git add -A`. Don't use rsync: its size+mtime check can skip changed files.
+  7. If nothing changed, stop.
+  8. Commit as `CI <ci-bot@example.com>`, the docs job's identity, setting both
+     `GIT_AUTHOR_*` and `GIT_COMMITTER_*`. The message is "Deployed <sha> to
+     jupyterlite".
+  9. Run `git push` without `--force`, or `git push --dry-run` when `dry_run`
+     is set.
+- **Why the app token:** it's what the docs job uses (#1161). It is minted
+  after the build, so the third-party build code only ever runs with the
+  read-only `GITHUB_TOKEN`.
 
 **Changes to `.github/workflows/deploy-mkdocs.yml`:**
 
-- **Expose whether it deployed.** Add `id: deploy` to the "Deploy docs" step,
-  and `echo "deployed=true" >> "$GITHUB_OUTPUT"` after `mike deploy`, inside the
-  existing stable-tag `if`. Add `outputs: deployed:` to the `build` job.
-- **Add a `jupyterlite` job:**
-  ```yaml
-  jupyterlite:
-    needs: build
-    if: needs.build.outputs.deployed == 'true'
-    uses: ./.github/workflows/deploy-jupyterlite.yml
-    secrets: inherit
-    permissions:
-      contents: read
-  ```
-  Beta tags don't deploy docs, so they don't deploy the site either.
+- **Expose whether it deployed.** Add `id: deploy` to the "Deploy docs" step.
+  Inside the existing stable-tag `if`, after `mike deploy`, add
+  `echo "deployed=true" >> "$GITHUB_OUTPUT"`. Add
+  `outputs: deployed: ${{ steps.deploy.outputs.deployed }}` to the `build` job.
+- **Add a `jupyterlite` job:** `needs: build`,
+  `if: needs.build.outputs.deployed == 'true'`,
+  `uses: ./.github/workflows/deploy-jupyterlite.yml`, `secrets: inherit` and
+  `permissions: contents: read`.
+- **Effects:**
+  - Beta tags skip the site.
+  - A manual docs run that resolves to a stable tag republishes both the docs
+    and the site, from the ref it was started on.
 
-**No concurrency group.** `needs:` already orders a release's two pushes. The
-only other writer is a manual run, and a collision there only rejects a
-non-forced push. A shared group would have to stay off the calling job, or it
-deadlocks.
+**No concurrency group.** `needs:` orders a release's two pushes. Any other
+writer can only make a non-forced push fail, and re-running fixes it: a manual
+run, a second tag, or a hand edit of `gh-pages`. A shared group on the calling
+job would deadlock.
 
 ### PR check
 
-A new `jupyterlite` job in `.github/workflows/test.yml`, with no matrix: checkout,
-`setup-uv` `0.4.x`, then the build script into `$RUNNER_TEMP`. It needs no Node:
-the JupyterLite app ships prebuilt in the jupyterlite-core wheel. Dependabot's
-existing uv entry already updates the new group, and this job builds each bump.
+A new `jupyterlite` job in `test.yml`: checkout, `setup-uv` `0.4.x`, then the
+build script into `$RUNNER_TEMP`. It needs no Node, because the JupyterLite app
+ships prebuilt in the jupyterlite-core wheel. The job runs the script's checks
+on every PR, Dependabot bumps included.
+
+### Dependency updates
+
+- **The `jupyterlite` group:** `jupyterlite-core[contents]>=0.8.5`,
+  `jupyterlite-pyodide-kernel>=0.8.6,<0.9`, `anywidget` and `ipywidgets`. The
+  `[contents]` extra brings jupyter-server, which the build needs for notebooks.
+  The lower bounds matter: 0.7.x kernels can't install lonboard.
+- **Kernel upgrades are manual.** The kernel package picks the Pyodide version.
+  A minor bump can move to a new Pyodide ABI, and `%pip install lonboard` then
+  fails until arro3 and geoarrow-rust-core publish wasm wheels for it. Dependabot
+  raises caps inside its grouped PR (as in #1261), so `.github/dependabot.yml`
+  also ignores minor and major updates of `jupyterlite-pyodide-kernel`. Such
+  upgrades are done by hand and checked in a browser. Patch updates stay on the
+  same ABI and still flow.
 
 ### Docs
 
 - **`docs/ecosystem/pyodide.md`:** rewritten.
   - A "Try it in your browser" button linking to
     `https://developmentseed.org/lonboard/jupyterlite/lab/index.html?path=getting-started.ipynb`,
-    a new screenshot, and the notebook's code.
-  - What to expect: the first run downloads about 50 MB, and the notebook can't
-    be saved in place, so use File > Save As to keep changes.
-  - Use `%pip install --pre lonboard` to try a beta, and avoid `-U`, which
-    piplite silently ignores.
+    the new screenshot, and the notebook's code.
+  - What to expect:
+    - The first run downloads about 65 MB and takes tens of seconds.
+    - The notebook is read-only. Edits are lost on reload, and the browser
+      warns before you leave. To keep them, use File > Save As, then choose
+      Discard when asked about `getting-started.ipynb`.
+  - Use `%pip install --pre lonboard` to try a beta.
+  - Don't use `-U` or `--upgrade`: piplite silently skips the whole line.
   - Keep the note about memory limits, and remove the advice to load arro3
     wheels by hand.
-- **`docs/examples/index.md`:** a "Lonboard in your browser" card linking to that
-  page.
-- **`README.md`:** one "Try it in your browser" link.
-- **Links:** all of them use the absolute `https://` URL. The Pages site doesn't
+- **`examples/index.md`:** a "Lonboard in your browser" card with the same
+  image, linking to `../ecosystem/pyodide/`.
+- **`README.md`:** a plain Markdown link. The README is also the docs home page
+  and the PyPI description, so it can't use mkdocs-only syntax. The link goes
+  live on GitHub at merge, before the site exists, so merge close to tagging.
+- **Links:** all use the absolute `https://` URL. The Pages site doesn't
   enforce HTTPS, and service workers need it.
 
 ### Developer notes
 
-Add a "JupyterLite site" section to `DEVELOP.md`:
+Add a short "JupyterLite site" section to `DEVELOP.md`:
 
-- How to build and preview locally: run the script, then serve the output under
-  `/lonboard/jupyterlite/`.
-- How to test a pre-release: `%pip install --pre lonboard` in the browser.
-- Three constraints:
-  - lonboard's dependency lower bounds must stay at or below Pyodide's versions
-    (for example traitlets 5.14.3, numpy 2.4.6, pyproj 3.7.2).
-  - A jupyterlite-pyodide-kernel minor bump can mean a new Pyodide ABI.
-  - A new ABI needs arro3 and geoarrow-rust-core wasm wheels before
-    `%pip install lonboard` works.
+- **Build and preview:**
+  `uv run --locked --only-group jupyterlite python scripts/build_jupyterlite.py --output-dir /tmp/lite/lonboard/jupyterlite`,
+  then `python -m http.server -d /tmp/lite 8000`, then open
+  `http://127.0.0.1:8000/lonboard/jupyterlite/lab/index.html?path=getting-started.ipynb`.
+- **Expected warnings:** the build always prints two, about translations and
+  libarchive-c.
+- **Constraints:**
+  - lonboard's lower bounds must stay at or below Pyodide's versions (for
+    example traitlets 5.14.3, numpy 2.4.6, pyproj 3.7.2).
+  - A new required dependency must be pure Python, in Pyodide's lock, or
+    published as a `pyemscripten` wheel.
+  - Kernel minor upgrades are manual.
 
 ### Release-notes edits
 
-These go in the release notes, not this PR. The 0.17 `CHANGELOG.md` section and
-`docs/blog/posts/lonboard-0.17.md` aren't on `main` yet.
+Outside this PR: the 0.17 `CHANGELOG.md` section and the blog post exist only
+in the maintainer's checkout.
 
-- Change both dates to 2026-10-02.
-- Link the site from the blog post's "Emscripten support" section.
-- List this PR in the changelog.
+- **`CHANGELOG.md`:** date to 2026-10-02, and add this PR.
+- **The blog post:** it says it was written entirely by a human, so the
+  maintainer makes these edits: the date, and optionally a link to the site in
+  the "Emscripten support" section.
 
 ## Testing
 
-- **CI:** the PR check builds the site; ruff and pre-commit pass on the notebook.
-- **Before merging, by hand:**
-  1. Build with the script and serve the output under `/lonboard/jupyterlite/`.
-  2. Open the notebook, change the install line to `%pip install --pre lonboard`
-     (0.17.0 isn't on PyPI yet), and run all.
+- **CI:** the PR check, plus ruff and pre-commit on the notebook.
+- **Before merging:**
+  1. Run actionlint on the three workflow files.
+  2. Build locally, serve the output, and run the notebook with lonboard built
+     from `main`. If 0.17.0b2 has been cut, use `%pip install --pre lonboard`.
+     Otherwise run `pnpm run build && uv build --wheel`, serve the wheel, and use
+     `%pip install <wheel URL> geopandas requests pyarrow`.
   3. Check that the map renders.
-  4. Check that `micropip.list()` shows anywidget and ipywidgets from the
-     bundled index.
-  5. Check that the notebook is read-only (Save is disabled).
-- **After the release:** open the live link and run the notebook unchanged. It
-  should install lonboard 0.17.0 and render the map.
-- **Not automated in this PR:** running the notebook in Pyodide. See follow-ups.
+  4. Check that anywidget and ipywidgets come from the site's
+     `/lonboard/jupyterlite/pypi/`. Use
+     `importlib.metadata.distribution(name).read_text("PYODIDE_URL")` or the
+     Network panel; `micropip.list()` says "pypi" either way.
+  5. Check that the notebook is read-only.
+- **After merging, before tagging:**
+  1. Run deploy-mkdocs from `main`. The newest tag is a beta, so nothing
+     deploys, but GitHub has to accept both workflow files and the call between
+     them.
+  2. Run deploy-jupyterlite from `main` with `dry_run`. That exercises the
+     build, the token, the sparse checkout, the commit and a
+     `git push --dry-run`.
+- **After the release:** in a fresh private window, open the docs link, run the
+  notebook unchanged, and check that `import lonboard; lonboard.__version__`
+  returns `0.17.0`.
 
 ## Release sequence
 
-1. Merge this PR. Tag-triggered runs read the workflow files from the tagged
-   commit, so both workflow changes must be on `main` before tagging.
-2. Don't run `deploy-jupyterlite` by hand before 0.17.0 is on PyPI. The site
-   would install 0.16.0, which fails.
-3. Tag `v0.17.0`. PyPI, then the docs, then the JupyterLite job. Each push starts
-   its own Pages deployment, which takes about 2-4 min.
-4. Check the live link (see Testing).
-5. If the JupyterLite job fails, fix it on `main` and run `deploy-jupyterlite`
-   from `main` with "Run workflow".
+1. **Merge the release-notes changes and this PR.** Tag-triggered runs read the
+   workflow files from the tagged commit.
+2. **Rehearse** the two workflows (see Testing). Don't publish the site for real
+   before 0.17.0 is on PyPI: the notebook would fail at install.
+3. **Tag `v0.17.0`.** The PyPI upload and the docs deploy start in parallel. The
+   site's job then runs inside the "Publish docs via GitHub Pages" run, after
+   the docs job. Each push starts a Pages build of about 2-4 min.
+4. **Check the live site** (see Testing). If the first cell fails with the
+   `anywidget~=0.9.0` error, either the browser cached PyPI's old index (for up
+   to 10 min) or the PyPI upload failed. Once PyPI has 0.17.0 the site works,
+   with no redeploy.
+5. **Recover from failures:**
+   - A transient failure: use "Re-run failed jobs".
+   - A failure that needs a fix: fix it on `main`, then run deploy-jupyterlite
+     from `main`.
+   - The docs job failed, so the site job was skipped: fix it, then run
+     deploy-mkdocs from `main`. After the tag, `git describe` resolves to
+     v0.17.0, so that run publishes both.
+   - GitHub rejected the run at startup because of a broken workflow file, so
+     neither was published: same as the previous case.
 
-## Risks and known limitations
+**Fallback:** if this PR isn't ready when 0.17.0 is due, tag anyway. Then merge
+it and run deploy-mkdocs from `main`. That redeploys the v0.17 docs and the site,
+which is fine as long as nothing else has merged since the tag.
 
-- **Runtime services.** The site depends on jsDelivr (Pyodide, its packages,
-  the NYC data), PyPI (lonboard and the compiled wheels; the kernel also
-  installs `comm` from PyPI at startup) and CARTO. An outage of any of them
-  breaks the demo.
-- **The compiled wheels are the weak link.** The arro3 and geoarrow-rust-core
-  wasm wheels are built for one Pyodide ABI, and neither project tests them at
-  runtime. A broken wasm release would reach every visitor.
+**Rollback:**
+
+- **Revert a deploy:** in a sparse clone of `gh-pages`, revert the deploy
+  commit and push without force.
+- **Take the site down:** `git rm -r jupyterlite` on `gh-pages`.
+- **Fix forward:** fix it on `main` and run deploy-jupyterlite from `main`.
+
+## Risks
+
+- **Runtime services:** jsDelivr, PyPI and CARTO. The kernel also installs
+  `comm` from PyPI at startup. An outage of any of them breaks the demo.
+- **Compiled wasm wheels:** arro3's and geoarrow-rust-core's are built for one
+  Pyodide ABI, and neither project tests them at runtime.
   - geoarrow-rust-core has wasm wheels only for 0.6.3.
-  - arro3-io 0.8.3 was yanked with no wasm wheel, so visitors get 0.8.2.
-- **Service workers.** JupyterLite unregisters every service worker on the origin
-  when its version changes, which can affect other developmentseed.org sites.
-  They re-register on their next visit.
-- **Moving the site** to another path would orphan visitors' saved files
-  ("Save As" copies), because storage is named by path.
+  - arro3-io 0.8.3 was yanked without one, so visitors get 0.8.2.
+- **The PyPI upload:** if it fails on release day, the site fails at install
+  until it's fixed, because the two workflows don't depend on each other.
+- **Service workers:** JupyterLite unregisters every service worker on the
+  origin on a browser's first visit and on each JupyterLite version change. No
+  other developmentseed.org page registers one today.
+- **Moving the site** to another path would orphan visitors' Save As copies,
+  because storage is named by path.
+- **Rewriting `gh-pages`:** a rewrite like the one on 2026-09-30 would delete
+  `jupyterlite/` unless it is kept explicitly.
 
-## Out of scope and follow-ups
+## Follow-ups
 
-- **A Pyodide smoke test in CI.** For example, replay the kernel bootstrap with
-  `pyodide@314.0.6` under Node, about 20 s. It would catch upstream wheel
-  breakage and too-high lower bounds between releases.
-- **developmentseed/jupyterlite:** remove or redirect its lonboard notebooks and
-  fix its README badge.
-- **gh-pages size.** It is 945 MB, and the 0.17 docs take it to about 1.09 GB,
-  over GitHub's documented 1 GB limit, which isn't enforced yet. Prune old
-  minors.
+Issues to file once this spec is agreed:
+
+- **A Pyodide smoke test in CI**, for example a Node replay of the kernel
+  bootstrap, about 20 s. It should resolve through the built site's
+  `pypi/all.json` first, as the site does.
+- **developmentseed/jupyterlite:**
+  - Add `content/lonboard/data-filter-extension.ipynb` that links to the new
+    site. That repairs the link in every old docs version without touching
+    `gh-pages`.
+  - Point its README links at the new site.
+- **gh-pages size.** It will be about 1.11 GB once v0.17 and the site deploy,
+  over GitHub's documented 1 GB limit. That limit hasn't been enforced so far.
+  Prune old minors with `mike delete --push`, which keeps `jupyterlite/`.
 - **HTTPS.** Enforce HTTPS for the Pages site (an admin setting).
 - **Commit identity.** Commits by `ci-bot@example.com` show on GitHub as an
   unrelated user. Switch both deploys to the app's bot identity.
