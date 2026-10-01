@@ -424,21 +424,22 @@ which is fine as long as nothing else has merged since the tag.
 
 ## Follow-ups
 
-Issues to file once this spec is agreed:
+Each one has an issue:
 
-- **A Pyodide smoke test in CI**, for example a Node replay of the kernel
-  bootstrap, about 20 s. It should resolve through the built site's
+- **A Pyodide smoke test in CI** (#1321), for example a Node replay of the
+  kernel bootstrap, about 20 s. It should resolve through the built site's
   `pypi/all.json` first, as the site does.
-- **developmentseed/jupyterlite:**
+- **developmentseed/jupyterlite** (#1322):
   - Add `content/lonboard/data-filter-extension.ipynb` that links to the new
     site. That repairs the link in every old docs version without touching
     `gh-pages`.
   - Point its README links at the new site.
-- **gh-pages size.** It will be about 1.11 GB once v0.17 and the site deploy,
-  over GitHub's documented 1 GB limit. That limit hasn't been enforced so far.
-  Prune old minors with `mike delete --push`, which keeps `jupyterlite/`.
-- **HTTPS.** Enforce HTTPS for the Pages site (an admin setting).
-- **Commit identity.** Commits by `ci-bot@example.com` show on GitHub as an
-  unrelated user. Switch both deploys to the app's bot identity.
-- **`app-id`** is deprecated in `create-github-app-token` in favour of
+- **gh-pages size** (#1323). It will be about 1.11 GB once v0.17 and the site
+  deploy, over GitHub's documented 1 GB limit. That limit hasn't been enforced
+  so far. Prune old minors with `mike delete --push`, which keeps
+  `jupyterlite/`.
+- **HTTPS** (#1324). Enforce HTTPS for the Pages site (an admin setting).
+- **Commit identity** (#1325). Commits by `ci-bot@example.com` show on GitHub as
+  an unrelated user, so switch both deploys to the app's bot identity. In the
+  same change, move off `create-github-app-token`'s deprecated `app-id` to
   `client-id`.
