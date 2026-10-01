@@ -3,7 +3,7 @@
 **Date:** 2026-10-01
 **Branch:** `kyle/jupyterlite`
 **Issue:** #1319
-**Status:** Draft, awaiting review
+**Status:** Approved
 
 ## Problem
 
@@ -33,21 +33,19 @@ Agreed in conversation on 2026-09-30 and 2026-10-01:
   pin, so it always gets the newest release from PyPI.
 - **Deployed with the docs** on stable release tags, plus a manual trigger.
 - **Ships with 0.17.0.** The release moves from 2026-10-01 to 2026-10-02.
-
-Proposed in this spec, and not agreed yet:
-
-1. **Bundle the matching anywidget and ipywidgets wheels.** The site serves
-   wheels that match the widget frontends it bundles (see Build), so a new
-   anywidget release can't stop the map from rendering. The cost: the site can
-   only install lonboard releases that accept those versions. That fits "latest
-   only". One reviewer would defer this to a follow-up because no new anywidget
-   minor is pending. It has been tested in a browser.
-2. **Serve the notebook read-only.** Otherwise a visitor's autosaved copy hides
-   every later deploy.
-3. **Rehearse both workflows before tagging,** using a `dry_run` input on the
-   new one. Otherwise their first real run is the tag push.
-4. **A Dependabot ignore rule** for minor and major updates of
-   `jupyterlite-pyodide-kernel`, which can move the site to a new Pyodide ABI.
+- **Bundle the anywidget wheel** that matches the anywidget frontend the site
+  bundles, so the two halves always match (see Build). ipywidgets comes from
+  PyPI.
+- **Serve the notebook read-only.**
+  - Visitors can still edit and run it, but their edits aren't saved over the
+    deployed copy, so every visit starts from the latest deploy.
+  - File > Save As keeps a visitor's own version.
+  - A writable notebook would keep edits across reloads, but the visitor's
+    saved copy would then hide every later deploy for them.
+- **Dependabot ignores minor and major updates** of
+  `jupyterlite-pyodide-kernel`, which can move the site to a new Pyodide ABI.
+- **Rehearse both workflows before tagging,** using a `dry_run` input on the new
+  one. Otherwise their first real run is the tag push.
 
 ## What we know
 
@@ -62,10 +60,12 @@ Pyodide kernel, the GitHub API and mike's source. "Tested" means it was run.
 - **The design works** (tested). A prototype of this build was served under
   `/lonboard/jupyterlite/`. It used jupyterlite-core 0.8.5 and
   jupyterlite-pyodide-kernel 0.8.6, which gives Pyodide 314.0.6 and Python 3.14,
-  bundled anywidget 0.11.0 and ipywidgets 8.1.9, and served the notebook
-  read-only. Results:
+  bundled anywidget 0.11.0, and served the notebook read-only. It also bundled
+  ipywidgets 8.1.9; the design takes ipywidgets from PyPI instead, as the earlier
+  spike build did, and it rendered too. Results:
   - It rendered the map with lonboard 0.17.0b1.
-  - anywidget and ipywidgets loaded only from the site's own index.
+  - anywidget loaded only from the site's own index.
+  - A notebook cell edited in the read-only build ran with the edit.
   - The notebook showed a read-only badge, Save was disabled, and nothing was
     autosaved after 130 s. Save As made a writable copy.
 - **Where everything comes from at runtime** (tested):
@@ -178,21 +178,28 @@ Two lint changes go with it:
 3. **Makes read-only copies** of `content/` in a temporary directory and builds
    from those. jupyter-server then lists the notebooks as `"writable": false`,
    and the source files are never touched.
-4. **Bundles the matching wheels.** It looks up the `py3-none-any` wheels of the
-   anywidget and ipywidgets versions installed in the build environment, using
-   PyPI's JSON API with only the standard library. It passes their URLs as
+4. **Bundles the matching anywidget wheel.** It looks up the `py3-none-any`
+   wheel of the anywidget version installed in the build environment, using
+   PyPI's JSON API with only the standard library. It passes the URL as
    `--piplite-wheels`.
 5. **Runs `jupyter lite build`** with `jupyterlite/` as the working directory.
 6. **Fails unless the output is right:** each notebook is in `<output>/files/`
    with `"writable": false` in `api/contents/all.json`, and `pypi/all.json` lists
-   only anywidget and ipywidgets.
+   only anywidget.
 
-**Why bundle.** `%pip` resolves anywidget and ipywidgets from PyPI at runtime,
-but their frontends are bundled at build time. Serving the matching wheels keeps
-the two halves at the same version. `uv.lock` has one anywidget for the whole
-project, so a tag's bundle always satisfies that release. The site can't install
-older lonboard releases, and a beta that raises the anywidget or ipywidgets floor
-needs a deploy from `main` before `--pre` works there.
+**Why bundle anywidget.** anywidget's Python side only works with a frontend of
+the same minor version. The frontend is bundled at build time, while `%pip`
+would install the newest anywidget from PyPI at runtime. Serving the matching
+wheel keeps the two halves at the same version. `uv.lock` has one anywidget for
+the whole project, so a tag's bundle always satisfies that release.
+
+The trade-offs:
+
+- The site can't install older lonboard releases.
+- A beta that raises the anywidget floor needs a deploy from `main` before
+  `--pre` works there.
+- ipywidgets comes from PyPI: the bundled widgets frontend (jupyterlab_widgets 3)
+  works with every ipywidgets 8.x.
 
 **Why read-only.** Otherwise a visitor's autosaved copy hides every later
 deploy. Visitors can still edit and run the notebook, and File > Save As keeps
@@ -266,9 +273,12 @@ on every PR, Dependabot bumps included.
 ### Dependency updates
 
 - **The `jupyterlite` group:** `jupyterlite-core[contents]>=0.8.5`,
-  `jupyterlite-pyodide-kernel>=0.8.6,<0.9`, `anywidget` and `ipywidgets`. The
-  `[contents]` extra brings jupyter-server, which the build needs for notebooks.
-  The lower bounds matter: 0.7.x kernels can't install lonboard.
+  `jupyterlite-pyodide-kernel>=0.8.6,<0.9`, `anywidget` and `ipywidgets`.
+  - anywidget and ipywidgets are there for their frontends, which the build
+    bundles.
+  - The `[contents]` extra brings jupyter-server, which the build needs for
+    notebooks.
+  - The lower bounds matter: 0.7.x kernels can't install lonboard.
 - **Kernel upgrades are manual.** The kernel package picks the Pyodide version.
   A minor bump can move to a new Pyodide ABI, and `%pip install lonboard` then
   fails until arro3 and geoarrow-rust-core publish wasm wheels for it. Dependabot
@@ -337,10 +347,9 @@ in the maintainer's checkout.
      Otherwise run `pnpm run build && uv build --wheel`, serve the wheel, and use
      `%pip install <wheel URL> geopandas requests pyarrow`.
   3. Check that the map renders.
-  4. Check that anywidget and ipywidgets come from the site's
-     `/lonboard/jupyterlite/pypi/`. Use
-     `importlib.metadata.distribution(name).read_text("PYODIDE_URL")` or the
-     Network panel; `micropip.list()` says "pypi" either way.
+  4. Check that anywidget comes from the site's `/lonboard/jupyterlite/pypi/`.
+     Use `importlib.metadata.distribution("anywidget").read_text("PYODIDE_URL")`
+     or the Network panel; `micropip.list()` says "pypi" either way.
   5. Check that the notebook is read-only.
 - **After merging, before tagging:**
   1. Run deploy-mkdocs from `main`. The newest tag is a beta, so nothing
@@ -397,6 +406,8 @@ which is fine as long as nothing else has merged since the tag.
   - arro3-io 0.8.3 was yanked without one, so visitors get 0.8.2.
 - **The PyPI upload:** if it fails on release day, the site fails at install
   until it's fixed, because the two workflows don't depend on each other.
+- **ipywidgets 9:** it would need the same treatment as anywidget. Until the
+  site is rebuilt with a matching widgets frontend, maps wouldn't render.
 - **Service workers:** JupyterLite unregisters every service worker on the
   origin on a browser's first visit and on each JupyterLite version change. No
   other developmentseed.org page registers one today.
