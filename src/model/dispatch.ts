@@ -48,7 +48,7 @@ export async function invoke<ResponseT>(
       return;
     }
 
-    // Stop waiting for a response and tell Python to drop the request.
+    // Stop waiting for a response, then tell Python to drop the request.
     const cancel = (reason: unknown) => {
       if (settled) {
         return;
@@ -56,8 +56,14 @@ export async function invoke<ResponseT>(
       settled = true;
 
       cleanup();
-      model.send({ id, kind: `${kind}-cancel` });
       reject(reason);
+      try {
+        model.send({ id, kind: `${kind}-cancel` });
+      } catch (error) {
+        // The comm is gone (e.g. the kernel restarted), so Python has no
+        // request left to cancel.
+        console.warn(`Could not cancel ${kind} request:`, error);
+      }
     };
 
     const abortHandler = () => cancel(signal?.reason);
@@ -102,6 +108,12 @@ export async function invoke<ResponseT>(
     }
 
     model.on("msg:custom", handler);
-    model.send({ id, kind, msg }, undefined, options.buffers ?? []);
+    try {
+      model.send({ id, kind, msg }, undefined, options.buffers ?? []);
+    } catch (error) {
+      settled = true;
+      cleanup();
+      reject(error);
+    }
   });
 }

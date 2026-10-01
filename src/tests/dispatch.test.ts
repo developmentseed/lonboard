@@ -172,3 +172,54 @@ describe("invoke with a signal", () => {
     expect(vi.getTimerCount()).toBe(0);
   });
 });
+
+// JupyterLab's comm throws on send once the kernel has restarted or died.
+describe("invoke when the comm can't send", () => {
+  afterEach(() => {
+    vi.useRealTimers();
+    vi.restoreAllMocks();
+  });
+
+  function breakComm(model: FakeWidgetModel) {
+    return vi.spyOn(model, "send").mockImplementation(() => {
+      throw new Error("Cannot send");
+    });
+  }
+
+  it("rejects right away and later sends nothing when the request can't be sent", async () => {
+    vi.useFakeTimers();
+    const model = new FakeWidgetModel({});
+    const send = breakComm(model);
+    const controller = new AbortController();
+
+    await expect(
+      invoke(model.asWidgetModel(), {}, KIND, {
+        signal: controller.signal,
+        timeout: 50,
+      }),
+    ).rejects.toThrow("Cannot send");
+
+    await vi.advanceTimersByTimeAsync(50);
+    controller.abort();
+    expect(send).toHaveBeenCalledTimes(1);
+  });
+
+  it("still rejects when the signal aborts and the cancel can't be sent", async () => {
+    const model = new FakeWidgetModel({});
+    const controller = new AbortController();
+    const warn = vi.spyOn(console, "warn").mockImplementation(() => {});
+
+    const promise = invoke(model.asWidgetModel(), {}, KIND, {
+      signal: controller.signal,
+      timeout: 10000,
+    });
+    breakComm(model);
+    controller.abort();
+
+    expect(await settleWithin(promise, 1000)).toMatchObject({
+      status: "rejected",
+      reason: { name: "AbortError" },
+    });
+    expect(warn).toHaveBeenCalledOnce();
+  });
+});
