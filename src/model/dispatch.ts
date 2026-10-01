@@ -32,33 +32,56 @@ export async function invoke<ResponseT>(
   // fetches.
   const id = uuid.v4();
 
-  // Default 5-second timeout; tile fetching shouldn't take too long.
-  const signal = options.signal ?? AbortSignal.timeout(options.timeout ?? 5000);
+  const { signal } = options;
+  // Default 5-second timeout for callers that don't pass one.
+  const timeout = options.timeout ?? 5000;
 
   // Return a promise that resolves when we get a response message with the
-  // correct ID, or rejects if the signal is aborted.
+  // correct ID, or rejects if the signal is aborted or the timeout passes.
   return new Promise((resolve, reject) => {
     // We need to track whether we've already resolved/rejected to avoid
     // multiple calls to resolve/reject.
     let settled = false;
 
-    if (signal.aborted) {
+    if (signal?.aborted) {
       reject(signal.reason);
       return;
     }
 
-    const abortHandler = () => {
+    // Stop waiting for a response and tell Python to drop the request.
+    const cancel = (reason: unknown) => {
       if (settled) {
         return;
       }
       settled = true;
 
-      model.off("msg:custom", handler);
+      cleanup();
       model.send({ id, kind: `${kind}-cancel` });
-      reject(signal.reason);
+      reject(reason);
     };
 
-    signal.addEventListener("abort", abortHandler);
+    const abortHandler = () => cancel(signal?.reason);
+
+    // A timer rather than `AbortSignal.timeout`, so that the timeout also
+    // applies when the caller passes a signal (deck.gl aborts a tile's signal
+    // only once it no longer needs that tile), and so that nothing outlives the
+    // request once Python responds.
+    const timer = setTimeout(() => {
+      cancel(
+        new DOMException(
+          `No response to ${kind} within ${timeout} ms`,
+          "TimeoutError",
+        ),
+      );
+    }, timeout);
+
+    function cleanup() {
+      clearTimeout(timer);
+      signal?.removeEventListener("abort", abortHandler);
+      model.off("msg:custom", handler);
+    }
+
+    signal?.addEventListener("abort", abortHandler);
 
     function handler(
       msg: { id: string; kind: `${string}-response`; response: ResponseT },
@@ -74,7 +97,7 @@ export async function invoke<ResponseT>(
       }
       settled = true;
 
-      model.off("msg:custom", handler);
+      cleanup();
       resolve([msg.response, buffers]);
     }
 
