@@ -1,0 +1,28 @@
+{
+  "anywidget": {
+    "releases": {
+      "0.11.0": [
+        {
+          "comment_text": "",
+          "digests": {
+            "md5": "337f6db79504d2f858e914a4481cd237",
+            "sha256": "c574d9acc6503ad27b37a9acea48f957a8ba7c9c9876cfcb37898931c098ce9d"
+          },
+          "downloads": -1,
+          "filename": "anywidget-0.11.0-py3-none-any.whl",
+          "has_sig": false,
+          "md5_digest": "337f6db79504d2f858e914a4481cd237",
+          "packagetype": "bdist_wheel",
+          "python_version": "py3",
+          "requires_python": ">=3.10",
+          "size": 317341,
+          "upload_time": "2026-04-27T23:42:10Z",
+          "upload_time_iso_8601": "2026-04-27T23:42:10Z",
+          "url": "./anywidget-0.11.0-py3-none-any.whl",
+          "yanked": false,
+          "yanked_reason": null
+        }
+      ]
+    }
+  }
+}

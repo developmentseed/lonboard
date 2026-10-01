@@ -1,0 +1,2 @@
+"use strict";(self.rspackChunk_JUPYTERLAB_CORE_OUTPUT=self.rspackChunk_JUPYTERLAB_CORE_OUTPUT||[]).push([[2382],{35880(e,r,t){t.r(r),t.d(r,{INotebookTree:()=>T,NotebookTreeWidget:()=>s});var o=t(81729),a=t(45858);class s extends a.TabPanel{constructor(){super({tabPlacement:"top",tabsMovable:!0,renderer:o.TabBarSvg.defaultRenderer}),this.addClass("jp-TreePanel")}}let T=new(t(49884)).Token("@jupyter-notebook/tree:INotebookTree")}}]);
+//# sourceMappingURL=2382.f65e986.js.map

@@ -1,0 +1,18 @@
+<!DOCTYPE html>
+<!--
+  Copyright (c) Jupyter Development Team.
+  Distributed under the terms of the Modified BSD License.
+-->
+<html>
+  <head>
+    <script>
+      // redirect to /lab by default
+      (function () {
+        window.location.href = window.location.href.replace(
+          /(\/|\/index.html)?(\?.*)$/,
+          '/../../lab/index.html$2'
+        );
+      }.call(this));
+    </script>
+  </head>
+</html>
