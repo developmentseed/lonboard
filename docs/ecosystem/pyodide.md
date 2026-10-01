@@ -30,7 +30,7 @@ lonboard.viz(gdf)
 
 ## What to expect
 
-- The first run downloads Python and the packages, about 65 MB, so it takes tens of seconds. Your browser caches them for later visits.
+- The first run downloads Python and any dependencies. Your browser caches them for repeat visits.
 - The notebook is read-only. You can edit and run any cell, but your changes are lost when you reload, and your browser warns you before you leave. To keep them, use **File > Save As**, then choose **Discard** when JupyterLite asks about `getting-started.ipynb`.
 
 ## Installing packages
@@ -40,7 +40,6 @@ Install packages with `%pip install` in a notebook cell:
 - Pure-Python packages work as they are. Packages with compiled code need wheels built for Pyodide, either [included in Pyodide](https://pyodide.org/en/stable/usage/packages-in-pyodide.html) or published on PyPI.
 - Lonboard needs `pyarrow` to read a GeoDataFrame, so install it alongside.
 - `%pip install --pre lonboard` installs the latest pre-release, if you want to try a beta.
-- Don't use `-U` or `--upgrade`: JupyterLite doesn't support it, and skips the whole line without installing anything.
 
 ## Memory limits
 

@@ -106,15 +106,13 @@ dev = [
     "types-geopandas>=1.1.1.20250708",
     "types-shapely>=2.1.0.20250512",
 ]
-# Builds the JupyterLite site with scripts/build_jupyterlite.py. anywidget and
-# ipywidgets are here for their frontends, which the site bundles.
+# Deps for building the JupyterLite site
 jupyterlite = [
     "anywidget>=0.9",
     "ipywidgets>=8",
     # [contents] brings jupyter-server, which the build needs to add notebooks
     "jupyterlite-core[contents]>=0.8.5",
-    # 0.7 kernels can't install lonboard, and a new minor version can move the
-    # site to a new Pyodide ABI (see DEVELOP.md)
+    # We cap the minor version, since a new version could change the Pyodide ABI
     "jupyterlite-pyodide-kernel>=0.8.6,<0.9",
 ]
 # Note: this is defined as a separate group so that it can be not installed in

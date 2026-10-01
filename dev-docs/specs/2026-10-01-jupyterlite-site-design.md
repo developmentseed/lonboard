@@ -44,8 +44,10 @@ Agreed in conversation on 2026-09-30 and 2026-10-01:
     saved copy would then hide every later deploy for them.
 - **Dependabot ignores minor and major updates** of
   `jupyterlite-pyodide-kernel`, which can move the site to a new Pyodide ABI.
-- **Rehearse both workflows before tagging,** using a `dry_run` input on the new
-  one. Otherwise their first real run is the tag push.
+- **Rehearse before tagging** by running deploy-mkdocs from `main`. It deploys
+  nothing while the newest tag is a beta, but GitHub has to accept both workflow
+  files and the call between them. A `dry_run` input for deploy-jupyterlite was
+  dropped in review as more confusing than useful.
 
 ## What we know
 
@@ -220,8 +222,7 @@ in an older format.
 **New `.github/workflows/deploy-jupyterlite.yml`.** It's a separate workflow so
 that the site can be redeployed without redeploying the docs.
 
-- **Triggers:** `workflow_call`, from deploy-mkdocs, and `workflow_dispatch`
-  with a boolean `dry_run` input. Called runs always publish.
+- **Triggers:** `workflow_call`, from deploy-mkdocs, and `workflow_dispatch`.
 - **Permissions and guard:** `permissions: contents: read`. The job only runs
   from `refs/heads/main` or a `refs/tags/v*` tag, so a manual run from a feature
   branch can't publish that branch's notebook by accident. Such a run is
@@ -243,8 +244,7 @@ that the site can be redeployed without redeploying the docs.
   8. Commit as `CI <ci-bot@example.com>`, the docs job's identity, setting both
      `GIT_AUTHOR_*` and `GIT_COMMITTER_*`. The message is "Deployed <sha> to
      jupyterlite".
-  9. Run `git push` without `--force`, or `git push --dry-run` when `dry_run`
-     is set.
+  9. Run `git push` without `--force`.
 - **Why the app token:** it's what the docs job uses (#1161). It is minted
   after the build, so the third-party build code only ever runs with the
   read-only `GITHUB_TOKEN`.
@@ -357,13 +357,9 @@ in the maintainer's checkout.
      Use `importlib.metadata.distribution("anywidget").read_text("PYODIDE_URL")`
      or the Network panel; `micropip.list()` says "pypi" either way.
   5. Check that the notebook is read-only.
-- **After merging, before tagging:**
-  1. Run deploy-mkdocs from `main`. The newest tag is a beta, so nothing
-     deploys, but GitHub has to accept both workflow files and the call between
-     them.
-  2. Run deploy-jupyterlite from `main` with `dry_run`. That exercises the
-     build, the token, the sparse checkout, the commit and a
-     `git push --dry-run`.
+- **After merging, before tagging:** run deploy-mkdocs from `main`. The newest
+  tag is a beta, so nothing deploys, but GitHub has to accept both workflow
+  files and the call between them.
 - **After the release:** in a fresh private window, open the docs link, run the
   notebook unchanged, and check that `import lonboard; lonboard.__version__`
   returns `0.17.0`.
@@ -372,8 +368,8 @@ in the maintainer's checkout.
 
 1. **Merge the release-notes changes and this PR.** Tag-triggered runs read the
    workflow files from the tagged commit.
-2. **Rehearse** the two workflows (see Testing). Don't publish the site for real
-   before 0.17.0 is on PyPI: the notebook would fail at install.
+2. **Rehearse** (see Testing). Don't run deploy-jupyterlite by hand before
+   0.17.0 is on PyPI: the notebook would fail at install.
 3. **Tag `v0.17.0`.** The PyPI upload and the docs deploy start in parallel. The
    site's job then runs inside the "Publish docs via GitHub Pages" run, after
    the docs job. Each push starts a Pages build of about 2-4 min.

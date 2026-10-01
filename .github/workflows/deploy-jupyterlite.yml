@@ -4,20 +4,16 @@ name: Publish JupyterLite site via GitHub Pages
 # the jupyterlite/ folder of the gh-pages branch:
 # https://developmentseed.org/lonboard/jupyterlite/
 #
-# deploy-mkdocs.yml calls this after it publishes a stable release's docs. It
-# can also be run by hand from main: with dry_run it does everything except
-# the push. The notebook installs the latest lonboard from PyPI, so don't
-# publish by hand while the newest release isn't on PyPI yet.
+# The `jupyterlite` job in deploy-mkdocs.yml calls this after it publishes a
+# stable release's docs. It can also be run by hand from main, to republish the
+# site without redeploying the docs. The notebook installs the latest lonboard
+# from PyPI, so don't run it by hand while the newest release isn't on PyPI yet.
 on:
   workflow_call:
   workflow_dispatch:
-    inputs:
-      dry_run:
-        description: "Build and commit the site, but only check the push with --dry-run"
-        type: boolean
-        default: false
 
-# The push to gh-pages uses the GitHub App token minted below
+# This only limits GITHUB_TOKEN. The push to gh-pages authenticates with the
+# release bot's app token, which is minted after the build, below.
 permissions:
   contents: read
 
@@ -25,10 +21,11 @@ jobs:
   deploy:
     name: Build and deploy
     runs-on: ubuntu-latest
-    # A run from a feature branch would publish that branch's notebook
+    # Publish only from main branch or a release tag
     if: github.ref == 'refs/heads/main' || startsWith(github.ref, 'refs/tags/v')
     steps:
-      # When called from deploy-mkdocs.yml, this checks out the release tag
+      # A called workflow runs at the caller's ref, so on a release this checks
+      # out the release tag
       - uses: actions/checkout@v7
 
       - name: Install a specific version of uv
@@ -64,7 +61,6 @@ jobs:
       - name: Publish to gh-pages
         working-directory: gh-pages
         env:
-          DRY_RUN: ${{ inputs.dry_run }}
           GIT_AUTHOR_NAME: CI
           GIT_AUTHOR_EMAIL: ci-bot@example.com
           GIT_COMMITTER_NAME: CI
@@ -84,8 +80,4 @@ jobs:
           git commit -m "Deployed ${GITHUB_SHA::7} to jupyterlite"
           # Never force. If something else pushed to gh-pages first, this
           # fails, and re-running the job starts again from the new tip.
-          if [ "$DRY_RUN" = "true" ]; then
-            git push --dry-run origin HEAD:gh-pages
-          else
-            git push origin HEAD:gh-pages
-          fi
+          git push origin HEAD:gh-pages

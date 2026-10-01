@@ -136,7 +136,7 @@ CI=true uv run --group docs mkdocs serve
 
 ## JupyterLite site
 
-The docs link to a [JupyterLite](https://jupyterlite.readthedocs.io/) site, <https://developmentseed.org/lonboard/jupyterlite/>, that runs the notebooks in `jupyterlite/content/` in the browser with Pyodide. After CI publishes the docs of a stable release, [`deploy-jupyterlite.yml`](.github/workflows/deploy-jupyterlite.yml) builds the site and publishes it, unversioned, to the `jupyterlite/` folder of the `gh-pages` branch. You can also run that workflow by hand from `main`; with `dry_run` it does everything except the push. Don't publish by hand while the newest release isn't on PyPI, since the notebook installs the latest lonboard from PyPI.
+The docs link to a [JupyterLite](https://jupyterlite.readthedocs.io/) site, <https://developmentseed.org/lonboard/jupyterlite/>, that runs the notebooks in `jupyterlite/content/` in the browser with Pyodide. After CI publishes the docs of a stable release, [`deploy-jupyterlite.yml`](.github/workflows/deploy-jupyterlite.yml) builds the site and publishes it, unversioned, to the `jupyterlite/` folder of the `gh-pages` branch. You can also run that workflow by hand from `main`, to republish the site without redeploying the docs. Don't publish by hand while the newest release isn't on PyPI, since the notebook installs the latest lonboard from PyPI.
 
 To build the site and preview it locally:
 
