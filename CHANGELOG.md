@@ -1,6 +1,6 @@
 # Changelog
 
-## [0.17.0] - 2026-10-01
+## [0.17.0] - 2026-10-02
 
 See release post for a human-oriented summary of changes.
 
