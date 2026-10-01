@@ -5,6 +5,7 @@
 [![PyPI - Downloads][pypi-img]][pypi-link]
 [![Binder][binder_badge]][binder_jupyterlab_url]
 [![open_in_colab][colab_badge]][colab_notebook_link]
+[![Try it in JupyterLite][jupyterlite_badge]][jupyterlite_link]
 
 [pypi_badge]: https://badge.fury.io/py/lonboard.svg
 [pypi_link]: https://pypi.org/project/lonboard/
@@ -12,6 +13,8 @@
 [binder_jupyterlab_url]: https://mybinder.org/v2/gh/developmentseed/lonboard/HEAD?urlpath=lab/tree/examples/
 [colab_badge]: https://colab.research.google.com/assets/colab-badge.svg
 [colab_notebook_link]: https://colab.research.google.com/github/developmentseed/lonboard/blob/main
+[jupyterlite_badge]: https://jupyterlite.rtfd.io/en/latest/_static/badge.svg
+[jupyterlite_link]: https://developmentseed.org/lonboard/jupyterlite/lab/index.html?path=getting-started.ipynb
 [conda_version_badge]: https://img.shields.io/conda/vn/conda-forge/lonboard.svg
 [conda_version]: https://anaconda.org/conda-forge/lonboard
 [pypi-img]: https://static.pepy.tech/badge/lonboard

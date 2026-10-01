@@ -132,6 +132,31 @@ Note that the `jupyter-mkdocs` plugin is only turned on when the `CI` env variab
 CI=true uv run --group docs mkdocs serve
 ```
 
+## JupyterLite site
+
+The docs link to a [JupyterLite](https://jupyterlite.readthedocs.io/) site, <https://developmentseed.org/lonboard/jupyterlite/>, that runs the notebooks in `jupyterlite/content/` in the browser with Pyodide. After CI publishes the docs of a stable release, [`deploy-jupyterlite.yml`](.github/workflows/deploy-jupyterlite.yml) builds the site and publishes it, unversioned, to the `jupyterlite/` folder of the `gh-pages` branch. You can also run that workflow by hand from `main`; with `dry_run` it does everything except the push. Don't publish by hand while the newest release isn't on PyPI, since the notebook installs the latest lonboard from PyPI.
+
+To build the site and preview it locally:
+
+```bash
+UV_PROJECT_ENVIRONMENT=.venv-jupyterlite uv run --locked --only-group jupyterlite python scripts/build_jupyterlite.py --output-dir /tmp/lite/lonboard/jupyterlite
+python -m http.server --directory /tmp/lite 8000
+```
+
+Then open <http://127.0.0.1:8000/lonboard/jupyterlite/lab/index.html?path=getting-started.ipynb>. The separate environment matters: the site bundles every JupyterLab extension installed where it's built, and the dev environment has others. The build always warns about translations and `libarchive-c`; both warnings are harmless. To try unreleased changes, run `pnpm build` and `uv build --wheel --out-dir /tmp/lite`, then change the notebook's install line to `%pip install http://127.0.0.1:8000/<wheel file> geopandas requests pyarrow`.
+
+The build script makes these changes:
+
+- It serves the notebooks read-only, so visitors always see the deployed version.
+- It bundles the anywidget wheel that matches the site's anywidget frontend, because the two must have the same minor version.
+- It fails if a notebook in `jupyterlite/content/` has outputs or lacks the Pyodide kernelspec (`"name": "python"`). The `normalize-notebook` pre-commit hook skips that folder.
+
+The site installs lonboard from PyPI into Pyodide, so:
+
+- lonboard's lower bounds must stay at or below the versions in Pyodide, for example traitlets 5.14.3, numpy 2.4.6 and pyproj 3.7.2;
+- a new required dependency must be pure Python, part of Pyodide, or published with `pyemscripten` wheels;
+- `jupyterlite-pyodide-kernel` sets the Pyodide version, and a new minor version can move to a new Pyodide ABI. Dependabot skips those updates. Upgrade it by hand once arro3 and geoarrow-rust-core have published wheels for that ABI, and run the notebook in a browser before merging.
+
 ## Developing Jupyter Notebook examples
 
 We use `juv` to store dependencies for each notebook as metadata of the notebook itself.
