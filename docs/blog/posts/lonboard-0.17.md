@@ -48,6 +48,8 @@ Lonboard and all its (core) dependencies now support [Pyodide](https://pyodide.o
 
 See [our Pyodide documentation](../../ecosystem/pyodide.md) or [try it out in your browser][jupyterlite_link].
 
+[![](../../assets/jupyterlite-example.jpg)][jupyterlite_link]
+
 See [#1204](https://github.com/developmentseed/lonboard/pull/1204) and [#1320](https://github.com/developmentseed/lonboard/pull/1320) for more information.
 
 ## Programmatically set the time of a `TripsLayer`
