@@ -11,6 +11,9 @@ jobs:
   build:
     name: Deploy docs
     runs-on: ubuntu-latest
+    # "true" only when this run published a stable release's docs
+    outputs:
+      deployed: ${{ steps.deploy.outputs.deployed }}
     steps:
       - uses: actions/create-github-app-token@v3.2.0
         id: app-token
@@ -32,6 +35,7 @@ jobs:
           version: "0.4.x"
 
       - name: Deploy docs
+        id: deploy
         env:
           GIT_COMMITTER_NAME: CI
           GIT_COMMITTER_EMAIL: ci-bot@example.com
@@ -49,4 +53,16 @@ jobs:
             # release replaces its minor's docs instead of adding a copy.
             MINOR=${VERSION%.*}
             uv run --group docs mike deploy $MINOR latest --update-aliases --push
+            echo "deployed=true" >> "$GITHUB_OUTPUT"
           fi
+
+  # Publishes the JupyterLite site after the docs, from the same ref
+  jupyterlite:
+    name: JupyterLite
+    needs: build
+    # The docs job also succeeds on beta tags, without deploying anything
+    if: needs.build.outputs.deployed == 'true'
+    uses: ./.github/workflows/deploy-jupyterlite.yml
+    secrets: inherit
+    permissions:
+      contents: read

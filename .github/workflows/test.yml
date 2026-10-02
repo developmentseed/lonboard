@@ -76,3 +76,20 @@ jobs:
         if: "${{ matrix.python-version == 3.11 }}"
         run: |
           uv run pre-commit run --show-diff-on-failure --color=always --all-files
+
+  jupyterlite:
+    name: Build JupyterLite site
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v7
+
+      - name: Install a specific version of uv
+        uses: astral-sh/setup-uv@v7
+        with:
+          enable-cache: true
+          version: "0.4.x"
+
+      # The same build as deploy-jupyterlite.yml, without publishing. The
+      # script fails if a notebook or the built site isn't fit to publish.
+      - name: Build JupyterLite site
+        run: uv run --locked --only-group jupyterlite python scripts/build_jupyterlite.py --output-dir "$RUNNER_TEMP/jupyterlite-site"

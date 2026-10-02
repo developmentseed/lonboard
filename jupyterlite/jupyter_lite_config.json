@@ -1,0 +1,6 @@
+{
+  "LiteBuildConfig": {
+    "contents": ["content"],
+    "no_sourcemaps": true
+  }
+}

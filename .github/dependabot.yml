@@ -45,6 +45,15 @@ updates:
         update-types:
           - "minor"
           - "patch"
+    ignore:
+      # The kernel sets the JupyterLite site's Pyodide version. A new minor
+      # version can move it to a new Pyodide ABI, where lonboard can't install
+      # until arro3 and geoarrow-rust-core publish wheels for it, so upgrade
+      # it by hand (see DEVELOP.md)
+      - dependency-name: "jupyterlite-pyodide-kernel"
+        update-types:
+          - "version-update:semver-minor"
+          - "version-update:semver-major"
     open-pull-requests-limit: 10
 
   - package-ecosystem: github-actions

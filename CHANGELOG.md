@@ -1,5 +1,64 @@
 # Changelog
 
+## [0.17.0] - 2026-10-02
+
+See release post for a human-oriented summary of changes.
+
+### What's Changed
+
+* ci: Fix docs publish auth by @kylebarron in https://github.com/developmentseed/lonboard/pull/1161
+* ci: add uv package manager to dependabot by @lhoupert in https://github.com/developmentseed/lonboard/pull/1162
+* fix: Add morecantile as dependency in COG jupyter notebooks by @kylebarron in https://github.com/developmentseed/lonboard/pull/1170
+* fix: overture-geoparquet example by @matyasrada in https://github.com/developmentseed/lonboard/pull/1163
+* chore: Switch to pnpm by @kylebarron in https://github.com/developmentseed/lonboard/pull/1181
+* refactor: Use upstream deck.gl-raster `RasterTileLayer` by @kylebarron in https://github.com/developmentseed/lonboard/pull/1183
+* fix: Support h3 4.5.0  by @kylebarron in https://github.com/developmentseed/lonboard/pull/1206
+* fix: Support CRS-parameterized GEOMETRY type in DuckDB 1.5 by @kylebarron in https://github.com/developmentseed/lonboard/pull/1205
+* fix: Don't use ThreadPoolExecutor in emscripten by @kylebarron in https://github.com/developmentseed/lonboard/pull/1204
+* feat: Read CRS from DuckDB 1.5 GEOMETRY columns by @kylebarron in https://github.com/developmentseed/lonboard/pull/1210
+* feat: Add an example for Geohash Layer by @aryanxk02 in https://github.com/developmentseed/lonboard/pull/1242
+* fix: Render polygon fills in HTML exports opened from file:// by @kylebarron in https://github.com/developmentseed/lonboard/pull/1264
+* fix: Handle empty record batches and empty geometries by @kylebarron in https://github.com/developmentseed/lonboard/pull/1269
+* fix: Fix RasterLayer.from_pmtiles by @kylebarron in https://github.com/developmentseed/lonboard/pull/1274
+* fix: Remove listeners when a child model is finalized by @kylebarron in https://github.com/developmentseed/lonboard/pull/1277
+* ci: Only group minor and patch npm updates in Dependabot by @kylebarron in https://github.com/developmentseed/lonboard/pull/1281
+* fix: Set selected_index to the row's position in the whole table by @kylebarron in https://github.com/developmentseed/lonboard/pull/1283
+* fix: Remove upper bound on anywidget by @kylebarron in https://github.com/developmentseed/lonboard/pull/1282
+* fix: Give each tile of a BitmapTileLayer its own layer id by @kylebarron in https://github.com/developmentseed/lonboard/pull/1285
+* refactor: Replace `isDefined` spreads with an `omitUndefined` helper by @kylebarron in https://github.com/developmentseed/lonboard/pull/1292
+* fix: reset example notebook kernelspec to python3 by @kylebarron in https://github.com/developmentseed/lonboard/pull/1254
+* chore: Use Node 24 in CI, publishing, and local development by @kylebarron in https://github.com/developmentseed/lonboard/pull/1294
+* fix: Normalize geohash-layer example notebook kernelspec by @kylebarron in https://github.com/developmentseed/lonboard/pull/1295
+* fix: Honor `MapView(repeat=...)` in the overlaid and interleaved basemap modes by @kylebarron in https://github.com/developmentseed/lonboard/pull/1302
+* fix: Support boolean data in `apply_categorical_cmap` by @kylebarron in https://github.com/developmentseed/lonboard/pull/1300
+* docs: Document the pre-commit hooks in DEVELOP.md by @kylebarron in https://github.com/developmentseed/lonboard/pull/1298
+* fix: Read DuckDB relations through the Arrow PyCapsule Interface by @kylebarron in https://github.com/developmentseed/lonboard/pull/1303
+* feat: Type the callback of `Map.on_click` by @kylebarron in https://github.com/developmentseed/lonboard/pull/1304
+* chore!: Remove the deprecated `basemap_style` and `CartoBasemap` by @kylebarron in https://github.com/developmentseed/lonboard/pull/1307
+* docs: Show how to change the output of `viz` by @kylebarron in https://github.com/developmentseed/lonboard/pull/1297
+* feat: Add a setter for `TripsLayer.current_time` by @kylebarron in https://github.com/developmentseed/lonboard/pull/1308
+* fix: Raise on GeoArrow coordinates that aren't floating point by @kylebarron in https://github.com/developmentseed/lonboard/pull/1306
+* docs: Fix the examples on the Shiny, GeoPandas and GeoArrow pages by @kylebarron in https://github.com/developmentseed/lonboard/pull/1296
+* docs: Add SedonaDB to the ecosystem docs by @kylebarron in https://github.com/developmentseed/lonboard/pull/1299
+* fix: Show the map controls on deck-first maps by @kylebarron in https://github.com/developmentseed/lonboard/pull/1309
+* ci: Remove the duplicate pytest run by @kylebarron in https://github.com/developmentseed/lonboard/pull/1313
+* chore: Bump Tailwind CSS to 4 and replace NextUI with HeroUI by @kylebarron in https://github.com/developmentseed/lonboard/pull/1291
+* feat: Warn when a map has more chunks than deck.gl can pick from by @kylebarron in https://github.com/developmentseed/lonboard/pull/1305
+* docs: Store example screenshots in assets/ and strip saved widget state by @kylebarron in https://github.com/developmentseed/lonboard/pull/1314
+* docs: Turn off layer attribute labels in docs by @kylebarron in https://github.com/developmentseed/lonboard/pull/1198
+* ci: Publish docs per minor version by @kylebarron in https://github.com/developmentseed/lonboard/pull/1315
+* chore: Fix the picking limit in a comment by @kylebarron in https://github.com/developmentseed/lonboard/pull/1316
+* fix: Accept `current_time` in the `TripsLayer` constructor by @kylebarron in https://github.com/developmentseed/lonboard/pull/1317
+* docs: Deploy a JupyterLite demo with the docs by @kylebarron in https://github.com/developmentseed/lonboard/pull/1320
+
+### New Contributors
+
+* @lhoupert made their first contribution in https://github.com/developmentseed/lonboard/pull/1162
+* @matyasrada made their first contribution in https://github.com/developmentseed/lonboard/pull/1163
+* @aryanxk02 made their first contribution in https://github.com/developmentseed/lonboard/pull/1242
+
+**Full Changelog**: https://github.com/developmentseed/lonboard/compare/v0.16.0...v0.17.0
+
 ## [0.16.0] - 2026-04-02
 
 ### What's Changed
