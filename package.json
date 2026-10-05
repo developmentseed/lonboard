@@ -19,7 +19,7 @@
     "@geoarrow/geoarrow-js": "^0.3.2",
     "@luma.gl/core": "^9.4.2",
     "@maplibre/maplibre-gl-geocoder": "^1.9.4",
-    "@heroui/react": "^2.8.10",
+    "@heroui/react": "^3.2.2",
     "apache-arrow": "^21.2.0",
     "esbuild-sass-plugin": "^3.3.1",
     "framer-motion": "^13.5.0",
