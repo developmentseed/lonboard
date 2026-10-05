@@ -34,7 +34,12 @@ import { useStore, useViewStateDebounced } from "./state";
 import Toolbar from "./toolbar.js";
 import { getTooltip } from "./tooltip/index.js";
 import type { Message } from "./types.js";
-import { isGlobeView, omitUndefined, sanitizeViewState } from "./util.js";
+import {
+  isGlobeView,
+  moveViewState,
+  omitUndefined,
+  sanitizeViewState,
+} from "./util.js";
 
 import "maplibre-gl/dist/maplibre-gl.css";
 import "./globals.css";
@@ -160,9 +165,15 @@ function App() {
   // https://deck.gl/docs/developer-guide/interactivity
   //
   // `setViewState` is a debounced way to update the model and send view
-  // state information back to Python.
+  // state information back to Python. `saveViewState` sends it straight away.
   const [initialViewState, setViewState] =
     useViewStateDebounced<MapViewState>("view_state");
+  // Not `useModelState`: a second subscription to `view_state` re-renders a
+  // globe map before its style has loaded, and react-map-gl then throws.
+  const saveViewState = (viewState: MapViewState) => {
+    model.set("view_state", viewState);
+    model.save_changes();
+  };
 
   const rendererRef = useRef<RendererRef | null>(null);
 
@@ -295,7 +306,12 @@ function App() {
     // https://github.com/visgl/deck.gl/issues/9666
     onResize: debounce(updateStateCallback, 100),
     onViewStateChange: (event) => {
-      setViewState(sanitizeViewState(views, event.viewState));
+      setViewState(
+        moveViewState(
+          model.get("view_state"),
+          sanitizeViewState(views, event.viewState),
+        ),
+      );
     },
     parameters: parameters || {},
     views,
@@ -304,6 +320,11 @@ function App() {
 
   const overlayRenderProps: OverlayRendererProps = {
     interleaved: basemapState?.mode === "interleaved",
+    // MapLibre reports the camera once per gesture, so there's nothing to
+    // debounce. A delayed save would also let ipywidgets' echo of an earlier
+    // pan overwrite a later one in the model.
+    saveCamera: (camera) =>
+      saveViewState(moveViewState(model.get("view_state"), camera)),
   };
 
   const deckFirstRenderProps: DeckFirstRendererProps = {
