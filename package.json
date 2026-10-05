@@ -22,7 +22,7 @@
     "@heroui/react": "^2.8.10",
     "apache-arrow": "^21.2.0",
     "esbuild-sass-plugin": "^3.3.1",
-    "framer-motion": "^13.4.4",
+    "framer-motion": "^13.5.0",
     "lodash.debounce": "^4.0.8",
     "lodash.throttle": "^4.1.1",
     "maplibre-gl": "^6.11.2",
@@ -39,7 +39,7 @@
   "type": "module",
   "devDependencies": {
     "@anywidget/types": "^0.4.0",
-    "@biomejs/biome": "2.5.14",
+    "@biomejs/biome": "2.5.15",
     "@jupyter-widgets/base": "^6.0.12",
     "@statelyai/inspect": "^0.7.2",
     "@tailwindcss/postcss": "^4.3.3",
@@ -48,15 +48,15 @@
     "@types/lodash.throttle": "^4.1.9",
     "@types/react": "^19.3.0",
     "autoprefixer": "^10.6.1",
-    "dotenv": "^18.0.4",
+    "dotenv": "^18.0.5",
     "esbuild": "^0.28.2",
     "nodemon": "^3.1.7",
     "postcss": "^8.5.28",
     "postcss-modules": "^9.0.1",
-    "postcss-preset-env": "^11.5.4",
+    "postcss-preset-env": "^11.5.5",
     "tailwindcss": "^4.3.3",
     "typescript": "^7.0.2",
-    "vitest": "^5.0.2"
+    "vitest": "^5.0.3"
   },
   "packageManager": "pnpm@10.25.0",
   "scripts": {
