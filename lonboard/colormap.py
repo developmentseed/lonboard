@@ -240,7 +240,19 @@ def apply_categorical_cmap(  # noqa: C901, PLR0912
                 "Expected color to be 3 or 4 values representing RGB or RGBA.",
             )
 
-    colors = lut[indices]
+    # Each chunk has its own dictionary, and `lut` holds them end to end. Shift each
+    # chunk's indices to where its own dictionary starts.
+    lut_indices = []
+    dictionary_start = 0
+    for chunk_indices, chunk_dictionary in zip(
+        indices.chunks,
+        dictionary.chunks,
+        strict=True,
+    ):
+        lut_indices.append(chunk_indices.to_numpy().astype(np.intp) + dictionary_start)
+        dictionary_start += len(chunk_dictionary)
+
+    colors = lut[np.concatenate(lut_indices)]
 
     # If the alpha values are all 255, don't serialize
     if (colors[:, 3] == 255).all():
