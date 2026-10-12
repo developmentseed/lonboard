@@ -22,7 +22,7 @@
     "@heroui/react": "^2.8.10",
     "apache-arrow": "^21.2.0",
     "esbuild-sass-plugin": "^3.3.1",
-    "framer-motion": "^13.5.0",
+    "framer-motion": "^14.0.0",
     "lodash.debounce": "^4.0.8",
     "lodash.throttle": "^4.1.1",
     "maplibre-gl": "^6.13.0",
