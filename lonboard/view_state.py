@@ -52,6 +52,12 @@ class GlobeViewState(BaseViewState):
     zoom: float
     """zoom level."""
 
+    pitch: float = 0
+    """pitch angle in degrees. `0` is top-down."""
+
+    bearing: float = 0
+    """bearing angle in degrees. `0` is north."""
+
     max_zoom: float = 20
     """max zoom level. Default 20."""
 
