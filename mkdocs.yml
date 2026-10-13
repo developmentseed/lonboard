@@ -44,6 +44,7 @@ nav:
       - examples/overture-geoparquet.ipynb
       - examples/raster-cog-nlcd-server.ipynb
       - examples/raster-cog-rgb-server.ipynb
+      - examples/raster-numpytiles.ipynb
       - examples/air-traffic-control.ipynb
       - examples/global-boundaries.ipynb
       - examples/raster-pmtiles.ipynb
