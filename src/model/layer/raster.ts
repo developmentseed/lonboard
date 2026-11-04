@@ -130,6 +130,12 @@ export class RasterModel extends BaseLayerModel {
     const { signal } = tile;
     const { x, y, z } = index;
 
+    // The timeout only catches a reply that never comes, which would keep the
+    // tile loading and hold one of deck.gl's request slots. It is long because
+    // deck.gl doesn't request a failed tile again while the tile is cached, so
+    // a tile that times out stays blank: it has to outlast a busy kernel (a comm
+    // message can wait for a running cell) and a slow fetch (obstore retries
+    // for up to 3 minutes by default).
     const [message, buffers] = await invoke<TileResponse>(
       this.model,
       {
@@ -138,7 +144,7 @@ export class RasterModel extends BaseLayerModel {
         },
       },
       MSG_KIND,
-      { signal, timeout: 10000 },
+      { signal, timeout: 5 * 60 * 1000 },
     );
 
     // A tile intentionally out of bounds may return an "empty" message, which

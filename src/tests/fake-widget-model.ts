@@ -1,6 +1,6 @@
 import type { WidgetModel } from "@jupyter-widgets/base";
 
-type Listener = () => void;
+type Listener = (...args: any[]) => void;
 
 /**
  * A minimal stand-in for a Jupyter `WidgetModel`.
@@ -8,9 +8,15 @@ type Listener = () => void;
  * It follows the event semantics of the Backbone model that `WidgetModel` is
  * built on: `set` fires `change:<name>` and then `change`, and `off` without a
  * callback removes every listener for that event.
+ *
+ * Custom messages that JS sends to Python are recorded in `sent`, and nothing
+ * replies to them unless a test calls `receive`.
  */
 export class FakeWidgetModel {
   widget_manager: { get_model: (modelId: string) => Promise<WidgetModel> };
+
+  /** Custom messages sent to the Python side, in order. */
+  sent: Record<string, unknown>[] = [];
 
   private state: Record<string, unknown>;
   private listeners: Map<string, Listener[]> = new Map();
@@ -50,13 +56,22 @@ export class FakeWidgetModel {
     this.listeners.set(event, remaining);
   }
 
+  send(content: Record<string, unknown>): void {
+    this.sent.push(content);
+  }
+
+  /** Deliver a custom message from the Python side. */
+  receive(content: Record<string, unknown>, buffers: DataView[] = []): void {
+    this.trigger("msg:custom", content, buffers);
+  }
+
   asWidgetModel(): WidgetModel {
     return this as unknown as WidgetModel;
   }
 
-  private trigger(event: string): void {
+  private trigger(event: string, ...args: unknown[]): void {
     for (const listener of this.listeners.get(event) ?? []) {
-      listener();
+      listener(...args);
     }
   }
 }
