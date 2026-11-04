@@ -83,6 +83,8 @@ def test_view_state_globe_view_dict():
         "longitude": -122.45,
         "latitude": 37.8,
         "zoom": 2.0,
+        "pitch": 35.0,
+        "bearing": 45.0,
     }
     m = Map(
         [],
