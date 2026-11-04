@@ -196,6 +196,8 @@ function App() {
     model.widget_manager as IWidgetManager,
     updateStateCallback,
   );
+  const basemap =
+    basemapState.type === "loaded" ? basemapState.basemap : undefined;
 
   const controls = useControlsState(
     controlsIds,
@@ -277,7 +279,7 @@ function App() {
   ).current;
 
   const mapRenderProps: MapRendererProps = {
-    mapStyle: basemapState?.style || DEFAULT_MAP_STYLE,
+    mapStyle: basemap?.style || DEFAULT_MAP_STYLE,
     customAttribution,
     deckRef,
     initialViewState,
@@ -304,11 +306,11 @@ function App() {
   };
 
   const overlayRenderProps: OverlayRendererProps = {
-    interleaved: basemapState?.mode === "interleaved",
+    interleaved: basemap?.mode === "interleaved",
   };
 
   const deckFirstRenderProps: DeckFirstRendererProps = {
-    renderBasemap: Boolean(basemapState),
+    renderBasemap: Boolean(basemap),
     setViewState,
   };
 
@@ -344,8 +346,7 @@ function App() {
           />
         )}
         <div className="bg-transparent h-full w-full relative">
-          {basemapState?.mode === "overlaid" ||
-          basemapState?.mode === "interleaved" ? (
+          {basemap?.mode === "overlaid" || basemap?.mode === "interleaved" ? (
             <OverlayRenderer
               ref={rendererRef}
               {...mapRenderProps}
@@ -354,7 +355,7 @@ function App() {
           ) : (
             // Wait for the basemap to load, so that we don't create a deck.gl
             // instance only to replace it with the overlay. See #1348
-            basemapState !== undefined && (
+            basemapState.type !== "loading" && (
               <DeckFirstRenderer
                 ref={rendererRef}
                 {...mapRenderProps}
