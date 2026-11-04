@@ -114,13 +114,14 @@ function App() {
   const [justClicked, setJustClicked] = useState<boolean>(false);
 
   const deckRef = useRef<DeckGLRef | null>(null);
-  // Expose deck instance on window for debugging
+  // Expose deck instance on window for debugging. Runs after every render
+  // because the renderer mounts only once the basemap has loaded.
   useEffect(() => {
     if (deckRef.current && typeof window !== "undefined") {
       (window as unknown as Record<string, unknown>).__deck =
         deckRef.current.deck;
     }
-  }, []);
+  });
 
   const model = useModel();
 
@@ -351,11 +352,15 @@ function App() {
               {...overlayRenderProps}
             />
           ) : (
-            <DeckFirstRenderer
-              ref={rendererRef}
-              {...mapRenderProps}
-              {...deckFirstRenderProps}
-            />
+            // Wait for the basemap to load, so that we don't create a deck.gl
+            // instance only to replace it with the overlay. See #1348
+            basemapState !== undefined && (
+              <DeckFirstRenderer
+                ref={rendererRef}
+                {...mapRenderProps}
+                {...deckFirstRenderProps}
+              />
+            )
           )}
         </div>
       </div>

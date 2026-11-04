@@ -10,16 +10,17 @@ import { loadModel } from "../model/initialize.js";
  * @param basemapModelId - The ID of the basemap model to load
  * @param widgetManager - The Jupyter widget manager
  * @param updateStateCallback - Callback to trigger re-renders
- * @returns The initialized basemap model or null
+ * @returns The initialized basemap model, null if there is no basemap, or
+ * undefined until the basemap model has loaded
  */
 export function useBasemapState(
   basemapModelId: string | null,
   widgetManager: IWidgetManager,
   updateStateCallback: () => void,
-): MaplibreBasemapModel | null {
-  const [basemapState, setBasemapState] = useState<MaplibreBasemapModel | null>(
-    null,
-  );
+): MaplibreBasemapModel | null | undefined {
+  const [basemapState, setBasemapState] = useState<
+    MaplibreBasemapModel | null | undefined
+  >(undefined);
 
   useEffect(() => {
     const loadBasemap = async () => {
@@ -37,6 +38,8 @@ export function useBasemapState(
         setBasemapState(basemap);
       } catch (error) {
         console.error("Error loading basemap model:", error);
+        // If no basemap has loaded, render without one
+        setBasemapState((current) => current ?? null);
       }
     };
 
