@@ -8,6 +8,7 @@ from geodatasets import get_path
 from traitlets import TraitError
 
 from lonboard import BitmapTileLayer, Map, ScatterplotLayer, SolidPolygonLayer, viz
+from lonboard._serialization import serialize_view_state
 from lonboard.basemap import MaplibreBasemap
 from lonboard.experimental.view import FirstPersonView, GlobeView, OrthographicView
 from lonboard.view_state import (
@@ -102,6 +103,26 @@ def test_view_state_globe_view_instance():
         basemap=MaplibreBasemap(mode="interleaved"),
     )
     assert m.view_state == view_state
+
+
+@pytest.mark.parametrize("view", [None, GlobeView()], ids=["map", "globe"])
+def test_view_state_from_browser_serializes_unchanged(view):
+    """A full view state from the browser serializes back to what was received.
+
+    ipywidgets sends a view state that it received back to the browser only if its
+    serialized value differs, and the map moves back when it gets an old one.
+    """
+    m = Map(
+        [],
+        view=view,
+        view_state={"longitude": 0, "latitude": 0, "zoom": 3},
+        basemap=MaplibreBasemap(mode="interleaved"),
+    )
+    from_browser = {**serialize_view_state(m.view_state, m), "longitude": 10, "zoom": 5}
+
+    m.set_state({"view_state": from_browser})
+
+    assert serialize_view_state(m.view_state, m) == from_browser
 
 
 def test_view_state_first_person_dict():

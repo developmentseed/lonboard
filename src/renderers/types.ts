@@ -4,6 +4,7 @@ import type { RefObject } from "react";
 
 import type { BaseMapControlModel } from "../model";
 import type { FlyToMessage } from "../types";
+import type { Camera } from "../util";
 
 /** Imperative handle exposed by both renderer components via forwardRef. */
 export type RendererRef = {
@@ -37,6 +38,8 @@ export type MapRendererProps<ViewsT extends ViewOrViews = ViewOrViews> = Pick<
 /** Props specific to OverlayRenderer, where MapLibre owns the view state. */
 export type OverlayRendererProps = {
   interleaved: boolean;
+  /** Send the map's camera to Python straight away. */
+  saveCamera: (camera: Camera) => void;
 };
 
 /** Props specific to DeckFirstRenderer, where deck.gl owns the view state. */

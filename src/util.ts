@@ -24,6 +24,48 @@ export function omitUndefined<T extends object>(
   return result;
 }
 
+/** The parts of a view state that position the camera. */
+const CAMERA_KEYS = [
+  "longitude",
+  "latitude",
+  "zoom",
+  "pitch",
+  "bearing",
+] as const;
+
+export type Camera = Partial<Pick<MapViewState, (typeof CAMERA_KEYS)[number]>>;
+
+/**
+ * The view state to send to Python after the map has moved: `current`, the
+ * view state that Python has, with its camera moved to `camera`.
+ *
+ * Keeping the other keys of `current`, such as `maxZoom`, means that Python
+ * serializes the view state to exactly what it received, so it doesn't send
+ * it back to the map. Keys that `current` doesn't have aren't added, because
+ * not every view state has all of them. E.g. a globe view state has no pitch
+ * or bearing. Transition keys, such as those that `flyTo` sets, are dropped,
+ * as Python drops them too.
+ */
+export function moveViewState<T extends Record<string, unknown>>(
+  current: T | null | undefined,
+  camera: Camera,
+): T | Camera {
+  if (!current) return camera;
+
+  const moved: Record<string, unknown> = {};
+  for (const [key, value] of Object.entries(current)) {
+    if (!key.startsWith("transition")) {
+      moved[key] = value;
+    }
+  }
+  for (const key of CAMERA_KEYS) {
+    if (key in current && Number.isFinite(camera[key])) {
+      moved[key] = camera[key];
+    }
+  }
+  return moved as T;
+}
+
 export function makePolygon(pt1: number[], pt2: number[]) {
   return [pt1, [pt1[0], pt2[1]], pt2, [pt2[0], pt1[1]], pt1];
 }
