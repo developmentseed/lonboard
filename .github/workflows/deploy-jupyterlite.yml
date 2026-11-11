@@ -26,10 +26,10 @@ jobs:
     steps:
       # A called workflow runs at the caller's ref, so on a release this checks
       # out the release tag
-      - uses: actions/checkout@v7
+      - uses: actions/checkout@v7.0.1
 
       - name: Install a specific version of uv
-        uses: astral-sh/setup-uv@v7
+        uses: astral-sh/setup-uv@v7.6.0
         with:
           enable-cache: true
           version: "0.4.x"
@@ -51,7 +51,7 @@ jobs:
 
       # gh-pages holds every docs version, about 1 GB, so check out only the
       # jupyterlite/ folder
-      - uses: actions/checkout@v7
+      - uses: actions/checkout@v7.0.1
         with:
           ref: refs/heads/gh-pages
           path: gh-pages
