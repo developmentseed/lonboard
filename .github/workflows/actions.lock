@@ -4,7 +4,6 @@
 version: 'v0.0.3'
 workflows:
     '.github/workflows/conventional-commits.yml':
-        - 'actions/create-github-app-token@v3.3.0'
         - 'ytanikin/pr-conventional-commits@1.5.2'
     '.github/workflows/deploy-jupyterlite.yml':
         - 'actions/checkout@v7.0.1'
