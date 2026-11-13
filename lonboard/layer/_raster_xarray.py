@@ -6,8 +6,9 @@ multiscale pyramid share the same tile fetching.
 
 from __future__ import annotations
 
+import asyncio
 import math
-from typing import TYPE_CHECKING
+from typing import TYPE_CHECKING, Any
 
 import numpy as np
 from pyproj import CRS
@@ -21,6 +22,8 @@ if TYPE_CHECKING:
 
     import xarray as xr
     from affine import Affine
+
+    from lonboard.layer._raster import FetchTile, RasterLayer, RenderTile
 
 
 def spatial_dims(da: xr.DataArray) -> tuple[Hashable, Hashable]:
@@ -242,3 +245,102 @@ def default_min_zoom(level: AffineLevel, mpu: float, center_lat: float) -> int:
     )
     zoom = math.log2(screen_meters_per_pixel * _MIN_TILE_SCREEN_FRACTION / pixel_meters)
     return max(0, math.ceil(zoom))
+
+
+class WindowLoader:
+    """Load tile windows without blocking the event loop.
+
+    Starts with `load_async` when `use_async` is set, and switches to a thread
+    for good the first time the backend raises `NotImplementedError`.
+    """
+
+    def __init__(self, *, use_async: bool) -> None:
+        self.use_async = use_async
+
+    async def load(self, window: xr.DataArray) -> xr.DataArray:
+        """Return `window` with its data in memory."""
+        if self.use_async:
+            try:
+                return await window.load_async()
+            except NotImplementedError:
+                self.use_async = False
+
+        return await asyncio.to_thread(window.load)
+
+
+def make_fetch_tile(
+    levels: list[xr.DataArray],
+    affine_levels: list[AffineLevel],
+    y_dim: Hashable,
+    x_dim: Hashable,
+    loader: WindowLoader,
+) -> FetchTile[xr.DataArray]:
+    """Return a `fetch_tile` that reads tile `(x, y)` of `levels[z]`."""
+
+    async def fetch_tile(x: int, y: int, z: int) -> xr.DataArray:
+        level = affine_levels[z]
+        window = levels[z].isel(
+            {
+                y_dim: slice(y * level.tile_height, (y + 1) * level.tile_height),
+                x_dim: slice(x * level.tile_width, (x + 1) * level.tile_width),
+            },
+        )
+        return await loader.load(window)
+
+    return fetch_tile
+
+
+def build_from_xarray(  # noqa: PLR0913
+    data: Any,
+    *,
+    render_tile: RenderTile[xr.DataArray],
+    variable: str | None = None,  # noqa: ARG001
+    crs: Any = None,
+    transform: Affine | None = None,
+    tile_size: int | None = None,
+    **kwargs: Any,
+) -> RasterLayer[xr.DataArray]:
+    """Build a `RasterLayer` from a `DataArray`. See `RasterLayer.from_xarray`."""
+    import xarray as xr
+
+    from lonboard.layer._raster import RasterLayer
+    from lonboard.traits._raster import meters_per_unit
+
+    if not isinstance(data, xr.DataArray):
+        raise TypeError(
+            f"from_xarray expects an xarray.DataArray, got {type(data).__name__}",
+        )
+
+    da = data
+    y_dim, x_dim = spatial_dims(da)
+    crs = CRS.from_user_input(crs) if crs is not None else find_crs(da)
+    if crs.is_geographic:
+        da = roll_longitude(da, x_dim)
+    if transform is None:
+        transform = coordinate_transform(da, y_dim, x_dim)
+
+    level = level_for(
+        da,
+        y_dim,
+        x_dim,
+        transform,
+        chunk_tile_size(da, y_dim, x_dim, tile_size),
+    )
+    bounds = wgs84_bounds(level, crs)
+    center = ((bounds.minx + bounds.maxx) / 2, (bounds.miny + bounds.maxy) / 2)
+    kwargs.setdefault(
+        "min_zoom",
+        default_min_zoom(level, meters_per_unit(crs), center[1]),
+    )
+
+    loader = WindowLoader(use_async=da.chunks is None)
+    return RasterLayer(
+        _tile_matrix_set=None,
+        _affine_levels=[level],
+        _crs=crs,
+        _fetch_tile=make_fetch_tile([da], [level], y_dim, x_dim, loader),
+        _render_tile=render_tile,
+        _bounds=bounds,
+        _center=center,
+        **kwargs,
+    )

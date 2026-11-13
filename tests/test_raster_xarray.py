@@ -1,5 +1,7 @@
 from __future__ import annotations
 
+import asyncio
+
 import numpy as np
 import pytest
 from affine import Affine
@@ -7,7 +9,10 @@ from pyproj import CRS
 
 xr = pytest.importorskip("xarray")
 
+from lonboard import RasterLayer  # noqa: E402
+from lonboard._geoarrow.ops import Bbox  # noqa: E402
 from lonboard.layer._raster_xarray import (  # noqa: E402
+    WindowLoader,
     chunk_tile_size,
     coordinate_transform,
     default_min_zoom,
@@ -224,3 +229,136 @@ def test_default_min_zoom_large_array():
         512,
     )
     assert default_min_zoom(level, 1.0, 0.0) == 12
+
+
+class _Stub:
+    """A window whose loads are recorded, so the loader's path choice is visible."""
+
+    def __init__(self, *, async_raises: bool) -> None:
+        self.async_raises = async_raises
+        self.calls: list[str] = []
+
+    async def load_async(self):
+        self.calls.append("async")
+        if self.async_raises:
+            raise NotImplementedError
+        return self
+
+    def load(self):
+        self.calls.append("sync")
+        return self
+
+
+def test_loader_uses_load_async():
+    loader = WindowLoader(use_async=True)
+    stub = _Stub(async_raises=False)
+    assert asyncio.run(loader.load(stub)) is stub
+    assert stub.calls == ["async"]
+
+
+def test_loader_falls_back_to_thread_permanently():
+    loader = WindowLoader(use_async=True)
+    first, second = _Stub(async_raises=True), _Stub(async_raises=True)
+    asyncio.run(loader.load(first))
+    asyncio.run(loader.load(second))
+    assert first.calls == ["async", "sync"]
+    assert second.calls == ["sync"]
+
+
+def test_loader_thread_path_for_dask():
+    loader = WindowLoader(use_async=False)
+    stub = _Stub(async_raises=False)
+    asyncio.run(loader.load(stub))
+    assert stub.calls == ["sync"]
+
+
+def _no_render(tile: object) -> None:  # noqa: ARG001
+    return None
+
+
+def _global_da():
+    return _da(np.linspace(89.5, -89.5, 180), np.linspace(-179.5, 179.5, 360))
+
+
+def _global_layer(**kwargs: object):
+    return RasterLayer.from_xarray(_global_da(), render_tile=_no_render, **kwargs)
+
+
+def test_from_xarray_state():
+    layer = _global_layer()
+    state = layer.get_state()
+    assert state["_tile_matrix_set"] is None
+    assert state["_affine_levels"] == [
+        {
+            "affine": [1.0, 0.0, -180.0, 0.0, -1.0, 90.0],
+            "arrayWidth": 360,
+            "arrayHeight": 180,
+            "tileWidth": 512,
+            "tileHeight": 512,
+            "mpu": pytest.approx(111319.4907932736),
+        },
+    ]
+    assert layer._crs.to_epsg() == 4326
+    assert layer.min_zoom == 0
+    assert layer._bbox == Bbox(-180.0, -90.0, 180.0, 90.0)
+
+
+def test_from_xarray_min_zoom_override():
+    assert _global_layer(min_zoom=4).min_zoom == 4
+
+
+def test_from_xarray_fetch_tile_whole_array_in_one_tile():
+    layer = _global_layer()
+    tile = asyncio.run(layer._fetch_tile(x=0, y=0, z=0))
+    assert tile.shape == (180, 360)
+
+
+def test_from_xarray_fetch_tile_windows():
+    layer = RasterLayer.from_xarray(
+        _global_da(),
+        render_tile=_no_render,
+        tile_size=128,
+    )
+    assert layer._affine_levels[0].tile_width == 128
+    edge = asyncio.run(layer._fetch_tile(x=2, y=1, z=0))
+    assert edge.shape == (52, 104)  # rows 128..180, cols 256..360
+    assert edge["lat"].values[0] == pytest.approx(89.5 - 128)
+
+
+def test_from_xarray_keeps_band_dim():
+    da = xr.DataArray(
+        np.zeros((3, 4, 6), "u1"),
+        coords={"y": [3.5, 2.5, 1.5, 0.5], "x": [0.5, 1.5, 2.5, 3.5, 4.5, 5.5]},
+        dims=("band", "y", "x"),
+    )
+    layer = RasterLayer.from_xarray(
+        da,
+        render_tile=_no_render,
+        crs="EPSG:3857",
+        tile_size=4,
+    )
+    tile = asyncio.run(layer._fetch_tile(x=1, y=0, z=0))
+    assert tile.shape == (3, 4, 2)
+
+
+def test_from_xarray_explicit_transform_and_crs():
+    da = xr.DataArray(np.zeros((2, 2)), dims=("y", "x"))
+    transform = Affine(10, 0, 300000, 0, -10, 4100040)
+    layer = RasterLayer.from_xarray(
+        da,
+        render_tile=_no_render,
+        crs="EPSG:32612",
+        transform=transform,
+    )
+    assert layer._affine_levels[0].transform == transform
+
+
+def test_from_xarray_rolls_longitude():
+    da = _da(np.array([0.5, -0.5]), np.arange(0.5, 360.0, 1.0))
+    layer = RasterLayer.from_xarray(da, render_tile=_no_render)
+    assert layer._affine_levels[0].transform.c == -180.0
+
+
+def test_from_xarray_requires_xarray_dataarray():
+    with pytest.raises(TypeError, match="DataArray"):
+        RasterLayer.from_xarray(np.zeros((2, 2)), render_tile=_no_render)
