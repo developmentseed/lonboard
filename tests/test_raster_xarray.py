@@ -10,10 +10,14 @@ xr = pytest.importorskip("xarray")
 from lonboard.layer._raster_xarray import (  # noqa: E402
     chunk_tile_size,
     coordinate_transform,
+    default_min_zoom,
     find_crs,
+    level_for,
     roll_longitude,
     spatial_dims,
+    wgs84_bounds,
 )
+from lonboard.raster import AffineLevel  # noqa: E402
 
 
 def _da(  # noqa: PLR0913
@@ -177,3 +181,46 @@ def test_tile_size_oversized_chunk_falls_back():
     dask = pytest.importorskip("dask.array")
     da = xr.DataArray(dask.zeros((4000, 4000), chunks=(4000, 512)), dims=("y", "x"))
     assert chunk_tile_size(da, "y", "x", None) == (512, 512)
+
+
+def test_level_for_sizes():
+    da = _da(np.linspace(89.5, -89.5, 180), np.linspace(-179.5, 179.5, 360))
+    level = level_for(da, "lat", "lon", Affine(1, 0, -180, 0, -1, 90), (512, 256))
+    assert (level.width, level.height, level.tile_width, level.tile_height) == (
+        360,
+        180,
+        512,
+        256,
+    )
+
+
+def test_wgs84_bounds_projected():
+    level = AffineLevel(
+        Affine(10.0, 0.0, 300000.0, 0.0, -10.0, 4100040.0),
+        10980,
+        10980,
+        512,
+        512,
+    )
+    b = wgs84_bounds(level, CRS.from_epsg(32612))
+    assert b.minx == pytest.approx(-113.2, abs=0.2)
+    assert b.maxy == pytest.approx(37.05, abs=0.1)
+
+
+def test_default_min_zoom_small_global_array_is_zero():
+    level = AffineLevel(Affine(1, 0, -180, 0, -1, 90), 360, 180, 512, 512)
+    assert default_min_zoom(level, 111319.49, 0.0) == 0
+
+
+def test_default_min_zoom_large_array():
+    # 10 m pixels: a 512 px tile is 5120 m; a quarter of that on screen is
+    # 40 m per CSS pixel, which is zoom ceil(log2(156543.03 / 40)) = 12 at the
+    # equator.
+    level = AffineLevel(
+        Affine(10.0, 0.0, 0.0, 0.0, -10.0, 0.0),
+        100000,
+        100000,
+        512,
+        512,
+    )
+    assert default_min_zoom(level, 1.0, 0.0) == 12
