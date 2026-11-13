@@ -11,6 +11,10 @@ from typing import TYPE_CHECKING
 
 import numpy as np
 from pyproj import CRS
+from pyproj.transformer import Transformer
+
+from lonboard._geoarrow.ops import Bbox
+from lonboard.raster import AffineLevel
 
 if TYPE_CHECKING:
     from collections.abc import Callable, Hashable
@@ -183,3 +187,58 @@ def chunk_tile_size(
         return tile if tile <= _MAX_TILE else _DEFAULT_TILE
 
     return from_chunk(x_dim), from_chunk(y_dim)
+
+
+def level_for(
+    da: xr.DataArray,
+    y_dim: Hashable,
+    x_dim: Hashable,
+    transform: Affine,
+    tile: tuple[int, int],
+) -> AffineLevel:
+    """Return the `AffineLevel` describing `da` with the given grid and `(tile_width, tile_height)`."""
+    return AffineLevel(
+        transform=transform,
+        width=int(da.sizes[x_dim]),
+        height=int(da.sizes[y_dim]),
+        tile_width=tile[0],
+        tile_height=tile[1],
+    )
+
+
+def wgs84_bounds(level: AffineLevel, crs: CRS) -> Bbox:
+    """Return the WGS84 bounding box of a level's array."""
+    t = level.transform
+    corners = [
+        t * (0, 0),
+        t * (level.width, 0),
+        t * (0, level.height),
+        t * (level.width, level.height),
+    ]
+    xs = [c[0] for c in corners]
+    ys = [c[1] for c in corners]
+    transformer = Transformer.from_crs(crs, "EPSG:4326", always_xy=True)
+    return Bbox(*transformer.transform_bounds(min(xs), min(ys), max(xs), max(ys)))
+
+
+# Web Mercator meters per CSS pixel at zoom 0 on the equator.
+_ZOOM0_METERS_PER_PIXEL = 156543.03
+
+# Below the default min_zoom a tile would be smaller than this fraction of its
+# pixel size on screen, so a viewport would ask for too many tiles.
+_MIN_TILE_SCREEN_FRACTION = 1 / 4
+
+
+def default_min_zoom(level: AffineLevel, mpu: float, center_lat: float) -> int:
+    """Return the viewport zoom below which the coarsest level is not requested.
+
+    At that zoom one tile of `level` covers at least a quarter of its pixel
+    size on screen, measured at `center_lat`.
+    """
+    t = level.transform
+    pixel_meters = math.sqrt(abs(t.a * t.e)) * mpu
+    screen_meters_per_pixel = _ZOOM0_METERS_PER_PIXEL * math.cos(
+        math.radians(center_lat),
+    )
+    zoom = math.log2(screen_meters_per_pixel * _MIN_TILE_SCREEN_FRACTION / pixel_meters)
+    return max(0, math.ceil(zoom))
