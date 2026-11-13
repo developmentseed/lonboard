@@ -9,15 +9,16 @@ overrides:
   # '@developmentseed/geotiff': link:../deck.gl-raster/packages/geotiff
   # '@developmentseed/morecantile': link:../deck.gl-raster/packages/morecantile
   # '@developmentseed/proj': link:../deck.gl-raster/packages/proj
+  # '@developmentseed/range-reader': link:../deck.gl-raster/packages/range-reader
   # '@developmentseed/raster-reproject': link:../deck.gl-raster/packages/raster-reproject
-  '@deck.gl/aggregation-layers': '^9.4.0'
-  '@deck.gl/core': '^9.4.0'
-  '@deck.gl/extensions': '^9.4.0'
-  '@deck.gl/geo-layers': '^9.4.0'
-  '@deck.gl/layers': '^9.4.0'
-  '@deck.gl/maplibre': '^9.4.0'
-  '@deck.gl/mesh-layers': '^9.4.0'
-  '@deck.gl/widgets': '^9.4.0'
+  '@deck.gl/aggregation-layers': '^9.4.1'
+  '@deck.gl/core': '^9.4.1'
+  '@deck.gl/extensions': '^9.4.1'
+  '@deck.gl/geo-layers': '^9.4.1'
+  '@deck.gl/layers': '^9.4.1'
+  '@deck.gl/maplibre': '^9.4.1'
+  '@deck.gl/mesh-layers': '^9.4.1'
+  '@deck.gl/widgets': '^9.4.1'
   # Keep every loaders.gl package on one version. @luma.gl/gltf 9.4 requires
   # ~4.4.5 while deck.gl 9.4 accepts ^4.4.3, and loaders.gl packages pin exact
   # versions of each other, so without this some are bundled twice.
