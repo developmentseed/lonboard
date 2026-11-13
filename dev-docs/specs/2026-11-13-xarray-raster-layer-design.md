@@ -283,11 +283,12 @@ its own coordinates and chunks. Verified with xarray 2026.9.0: the root's
 attrs and children come through, each level's `encoding["preferred_chunks"]`
 is the store's chunking, and the levels' coordinates are cell centers.
 
-Each layout item's `asset` names either a child group (the level's variable
-is `variable`, or the group's only data variable) or, in the array-based
-form the convention also allows, a data variable on the root itself, which
-is how xarray presents a group whose levels are bare arrays. The levels are
-those DataArrays in layout order, reversed to coarsest first. Each level's
+Each layout item's `asset` names a child group; the level's variable is
+`variable`, or the group's only data variable. The array-based form the
+convention also allows (bare arrays as levels) cannot be opened by xarray
+when the levels share dimension names, because a Dataset cannot hold two
+sizes for one dimension, so it is left to `from_zarr`. The levels are
+those DataArrays sorted coarsest first by pixel size. Each level's
 transform is the layout item's `spatial:transform` if present, else from
 its coordinates as for a single array; a level with neither is an error
 naming both. Tile size comes from each level's own chunks; the CRS from the
