@@ -2,11 +2,14 @@
 
 import io
 
+import morecantile
 import pytest
 from PIL import Image
 from test_utils import setup_map_widget
 
 from lonboard import Map, RasterLayer
+from lonboard._geoarrow.ops import Bbox
+from lonboard.raster import EncodedImage
 
 pmtiles_tile = pytest.importorskip("pmtiles.tile")
 
@@ -74,3 +77,43 @@ def test_pmtiles_tiles_render(page_session):
     assert color_matches(pixel, TILE_COLOR), (
         f"Tiles never rendered: center pixel is {pixel}, expected {TILE_COLOR}"
     )
+
+
+def wait_for_tile_requests_to_stop(page_session, requests: list) -> int:
+    """Wait until no tile has been requested for 1.5 s, and return the count."""
+    count, quiet_ms = len(requests), 0
+    for _ in range(120):
+        page_session.wait_for_timeout(250)
+        if len(requests) != count:
+            count, quiet_ms = len(requests), 0
+        elif (quiet_ms := quiet_ms + 250) >= 1500:
+            break
+    return count
+
+
+@pytest.mark.usefixtures("solara_test")
+def test_tile_matrix_set_tiles_not_refetched_on_rerender(page_session):
+    png = solid_png(TILE_COLOR)
+    requests = []
+
+    async def fetch_tile(x: int, y: int, z: int) -> bytes:
+        requests.append((x, y, z))
+        return png
+
+    layer = RasterLayer(
+        _tile_matrix_set=morecantile.tms.get("WebMercatorQuad"),
+        _crs="EPSG:3857",
+        _fetch_tile=fetch_tile,
+        _render_tile=lambda data: EncodedImage(data=data, media_type="image/png"),
+        _bounds=Bbox(-180, -85, 180, 85),
+    )
+    m = Map(layer, view_state={"longitude": 0, "latitude": 0, "zoom": 3})
+    m.basemap = None
+    setup_map_widget(page_session, m)
+    loaded = wait_for_tile_requests_to_stop(page_session, requests)
+    assert loaded > 0
+
+    # Re-renders the map, which must reuse the tiles it already has
+    layer.opacity = 0.5
+
+    assert wait_for_tile_requests_to_stop(page_session, requests) == loaded
