@@ -413,7 +413,7 @@ class RasterLayer(BaseLayer, Generic[T]):
 
     @staticmethod
     def from_xarray(  # noqa: PLR0913
-        data: xr.DataArray,
+        data: xr.DataArray | xr.DataTree,
         /,
         *,
         render_tile: RenderTile[xr.DataArray],
@@ -423,11 +423,13 @@ class RasterLayer(BaseLayer, Generic[T]):
         tile_size: int | None = None,
         **kwargs: Unpack[RasterLayerKwargs],
     ) -> RasterLayer[xr.DataArray]:
-        """Create a RasterLayer from an [xarray][xarray.DataArray] `DataArray`.
+        """Create a RasterLayer from an xarray [`DataArray`][xarray.DataArray] or multiscale [`DataTree`][xarray.DataTree].
 
         Each tile is read from the array in Python as the browser asks for it,
         so the array may be in memory, dask-backed, or lazily opened from a
-        store such as Zarr.
+        store such as Zarr. A `DataArray` is a single resolution level; a
+        `DataTree` opened from a GeoZarr multiscale group gives one level per
+        pyramid level, so zoomed-out views read the coarse levels.
 
         **Example:**
 
@@ -441,13 +443,13 @@ class RasterLayer(BaseLayer, Generic[T]):
         ```
 
         Args:
-            data: A `DataArray` with dims `(y, x)` or `(band, y, x)`. The last two dims are the spatial dims; select any others away with `.isel()` or `.sel()` first. The spatial coordinates must be 1-D and evenly spaced, unless `transform` is given.
+            data: A `DataArray` with dims `(y, x)` or `(band, y, x)`, or a `DataTree` from [`xr.open_datatree`][xarray.open_datatree] whose root attrs follow the [zarr-conventions multiscales](https://github.com/zarr-conventions/multiscales) layout, with one child group per level. The last two dims are the spatial dims; select any others away with `.isel()` or `.sel()` first. The spatial coordinates must be 1-D and evenly spaced, unless a transform is given (`transform=` for a `DataArray`, `spatial:transform` on the layout items for a tree).
 
         Keyword Args:
             render_tile: A callback that turns one loaded tile into an [EncodedImage][lonboard.raster.EncodedImage], or returns `None` for an empty tile. It receives a `DataArray` window of `data`, with its coordinates, of shape `(y, x)` or `(band, y, x)`; edge tiles are smaller than the tile size. Missing values are whatever xarray decoded, usually `NaN`; make them transparent in the image you return.
-            variable: Reserved for multiscale input; ignored for a `DataArray`.
+            variable: For a `DataTree`, the data variable to draw in each level group; required when a group has more than one. Ignored for a `DataArray`.
             crs: The coordinate reference system, as anything [pyproj.CRS.from_user_input][pyproj.crs.CRS.from_user_input] accepts. If omitted it is read from GeoZarr `proj:code`, `proj:wkt2` or `proj:projjson` attrs, or taken as `EPSG:4326` when the spatial dims are named like longitude and latitude or have degree units.
-            transform: The pixel-edge to CRS [`affine.Affine`](https://github.com/rasterio/affine). If omitted it is computed from the spatial coordinates, which are cell centers.
+            transform: The pixel-edge to CRS [`affine.Affine`](https://github.com/rasterio/affine) of a `DataArray`. If omitted it is computed from the spatial coordinates, which are cell centers. Not accepted for a `DataTree`.
             tile_size: Pixels per tile side. If omitted, tiles follow the array's dask or Zarr chunks, as a whole number of chunks of at least 256 pixels, and are 512 pixels when there are no chunks.
             kwargs: parameters passed on to `__init__`. `min_zoom` defaults to the viewport zoom below which one tile would cover less than a quarter of its size on screen, so zoomed-out views do not request every tile; pass it to override.
 

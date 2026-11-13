@@ -17,7 +17,9 @@ from lonboard.layer._raster_xarray import (  # noqa: E402
     coordinate_transform,
     default_min_zoom,
     find_crs,
+    geozarr_crs_from_attrs,
     level_for,
+    multiscale_levels,
     roll_longitude,
     spatial_dims,
     wgs84_bounds,
@@ -408,3 +410,163 @@ def test_from_xarray_rejects_lon_lat_order():
     ).transpose("lon", "lat")
     with pytest.raises(ValueError, match="transpose"):
         RasterLayer.from_xarray(da, render_tile=_no_render, crs="EPSG:4326")
+
+
+def test_geozarr_crs_from_attrs():
+    assert geozarr_crs_from_attrs({"proj:code": "EPSG:32612"}).to_epsg() == 32612
+    assert geozarr_crs_from_attrs({}) is None
+
+
+def _two_level_store(
+    *,
+    order: str = "finest-first",
+    with_transform: bool = False,
+    with_coords: bool = True,
+    transpose_coarse: bool = False,
+):
+    """An in-memory GeoZarr multiscale store: groups `0` (fine) and `1` (coarse)."""
+    zarr = pytest.importorskip("zarr")
+    store = zarr.storage.MemoryStore()
+    lat = np.linspace(89.5, -89.5, 180)
+    lon = np.linspace(-179.5, 179.5, 360)
+    fine = xr.Dataset(
+        {
+            "v": (("lat", "lon"), np.zeros((180, 360), "f4")),
+            "w": (("lat", "lon"), np.ones((180, 360), "f4")),
+        },
+        coords={"lat": lat, "lon": lon},
+    )
+    coarse = fine.coarsen(lat=2, lon=2).mean()
+    if not with_coords:
+        fine = fine.drop_vars(["lat", "lon"])
+        coarse = coarse.drop_vars(["lat", "lon"])
+    if transpose_coarse:
+        coarse = coarse.transpose("lon", "lat")
+    fine.to_zarr(
+        store,
+        group="0",
+        mode="w",
+        encoding={"v": {"chunks": (90, 90)}, "w": {"chunks": (90, 90)}},
+    )
+    coarse.to_zarr(
+        store,
+        group="1",
+        mode="a",
+        encoding={"v": {"chunks": (45, 45)}, "w": {"chunks": (45, 45)}},
+    )
+    items = [{"asset": "0"}, {"asset": "1", "derived_from": "0"}]
+    if with_transform:
+        items[0]["spatial:transform"] = [1.0, 0.0, -180.0, 0.0, -1.0, 90.0]
+        items[1]["spatial:transform"] = [2.0, 0.0, -180.0, 0.0, -2.0, 90.0]
+    if order == "coarsest-first":
+        items.reverse()
+    root = zarr.open_group(store, mode="a")
+    root.attrs.update(
+        {
+            "spatial:dimensions": ["lat", "lon"],
+            "proj:code": "EPSG:4326",
+            "multiscales": {"layout": items},
+        },
+    )
+    return store
+
+
+def _open_tree(store):
+    return xr.open_datatree(store, engine="zarr", chunks=None)
+
+
+def test_multiscale_levels_coarsest_first():
+    levels = multiscale_levels(_open_tree(_two_level_store()), "v")
+    assert [lvl.shape for lvl, _ in levels] == [(90, 180), (180, 360)]
+    assert [t.a for _, t in levels] == [2.0, 1.0]
+
+
+def test_multiscale_levels_sorts_by_resolution():
+    tree = _open_tree(_two_level_store(order="coarsest-first"))
+    assert [lvl.shape for lvl, _ in multiscale_levels(tree, "v")] == [
+        (90, 180),
+        (180, 360),
+    ]
+
+
+def test_multiscale_levels_item_transform():
+    tree = _open_tree(_two_level_store(with_transform=True))
+    _, coarse = multiscale_levels(tree, "v")[0]
+    assert coarse == Affine(2.0, 0.0, -180.0, 0.0, -2.0, 90.0)
+
+
+def test_multiscale_levels_without_coordinates_uses_item_transform():
+    tree = _open_tree(_two_level_store(with_transform=True, with_coords=False))
+    assert [t.a for _, t in multiscale_levels(tree, "v")] == [2.0, 1.0]
+
+
+def test_multiscale_levels_without_grid_errors():
+    tree = _open_tree(_two_level_store(with_coords=False))
+    with pytest.raises(ValueError, match="spatial:transform"):
+        multiscale_levels(tree, "v")
+
+
+def test_multiscale_levels_requires_variable_when_ambiguous():
+    with pytest.raises(ValueError, match="variable="):
+        multiscale_levels(_open_tree(_two_level_store()), None)
+
+
+def test_multiscale_levels_requires_multiscales():
+    with pytest.raises(ValueError, match="multiscales"):
+        multiscale_levels(xr.DataTree(xr.Dataset(attrs={})), None)
+
+
+def test_from_xarray_tree_state():
+    tree = _open_tree(_two_level_store())
+    layer = RasterLayer.from_xarray(tree, render_tile=_no_render, variable="v")
+    levels = layer.get_state()["_affine_levels"]
+    assert [(lvl["arrayWidth"], lvl["arrayHeight"]) for lvl in levels] == [
+        (180, 90),
+        (360, 180),
+    ]
+    assert [lvl["affine"][0] for lvl in levels] == [2.0, 1.0]
+    # 45 px chunks make 270 px tiles (6 chunks); 90 px chunks likewise (3 chunks)
+    assert [lvl["tileWidth"] for lvl in levels] == [270, 270]
+    assert layer._crs.to_epsg() == 4326
+    assert layer.min_zoom == 0
+    assert layer._bbox == Bbox(-180.0, -90.0, 180.0, 90.0)
+
+
+def test_from_xarray_tree_fetch_each_level():
+    tree = _open_tree(_two_level_store())
+    layer = RasterLayer.from_xarray(tree, render_tile=_no_render, variable="v")
+    assert asyncio.run(layer._fetch_tile(x=0, y=0, z=0)).shape == (90, 180)
+    fine = asyncio.run(layer._fetch_tile(x=1, y=0, z=1))
+    assert fine.shape == (180, 90)
+    assert fine.chunks is None
+
+
+def test_from_xarray_tree_with_dask():
+    tree = xr.open_datatree(_two_level_store(), engine="zarr", chunks={})
+    layer = RasterLayer.from_xarray(tree, render_tile=_no_render, variable="v")
+    tile = asyncio.run(layer._fetch_tile(x=0, y=0, z=0))
+    assert tile.shape == (90, 180)
+    assert tile.chunks is None
+
+
+def test_from_xarray_tree_missing_grid_errors():
+    tree = _open_tree(_two_level_store(with_coords=False))
+    with pytest.raises(ValueError, match="spatial:transform"):
+        RasterLayer.from_xarray(tree, render_tile=_no_render, variable="v")
+
+
+def test_from_xarray_tree_mismatched_dims_errors():
+    tree = _open_tree(_two_level_store(transpose_coarse=True))
+    with pytest.raises(ValueError, match="same spatial dims"):
+        RasterLayer.from_xarray(tree, render_tile=_no_render, variable="v")
+
+
+def test_from_xarray_tree_rejects_transform():
+    tree = _open_tree(_two_level_store())
+    with pytest.raises(ValueError, match="transform="):
+        RasterLayer.from_xarray(
+            tree,
+            render_tile=_no_render,
+            variable="v",
+            transform=Affine.identity(),
+        )
