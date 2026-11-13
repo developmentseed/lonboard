@@ -1,9 +1,11 @@
 from __future__ import annotations
 
+import math
 from typing import TYPE_CHECKING, Any
 
 from pyproj import CRS
 
+from lonboard.raster import AffineLevel
 from lonboard.traits._base import FixedErrorTraitType
 
 if TYPE_CHECKING:
@@ -86,3 +88,68 @@ class TileMatrixSetTrait(FixedErrorTraitType):
             return TileMatrixSet(**value)
         except:  # noqa: E722
             self.error(obj, value, info="to be a valid TileMatrixSet dict")
+
+
+def meters_per_unit(crs: CRS) -> float:
+    """Meters per horizontal CRS unit, as a TileMatrixSet's `metersPerUnit`."""
+    unit_name = crs.axis_info[0].unit_name
+    if unit_name == "metre":
+        return 1.0
+    if unit_name == "degree":
+        return 2 * math.pi * crs.ellipsoid.semi_major_metre / 360.0
+    if unit_name == "foot":
+        return 0.3048
+    if unit_name == "US survey foot":
+        return 0.30480060960121924
+    raise ValueError(f"Unsupported CRS unit {unit_name!r}")
+
+
+def serialize_affine_levels(
+    levels: list[AffineLevel] | None,
+    obj: Any,
+) -> list[dict] | None:
+    """Serialize affine levels as deck.gl-raster `AffineTilesetLevelOptions`.
+
+    `obj` is the widget; its `_crs` gives the meters per unit.
+    """
+    if levels is None:
+        return None
+
+    mpu = meters_per_unit(obj._crs)  # noqa: SLF001
+    return [
+        {
+            "affine": [float(v) for v in tuple(level.transform)[:6]],
+            "arrayWidth": level.width,
+            "arrayHeight": level.height,
+            "tileWidth": level.tile_width,
+            "tileHeight": level.tile_height,
+            "mpu": mpu,
+        }
+        for level in levels
+    ]
+
+
+class AffineLevelsTrait(FixedErrorTraitType):
+    """Validation for a raster grid given as affine levels, coarsest first.
+
+    This allows as input a non-empty list of [AffineLevel][lonboard.raster.AffineLevel].
+    """
+
+    def __init__(
+        self: TraitType,
+        *args: Any,
+        **kwargs: Any,
+    ) -> None:
+        super().__init__(*args, **kwargs)
+
+        self.tag(sync=True, to_json=serialize_affine_levels)
+
+    def validate(self, obj: HasTraits | None, value: Any) -> Any:
+        if (
+            isinstance(value, list)
+            and len(value) > 0
+            and all(isinstance(level, AffineLevel) for level in value)
+        ):
+            return value
+
+        return self.error(obj, value, info="to be a non-empty list of AffineLevel")

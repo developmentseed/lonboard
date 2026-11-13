@@ -12,8 +12,8 @@ from pyproj.transformer import Transformer
 import lonboard.traits as t
 from lonboard._geoarrow.ops import Bbox, WeightedCentroid
 from lonboard.layer._base import BaseLayer
-from lonboard.raster import EncodedImage
-from lonboard.traits import ProjectionTrait, TileMatrixSetTrait
+from lonboard.raster import AffineLevel, EncodedImage
+from lonboard.traits import AffineLevelsTrait, ProjectionTrait, TileMatrixSetTrait
 
 if TYPE_CHECKING:
     import sys
@@ -197,6 +197,7 @@ class RasterLayer(BaseLayer, Generic[T]):
         self,
         *,
         _tile_matrix_set: TileMatrixSet | None,
+        _affine_levels: list[AffineLevel] | None = None,
         _crs: CRS,
         _fetch_tile: FetchTile[T],
         _render_tile: RenderTile[T],
@@ -215,13 +216,21 @@ class RasterLayer(BaseLayer, Generic[T]):
 
             return output
 
+        if _tile_matrix_set is not None and _affine_levels is not None:
+            raise ValueError("Pass either _tile_matrix_set or _affine_levels, not both")
+
         self._pending_tasks = {}
         self._fetch_tile = _fetch_tile
         self._render_tile = render_tile_wrapper
         self.on_msg(handle_anywidget_dispatch)
         self._bounds = _bounds
         self._center = _center
-        super().__init__(_tile_matrix_set=_tile_matrix_set, _crs=_crs, **kwargs)  # type: ignore
+        super().__init__(
+            _tile_matrix_set=_tile_matrix_set,
+            _affine_levels=_affine_levels,
+            _crs=_crs,
+            **kwargs,  # type: ignore
+        )
 
     @property
     def _bbox(self) -> Bbox:
@@ -403,6 +412,12 @@ class RasterLayer(BaseLayer, Generic[T]):
     _layer_type = t.Unicode("raster")
 
     _tile_matrix_set: TileMatrixSet = TileMatrixSetTrait(allow_none=True).tag(sync=True)  # type: ignore
+
+    _affine_levels: list[AffineLevel] | None = AffineLevelsTrait(
+        allow_none=True,
+        default_value=None,
+    ).tag(sync=True)  # type: ignore
+    """The tile grid as affine levels, coarsest first, when it is not a tile matrix set."""
 
     _crs: CRS = ProjectionTrait().tag(sync=True)  # type: ignore
 
