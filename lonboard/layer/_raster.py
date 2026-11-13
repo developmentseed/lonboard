@@ -18,6 +18,8 @@ from lonboard.traits import AffineLevelsTrait, ProjectionTrait, TileMatrixSetTra
 if TYPE_CHECKING:
     import sys
 
+    import xarray as xr
+    from affine import Affine
     from async_geotiff import GeoTIFF, Overview, Tile
     from async_pmtiles import PMTilesReader
     from morecantile import TileMatrixSet
@@ -406,6 +408,62 @@ class RasterLayer(BaseLayer, Generic[T]):
             # max_zoom=len(tms.tileMatrices) - 1,
             _bounds=Bbox(*wgs84_bounds),
             _center=wgs84_center,
+            **kwargs,
+        )
+
+    @staticmethod
+    def from_xarray(  # noqa: PLR0913
+        data: xr.DataArray,
+        /,
+        *,
+        render_tile: RenderTile[xr.DataArray],
+        variable: str | None = None,
+        crs: CRS | str | int | None = None,
+        transform: Affine | None = None,
+        tile_size: int | None = None,
+        **kwargs: Unpack[RasterLayerKwargs],
+    ) -> RasterLayer[xr.DataArray]:
+        """Create a RasterLayer from an [xarray][xarray.DataArray] `DataArray`.
+
+        Each tile is read from the array in Python as the browser asks for it,
+        so the array may be in memory, dask-backed, or lazily opened from a
+        store such as Zarr.
+
+        **Example:**
+
+        ```py
+        import xarray as xr
+        from lonboard import Map, RasterLayer
+
+        da = xr.open_zarr("s3://bucket/data.zarr")["temperature"].isel(time=0)
+        layer = RasterLayer.from_xarray(da, render_tile=render_tile)
+        m = Map(layer)
+        ```
+
+        Args:
+            data: A `DataArray` with dims `(y, x)` or `(band, y, x)`. The last two dims are the spatial dims; select any others away with `.isel()` or `.sel()` first. The spatial coordinates must be 1-D and evenly spaced, unless `transform` is given.
+
+        Keyword Args:
+            render_tile: A callback that turns one loaded tile into an [EncodedImage][lonboard.raster.EncodedImage], or returns `None` for an empty tile. It receives a `DataArray` window of `data`, with its coordinates, of shape `(y, x)` or `(band, y, x)`; edge tiles are smaller than the tile size. Missing values are whatever xarray decoded, usually `NaN`; make them transparent in the image you return.
+            variable: Reserved for multiscale input; ignored for a `DataArray`.
+            crs: The coordinate reference system, as anything [pyproj.CRS.from_user_input][pyproj.crs.CRS.from_user_input] accepts. If omitted it is read from GeoZarr `proj:code`, `proj:wkt2` or `proj:projjson` attrs, or taken as `EPSG:4326` when the spatial dims are named like longitude and latitude or have degree units.
+            transform: The pixel-edge to CRS [`affine.Affine`](https://github.com/rasterio/affine). If omitted it is computed from the spatial coordinates, which are cell centers.
+            tile_size: Pixels per tile side. If omitted, tiles follow the array's dask or Zarr chunks, as a whole number of chunks of at least 256 pixels, and are 512 pixels when there are no chunks.
+            kwargs: parameters passed on to `__init__`. `min_zoom` defaults to the viewport zoom below which one tile would cover less than a quarter of its size on screen, so zoomed-out views do not request every tile; pass it to override.
+
+        Returns:
+            A new RasterLayer instance.
+
+        """
+        from lonboard.layer._raster_xarray import build_from_xarray
+
+        return build_from_xarray(
+            data,
+            render_tile=render_tile,
+            variable=variable,
+            crs=crs,
+            transform=transform,
+            tile_size=tile_size,
             **kwargs,
         )
 

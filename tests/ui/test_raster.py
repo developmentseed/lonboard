@@ -171,3 +171,33 @@ def test_affine_levels_tiles_render(page_session):
     assert color_matches(pixel, TILE_COLOR), (
         f"Tiles never rendered: center pixel is {pixel}, expected {TILE_COLOR}"
     )
+
+
+@pytest.mark.usefixtures("solara_test")
+def test_from_xarray_tiles_render(page_session):
+    """A DataArray over lon/lat is drawn through from_xarray."""
+    np = pytest.importorskip("numpy")
+    xr = pytest.importorskip("xarray")
+
+    da = xr.DataArray(
+        np.zeros((180, 360), dtype="f4"),
+        coords={
+            "lat": np.linspace(89.5, -89.5, 180),
+            "lon": np.linspace(-179.5, 179.5, 360),
+        },
+        dims=("lat", "lon"),
+    )
+
+    def render_tile(tile: xr.DataArray) -> EncodedImage:
+        png = solid_png(TILE_COLOR, size=(tile.sizes["lon"], tile.sizes["lat"]))
+        return EncodedImage(data=png, media_type="image/png")
+
+    layer = RasterLayer.from_xarray(da, render_tile=render_tile)
+    m = Map(layer, view_state={"longitude": 0, "latitude": 0, "zoom": 3})
+    m.basemap = None
+    canvas = setup_map_widget(page_session, m)
+
+    pixel = wait_for_tiles(page_session, canvas, TILE_COLOR)
+    assert color_matches(pixel, TILE_COLOR), (
+        f"Tiles never rendered: center pixel is {pixel}, expected {TILE_COLOR}"
+    )

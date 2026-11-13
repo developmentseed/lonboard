@@ -49,6 +49,7 @@ geotiff = [
     "async-geotiff>=0.4.0; python_version >= '3.11'",
     "morecantile>=7.0; python_version >= '3.11'",
 ]
+xarray = ["xarray>=2025.1", "affine>=2.4"]
 
 
 [project.urls]
@@ -80,6 +81,7 @@ dev = [
     "aiohttp>=3.13.3",
     "async-geotiff>=0.1.0",
     "async-pmtiles>=0.1.0",
+    "dask>=2024.1",
     "duckdb>=1.3.0",
     "fiona>=1.10.1",
     "geoarrow-pyarrow>=0.2.0",
@@ -106,6 +108,8 @@ dev = [
     "sidecar>=0.7.0",
     "types-geopandas>=1.1.1.20250708",
     "types-shapely>=2.1.0.20250512",
+    "xarray>=2025.1",
+    "zarr>=3",
 ]
 # Deps for building the JupyterLite site
 jupyterlite = [
