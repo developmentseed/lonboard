@@ -3,6 +3,7 @@ from __future__ import annotations
 import pytest
 from affine import Affine
 from pyproj import CRS
+from traitlets import TraitError
 
 from lonboard import RasterLayer
 from lonboard.raster import AffineLevel
@@ -50,6 +51,63 @@ def test_serialize_affine_levels_matches_deck_gl_raster_options():
 
 def test_serialize_affine_levels_none():
     assert serialize_affine_levels(None, _CrsHolder("EPSG:4326")) is None
+
+
+async def _no_tile(x: int, y: int, z: int) -> None:  # noqa: ARG001
+    return None
+
+
+def _no_render(tile: None) -> None:  # noqa: ARG001
+    return None
+
+
+def _level() -> AffineLevel:
+    return AffineLevel(
+        Affine(1.0, 0.0, -180.0, 0.0, -1.0, 90.0),
+        width=360,
+        height=180,
+        tile_width=512,
+        tile_height=512,
+    )
+
+
+def test_affine_levels_state():
+    layer = RasterLayer(
+        _tile_matrix_set=None,
+        _affine_levels=[_level()],
+        _crs="EPSG:4326",
+        _fetch_tile=_no_tile,
+        _render_tile=_no_render,
+    )
+    state = layer.get_state()
+    assert state["_tile_matrix_set"] is None
+    assert state["_affine_levels"][0]["arrayWidth"] == 360
+    assert state["_affine_levels"][0]["mpu"] == pytest.approx(111319.4907932736)
+
+
+def test_affine_levels_and_tms_are_exclusive():
+    # The check runs before trait validation, so any non-None value stands in
+    # for a TileMatrixSet and the test needs no morecantile.
+    with pytest.raises(ValueError, match="not both"):
+        RasterLayer(
+            _tile_matrix_set=object(),  # type: ignore[arg-type]
+            _affine_levels=[_level()],
+            _crs="EPSG:3857",
+            _fetch_tile=_no_tile,
+            _render_tile=_no_render,
+        )
+
+
+@pytest.mark.parametrize("bad", [[], [{"affine": [1, 0, 0, 0, 1, 0]}]])
+def test_affine_levels_trait_rejects(bad):
+    with pytest.raises(TraitError):
+        RasterLayer(
+            _tile_matrix_set=None,
+            _affine_levels=bad,
+            _crs="EPSG:4326",
+            _fetch_tile=_no_tile,
+            _render_tile=_no_render,
+        )
 
 
 def test_from_pmtiles_uses_web_mercator_tiles():
