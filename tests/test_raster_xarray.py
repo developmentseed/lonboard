@@ -410,6 +410,8 @@ def test_from_xarray_rejects_lon_lat_order():
     ).transpose("lon", "lat")
     with pytest.raises(ValueError, match="transpose"):
         RasterLayer.from_xarray(da, render_tile=_no_render, crs="EPSG:4326")
+
+
 def test_geozarr_crs_from_attrs():
     assert geozarr_crs_from_attrs({"proj:code": "EPSG:32612"}).to_epsg() == 32612
     assert geozarr_crs_from_attrs({}) is None
