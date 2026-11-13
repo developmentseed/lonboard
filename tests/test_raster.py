@@ -1,26 +1,72 @@
 from __future__ import annotations
 
 import pytest
+from affine import Affine
+from pyproj import CRS
 
 from lonboard import RasterLayer
+from lonboard.raster import AffineLevel
+from lonboard.traits._raster import meters_per_unit, serialize_affine_levels
 
-pmtiles_tile = pytest.importorskip("pmtiles.tile")
+
+class _CrsHolder:
+    """Stands in for a widget: `serialize_affine_levels` only reads `_crs`."""
+
+    def __init__(self, crs: str) -> None:
+        self._crs = CRS.from_user_input(crs)
 
 
-class FakePMTilesReader:
-    """Implements the parts of `async_pmtiles.PMTilesReader` that RasterLayer uses."""
+def test_affine_level_rejects_nonpositive_size():
+    with pytest.raises(ValueError, match="width"):
+        AffineLevel(Affine.identity(), width=0, height=1, tile_width=1, tile_height=1)
 
-    tile_type = pmtiles_tile.TileType.PNG
-    minzoom = 2
-    maxzoom = 8
-    bounds = (-10.0, -20.0, 30.0, 40.0)
-    center = (10.0, 10.0, 4)
 
-    async def get_tile(self, x: int, y: int, z: int) -> bytes | None:  # noqa: ARG002
-        return None
+def test_meters_per_unit():
+    assert meters_per_unit(CRS.from_epsg(32612)) == 1.0
+    assert meters_per_unit(CRS.from_epsg(4326)) == pytest.approx(111319.4907932736)
+    # NAD83 / California zone 3 is in US survey feet
+    assert meters_per_unit(CRS.from_epsg(2227)) == 0.30480060960121924
+
+
+def test_serialize_affine_levels_matches_deck_gl_raster_options():
+    level = AffineLevel(
+        Affine(10.0, 0.0, 300000.0, 0.0, 10.0, 3990240.0),  # south-up: e > 0
+        width=10980,
+        height=10980,
+        tile_width=512,
+        tile_height=256,
+    )
+    assert serialize_affine_levels([level], _CrsHolder("EPSG:32612")) == [
+        {
+            "affine": [10.0, 0.0, 300000.0, 0.0, 10.0, 3990240.0],
+            "arrayWidth": 10980,
+            "arrayHeight": 10980,
+            "tileWidth": 512,
+            "tileHeight": 256,
+            "mpu": 1.0,
+        },
+    ]
+
+
+def test_serialize_affine_levels_none():
+    assert serialize_affine_levels(None, _CrsHolder("EPSG:4326")) is None
 
 
 def test_from_pmtiles_uses_web_mercator_tiles():
+    pmtiles_tile = pytest.importorskip("pmtiles.tile")
+
+    class FakePMTilesReader:
+        """Implements the parts of `async_pmtiles.PMTilesReader` that RasterLayer uses."""
+
+        tile_type = pmtiles_tile.TileType.PNG
+        minzoom = 2
+        maxzoom = 8
+        bounds = (-10.0, -20.0, 30.0, 40.0)
+        center = (10.0, 10.0, 4)
+
+        async def get_tile(self, x: int, y: int, z: int) -> bytes | None:  # noqa: ARG002
+            return None
+
     layer = RasterLayer.from_pmtiles(FakePMTilesReader())  # type: ignore[arg-type]
 
     state = layer.get_state()

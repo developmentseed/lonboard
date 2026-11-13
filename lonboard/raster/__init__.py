@@ -1,5 +1,5 @@
 """Raster support for Lonboard."""
 
-from ._models import EncodedImage
+from ._models import AffineLevel, EncodedImage
 
-__all__ = ["EncodedImage"]
+__all__ = ["AffineLevel", "EncodedImage"]
