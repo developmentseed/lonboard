@@ -201,3 +201,43 @@ def test_from_xarray_tiles_render(page_session):
     assert color_matches(pixel, TILE_COLOR), (
         f"Tiles never rendered: center pixel is {pixel}, expected {TILE_COLOR}"
     )
+
+
+@pytest.mark.usefixtures("solara_test")
+def test_from_xarray_tree_tiles_render(page_session):
+    """A two-level GeoZarr multiscale DataTree is drawn through from_xarray."""
+    np = pytest.importorskip("numpy")
+    xr = pytest.importorskip("xarray")
+    zarr = pytest.importorskip("zarr")
+
+    store = zarr.storage.MemoryStore()
+    fine = xr.Dataset(
+        {"v": (("lat", "lon"), np.zeros((180, 360), "f4"))},
+        coords={
+            "lat": np.linspace(89.5, -89.5, 180),
+            "lon": np.linspace(-179.5, 179.5, 360),
+        },
+    )
+    fine.to_zarr(store, group="0", mode="w")
+    fine.coarsen(lat=2, lon=2).mean().to_zarr(store, group="1", mode="a")
+    zarr.open_group(store, mode="a").attrs.update(
+        {
+            "proj:code": "EPSG:4326",
+            "multiscales": {"layout": [{"asset": "0"}, {"asset": "1"}]},
+        },
+    )
+    tree = xr.open_datatree(store, engine="zarr", chunks=None)
+
+    def render_tile(tile: xr.DataArray) -> EncodedImage:
+        png = solid_png(TILE_COLOR, size=(tile.sizes["lon"], tile.sizes["lat"]))
+        return EncodedImage(data=png, media_type="image/png")
+
+    layer = RasterLayer.from_xarray(tree, render_tile=render_tile)
+    m = Map(layer, view_state={"longitude": 0, "latitude": 0, "zoom": 3})
+    m.basemap = None
+    canvas = setup_map_widget(page_session, m)
+
+    pixel = wait_for_tiles(page_session, canvas, TILE_COLOR)
+    assert color_matches(pixel, TILE_COLOR), (
+        f"Tiles never rendered: center pixel is {pixel}, expected {TILE_COLOR}"
+    )
