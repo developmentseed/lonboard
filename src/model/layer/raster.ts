@@ -9,6 +9,7 @@ import {
 } from "@developmentseed/deck.gl-raster";
 import type { TileMatrixSet } from "@developmentseed/morecantile";
 import type { WidgetModel } from "@jupyter-widgets/base";
+import memoizeOne from "memoize-one";
 import proj4 from "proj4";
 import type { Converter, PROJJSONDefinition } from "proj4/dist/lib/core.js";
 import { omitUndefined } from "../../util.js";
@@ -161,20 +162,26 @@ export class RasterModel extends BaseLayerModel {
     return { image, width: image.width, height: image.height };
   };
 
-  renderTileMatrixSet(
-    tileMatrixSet: TileMatrixSet,
-    projectTo4326: (x: number, y: number) => [number, number],
-    projectFrom4326: (x: number, y: number) => [number, number],
-    projectTo3857: (x: number, y: number) => [number, number],
-    projectFrom3857: (x: number, y: number) => [number, number],
-  ): RasterTileLayer<TileData | null> {
-    const tilesetDescriptor = new TileMatrixSetAdaptor(tileMatrixSet, {
-      projectTo4326,
-      projectFrom4326,
-      projectTo3857,
-      projectFrom3857,
-    });
+  /**
+   * The tile grid of `tileMatrixSet` in the source CRS. Memoized because
+   * deck.gl-raster reloads every tile when it gets a new descriptor object.
+   */
+  protected tilesetDescriptor = memoizeOne(
+    (
+      tileMatrixSet: TileMatrixSet,
+      converters: NonNullable<RasterModel["converters"]>,
+    ) =>
+      new TileMatrixSetAdaptor(tileMatrixSet, {
+        projectTo4326: (x, y) => converters[4326].forward([x, y]),
+        projectFrom4326: (x, y) => converters[4326].inverse([x, y]),
+        projectTo3857: (x, y) => converters[3857].forward([x, y]),
+        projectFrom3857: (x, y) => converters[3857].inverse([x, y]),
+      }),
+  );
 
+  renderTileMatrixSet(
+    tilesetDescriptor: TileMatrixSetAdaptor,
+  ): RasterTileLayer<TileData | null> {
     return new RasterTileLayer<TileData | null>({
       ...this.baseLayerProps(),
       ...this.layerProps(),
@@ -189,11 +196,7 @@ export class RasterModel extends BaseLayerModel {
     const converters = this.converters;
     if (tileMatrixSet && converters) {
       return this.renderTileMatrixSet(
-        tileMatrixSet,
-        (x, y) => converters[4326].forward([x, y]),
-        (x, y) => converters[4326].inverse([x, y]),
-        (x, y) => converters[3857].forward([x, y]),
-        (x, y) => converters[3857].inverse([x, y]),
+        this.tilesetDescriptor(tileMatrixSet, converters),
       );
     }
 
