@@ -18,7 +18,7 @@ from lonboard._geoarrow.ops import Bbox
 from lonboard.raster import AffineLevel
 
 if TYPE_CHECKING:
-    from collections.abc import Callable, Hashable
+    from collections.abc import Callable, Hashable, Mapping
 
     import xarray as xr
     from affine import Affine
@@ -93,9 +93,8 @@ def coordinate_transform(
     return Affine(step_x, 0.0, x0, 0.0, step_y, y0)
 
 
-def geozarr_crs(da: xr.DataArray) -> CRS | None:
+def geozarr_crs_from_attrs(attrs: Mapping[str, Any]) -> CRS | None:
     """Return the CRS from GeoZarr `proj:code`, `proj:wkt2` or `proj:projjson` attrs."""
-    attrs = da.attrs
     if "proj:code" in attrs:
         return CRS.from_user_input(attrs["proj:code"])
     if "proj:wkt2" in attrs:
@@ -103,6 +102,11 @@ def geozarr_crs(da: xr.DataArray) -> CRS | None:
     if "proj:projjson" in attrs:
         return CRS.from_json_dict(attrs["proj:projjson"])
     return None
+
+
+def geozarr_crs(da: xr.DataArray) -> CRS | None:
+    """Return the CRS from the GeoZarr `proj:*` attrs of `da`."""
+    return geozarr_crs_from_attrs(da.attrs)
 
 
 _LON_NAMES = {"lon", "longitude"}
