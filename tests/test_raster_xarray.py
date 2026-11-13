@@ -8,6 +8,7 @@ from pyproj import CRS
 xr = pytest.importorskip("xarray")
 
 from lonboard.layer._raster_xarray import (  # noqa: E402
+    chunk_tile_size,
     coordinate_transform,
     find_crs,
     roll_longitude,
@@ -130,3 +131,49 @@ def test_roll_longitude():
 def test_roll_longitude_noop():
     da = _da(np.array([0.5, -0.5]), np.array([-90.0, 0.0, 90.0]))
     assert roll_longitude(da, "lon") is da
+
+
+def test_tile_size_explicit():
+    assert chunk_tile_size(_da([1.0, 0.0], [0.0, 1.0]), "lat", "lon", 1024) == (
+        1024,
+        1024,
+    )
+
+
+def test_tile_size_without_chunks():
+    assert chunk_tile_size(_da([1.0, 0.0], [0.0, 1.0]), "lat", "lon", None) == (
+        512,
+        512,
+    )
+
+
+def test_tile_size_from_dask_chunks():
+    dask = pytest.importorskip("dask.array")
+    da = xr.DataArray(dask.zeros((400, 600), chunks=(300, 128)), dims=("y", "x"))
+    assert chunk_tile_size(da, "y", "x", None) == (256, 300)
+
+
+def test_tile_size_irregular_dask_chunks_fall_back():
+    dask = pytest.importorskip("dask.array")
+    da = xr.DataArray(
+        dask.zeros((400, 600), chunks=((100, 300), (600,))),
+        dims=("y", "x"),
+    )
+    # Irregular y chunks fall back to 512; the single regular x chunk is kept.
+    assert chunk_tile_size(da, "y", "x", None) == (600, 512)
+
+
+def test_tile_size_from_zarr_store_chunks():
+    zarr = pytest.importorskip("zarr")
+    store = zarr.storage.MemoryStore()
+    ds = xr.Dataset({"v": (("y", "x"), np.zeros((8, 8), "f4"))})
+    ds.to_zarr(store, encoding={"v": {"chunks": (4, 8)}})
+    lazy = xr.open_zarr(store, chunks=None)["v"]
+    # 8 px chunks become 256 px tiles (32 chunks); 4 px chunks likewise
+    assert chunk_tile_size(lazy, "y", "x", None) == (256, 256)
+
+
+def test_tile_size_oversized_chunk_falls_back():
+    dask = pytest.importorskip("dask.array")
+    da = xr.DataArray(dask.zeros((4000, 4000), chunks=(4000, 512)), dims=("y", "x"))
+    assert chunk_tile_size(da, "y", "x", None) == (512, 512)

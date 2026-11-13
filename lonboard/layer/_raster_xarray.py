@@ -6,6 +6,7 @@ multiscale pyramid share the same tile fetching.
 
 from __future__ import annotations
 
+import math
 from typing import TYPE_CHECKING
 
 import numpy as np
@@ -137,3 +138,48 @@ def roll_longitude(da: xr.DataArray, x_dim: Hashable) -> xr.DataArray:
         return da
 
     return da.assign_coords({x_dim: ((lon + 180) % 360) - 180}).sortby(x_dim)
+
+
+_MIN_TILE = 256
+_MAX_TILE = 2048
+_DEFAULT_TILE = 512
+
+
+def _regular_chunk(da: xr.DataArray, dim: Hashable) -> int | None:
+    """Return the chunk size on `dim` when chunks are regular, else `None`.
+
+    Dask chunks win when present (they are what gets read); otherwise the
+    store's chunks that xarray records on a lazily opened array.
+    """
+    if da.chunks is not None:
+        sizes = da.chunksizes[dim]
+        if len(set(sizes[:-1])) <= 1 and sizes[-1] <= sizes[0]:
+            return int(sizes[0])
+        return None
+
+    preferred = da.encoding.get("preferred_chunks", {}).get(dim)
+    return int(preferred) if preferred else None
+
+
+def chunk_tile_size(
+    da: xr.DataArray,
+    y_dim: Hashable,
+    x_dim: Hashable,
+    tile_size: int | None,
+) -> tuple[int, int]:
+    """Return `(tile_width, tile_height)` for `da`.
+
+    An explicit `tile_size` is used square. Otherwise a tile is a whole number
+    of chunks, at least 256 px; without chunks, or past 2048 px, it is 512 px.
+    """
+    if tile_size is not None:
+        return tile_size, tile_size
+
+    def from_chunk(dim: Hashable) -> int:
+        chunk = _regular_chunk(da, dim)
+        if chunk is None:
+            return _DEFAULT_TILE
+        tile = chunk * math.ceil(_MIN_TILE / chunk)
+        return tile if tile <= _MAX_TILE else _DEFAULT_TILE
+
+    return from_chunk(x_dim), from_chunk(y_dim)
