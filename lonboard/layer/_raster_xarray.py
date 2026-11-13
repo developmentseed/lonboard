@@ -273,6 +273,80 @@ def default_min_zoom(level: AffineLevel, mpu: float, center_lat: float) -> int:
     return max(0, math.ceil(zoom))
 
 
+def _layout_items(tree: xr.DataTree) -> list[dict[str, Any]]:
+    """Return the `multiscales.layout` items of a GeoZarr multiscale group."""
+    try:
+        items = tree.attrs["multiscales"]["layout"]
+    except (KeyError, TypeError):
+        items = None
+    if not isinstance(items, list) or not items:
+        raise ValueError(
+            "Expected a GeoZarr multiscale group: the root attrs need a 'multiscales' "
+            "dict with a non-empty 'layout' list (the zarr-conventions multiscales "
+            "convention).",
+        )
+    return items
+
+
+def _level_array(tree: xr.DataTree, asset: str, variable: str | None) -> xr.DataArray:
+    """Return the array that a layout item's `asset` names: a group's variable, or an array."""
+    import xarray as xr
+
+    try:
+        node = tree[asset]
+    except KeyError as e:
+        raise ValueError(
+            f"multiscales layout asset {asset!r} is not a group or array in the tree",
+        ) from e
+
+    if isinstance(node, xr.DataArray):
+        return node
+
+    ds = node.to_dataset()
+    names = list(ds.data_vars)
+    if variable is not None:
+        if variable not in ds.data_vars:
+            raise ValueError(
+                f"Level {asset!r} has no variable {variable!r}; it has {names}",
+            )
+        return ds[variable]
+    if len(names) != 1:
+        raise ValueError(
+            f"Level {asset!r} has variables {names}; pass variable= to pick one",
+        )
+    return ds[names[0]]
+
+
+def _level_transform(da: xr.DataArray, item: dict[str, Any]) -> Affine:
+    """Return a level's transform: the item's `spatial:transform`, else from its coordinates."""
+    from affine import Affine
+
+    transform = item.get("spatial:transform")
+    if transform is not None:
+        return Affine(*(float(v) for v in transform[:6]))
+
+    try:
+        return coordinate_transform(da, *spatial_dims(da))
+    except ValueError as e:
+        raise ValueError(
+            f"Level {item['asset']!r} has no 'spatial:transform' in the multiscales "
+            f"layout and its coordinates do not give a grid: {e}",
+        ) from e
+
+
+def multiscale_levels(
+    tree: xr.DataTree,
+    variable: str | None,
+) -> list[tuple[xr.DataArray, Affine]]:
+    """Return `(array, transform)` per level of a GeoZarr multiscale tree, coarsest first."""
+    levels = []
+    for item in _layout_items(tree):
+        da = _level_array(tree, item["asset"], variable)
+        levels.append((da, _level_transform(da, item)))
+
+    return sorted(levels, key=lambda level: -math.hypot(level[1].a, level[1].d))
+
+
 class WindowLoader:
     """Load tile windows without blocking the event loop.
 

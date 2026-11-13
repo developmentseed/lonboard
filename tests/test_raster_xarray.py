@@ -19,6 +19,7 @@ from lonboard.layer._raster_xarray import (  # noqa: E402
     find_crs,
     geozarr_crs_from_attrs,
     level_for,
+    multiscale_levels,
     roll_longitude,
     spatial_dims,
     wgs84_bounds,
@@ -412,3 +413,99 @@ def test_from_xarray_rejects_lon_lat_order():
 def test_geozarr_crs_from_attrs():
     assert geozarr_crs_from_attrs({"proj:code": "EPSG:32612"}).to_epsg() == 32612
     assert geozarr_crs_from_attrs({}) is None
+
+
+def _two_level_store(
+    *,
+    order: str = "finest-first",
+    with_transform: bool = False,
+    with_coords: bool = True,
+):
+    """An in-memory GeoZarr multiscale store: groups `0` (fine) and `1` (coarse)."""
+    zarr = pytest.importorskip("zarr")
+    store = zarr.storage.MemoryStore()
+    lat = np.linspace(89.5, -89.5, 180)
+    lon = np.linspace(-179.5, 179.5, 360)
+    fine = xr.Dataset(
+        {
+            "v": (("lat", "lon"), np.zeros((180, 360), "f4")),
+            "w": (("lat", "lon"), np.ones((180, 360), "f4")),
+        },
+        coords={"lat": lat, "lon": lon},
+    )
+    coarse = fine.coarsen(lat=2, lon=2).mean()
+    if not with_coords:
+        fine = fine.drop_vars(["lat", "lon"])
+        coarse = coarse.drop_vars(["lat", "lon"])
+    fine.to_zarr(
+        store,
+        group="0",
+        mode="w",
+        encoding={"v": {"chunks": (90, 90)}, "w": {"chunks": (90, 90)}},
+    )
+    coarse.to_zarr(
+        store,
+        group="1",
+        mode="a",
+        encoding={"v": {"chunks": (45, 45)}, "w": {"chunks": (45, 45)}},
+    )
+    items = [{"asset": "0"}, {"asset": "1", "derived_from": "0"}]
+    if with_transform:
+        items[0]["spatial:transform"] = [1.0, 0.0, -180.0, 0.0, -1.0, 90.0]
+        items[1]["spatial:transform"] = [2.0, 0.0, -180.0, 0.0, -2.0, 90.0]
+    if order == "coarsest-first":
+        items.reverse()
+    root = zarr.open_group(store, mode="a")
+    root.attrs.update(
+        {
+            "spatial:dimensions": ["lat", "lon"],
+            "proj:code": "EPSG:4326",
+            "multiscales": {"layout": items},
+        },
+    )
+    return store
+
+
+def _open_tree(store):
+    return xr.open_datatree(store, engine="zarr", chunks=None)
+
+
+def test_multiscale_levels_coarsest_first():
+    levels = multiscale_levels(_open_tree(_two_level_store()), "v")
+    assert [lvl.shape for lvl, _ in levels] == [(90, 180), (180, 360)]
+    assert [t.a for _, t in levels] == [2.0, 1.0]
+
+
+def test_multiscale_levels_sorts_by_resolution():
+    tree = _open_tree(_two_level_store(order="coarsest-first"))
+    assert [lvl.shape for lvl, _ in multiscale_levels(tree, "v")] == [
+        (90, 180),
+        (180, 360),
+    ]
+
+
+def test_multiscale_levels_item_transform():
+    tree = _open_tree(_two_level_store(with_transform=True))
+    _, coarse = multiscale_levels(tree, "v")[0]
+    assert coarse == Affine(2.0, 0.0, -180.0, 0.0, -2.0, 90.0)
+
+
+def test_multiscale_levels_without_coordinates_uses_item_transform():
+    tree = _open_tree(_two_level_store(with_transform=True, with_coords=False))
+    assert [t.a for _, t in multiscale_levels(tree, "v")] == [2.0, 1.0]
+
+
+def test_multiscale_levels_without_grid_errors():
+    tree = _open_tree(_two_level_store(with_coords=False))
+    with pytest.raises(ValueError, match="spatial:transform"):
+        multiscale_levels(tree, "v")
+
+
+def test_multiscale_levels_requires_variable_when_ambiguous():
+    with pytest.raises(ValueError, match="variable="):
+        multiscale_levels(_open_tree(_two_level_store()), None)
+
+
+def test_multiscale_levels_requires_multiscales():
+    with pytest.raises(ValueError, match="multiscales"):
+        multiscale_levels(xr.DataTree(xr.Dataset(attrs={})), None)
