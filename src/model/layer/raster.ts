@@ -2,8 +2,14 @@ import type { TextureSource } from "@deck.gl/core";
 import type { TileLayerProps } from "@deck.gl/geo-layers";
 import { TileLayer } from "@deck.gl/geo-layers";
 import { BitmapLayer } from "@deck.gl/layers";
-import type { MinimalTileData } from "@developmentseed/deck.gl-raster";
+import type {
+  AffineTilesetLevelOptions,
+  MinimalTileData,
+  RasterTilesetDescriptor,
+} from "@developmentseed/deck.gl-raster";
 import {
+  AffineTileset,
+  AffineTilesetLevel,
   RasterTileLayer,
   TileMatrixSetAdaptor,
 } from "@developmentseed/deck.gl-raster";
@@ -32,6 +38,8 @@ export class RasterModel extends BaseLayerModel {
   static layerType = "raster";
 
   protected tileMatrixSet: TileMatrixSet | null | undefined;
+  /** Tile grid as affine levels, coarsest first, when there is no tile matrix set */
+  protected affineLevels: AffineTilesetLevelOptions[] | null | undefined;
   /** PROJJSON CRS */
   protected crs: PROJJSONDefinition | undefined;
   protected tileSize: TileLayerProps["tileSize"];
@@ -52,6 +60,7 @@ export class RasterModel extends BaseLayerModel {
     super(model, updateStateCallback);
 
     this.initRegularAttribute("_tile_matrix_set", "tileMatrixSet");
+    this.initRegularAttribute("_affine_levels", "affineLevels");
     this.initCrs("_crs");
     this.initRegularAttribute("_tile_size", "tileSize");
     this.initRegularAttribute("zoom_offset", "zoomOffset");
@@ -170,17 +179,33 @@ export class RasterModel extends BaseLayerModel {
     (
       tileMatrixSet: TileMatrixSet,
       converters: NonNullable<RasterModel["converters"]>,
+    ) => new TileMatrixSetAdaptor(tileMatrixSet, projectionFns(converters)),
+  );
+
+  /** The tile grid of `affineLevels` in the source CRS. Memoized like `tilesetDescriptor`. */
+  protected affineTilesetDescriptor = memoizeOne(
+    (
+      levels: AffineTilesetLevelOptions[],
+      converters: NonNullable<RasterModel["converters"]>,
     ) =>
-      new TileMatrixSetAdaptor(tileMatrixSet, {
-        projectTo4326: (x, y) => converters[4326].forward([x, y]),
-        projectFrom4326: (x, y) => converters[4326].inverse([x, y]),
-        projectTo3857: (x, y) => converters[3857].forward([x, y]),
-        projectFrom3857: (x, y) => converters[3857].inverse([x, y]),
+      new AffineTileset({
+        levels: levels.map((level) => new AffineTilesetLevel(level)),
+        ...projectionFns(converters),
       }),
   );
 
-  renderTileMatrixSet(
-    tilesetDescriptor: TileMatrixSetAdaptor,
+  /** The `AffineTileset` for the current `_affine_levels`, or `null` if there are none. */
+  affineTileset(): AffineTileset | null {
+    const { affineLevels, converters } = this;
+    if (!affineLevels || !converters) {
+      return null;
+    }
+
+    return this.affineTilesetDescriptor(affineLevels, converters);
+  }
+
+  renderDescriptor(
+    tilesetDescriptor: RasterTilesetDescriptor,
   ): RasterTileLayer<TileData | null> {
     return new RasterTileLayer<TileData | null>({
       ...this.baseLayerProps(),
@@ -192,10 +217,15 @@ export class RasterModel extends BaseLayerModel {
   }
 
   render(): TileLayer | RasterTileLayer<TileData | null> {
+    const affineTileset = this.affineTileset();
+    if (affineTileset) {
+      return this.renderDescriptor(affineTileset);
+    }
+
     const tileMatrixSet = this.tileMatrixSet;
     const converters = this.converters;
     if (tileMatrixSet && converters) {
-      return this.renderTileMatrixSet(
+      return this.renderDescriptor(
         this.tilesetDescriptor(tileMatrixSet, converters),
       );
     }
@@ -227,6 +257,20 @@ export class RasterModel extends BaseLayerModel {
       },
     });
   }
+}
+
+/** Projection functions between the source CRS and EPSG:4326 / EPSG:3857 for a tileset descriptor. */
+function projectionFns(converters: NonNullable<RasterModel["converters"]>) {
+  return {
+    projectTo4326: (x: number, y: number): [number, number] =>
+      converters[4326].forward([x, y]),
+    projectFrom4326: (x: number, y: number): [number, number] =>
+      converters[4326].inverse([x, y]),
+    projectTo3857: (x: number, y: number): [number, number] =>
+      converters[3857].forward([x, y]),
+    projectFrom3857: (x: number, y: number): [number, number] =>
+      converters[3857].inverse([x, y]),
+  };
 }
 
 function dataViewToImageBitmap(
