@@ -362,3 +362,49 @@ def test_from_xarray_rolls_longitude():
 def test_from_xarray_requires_xarray_dataarray():
     with pytest.raises(TypeError, match="DataArray"):
         RasterLayer.from_xarray(np.zeros((2, 2)), render_tile=_no_render)
+
+
+def test_roll_longitude_ignores_dim_without_coordinate():
+    da = xr.DataArray(np.arange(800).reshape(2, 400), dims=("y", "x"))
+    assert roll_longitude(da, "x") is da
+
+
+def test_from_xarray_transform_disables_roll():
+    da = xr.DataArray(np.arange(800).reshape(2, 400), dims=("y", "x"))
+    layer = RasterLayer.from_xarray(
+        da,
+        render_tile=_no_render,
+        crs="EPSG:4326",
+        transform=Affine(0.9, 0.0, -180.0, 0.0, -1.0, 1.0),
+    )
+    tile = asyncio.run(layer._fetch_tile(x=0, y=0, z=0))
+    assert tile.values[0, :3].tolist() == [0, 1, 2]
+
+
+def test_coordinate_transform_accepts_float32_tenth_degree():
+    lat = (89.95 - np.arange(1800) * 0.1).astype("f4")
+    lon = (np.arange(3600) * 0.1 - 179.95).astype("f4")
+    da = xr.DataArray(
+        np.zeros((1800, 3600), "f4"),
+        coords={"lat": lat, "lon": lon},
+        dims=("lat", "lon"),
+    )
+    t = coordinate_transform(da, "lat", "lon")
+    assert t.a == pytest.approx(0.1, rel=1e-4)
+    assert t.c == pytest.approx(-180.0, abs=1e-3)
+
+
+def test_roll_longitude_keeps_region_across_180():
+    # Centers 170.5..189.5: rolling would split the grid, so it is left alone.
+    da = _da(np.array([0.5, -0.5]), np.arange(170.5, 190.0, 1.0))
+    assert roll_longitude(da, "lon") is da
+
+
+def test_from_xarray_rejects_lon_lat_order():
+    da = _da(
+        np.array([0.5, -0.5]),
+        np.array([0.5, 1.5, 2.5]),
+        dims=("lat", "lon"),
+    ).transpose("lon", "lat")
+    with pytest.raises(ValueError, match="transpose"):
+        RasterLayer.from_xarray(da, render_tile=_no_render, crs="EPSG:4326")
