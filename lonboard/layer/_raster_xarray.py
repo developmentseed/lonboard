@@ -390,28 +390,12 @@ def make_fetch_tile(
     return fetch_tile
 
 
-def build_from_xarray(  # noqa: PLR0913
-    data: Any,
-    *,
-    render_tile: RenderTile[xr.DataArray],
-    variable: str | None = None,  # noqa: ARG001
-    crs: Any = None,
-    transform: Affine | None = None,
-    tile_size: int | None = None,
-    **kwargs: Any,
-) -> RasterLayer[xr.DataArray]:
-    """Build a `RasterLayer` from a `DataArray`. See `RasterLayer.from_xarray`."""
-    import xarray as xr
-
-    from lonboard.layer._raster import RasterLayer
-    from lonboard.traits._raster import meters_per_unit
-
-    if not isinstance(data, xr.DataArray):
-        raise TypeError(
-            f"from_xarray expects an xarray.DataArray, got {type(data).__name__}",
-        )
-
-    da = data
+def _single_level(
+    da: xr.DataArray,
+    crs: Any,
+    transform: Affine | None,
+) -> tuple[list[xr.DataArray], list[Affine], CRS]:
+    """Return the one level of a `DataArray` with its transform and CRS."""
     y_dim, x_dim = spatial_dims(da)
     if _is_axis(da, y_dim, _LON_NAMES, "degrees_east") and _is_axis(
         da,
@@ -429,27 +413,89 @@ def build_from_xarray(  # noqa: PLR0913
         if crs.is_geographic:
             da = roll_longitude(da, x_dim)
         transform = coordinate_transform(da, y_dim, x_dim)
+    return [da], [transform], crs
 
-    level = level_for(
-        da,
-        y_dim,
-        x_dim,
-        transform,
-        chunk_tile_size(da, y_dim, x_dim, tile_size),
-    )
-    bounds = wgs84_bounds(level, crs)
+
+def _tree_levels(
+    tree: xr.DataTree,
+    variable: str | None,
+    crs: Any,
+    transform: Affine | None,
+) -> tuple[list[xr.DataArray], list[Affine], CRS]:
+    """Return the levels of a GeoZarr multiscale tree with their transforms and CRS."""
+    if transform is not None:
+        raise ValueError(
+            "transform= applies to a single DataArray; a multiscale tree carries a "
+            "transform per level in its layout or coordinates",
+        )
+
+    levels, transforms = map(list, zip(*multiscale_levels(tree, variable), strict=True))
+    dims = spatial_dims(levels[-1])
+    for level in levels:
+        if spatial_dims(level) != dims:
+            raise ValueError(
+                f"Every level must have the same spatial dims; got {dims} and "
+                f"{spatial_dims(level)}",
+            )
+
+    if crs is not None:
+        found = CRS.from_user_input(crs)
+    else:
+        found = geozarr_crs_from_attrs(tree.attrs) or find_crs(levels[-1])
+    return levels, transforms, found
+
+
+def build_from_xarray(  # noqa: PLR0913
+    data: Any,
+    *,
+    render_tile: RenderTile[xr.DataArray],
+    variable: str | None = None,
+    crs: Any = None,
+    transform: Affine | None = None,
+    tile_size: int | None = None,
+    **kwargs: Any,
+) -> RasterLayer[xr.DataArray]:
+    """Build a `RasterLayer` from a `DataArray` or multiscale `DataTree`. See `RasterLayer.from_xarray`."""
+    import xarray as xr
+
+    from lonboard.layer._raster import RasterLayer
+    from lonboard.traits._raster import meters_per_unit
+
+    if isinstance(data, xr.DataTree):
+        levels, transforms, found_crs = _tree_levels(data, variable, crs, transform)
+    elif isinstance(data, xr.DataArray):
+        levels, transforms, found_crs = _single_level(data, crs, transform)
+    else:
+        raise TypeError(
+            "from_xarray expects an xarray.DataArray or DataTree, got "
+            f"{type(data).__name__}",
+        )
+
+    y_dim, x_dim = spatial_dims(levels[0])
+    affine_levels = [
+        level_for(
+            level,
+            y_dim,
+            x_dim,
+            t,
+            chunk_tile_size(level, y_dim, x_dim, tile_size),
+        )
+        for level, t in zip(levels, transforms, strict=True)
+    ]
+    coarsest = affine_levels[0]
+    bounds = wgs84_bounds(coarsest, found_crs)
     center = ((bounds.minx + bounds.maxx) / 2, (bounds.miny + bounds.maxy) / 2)
     kwargs.setdefault(
         "min_zoom",
-        default_min_zoom(level, meters_per_unit(crs), center[1]),
+        default_min_zoom(coarsest, meters_per_unit(found_crs), center[1]),
     )
 
-    loader = WindowLoader(use_async=da.chunks is None)
+    loader = WindowLoader(use_async=all(level.chunks is None for level in levels))
     return RasterLayer(
         _tile_matrix_set=None,
-        _affine_levels=[level],
-        _crs=crs,
-        _fetch_tile=make_fetch_tile([da], [level], y_dim, x_dim, loader),
+        _affine_levels=affine_levels,
+        _crs=found_crs,
+        _fetch_tile=make_fetch_tile(levels, affine_levels, y_dim, x_dim, loader),
         _render_tile=render_tile,
         _bounds=bounds,
         _center=center,

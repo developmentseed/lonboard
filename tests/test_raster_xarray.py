@@ -420,6 +420,7 @@ def _two_level_store(
     order: str = "finest-first",
     with_transform: bool = False,
     with_coords: bool = True,
+    transpose_coarse: bool = False,
 ):
     """An in-memory GeoZarr multiscale store: groups `0` (fine) and `1` (coarse)."""
     zarr = pytest.importorskip("zarr")
@@ -437,6 +438,8 @@ def _two_level_store(
     if not with_coords:
         fine = fine.drop_vars(["lat", "lon"])
         coarse = coarse.drop_vars(["lat", "lon"])
+    if transpose_coarse:
+        coarse = coarse.transpose("lon", "lat")
     fine.to_zarr(
         store,
         group="0",
@@ -509,3 +512,59 @@ def test_multiscale_levels_requires_variable_when_ambiguous():
 def test_multiscale_levels_requires_multiscales():
     with pytest.raises(ValueError, match="multiscales"):
         multiscale_levels(xr.DataTree(xr.Dataset(attrs={})), None)
+
+
+def test_from_xarray_tree_state():
+    tree = _open_tree(_two_level_store())
+    layer = RasterLayer.from_xarray(tree, render_tile=_no_render, variable="v")
+    levels = layer.get_state()["_affine_levels"]
+    assert [(lvl["arrayWidth"], lvl["arrayHeight"]) for lvl in levels] == [
+        (180, 90),
+        (360, 180),
+    ]
+    assert [lvl["affine"][0] for lvl in levels] == [2.0, 1.0]
+    # 45 px chunks make 270 px tiles (6 chunks); 90 px chunks likewise (3 chunks)
+    assert [lvl["tileWidth"] for lvl in levels] == [270, 270]
+    assert layer._crs.to_epsg() == 4326
+    assert layer.min_zoom == 0
+    assert layer._bbox == Bbox(-180.0, -90.0, 180.0, 90.0)
+
+
+def test_from_xarray_tree_fetch_each_level():
+    tree = _open_tree(_two_level_store())
+    layer = RasterLayer.from_xarray(tree, render_tile=_no_render, variable="v")
+    assert asyncio.run(layer._fetch_tile(x=0, y=0, z=0)).shape == (90, 180)
+    fine = asyncio.run(layer._fetch_tile(x=1, y=0, z=1))
+    assert fine.shape == (180, 90)
+    assert fine.chunks is None
+
+
+def test_from_xarray_tree_with_dask():
+    tree = xr.open_datatree(_two_level_store(), engine="zarr", chunks={})
+    layer = RasterLayer.from_xarray(tree, render_tile=_no_render, variable="v")
+    tile = asyncio.run(layer._fetch_tile(x=0, y=0, z=0))
+    assert tile.shape == (90, 180)
+    assert tile.chunks is None
+
+
+def test_from_xarray_tree_missing_grid_errors():
+    tree = _open_tree(_two_level_store(with_coords=False))
+    with pytest.raises(ValueError, match="spatial:transform"):
+        RasterLayer.from_xarray(tree, render_tile=_no_render, variable="v")
+
+
+def test_from_xarray_tree_mismatched_dims_errors():
+    tree = _open_tree(_two_level_store(transpose_coarse=True))
+    with pytest.raises(ValueError, match="same spatial dims"):
+        RasterLayer.from_xarray(tree, render_tile=_no_render, variable="v")
+
+
+def test_from_xarray_tree_rejects_transform():
+    tree = _open_tree(_two_level_store())
+    with pytest.raises(ValueError, match="transform="):
+        RasterLayer.from_xarray(
+            tree,
+            render_tile=_no_render,
+            variable="v",
+            transform=Affine.identity(),
+        )
