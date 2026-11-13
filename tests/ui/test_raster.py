@@ -4,21 +4,22 @@ import io
 
 import morecantile
 import pytest
+from affine import Affine
 from PIL import Image
 from test_utils import setup_map_widget
 
 from lonboard import Map, RasterLayer
 from lonboard._geoarrow.ops import Bbox
-from lonboard.raster import EncodedImage
+from lonboard.raster import AffineLevel, EncodedImage
 
 pmtiles_tile = pytest.importorskip("pmtiles.tile")
 
 TILE_COLOR = (200, 0, 80)
 
 
-def solid_png(color: tuple[int, int, int]) -> bytes:
+def solid_png(color: tuple[int, int, int], size: tuple[int, int] = (256, 256)) -> bytes:
     buf = io.BytesIO()
-    Image.new("RGB", (256, 256), color).save(buf, format="PNG")
+    Image.new("RGB", size, color).save(buf, format="PNG")
     return buf.getvalue()
 
 
@@ -117,3 +118,56 @@ def test_tile_matrix_set_tiles_not_refetched_on_rerender(page_session):
     layer.opacity = 0.5
 
     assert wait_for_tile_requests_to_stop(page_session, requests) == loaded
+
+
+def wait_for_tiles(
+    page_session,
+    canvas,
+    expected: tuple[int, int, int],
+) -> tuple[int, int, int]:
+    pixel = center_pixel(page_session, canvas)
+    for _ in range(60):
+        if color_matches(pixel, expected):
+            break
+        page_session.wait_for_timeout(250)
+        pixel = center_pixel(page_session, canvas)
+    return pixel
+
+
+@pytest.mark.usefixtures("solara_test")
+def test_affine_levels_tiles_render(page_session):
+    """A grid given as affine levels is drawn through deck.gl-raster's AffineTileset."""
+    # One 360 by 180 pixel level over the whole globe, so the single tile covers
+    # the map center at (0, 0).
+    level = AffineLevel(
+        Affine(1.0, 0.0, -180.0, 0.0, -1.0, 90.0),
+        width=360,
+        height=180,
+        tile_width=512,
+        tile_height=512,
+    )
+    tile_png = solid_png(TILE_COLOR, size=(360, 180))
+
+    async def fetch_tile(x: int, y: int, z: int) -> bytes:  # noqa: ARG001
+        return tile_png
+
+    def render_tile(tile: bytes) -> EncodedImage:
+        return EncodedImage(data=tile, media_type="image/png")
+
+    layer = RasterLayer(
+        _tile_matrix_set=None,
+        _affine_levels=[level],
+        _crs="EPSG:4326",
+        _fetch_tile=fetch_tile,
+        _render_tile=render_tile,
+        _bounds=Bbox(-180.0, -90.0, 180.0, 90.0),
+        _center=(0.0, 0.0),
+    )
+    m = Map(layer, view_state={"longitude": 0, "latitude": 0, "zoom": 3})
+    m.basemap = None
+    canvas = setup_map_widget(page_session, m)
+
+    pixel = wait_for_tiles(page_session, canvas, TILE_COLOR)
+    assert color_matches(pixel, TILE_COLOR), (
+        f"Tiles never rendered: center pixel is {pixel}, expected {TILE_COLOR}"
+    )
