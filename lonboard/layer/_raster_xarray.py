@@ -40,6 +40,17 @@ def spatial_dims(da: xr.DataArray) -> tuple[Hashable, Hashable]:
     return da.dims[-2], da.dims[-1]
 
 
+def _is_regular(values: np.ndarray, step: float) -> bool:
+    """Whether `values` are evenly spaced by `step`, within the precision of their dtype."""
+    diffs = np.diff(values.astype("f8"))
+    atol = abs(step) * 1e-6
+    if np.issubdtype(values.dtype, np.floating):
+        # float32 coordinates carry about seven digits, so a 0.1 degree step at
+        # longitude 179 is only exact to 1e-5 or so.
+        atol = max(atol, 8 * np.finfo(values.dtype).eps * float(np.abs(values).max()))
+    return bool(np.allclose(diffs, step, rtol=1e-6, atol=atol))
+
+
 def _regular_step(da: xr.DataArray, dim: Hashable) -> float:
     """Return the spacing of the 1-D coordinate on `dim`; raise if it is missing or uneven."""
     if dim not in da.coords:
@@ -48,23 +59,23 @@ def _regular_step(da: xr.DataArray, dim: Hashable) -> float:
             "the spatial dims; pass transform= to give the grid directly.",
         )
 
-    values = np.asarray(da[dim].values, dtype="f8")
+    values = np.asarray(da[dim].values)
     if values.ndim != 1 or len(values) < 2:
         raise ValueError(
             f"Coordinate {dim!r} must be 1-D with at least two values to find the "
             "pixel size; pass transform= to give the grid directly.",
         )
 
-    step = (values[-1] - values[0]) / (len(values) - 1)
-    diffs = np.diff(values)
-    if not np.allclose(diffs, step, rtol=1e-6, atol=abs(step) * 1e-6):
+    step = float((float(values[-1]) - float(values[0])) / (len(values) - 1))
+    if not _is_regular(values, step):
+        diffs = np.diff(values.astype("f8"))
         raise ValueError(
             f"Coordinate {dim!r} is not evenly spaced (spacing ranges from "
             f"{diffs.min()} to {diffs.max()}). from_xarray needs a regular grid; "
             "pass transform= or resample.",
         )
 
-    return float(step)
+    return step
 
 
 def coordinate_transform(
@@ -139,12 +150,23 @@ def find_crs(da: xr.DataArray) -> CRS:
 
 
 def roll_longitude(da: xr.DataArray, x_dim: Hashable) -> xr.DataArray:
-    """Move a 0 to 360 longitude coordinate to -180 to 180, lazily."""
+    """Move a 0 to 360 longitude coordinate to -180 to 180, lazily.
+
+    Left alone when there is no coordinate, or when rolling would split the
+    grid (a region that straddles 180).
+    """
+    if x_dim not in da.coords:
+        return da
     lon = da[x_dim]
     if float(lon.max()) <= 180:
         return da
 
-    return da.assign_coords({x_dim: ((lon + 180) % 360) - 180}).sortby(x_dim)
+    rolled = da.assign_coords({x_dim: ((lon + 180) % 360) - 180}).sortby(x_dim)
+    values = np.asarray(rolled[x_dim].values)
+    step = (float(values[-1]) - float(values[0])) / (len(values) - 1)
+    if not _is_regular(values, step):
+        return da
+    return rolled
 
 
 _MIN_TILE = 256
@@ -313,10 +335,21 @@ def build_from_xarray(  # noqa: PLR0913
 
     da = data
     y_dim, x_dim = spatial_dims(da)
+    if _is_axis(da, y_dim, _LON_NAMES, "degrees_east") and _is_axis(
+        da,
+        x_dim,
+        _LAT_NAMES,
+        "degrees_north",
+    ):
+        raise ValueError(
+            f"The last two dims {(y_dim, x_dim)} look like (longitude, latitude); "
+            f"from_xarray expects (y, x). Transpose with "
+            f".transpose(..., {x_dim!r}, {y_dim!r}).",
+        )
     crs = CRS.from_user_input(crs) if crs is not None else find_crs(da)
-    if crs.is_geographic:
-        da = roll_longitude(da, x_dim)
     if transform is None:
+        if crs.is_geographic:
+            da = roll_longitude(da, x_dim)
         transform = coordinate_transform(da, y_dim, x_dim)
 
     level = level_for(
