@@ -1,10 +1,13 @@
 from __future__ import annotations
 
 from dataclasses import dataclass, field
-from typing import TYPE_CHECKING, Any, Literal
+from typing import TYPE_CHECKING, Any, Literal, Protocol, runtime_checkable
+
+from pyproj import CRS
 
 if TYPE_CHECKING:
     import sys
+    from collections.abc import Sequence
 
     from affine import Affine
     from morecantile import TileMatrixSet
@@ -77,16 +80,97 @@ class AffineLevel:
             if not isinstance(value, int) or value <= 0:
                 raise ValueError(f"{name} must be a positive int, got {value!r}")
 
-    @staticmethod
-    def from_tile_matrix_set(tms: TileMatrixSet) -> list[AffineLevel]:
-        """Convert a morecantile `TileMatrixSet` to levels, one per tile matrix.
 
-        Tile matrices with `variableMatrixWidths` are not supported.
-        """
+Bounds = tuple[float, float, float, float]
+"""`(min_x, min_y, max_x, max_y)` in a tileset's CRS."""
+
+
+def _level_bounds(level: AffineLevel) -> Bounds:
+    t = level.transform
+    corners = [
+        t * (0, 0),
+        t * (level.width, 0),
+        t * (0, level.height),
+        t * (level.width, level.height),
+    ]
+    xs = [c[0] for c in corners]
+    ys = [c[1] for c in corners]
+    return (min(xs), min(ys), max(xs), max(ys))
+
+
+@runtime_checkable
+class RasterTileset(Protocol):
+    """A tile grid in a source CRS.
+
+    Mirrors deck.gl-raster's `RasterTilesetDescriptor`, with the CRS in place
+    of its projection functions.
+    """
+
+    @property
+    def levels(self) -> Sequence[AffineLevel]:
+        """The resolution levels, in any order."""
+        ...
+
+    @property
+    def crs(self) -> CRS:
+        """The coordinate reference system of the levels."""
+        ...
+
+    @property
+    def bounds(self) -> Bounds:
+        """`(min_x, min_y, max_x, max_y)` of the data in `crs`."""
+        ...
+
+
+@dataclass(frozen=True)
+class AffineTileset:
+    """A tileset whose levels are given as affine transforms.
+
+    Mirrors deck.gl-raster's `AffineTileset`.
+    """
+
+    levels: Sequence[AffineLevel]
+    """The resolution levels, in any order."""
+
+    crs: CRS
+    """The coordinate reference system of the levels."""
+
+    def __post_init__(self) -> None:
+        if len(self.levels) == 0:
+            raise ValueError("AffineTileset needs at least one level")
+        if not isinstance(self.crs, CRS):
+            object.__setattr__(self, "crs", CRS.from_user_input(self.crs))
+
+    @property
+    def bounds(self) -> Bounds:
+        """The union of the levels' arrays, in `crs`."""
+        boxes = [_level_bounds(level) for level in self.levels]
+        return (
+            min(b[0] for b in boxes),
+            min(b[1] for b in boxes),
+            max(b[2] for b in boxes),
+            max(b[3] for b in boxes),
+        )
+
+
+@dataclass(frozen=True)
+class TileMatrixSetAdaptor:
+    """A morecantile `TileMatrixSet` as a tileset, one level per tile matrix.
+
+    Mirrors deck.gl-raster's `TileMatrixSetAdaptor`. Tile matrices with
+    `variableMatrixWidths` are not supported.
+    """
+
+    tms: TileMatrixSet
+    """The tile matrix set."""
+
+    @property
+    def levels(self) -> Sequence[AffineLevel]:
+        """One level per tile matrix, in the tile matrix set's order."""
         from affine import Affine
 
         levels = []
-        for matrix in tms.tileMatrices:
+        for matrix in self.tms.tileMatrices:
             if matrix.variableMatrixWidths:
                 raise ValueError(
                     f"Tile matrix {matrix.id!r} has variableMatrixWidths, which an "
@@ -111,3 +195,14 @@ class AffineLevel:
                 ),
             )
         return levels
+
+    @property
+    def crs(self) -> CRS:
+        """The tile matrix set's CRS."""
+        return CRS.from_user_input(self.tms.crs.root)
+
+    @property
+    def bounds(self) -> Bounds:
+        """The tile matrix set's bounding box in its CRS."""
+        box = self.tms.xy_bbox
+        return (box.left, box.bottom, box.right, box.top)

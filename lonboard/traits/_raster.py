@@ -5,7 +5,7 @@ from typing import TYPE_CHECKING, Any
 
 from pyproj import CRS
 
-from lonboard.raster import AffineLevel
+from lonboard.raster import AffineLevel, RasterTileset
 from lonboard.traits._base import FixedErrorTraitType
 
 if TYPE_CHECKING:
@@ -65,18 +65,12 @@ def meters_per_unit(crs: CRS) -> float:
     raise ValueError(f"Unsupported CRS unit {unit_name!r}")
 
 
-def serialize_affine_levels(
-    levels: list[AffineLevel] | None,
-    obj: Any,
-) -> list[dict] | None:
-    """Serialize affine levels as deck.gl-raster `AffineTilesetLevelOptions`.
-
-    `obj` is the widget; its `_crs` gives the meters per unit.
-    """
-    if levels is None:
+def serialize_tileset(tileset: RasterTileset | None, _obj: Any) -> list[dict] | None:
+    """Serialize a tileset's levels as deck.gl-raster `AffineTilesetLevelOptions`."""
+    if tileset is None:
         return None
 
-    mpu = meters_per_unit(obj._crs)  # noqa: SLF001
+    mpu = meters_per_unit(tileset.crs)
     return [
         {
             "affine": [float(v) for v in tuple(level.transform)[:6]],
@@ -86,17 +80,16 @@ def serialize_affine_levels(
             "tileHeight": level.tile_height,
             "mpu": mpu,
         }
-        for level in levels
+        for level in tileset.levels
     ]
 
 
-class AffineLevelsTrait(FixedErrorTraitType):
-    """Validation for a raster grid given as affine levels.
+class RasterTilesetTrait(FixedErrorTraitType):
+    """Validation for a raster tile grid.
 
-    Levels may be in any order: the browser sorts them by resolution, and
-    `fetch_tile` receives the index into this list as `z`.
-
-    This allows as input a non-empty list of [AffineLevel][lonboard.raster.AffineLevel].
+    This allows as input any [RasterTileset][lonboard.raster.RasterTileset] with at
+    least one level, such as an [AffineTileset][lonboard.raster.AffineTileset] or a
+    [TileMatrixSetAdaptor][lonboard.raster.TileMatrixSetAdaptor].
     """
 
     def __init__(
@@ -106,14 +99,18 @@ class AffineLevelsTrait(FixedErrorTraitType):
     ) -> None:
         super().__init__(*args, **kwargs)
 
-        self.tag(sync=True, to_json=serialize_affine_levels)
+        self.tag(sync=True, to_json=serialize_tileset)
 
     def validate(self, obj: HasTraits | None, value: Any) -> Any:
         if (
-            isinstance(value, list)
-            and len(value) > 0
-            and all(isinstance(level, AffineLevel) for level in value)
+            isinstance(value, RasterTileset)
+            and len(value.levels) > 0
+            and all(isinstance(level, AffineLevel) for level in value.levels)
         ):
             return value
 
-        return self.error(obj, value, info="to be a non-empty list of AffineLevel")
+        return self.error(
+            obj,
+            value,
+            info="to be a RasterTileset with AffineLevel levels",
+        )

@@ -35,7 +35,7 @@ type TileData = MinimalTileData & {
 export class RasterModel extends BaseLayerModel {
   static layerType = "raster";
 
-  /** Tile grid as affine levels, coarsest first; `null` means Web Mercator XYZ tiles */
+  /** The tileset's levels, in any order; `null` means Web Mercator XYZ tiles */
   protected affineLevels: AffineTilesetLevelOptions[] | null | undefined;
   /** PROJJSON CRS */
   protected crs: PROJJSONDefinition | undefined;
@@ -56,7 +56,7 @@ export class RasterModel extends BaseLayerModel {
   constructor(model: WidgetModel, updateStateCallback: () => void) {
     super(model, updateStateCallback);
 
-    this.initRegularAttribute("_affine_levels", "affineLevels");
+    this.initRegularAttribute("_tileset", "affineLevels");
     this.initCrs("_crs");
     this.initRegularAttribute("_tile_size", "tileSize");
     this.initRegularAttribute("zoom_offset", "zoomOffset");
@@ -196,7 +196,7 @@ export class RasterModel extends BaseLayerModel {
     },
   );
 
-  /** The `AffineTileset` for the current `_affine_levels`, or `null` if there are none. */
+  /** The `AffineTileset` for the current `_tileset`, or `null` if there is none. */
   affineTileset(): AffineTileset | null {
     const { affineLevels, converters } = this;
     if (!affineLevels || !converters) {
@@ -207,7 +207,7 @@ export class RasterModel extends BaseLayerModel {
   }
 
   /**
-   * The index into `_affine_levels` of the tileset level `z`, which is the
+   * The index into the Python tileset's `levels` of the tileset level `z`, which is the
    * `z` Python's `fetch_tile` receives. Identity without affine levels.
    */
   pythonLevelIndex(z: number): number {

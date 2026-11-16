@@ -13,7 +13,7 @@ from ._h3 import H3Accessor
 from ._map import BasemapUrl, MapHeightTrait, ViewStateTrait
 from ._normal import NormalAccessor
 from ._point import PointAccessor
-from ._raster import AffineLevelsTrait, ProjectionTrait
+from ._raster import ProjectionTrait, RasterTilesetTrait
 from ._table import ArrowTableTrait
 from ._text import TextAccessor
 from ._timestamp import TimestampAccessor
@@ -21,7 +21,6 @@ from ._upstream_wrappers import Any, Bool, Enum, Float, Int, List, Tuple, Unicod
 
 __all__ = [
     "A5Accessor",
-    "AffineLevelsTrait",
     "Any",
     "ArrowTableTrait",
     "BasemapUrl",
@@ -41,6 +40,7 @@ __all__ = [
     "NormalAccessor",
     "PointAccessor",
     "ProjectionTrait",
+    "RasterTilesetTrait",
     "TextAccessor",
     "TimestampAccessor",
     "Tuple",

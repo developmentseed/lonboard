@@ -104,21 +104,27 @@ is. The browser constructs levels with no mapping. `mpu` (meters per CRS unit) i
 2πa/360, foot 0.3048. That is about eight lines and avoids importing
 morecantile.
 
-This is the one way to describe a tile grid. The `_tile_matrix_set` trait is
-removed: every TMS feature deck.gl-raster's adaptor read (origin, cell size,
-corner of origin, tile and matrix sizes, scale denominator) is an affine
-level, and the one it cannot express, `variableMatrixWidths`, the adaptor did
-not support either. `RasterLayer.__init__` takes
-`_affine_levels: list[AffineLevel] | None`; `None` means standard Web Mercator
-XYZ tiles, the PMTiles case. Sources that have a `TileMatrixSet`, such as a
-TiTiler endpoint, convert it with the adapter
-`AffineLevel.from_tile_matrix_set(tms)`, which is where morecantile is
-imported; `from_geotiff` builds its levels straight from the overviews and the
-`geotiff` extra drops morecantile.
+The grid reaches the layer as a tileset, mirroring deck.gl-raster's
+`RasterTilesetDescriptor` with the CRS in place of its projection functions.
+`lonboard.raster.RasterTileset` is a `Protocol` with `levels`
+(`Sequence[AffineLevel]`, any order), `crs` and `bounds` in that CRS. Two
+implementations: `AffineTileset(levels, crs)`, whose bounds are the union
+of the levels, and `TileMatrixSetAdaptor(tms)`, one level per tile matrix,
+the only place morecantile is imported. The `_tile_matrix_set` trait is
+removed: every TMS feature deck.gl-raster's adaptor read is an affine
+level, and the one it cannot express, `variableMatrixWidths`, the adaptor
+did not support either. `RasterLayer.__init__` takes
+`_tileset: RasterTileset | None` and reads `_crs` from it; `None` means
+standard Web Mercator XYZ tiles, the PMTiles case, which passes `_crs`
+directly. `from_geotiff` builds an `AffineTileset` from the overviews and
+the `geotiff` extra drops morecantile; the TiTiler example passes a
+`TileMatrixSetAdaptor`. The browser sorts the levels by resolution and maps
+each tile's `z` back to the index into `levels`, which is what
+`fetch_tile` receives.
 
 Browser, `src/model/layer/raster.ts`: `render()` builds a memoized
 `new AffineTileset({levels: levels.map(l => new AffineTilesetLevel(l)),
-...projection fns})` when `_affine_levels` is set, else the Web Mercator
+...projection fns})` when `_tileset` is set, else the Web Mercator
 fallback. `TileMatrixSetAdaptor` and the `@developmentseed/morecantile`
 dependency go.
 

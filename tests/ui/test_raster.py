@@ -6,11 +6,17 @@ import morecantile
 import pytest
 from affine import Affine
 from PIL import Image
+from pyproj import CRS
 from test_utils import setup_map_widget
 
 from lonboard import Map, RasterLayer
 from lonboard._geoarrow.ops import Bbox
-from lonboard.raster import AffineLevel, EncodedImage
+from lonboard.raster import (
+    AffineLevel,
+    AffineTileset,
+    EncodedImage,
+    TileMatrixSetAdaptor,
+)
 
 pmtiles_tile = pytest.importorskip("pmtiles.tile")
 
@@ -103,10 +109,7 @@ def test_web_mercator_tiles_not_refetched_on_rerender(page_session):
         return png
 
     layer = RasterLayer(
-        _affine_levels=AffineLevel.from_tile_matrix_set(
-            morecantile.tms.get("WebMercatorQuad"),
-        ),
-        _crs="EPSG:3857",
+        _tileset=TileMatrixSetAdaptor(morecantile.tms.get("WebMercatorQuad")),
         _fetch_tile=fetch_tile,
         _render_tile=lambda data: EncodedImage(data=data, media_type="image/png"),
         _bounds=Bbox(-180, -85, 180, 85),
@@ -158,8 +161,7 @@ def test_affine_levels_tiles_render(page_session):
         return EncodedImage(data=tile, media_type="image/png")
 
     layer = RasterLayer(
-        _affine_levels=[level],
-        _crs="EPSG:4326",
+        _tileset=AffineTileset([level], CRS.from_epsg(4326)),
         _fetch_tile=fetch_tile,
         _render_tile=render_tile,
         _bounds=Bbox(-180.0, -90.0, 180.0, 90.0),

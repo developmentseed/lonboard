@@ -15,10 +15,10 @@ const LEVEL: AffineTilesetLevelOptions = {
 };
 
 describe("RasterModel affine levels", () => {
-  it("builds an AffineTileset from _affine_levels", () => {
+  it("builds an AffineTileset from _tileset", () => {
     const model = new FakeWidgetModel({
       _crs: "EPSG:4326",
-      _affine_levels: [LEVEL],
+      _tileset: [LEVEL],
     });
     const raster = new RasterModel(model.asWidgetModel(), vi.fn());
 
@@ -40,7 +40,7 @@ describe("RasterModel affine levels", () => {
     const model = new FakeWidgetModel({
       _crs: "EPSG:4326",
       // Finest first, the opposite of what deck.gl-raster expects
-      _affine_levels: [fine, LEVEL],
+      _tileset: [fine, LEVEL],
     });
     const raster = new RasterModel(model.asWidgetModel(), vi.fn());
 
@@ -54,7 +54,7 @@ describe("RasterModel affine levels", () => {
   it("returns null without levels", () => {
     const model = new FakeWidgetModel({
       _crs: "EPSG:4326",
-      _affine_levels: null,
+      _tileset: null,
     });
     const raster = new RasterModel(model.asWidgetModel(), vi.fn());
 
@@ -64,14 +64,14 @@ describe("RasterModel affine levels", () => {
   it("keeps the same tileset across calls and rebuilds when the levels change", () => {
     const model = new FakeWidgetModel({
       _crs: "EPSG:4326",
-      _affine_levels: [LEVEL],
+      _tileset: [LEVEL],
     });
     const raster = new RasterModel(model.asWidgetModel(), vi.fn());
 
     const first = raster.affineTileset();
     expect(raster.affineTileset()).toBe(first);
 
-    model.set("_affine_levels", [{ ...LEVEL, tileWidth: 256 }]);
+    model.set("_tileset", [{ ...LEVEL, tileWidth: 256 }]);
     const second = raster.affineTileset();
     expect(second).not.toBe(first);
     expect(second!.levels[0].matrixWidth).toBe(2);

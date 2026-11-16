@@ -6,15 +6,8 @@ from pyproj import CRS
 from traitlets import TraitError
 
 from lonboard import RasterLayer
-from lonboard.raster import AffineLevel
-from lonboard.traits._raster import meters_per_unit, serialize_affine_levels
-
-
-class _CrsHolder:
-    """Stands in for a widget: `serialize_affine_levels` only reads `_crs`."""
-
-    def __init__(self, crs: str) -> None:
-        self._crs = CRS.from_user_input(crs)
+from lonboard.raster import AffineLevel, AffineTileset, TileMatrixSetAdaptor
+from lonboard.traits._raster import meters_per_unit, serialize_tileset
 
 
 def test_affine_level_rejects_nonpositive_size():
@@ -29,7 +22,7 @@ def test_meters_per_unit():
     assert meters_per_unit(CRS.from_epsg(2227)) == 0.30480060960121924
 
 
-def test_serialize_affine_levels_matches_deck_gl_raster_options():
+def test_serialize_tileset_matches_deck_gl_raster_options():
     level = AffineLevel(
         Affine(10.0, 0.0, 300000.0, 0.0, 10.0, 3990240.0),  # south-up: e > 0
         width=10980,
@@ -37,7 +30,8 @@ def test_serialize_affine_levels_matches_deck_gl_raster_options():
         tile_width=512,
         tile_height=256,
     )
-    assert serialize_affine_levels([level], _CrsHolder("EPSG:32612")) == [
+    tileset = AffineTileset([level], CRS.from_epsg(32612))
+    assert serialize_tileset(tileset, None) == [
         {
             "affine": [10.0, 0.0, 300000.0, 0.0, 10.0, 3990240.0],
             "arrayWidth": 10980,
@@ -49,8 +43,20 @@ def test_serialize_affine_levels_matches_deck_gl_raster_options():
     ]
 
 
-def test_serialize_affine_levels_none():
-    assert serialize_affine_levels(None, _CrsHolder("EPSG:4326")) is None
+def test_serialize_tileset_none():
+    assert serialize_tileset(None, None) is None
+
+
+def test_affine_tileset_bounds_is_union_of_levels():
+    coarse = AffineLevel(Affine(2.0, 0.0, 0.0, 0.0, -2.0, 100.0), 10, 10, 512, 512)
+    fine = AffineLevel(Affine(1.0, 0.0, 0.0, 0.0, -1.0, 100.0), 21, 20, 512, 512)
+    tileset = AffineTileset([coarse, fine], CRS.from_epsg(3857))
+    assert tileset.bounds == (0.0, 80.0, 21.0, 100.0)
+
+
+def test_affine_tileset_rejects_empty():
+    with pytest.raises(ValueError, match="at least one level"):
+        AffineTileset([], CRS.from_epsg(3857))
 
 
 async def _no_tile(x: int, y: int, z: int) -> None:  # noqa: ARG001
@@ -71,23 +77,29 @@ def _level() -> AffineLevel:
     )
 
 
-def test_affine_levels_state():
+def test_tileset_state():
     layer = RasterLayer(
-        _affine_levels=[_level()],
-        _crs="EPSG:4326",
+        _tileset=AffineTileset([_level()], CRS.from_epsg(4326)),
         _fetch_tile=_no_tile,
         _render_tile=_no_render,
     )
     state = layer.get_state()
-    assert state["_affine_levels"][0]["arrayWidth"] == 360
-    assert state["_affine_levels"][0]["mpu"] == pytest.approx(111319.4907932736)
+    assert state["_tileset"][0]["arrayWidth"] == 360
+    assert state["_tileset"][0]["mpu"] == pytest.approx(111319.4907932736)
+    # The CRS comes from the tileset
+    assert layer._crs.to_epsg() == 4326
 
 
-@pytest.mark.parametrize("bad", [[], [{"affine": [1, 0, 0, 0, 1, 0]}]])
-def test_affine_levels_trait_rejects(bad):
+def test_layer_requires_tileset_or_crs():
+    with pytest.raises(ValueError, match="_crs"):
+        RasterLayer(_tileset=None, _fetch_tile=_no_tile, _render_tile=_no_render)
+
+
+@pytest.mark.parametrize("bad", [[_level()], {"levels": [_level()]}])
+def test_tileset_trait_rejects_non_tilesets(bad):
     with pytest.raises(TraitError):
         RasterLayer(
-            _affine_levels=bad,
+            _tileset=bad,
             _crs="EPSG:4326",
             _fetch_tile=_no_tile,
             _render_tile=_no_render,
@@ -113,16 +125,26 @@ def test_from_pmtiles_uses_web_mercator_tiles():
 
     state = layer.get_state()
     # No grid tells the frontend to request standard XYZ tiles
-    assert state["_affine_levels"] is None
+    assert state["_tileset"] is None
     assert layer._crs.to_epsg() == 3857
     assert layer.min_zoom == 2
     assert layer.max_zoom == 8
     assert layer.extent == [-10.0, -20.0, 30.0, 40.0]
 
 
-def test_from_tile_matrix_set():
+def test_tile_matrix_set_adaptor():
     morecantile = pytest.importorskip("morecantile")
-    levels = AffineLevel.from_tile_matrix_set(morecantile.tms.get("WebMercatorQuad"))
+    tileset = TileMatrixSetAdaptor(morecantile.tms.get("WebMercatorQuad"))
+    assert tileset.crs.to_epsg() == 3857
+    assert tileset.bounds == pytest.approx(
+        (
+            -20037508.342789244,
+            -20037508.342789244,
+            20037508.342789244,
+            20037508.342789244,
+        ),
+    )
+    levels = tileset.levels
     assert len(levels) == 25
     z3 = levels[3]
     assert z3.transform == Affine(
@@ -141,13 +163,13 @@ def test_from_tile_matrix_set():
     )
 
 
-def test_from_tile_matrix_set_bottom_left_origin():
+def test_tile_matrix_set_adaptor_bottom_left_origin():
     morecantile = pytest.importorskip("morecantile")
     tms = morecantile.tms.get("WebMercatorQuad")
     matrix = tms.tileMatrices[0].model_copy(update={"cornerOfOrigin": "bottomLeft"})
-    level = AffineLevel.from_tile_matrix_set(
+    level = TileMatrixSetAdaptor(
         tms.model_copy(update={"tileMatrices": [matrix]}),
-    )[0]
+    ).levels[0]
     assert level.transform.e > 0
 
 
@@ -181,7 +203,7 @@ class FakeGeoTIFF(FakeOverview):
 
 def test_from_geotiff_levels_are_coarsest_first():
     layer = RasterLayer.from_geotiff(FakeGeoTIFF(), render_tile=_no_render)  # type: ignore[arg-type]
-    levels = layer._affine_levels
+    levels = layer._tileset.levels
     assert [lvl.transform.a for lvl in levels] == [40.0, 20.0, 10.0]
     assert [lvl.width for lvl in levels] == [256, 512, 1024]
     assert layer._crs.to_epsg() == 32612
