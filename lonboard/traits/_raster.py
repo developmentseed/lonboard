@@ -1,13 +1,14 @@
 from __future__ import annotations
 
+import math
 from typing import TYPE_CHECKING, Any
 
 from pyproj import CRS
 
+from lonboard.raster import AffineLevel, RasterTileset
 from lonboard.traits._base import FixedErrorTraitType
 
 if TYPE_CHECKING:
-    from morecantile import TileMatrixSet
     from traitlets.traitlets import HasTraits, TraitType
 
 
@@ -50,21 +51,45 @@ class ProjectionTrait(FixedErrorTraitType):
             self.error(obj, value, info="to be a valid CRS input (e.g. EPSG:4326)")
 
 
-def serialize_tile_matrix_set(tms: TileMatrixSet | None, _obj: Any) -> dict | None:
-    """Serialize a TileMatrixSet object to a dict."""
-    if tms is None:
+def meters_per_unit(crs: CRS) -> float:
+    """Meters per horizontal CRS unit, as a TileMatrixSet's `metersPerUnit`."""
+    unit_name = crs.axis_info[0].unit_name
+    if unit_name == "metre":
+        return 1.0
+    if unit_name == "degree":
+        return 2 * math.pi * crs.ellipsoid.semi_major_metre / 360.0
+    if unit_name == "foot":
+        return 0.3048
+    if unit_name == "US survey foot":
+        return 0.30480060960121924
+    raise ValueError(f"Unsupported CRS unit {unit_name!r}")
+
+
+def serialize_tileset(tileset: RasterTileset | None, _obj: Any) -> list[dict] | None:
+    """Serialize a tileset's levels as deck.gl-raster `AffineTilesetLevelOptions`."""
+    if tileset is None:
         return None
 
-    return tms.model_dump(mode="json", exclude_none=True)
+    mpu = meters_per_unit(tileset.crs)
+    return [
+        {
+            "affine": [float(v) for v in tuple(level.transform)[:6]],
+            "arrayWidth": level.width,
+            "arrayHeight": level.height,
+            "tileWidth": level.tile_width,
+            "tileHeight": level.tile_height,
+            "mpu": mpu,
+        }
+        for level in tileset.levels
+    ]
 
 
-class TileMatrixSetTrait(FixedErrorTraitType):
-    """Validation for TileMatrixSet.
+class RasterTilesetTrait(FixedErrorTraitType):
+    """Validation for a raster tile grid.
 
-    This allows as input:
-
-    - a morecantile [TileMatrixSet][morecantile.models.TileMatrixSet] object
-    - Python `dict` representing a TileMatrixSet.
+    This allows as input any [RasterTileset][lonboard.raster.RasterTileset] with at
+    least one level, such as an [AffineTileset][lonboard.raster.AffineTileset] or a
+    [TileMatrixSetAdaptor][lonboard.raster.TileMatrixSetAdaptor].
     """
 
     def __init__(
@@ -74,15 +99,18 @@ class TileMatrixSetTrait(FixedErrorTraitType):
     ) -> None:
         super().__init__(*args, **kwargs)
 
-        self.tag(sync=True, to_json=serialize_tile_matrix_set)
+        self.tag(sync=True, to_json=serialize_tileset)
 
     def validate(self, obj: HasTraits | None, value: Any) -> Any:
-        from morecantile.models import TileMatrixSet
-
-        if isinstance(value, TileMatrixSet):
+        if (
+            isinstance(value, RasterTileset)
+            and len(value.levels) > 0
+            and all(isinstance(level, AffineLevel) for level in value.levels)
+        ):
             return value
 
-        try:
-            return TileMatrixSet(**value)
-        except:  # noqa: E722
-            self.error(obj, value, info="to be a valid TileMatrixSet dict")
+        return self.error(
+            obj,
+            value,
+            info="to be a RasterTileset with AffineLevel levels",
+        )

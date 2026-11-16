@@ -76,9 +76,6 @@ importers:
       '@developmentseed/deck.gl-raster':
         specifier: ^0.10.0
         version: 0.10.0(8ec765b5e0a2b6dc1ebaeb27332e7c0d)
-      '@developmentseed/morecantile':
-        specifier: ^0.10.0
-        version: 0.10.0
       '@developmentseed/raster-reproject':
         specifier: ^0.10.0
         version: 0.10.0

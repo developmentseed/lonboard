@@ -13,7 +13,7 @@ from ._h3 import H3Accessor
 from ._map import BasemapUrl, MapHeightTrait, ViewStateTrait
 from ._normal import NormalAccessor
 from ._point import PointAccessor
-from ._raster import ProjectionTrait, TileMatrixSetTrait
+from ._raster import ProjectionTrait, RasterTilesetTrait
 from ._table import ArrowTableTrait
 from ._text import TextAccessor
 from ._timestamp import TimestampAccessor
@@ -40,8 +40,8 @@ __all__ = [
     "NormalAccessor",
     "PointAccessor",
     "ProjectionTrait",
+    "RasterTilesetTrait",
     "TextAccessor",
-    "TileMatrixSetTrait",
     "TimestampAccessor",
     "Tuple",
     "Unicode",

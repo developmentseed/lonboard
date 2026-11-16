@@ -12,15 +12,14 @@ from pyproj.transformer import Transformer
 import lonboard.traits as t
 from lonboard._geoarrow.ops import Bbox, WeightedCentroid
 from lonboard.layer._base import BaseLayer
-from lonboard.raster import EncodedImage
-from lonboard.traits import ProjectionTrait, TileMatrixSetTrait
+from lonboard.raster import AffineLevel, AffineTileset, EncodedImage, RasterTileset
+from lonboard.traits import ProjectionTrait, RasterTilesetTrait
 
 if TYPE_CHECKING:
     import sys
 
     from async_geotiff import GeoTIFF, Overview, Tile
     from async_pmtiles import PMTilesReader
-    from morecantile import TileMatrixSet
     from pyproj import CRS
 
     from lonboard.types.layer import RasterLayerKwargs
@@ -196,14 +195,19 @@ class RasterLayer(BaseLayer, Generic[T]):
     def __init__(
         self,
         *,
-        _tile_matrix_set: TileMatrixSet | None,
-        _crs: CRS,
+        _tileset: RasterTileset | None,
         _fetch_tile: FetchTile[T],
         _render_tile: RenderTile[T],
         _bounds: Bbox | None = None,
         _center: tuple[float, float] | None = None,
+        _crs: CRS | None = None,
         **kwargs: Unpack[RasterLayerKwargs],
     ) -> None:
+        # A value that is not a tileset is left for the trait to reject.
+        if isinstance(_tileset, RasterTileset):
+            _crs = _tileset.crs
+        elif _tileset is None and _crs is None:
+            raise ValueError("Without a _tileset, _crs is required")
 
         def render_tile_wrapper(tile: T) -> EncodedImage | None:
             """Wrap render_tile to validate that it returns EncodedImage."""
@@ -221,7 +225,7 @@ class RasterLayer(BaseLayer, Generic[T]):
         self.on_msg(handle_anywidget_dispatch)
         self._bounds = _bounds
         self._center = _center
-        super().__init__(_tile_matrix_set=_tile_matrix_set, _crs=_crs, **kwargs)  # type: ignore
+        super().__init__(_tileset=_tileset, _crs=_crs, **kwargs)  # type: ignore
 
     @property
     def _bbox(self) -> Bbox:
@@ -319,8 +323,8 @@ class RasterLayer(BaseLayer, Generic[T]):
 
         return RasterLayer(
             # PMTiles archives use standard Web Mercator XYZ tiles, which the
-            # frontend renders when there's no tile matrix set.
-            _tile_matrix_set=None,
+            # frontend renders when there's no tileset.
+            _tileset=None,
             _crs="EPSG:3857",
             _fetch_tile=fetch_tile,
             _render_tile=render_tile,
@@ -367,9 +371,18 @@ class RasterLayer(BaseLayer, Generic[T]):
             A new RasterLayer instance.
 
         """
-        from async_geotiff.tms import generate_tms
-
-        tms = generate_tms(geotiff)
+        # Overviews are listed finest first; levels go coarsest first.
+        images: list[GeoTIFF | Overview] = [*reversed(geotiff.overviews), geotiff]
+        levels = [
+            AffineLevel(
+                transform=image.transform,
+                width=image.width,
+                height=image.height,
+                tile_width=image.tile_width,
+                tile_height=image.tile_height,
+            )
+            for image in images
+        ]
 
         async def geotiff_fetch_tile(
             x: int,
@@ -377,9 +390,7 @@ class RasterLayer(BaseLayer, Generic[T]):
             z: int,
         ) -> Tile:
             """Fetch a specific tile from the GeoTIFF."""
-            images: list[GeoTIFF | Overview] = [geotiff, *geotiff.overviews]
-            image = images[len(images) - 1 - z]
-            return await image.fetch_tile(x, y, boundless=False)
+            return await images[z].fetch_tile(x, y, boundless=False)
 
         transformer = Transformer.from_crs(geotiff.crs, "EPSG:4326", always_xy=True)
         wgs84_bounds = transformer.transform_bounds(*geotiff.bounds)
@@ -389,12 +400,9 @@ class RasterLayer(BaseLayer, Generic[T]):
         )
 
         return RasterLayer(
-            _tile_matrix_set=tms,
-            _crs=geotiff.crs,
+            _tileset=AffineTileset(levels, geotiff.crs),
             _fetch_tile=geotiff_fetch_tile,
             _render_tile=render_tile,
-            # min_zoom=0,
-            # max_zoom=len(tms.tileMatrices) - 1,
             _bounds=Bbox(*wgs84_bounds),
             _center=wgs84_center,
             **kwargs,
@@ -402,7 +410,16 @@ class RasterLayer(BaseLayer, Generic[T]):
 
     _layer_type = t.Unicode("raster")
 
-    _tile_matrix_set: TileMatrixSet = TileMatrixSetTrait(allow_none=True).tag(sync=True)  # type: ignore
+    _tileset: RasterTileset | None = RasterTilesetTrait(
+        allow_none=True,
+        default_value=None,
+    ).tag(sync=True)  # type: ignore
+    """The tile grid, as a [RasterTileset][lonboard.raster.RasterTileset].
+
+    Its levels may be in any order; `fetch_tile` receives the index into
+    `levels` as `z`. `None` means standard Web Mercator XYZ tiles, as PMTiles
+    archives use.
+    """
 
     _crs: CRS = ProjectionTrait().tag(sync=True)  # type: ignore
 

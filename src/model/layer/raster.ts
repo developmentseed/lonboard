@@ -2,12 +2,16 @@ import type { TextureSource } from "@deck.gl/core";
 import type { TileLayerProps } from "@deck.gl/geo-layers";
 import { TileLayer } from "@deck.gl/geo-layers";
 import { BitmapLayer } from "@deck.gl/layers";
-import type { MinimalTileData } from "@developmentseed/deck.gl-raster";
-import {
-  RasterTileLayer,
-  TileMatrixSetAdaptor,
+import type {
+  AffineTilesetLevelOptions,
+  MinimalTileData,
+  RasterTilesetDescriptor,
 } from "@developmentseed/deck.gl-raster";
-import type { TileMatrixSet } from "@developmentseed/morecantile";
+import {
+  AffineTileset,
+  AffineTilesetLevel,
+  RasterTileLayer,
+} from "@developmentseed/deck.gl-raster";
 import type { WidgetModel } from "@jupyter-widgets/base";
 import memoizeOne from "memoize-one";
 import proj4 from "proj4";
@@ -31,7 +35,8 @@ type TileData = MinimalTileData & {
 export class RasterModel extends BaseLayerModel {
   static layerType = "raster";
 
-  protected tileMatrixSet: TileMatrixSet | null | undefined;
+  /** The tileset's levels, in any order; `null` means Web Mercator XYZ tiles */
+  protected affineLevels: AffineTilesetLevelOptions[] | null | undefined;
   /** PROJJSON CRS */
   protected crs: PROJJSONDefinition | undefined;
   protected tileSize: TileLayerProps["tileSize"];
@@ -51,7 +56,7 @@ export class RasterModel extends BaseLayerModel {
   constructor(model: WidgetModel, updateStateCallback: () => void) {
     super(model, updateStateCallback);
 
-    this.initRegularAttribute("_tile_matrix_set", "tileMatrixSet");
+    this.initRegularAttribute("_tileset", "affineLevels");
     this.initCrs("_crs");
     this.initRegularAttribute("_tile_size", "tileSize");
     this.initRegularAttribute("zoom_offset", "zoomOffset");
@@ -129,7 +134,8 @@ export class RasterModel extends BaseLayerModel {
   ): Promise<TileData | null> => {
     const { index } = tile;
     const { signal } = tile;
-    const { x, y, z } = index;
+    const { x, y } = index;
+    const z = this.pythonLevelIndex(index.z);
 
     const [message, buffers] = await invoke<TileResponse>(
       this.model,
@@ -163,24 +169,60 @@ export class RasterModel extends BaseLayerModel {
   };
 
   /**
-   * The tile grid of `tileMatrixSet` in the source CRS. Memoized because
-   * deck.gl-raster reloads every tile when it gets a new descriptor object.
+   * The tile grid of `affineLevels` in the source CRS, with its levels sorted
+   * coarsest first as deck.gl-raster expects, and for each sorted level the
+   * index of that level in `affineLevels`, which is what Python's
+   * `fetch_tile` receives as `z`. Memoized because deck.gl-raster reloads
+   * every tile when it gets a new descriptor object.
    */
-  protected tilesetDescriptor = memoizeOne(
+  protected affineTilesetDescriptor = memoizeOne(
     (
-      tileMatrixSet: TileMatrixSet,
+      levels: AffineTilesetLevelOptions[],
       converters: NonNullable<RasterModel["converters"]>,
-    ) =>
-      new TileMatrixSetAdaptor(tileMatrixSet, {
-        projectTo4326: (x, y) => converters[4326].forward([x, y]),
-        projectFrom4326: (x, y) => converters[4326].inverse([x, y]),
-        projectTo3857: (x, y) => converters[3857].forward([x, y]),
-        projectFrom3857: (x, y) => converters[3857].inverse([x, y]),
-      }),
+    ) => {
+      const sorted = levels
+        .map((level, pythonIndex) => ({
+          level: new AffineTilesetLevel(level),
+          pythonIndex,
+        }))
+        .sort((a, b) => b.level.metersPerPixel - a.level.metersPerPixel);
+      return {
+        tileset: new AffineTileset({
+          levels: sorted.map(({ level }) => level),
+          ...projectionFns(converters),
+        }),
+        pythonIndex: sorted.map(({ pythonIndex }) => pythonIndex),
+      };
+    },
   );
 
-  renderTileMatrixSet(
-    tilesetDescriptor: TileMatrixSetAdaptor,
+  /** The `AffineTileset` for the current `_tileset`, or `null` if there is none. */
+  affineTileset(): AffineTileset | null {
+    const { affineLevels, converters } = this;
+    if (!affineLevels || !converters) {
+      return null;
+    }
+
+    return this.affineTilesetDescriptor(affineLevels, converters).tileset;
+  }
+
+  /**
+   * The index into the Python tileset's `levels` of the tileset level `z`, which is the
+   * `z` Python's `fetch_tile` receives. Identity without affine levels.
+   */
+  pythonLevelIndex(z: number): number {
+    const { affineLevels, converters } = this;
+    if (!affineLevels || !converters) {
+      return z;
+    }
+
+    return this.affineTilesetDescriptor(affineLevels, converters).pythonIndex[
+      z
+    ];
+  }
+
+  renderDescriptor(
+    tilesetDescriptor: RasterTilesetDescriptor,
   ): RasterTileLayer<TileData | null> {
     return new RasterTileLayer<TileData | null>({
       ...this.baseLayerProps(),
@@ -192,12 +234,9 @@ export class RasterModel extends BaseLayerModel {
   }
 
   render(): TileLayer | RasterTileLayer<TileData | null> {
-    const tileMatrixSet = this.tileMatrixSet;
-    const converters = this.converters;
-    if (tileMatrixSet && converters) {
-      return this.renderTileMatrixSet(
-        this.tilesetDescriptor(tileMatrixSet, converters),
-      );
+    const affineTileset = this.affineTileset();
+    if (affineTileset) {
+      return this.renderDescriptor(affineTileset);
     }
 
     return new TileLayer<TileData | null>({
@@ -227,6 +266,20 @@ export class RasterModel extends BaseLayerModel {
       },
     });
   }
+}
+
+/** Projection functions between the source CRS and EPSG:4326 / EPSG:3857 for a tileset descriptor. */
+function projectionFns(converters: NonNullable<RasterModel["converters"]>) {
+  return {
+    projectTo4326: (x: number, y: number): [number, number] =>
+      converters[4326].forward([x, y]),
+    projectFrom4326: (x: number, y: number): [number, number] =>
+      converters[4326].inverse([x, y]),
+    projectTo3857: (x: number, y: number): [number, number] =>
+      converters[3857].forward([x, y]),
+    projectFrom3857: (x: number, y: number): [number, number] =>
+      converters[3857].inverse([x, y]),
+  };
 }
 
 function dataViewToImageBitmap(

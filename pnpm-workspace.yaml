@@ -7,7 +7,6 @@ overrides:
   # '@developmentseed/deck.gl-zarr': link:../deck.gl-raster/packages/deck.gl-zarr
   # '@developmentseed/epsg': link:../deck.gl-raster/packages/epsg
   # '@developmentseed/geotiff': link:../deck.gl-raster/packages/geotiff
-  # '@developmentseed/morecantile': link:../deck.gl-raster/packages/morecantile
   # '@developmentseed/proj': link:../deck.gl-raster/packages/proj
   # '@developmentseed/range-reader': link:../deck.gl-raster/packages/range-reader
   # '@developmentseed/raster-reproject': link:../deck.gl-raster/packages/raster-reproject
