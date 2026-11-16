@@ -377,6 +377,6 @@ styling.
 
 ## Left to the builder
 
-Exact error wording, the name of the trait (`_affine_levels` suggested), test
+Exact error wording, test
 fixtures, and whether `mpu` is sent per level or once (per level mirrors
 deck.gl-raster and keeps the browser code to a `map`).
