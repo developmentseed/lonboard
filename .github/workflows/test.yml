@@ -63,7 +63,7 @@ jobs:
         run: uv run --group docs mkdocs build --strict
 
       # Use ruff-action so we get annotations in the Github UI
-      - uses: astral-sh/ruff-action@v3.6.1
+      - uses: astral-sh/ruff-action@v4.1.0
 
       - name: Cache pre-commit virtualenvs
         uses: actions/cache@v6.1.0
