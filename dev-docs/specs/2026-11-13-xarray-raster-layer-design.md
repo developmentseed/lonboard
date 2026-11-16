@@ -1,7 +1,6 @@
 # `RasterLayer.from_xarray` design
 
-Updates the April design (`dev-docs/superpowers/specs/2026-04-23-lonboard-zarr-support-design.md`
-on branch `feat/zarr-support`). Its reasoning on why Python fetches still
+Updates the April design in [#1179](https://github.com/developmentseed/lonboard/pull/1179). Its reasoning on why Python fetches still
 holds. Its architecture section is replaced by this document: `RasterTileLayer`
 has landed, and the existing `_fetch_tile` / `_render_tile` callables are the
 tile-source abstraction, so no `TileSource` class is added.
