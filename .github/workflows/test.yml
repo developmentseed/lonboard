@@ -35,7 +35,7 @@ jobs:
         run: pnpm install --frozen-lockfile
 
       - name: Install a specific version of uv
-        uses: astral-sh/setup-uv@v7.6.0
+        uses: astral-sh/setup-uv@v10.3.3
         with:
           enable-cache: true
           version: "0.4.x"
@@ -63,7 +63,7 @@ jobs:
         run: uv run --group docs mkdocs build --strict
 
       # Use ruff-action so we get annotations in the Github UI
-      - uses: astral-sh/ruff-action@v3.6.1
+      - uses: astral-sh/ruff-action@v4.1.0
 
       - name: Cache pre-commit virtualenvs
         uses: actions/cache@v6.1.0
@@ -84,7 +84,7 @@ jobs:
       - uses: actions/checkout@v7.0.1
 
       - name: Install a specific version of uv
-        uses: astral-sh/setup-uv@v7.6.0
+        uses: astral-sh/setup-uv@v10.3.3
         with:
           enable-cache: true
           version: "0.4.x"
