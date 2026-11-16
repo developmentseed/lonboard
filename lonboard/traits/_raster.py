@@ -91,7 +91,10 @@ def serialize_affine_levels(
 
 
 class AffineLevelsTrait(FixedErrorTraitType):
-    """Validation for a raster grid given as affine levels, coarsest first.
+    """Validation for a raster grid given as affine levels.
+
+    Levels may be in any order: the browser sorts them by resolution, and
+    `fetch_tile` receives the index into this list as `z`.
 
     This allows as input a non-empty list of [AffineLevel][lonboard.raster.AffineLevel].
     """

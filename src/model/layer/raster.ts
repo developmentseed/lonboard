@@ -134,7 +134,8 @@ export class RasterModel extends BaseLayerModel {
   ): Promise<TileData | null> => {
     const { index } = tile;
     const { signal } = tile;
-    const { x, y, z } = index;
+    const { x, y } = index;
+    const z = this.pythonLevelIndex(index.z);
 
     const [message, buffers] = await invoke<TileResponse>(
       this.model,
@@ -168,18 +169,31 @@ export class RasterModel extends BaseLayerModel {
   };
 
   /**
-   * The tile grid of `affineLevels` in the source CRS. Memoized because
-   * deck.gl-raster reloads every tile when it gets a new descriptor object.
+   * The tile grid of `affineLevels` in the source CRS, with its levels sorted
+   * coarsest first as deck.gl-raster expects, and for each sorted level the
+   * index of that level in `affineLevels`, which is what Python's
+   * `fetch_tile` receives as `z`. Memoized because deck.gl-raster reloads
+   * every tile when it gets a new descriptor object.
    */
   protected affineTilesetDescriptor = memoizeOne(
     (
       levels: AffineTilesetLevelOptions[],
       converters: NonNullable<RasterModel["converters"]>,
-    ) =>
-      new AffineTileset({
-        levels: levels.map((level) => new AffineTilesetLevel(level)),
-        ...projectionFns(converters),
-      }),
+    ) => {
+      const sorted = levels
+        .map((level, pythonIndex) => ({
+          level: new AffineTilesetLevel(level),
+          pythonIndex,
+        }))
+        .sort((a, b) => b.level.metersPerPixel - a.level.metersPerPixel);
+      return {
+        tileset: new AffineTileset({
+          levels: sorted.map(({ level }) => level),
+          ...projectionFns(converters),
+        }),
+        pythonIndex: sorted.map(({ pythonIndex }) => pythonIndex),
+      };
+    },
   );
 
   /** The `AffineTileset` for the current `_affine_levels`, or `null` if there are none. */
@@ -189,7 +203,22 @@ export class RasterModel extends BaseLayerModel {
       return null;
     }
 
-    return this.affineTilesetDescriptor(affineLevels, converters);
+    return this.affineTilesetDescriptor(affineLevels, converters).tileset;
+  }
+
+  /**
+   * The index into `_affine_levels` of the tileset level `z`, which is the
+   * `z` Python's `fetch_tile` receives. Identity without affine levels.
+   */
+  pythonLevelIndex(z: number): number {
+    const { affineLevels, converters } = this;
+    if (!affineLevels || !converters) {
+      return z;
+    }
+
+    return this.affineTilesetDescriptor(affineLevels, converters).pythonIndex[
+      z
+    ];
   }
 
   renderDescriptor(

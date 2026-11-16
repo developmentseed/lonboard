@@ -410,9 +410,10 @@ class RasterLayer(BaseLayer, Generic[T]):
         allow_none=True,
         default_value=None,
     ).tag(sync=True)  # type: ignore
-    """The tile grid as affine levels, coarsest first.
+    """The tile grid as affine levels, in any order.
 
-    `None` means standard Web Mercator XYZ tiles, as PMTiles archives use.
+    `fetch_tile` receives the index into this list as `z`. `None` means standard
+    Web Mercator XYZ tiles, as PMTiles archives use.
     """
 
     _crs: CRS = ProjectionTrait().tag(sync=True)  # type: ignore

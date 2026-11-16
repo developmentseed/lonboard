@@ -30,6 +30,27 @@ describe("RasterModel affine levels", () => {
     expect(tileset!.projectedBounds).toEqual([-180, -90, 180, 90]);
   });
 
+  it("orders levels coarsest first and maps tile z back to the Python index", () => {
+    const fine: AffineTilesetLevelOptions = {
+      ...LEVEL,
+      affine: [0.5, 0, -180, 0, -0.5, 90],
+      arrayWidth: 720,
+      arrayHeight: 360,
+    };
+    const model = new FakeWidgetModel({
+      _crs: "EPSG:4326",
+      // Finest first, the opposite of what deck.gl-raster expects
+      _affine_levels: [fine, LEVEL],
+    });
+    const raster = new RasterModel(model.asWidgetModel(), vi.fn());
+
+    const tileset = raster.affineTileset();
+
+    expect(tileset!.levels.map((l) => l.matrixWidth)).toEqual([1, 2]);
+    expect(raster.pythonLevelIndex(0)).toBe(1);
+    expect(raster.pythonLevelIndex(1)).toBe(0);
+  });
+
   it("returns null without levels", () => {
     const model = new FakeWidgetModel({
       _crs: "EPSG:4326",
