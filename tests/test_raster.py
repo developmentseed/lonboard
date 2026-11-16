@@ -73,36 +73,20 @@ def _level() -> AffineLevel:
 
 def test_affine_levels_state():
     layer = RasterLayer(
-        _tile_matrix_set=None,
         _affine_levels=[_level()],
         _crs="EPSG:4326",
         _fetch_tile=_no_tile,
         _render_tile=_no_render,
     )
     state = layer.get_state()
-    assert state["_tile_matrix_set"] is None
     assert state["_affine_levels"][0]["arrayWidth"] == 360
     assert state["_affine_levels"][0]["mpu"] == pytest.approx(111319.4907932736)
-
-
-def test_affine_levels_and_tms_are_exclusive():
-    # The check runs before trait validation, so any non-None value stands in
-    # for a TileMatrixSet and the test needs no morecantile.
-    with pytest.raises(ValueError, match="not both"):
-        RasterLayer(
-            _tile_matrix_set=object(),  # type: ignore[arg-type]
-            _affine_levels=[_level()],
-            _crs="EPSG:3857",
-            _fetch_tile=_no_tile,
-            _render_tile=_no_render,
-        )
 
 
 @pytest.mark.parametrize("bad", [[], [{"affine": [1, 0, 0, 0, 1, 0]}]])
 def test_affine_levels_trait_rejects(bad):
     with pytest.raises(TraitError):
         RasterLayer(
-            _tile_matrix_set=None,
             _affine_levels=bad,
             _crs="EPSG:4326",
             _fetch_tile=_no_tile,
@@ -128,9 +112,76 @@ def test_from_pmtiles_uses_web_mercator_tiles():
     layer = RasterLayer.from_pmtiles(FakePMTilesReader())  # type: ignore[arg-type]
 
     state = layer.get_state()
-    # No tile matrix set tells the frontend to request standard XYZ tiles
-    assert state["_tile_matrix_set"] is None
+    # No grid tells the frontend to request standard XYZ tiles
+    assert state["_affine_levels"] is None
     assert layer._crs.to_epsg() == 3857
     assert layer.min_zoom == 2
     assert layer.max_zoom == 8
     assert layer.extent == [-10.0, -20.0, 30.0, 40.0]
+
+
+def test_from_tile_matrix_set():
+    morecantile = pytest.importorskip("morecantile")
+    levels = AffineLevel.from_tile_matrix_set(morecantile.tms.get("WebMercatorQuad"))
+    assert len(levels) == 25
+    z3 = levels[3]
+    assert z3.transform == Affine(
+        19567.87924100512,
+        0.0,
+        -20037508.342789244,
+        0.0,
+        -19567.87924100512,
+        20037508.342789244,
+    )
+    assert (z3.width, z3.height, z3.tile_width, z3.tile_height) == (
+        2048,
+        2048,
+        256,
+        256,
+    )
+
+
+def test_from_tile_matrix_set_bottom_left_origin():
+    morecantile = pytest.importorskip("morecantile")
+    tms = morecantile.tms.get("WebMercatorQuad")
+    matrix = tms.tileMatrices[0].model_copy(update={"cornerOfOrigin": "bottomLeft"})
+    level = AffineLevel.from_tile_matrix_set(
+        tms.model_copy(update={"tileMatrices": [matrix]}),
+    )[0]
+    assert level.transform.e > 0
+
+
+class FakeOverview:
+    def __init__(self, scale: int) -> None:
+        self.transform = Affine(
+            10.0 * scale,
+            0.0,
+            300000.0,
+            0.0,
+            -10.0 * scale,
+            4100040.0,
+        )
+        self.width = 1024 // scale
+        self.height = 1024 // scale
+        self.tile_width = 256
+        self.tile_height = 256
+
+
+class FakeGeoTIFF(FakeOverview):
+    """Implements the parts of `async_geotiff.GeoTIFF` that from_geotiff uses."""
+
+    crs = CRS.from_epsg(32612)
+    bounds = (300000.0, 4089800.0, 310240.0, 4100040.0)
+
+    def __init__(self) -> None:
+        super().__init__(1)
+        # async-geotiff lists overviews finest first
+        self.overviews = [FakeOverview(2), FakeOverview(4)]
+
+
+def test_from_geotiff_levels_are_coarsest_first():
+    layer = RasterLayer.from_geotiff(FakeGeoTIFF(), render_tile=_no_render)  # type: ignore[arg-type]
+    levels = layer._affine_levels
+    assert [lvl.transform.a for lvl in levels] == [40.0, 20.0, 10.0]
+    assert [lvl.width for lvl in levels] == [256, 512, 1024]
+    assert layer._crs.to_epsg() == 32612

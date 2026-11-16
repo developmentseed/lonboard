@@ -9,7 +9,6 @@ from lonboard.raster import AffineLevel
 from lonboard.traits._base import FixedErrorTraitType
 
 if TYPE_CHECKING:
-    from morecantile import TileMatrixSet
     from traitlets.traitlets import HasTraits, TraitType
 
 
@@ -50,44 +49,6 @@ class ProjectionTrait(FixedErrorTraitType):
             return CRS.from_user_input(value)
         except:  # noqa: E722
             self.error(obj, value, info="to be a valid CRS input (e.g. EPSG:4326)")
-
-
-def serialize_tile_matrix_set(tms: TileMatrixSet | None, _obj: Any) -> dict | None:
-    """Serialize a TileMatrixSet object to a dict."""
-    if tms is None:
-        return None
-
-    return tms.model_dump(mode="json", exclude_none=True)
-
-
-class TileMatrixSetTrait(FixedErrorTraitType):
-    """Validation for TileMatrixSet.
-
-    This allows as input:
-
-    - a morecantile [TileMatrixSet][morecantile.models.TileMatrixSet] object
-    - Python `dict` representing a TileMatrixSet.
-    """
-
-    def __init__(
-        self: TraitType,
-        *args: Any,
-        **kwargs: Any,
-    ) -> None:
-        super().__init__(*args, **kwargs)
-
-        self.tag(sync=True, to_json=serialize_tile_matrix_set)
-
-    def validate(self, obj: HasTraits | None, value: Any) -> Any:
-        from morecantile.models import TileMatrixSet
-
-        if isinstance(value, TileMatrixSet):
-            return value
-
-        try:
-            return TileMatrixSet(**value)
-        except:  # noqa: E722
-            self.error(obj, value, info="to be a valid TileMatrixSet dict")
 
 
 def meters_per_unit(crs: CRS) -> float:

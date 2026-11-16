@@ -93,7 +93,8 @@ def wait_for_tile_requests_to_stop(page_session, requests: list) -> int:
 
 
 @pytest.mark.usefixtures("solara_test")
-def test_tile_matrix_set_tiles_not_refetched_on_rerender(page_session):
+def test_web_mercator_tiles_not_refetched_on_rerender(page_session):
+    """A WebMercatorQuad grid, converted from a TileMatrixSet, keeps its tiles on re-render."""
     png = solid_png(TILE_COLOR)
     requests = []
 
@@ -102,7 +103,9 @@ def test_tile_matrix_set_tiles_not_refetched_on_rerender(page_session):
         return png
 
     layer = RasterLayer(
-        _tile_matrix_set=morecantile.tms.get("WebMercatorQuad"),
+        _affine_levels=AffineLevel.from_tile_matrix_set(
+            morecantile.tms.get("WebMercatorQuad"),
+        ),
         _crs="EPSG:3857",
         _fetch_tile=fetch_tile,
         _render_tile=lambda data: EncodedImage(data=data, media_type="image/png"),
@@ -155,7 +158,6 @@ def test_affine_levels_tiles_render(page_session):
         return EncodedImage(data=tile, media_type="image/png")
 
     layer = RasterLayer(
-        _tile_matrix_set=None,
         _affine_levels=[level],
         _crs="EPSG:4326",
         _fetch_tile=fetch_tile,

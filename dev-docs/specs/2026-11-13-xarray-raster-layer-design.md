@@ -104,18 +104,27 @@ is. The browser constructs levels with no mapping. `mpu` (meters per CRS unit) i
 2πa/360, foot 0.3048. That is about eight lines and avoids importing
 morecantile.
 
-`RasterLayer.__init__` gains `_affine_levels: list[AffineLevel] | None = None`.
-Exactly one of `_tile_matrix_set` and `_affine_levels` may be set; the
-constructor raises otherwise.
+This is the one way to describe a tile grid. The `_tile_matrix_set` trait is
+removed: every TMS feature deck.gl-raster's adaptor read (origin, cell size,
+corner of origin, tile and matrix sizes, scale denominator) is an affine
+level, and the one it cannot express, `variableMatrixWidths`, the adaptor did
+not support either. `RasterLayer.__init__` takes
+`_affine_levels: list[AffineLevel] | None`; `None` means standard Web Mercator
+XYZ tiles, the PMTiles case. Sources that have a `TileMatrixSet`, such as a
+TiTiler endpoint, convert it with the adapter
+`AffineLevel.from_tile_matrix_set(tms)`, which is where morecantile is
+imported; `from_geotiff` builds its levels straight from the overviews and the
+`geotiff` extra drops morecantile.
 
-Browser, `src/model/layer/raster.ts`: `render()` checks `_affine_levels`
-first and builds `new AffineTileset({levels: levels.map(l => new
-AffineTilesetLevel(l)), ...projection fns})`, then the existing TMS path,
-then the fallback. The `RasterTileLayer` construction is shared between the
-two descriptor paths.
+Browser, `src/model/layer/raster.ts`: `render()` builds a memoized
+`new AffineTileset({levels: levels.map(l => new AffineTilesetLevel(l)),
+...projection fns})` when `_affine_levels` is set, else the Web Mercator
+fallback. `TileMatrixSetAdaptor` and the `@developmentseed/morecantile`
+dependency go.
 
-Tests: Python trait round trip (input forms, ordering, mutual exclusion with
-TMS); Vitest for the model building an `AffineTileset` from a serialized
+Tests: Python trait round trip (input forms, ordering, rejection of an empty
+list), the adapter on WebMercatorQuad and a bottom-left origin, and
+`from_geotiff` level order; Vitest for the model building an `AffineTileset` from a serialized
 level list with the fake widget model.
 
 ### Step 2: `RasterLayer.from_xarray`

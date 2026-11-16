@@ -11,9 +11,7 @@ import {
   AffineTileset,
   AffineTilesetLevel,
   RasterTileLayer,
-  TileMatrixSetAdaptor,
 } from "@developmentseed/deck.gl-raster";
-import type { TileMatrixSet } from "@developmentseed/morecantile";
 import type { WidgetModel } from "@jupyter-widgets/base";
 import memoizeOne from "memoize-one";
 import proj4 from "proj4";
@@ -37,8 +35,7 @@ type TileData = MinimalTileData & {
 export class RasterModel extends BaseLayerModel {
   static layerType = "raster";
 
-  protected tileMatrixSet: TileMatrixSet | null | undefined;
-  /** Tile grid as affine levels, coarsest first, when there is no tile matrix set */
+  /** Tile grid as affine levels, coarsest first; `null` means Web Mercator XYZ tiles */
   protected affineLevels: AffineTilesetLevelOptions[] | null | undefined;
   /** PROJJSON CRS */
   protected crs: PROJJSONDefinition | undefined;
@@ -59,7 +56,6 @@ export class RasterModel extends BaseLayerModel {
   constructor(model: WidgetModel, updateStateCallback: () => void) {
     super(model, updateStateCallback);
 
-    this.initRegularAttribute("_tile_matrix_set", "tileMatrixSet");
     this.initRegularAttribute("_affine_levels", "affineLevels");
     this.initCrs("_crs");
     this.initRegularAttribute("_tile_size", "tileSize");
@@ -172,17 +168,9 @@ export class RasterModel extends BaseLayerModel {
   };
 
   /**
-   * The tile grid of `tileMatrixSet` in the source CRS. Memoized because
+   * The tile grid of `affineLevels` in the source CRS. Memoized because
    * deck.gl-raster reloads every tile when it gets a new descriptor object.
    */
-  protected tilesetDescriptor = memoizeOne(
-    (
-      tileMatrixSet: TileMatrixSet,
-      converters: NonNullable<RasterModel["converters"]>,
-    ) => new TileMatrixSetAdaptor(tileMatrixSet, projectionFns(converters)),
-  );
-
-  /** The tile grid of `affineLevels` in the source CRS. Memoized like `tilesetDescriptor`. */
   protected affineTilesetDescriptor = memoizeOne(
     (
       levels: AffineTilesetLevelOptions[],
@@ -220,14 +208,6 @@ export class RasterModel extends BaseLayerModel {
     const affineTileset = this.affineTileset();
     if (affineTileset) {
       return this.renderDescriptor(affineTileset);
-    }
-
-    const tileMatrixSet = this.tileMatrixSet;
-    const converters = this.converters;
-    if (tileMatrixSet && converters) {
-      return this.renderDescriptor(
-        this.tilesetDescriptor(tileMatrixSet, converters),
-      );
     }
 
     return new TileLayer<TileData | null>({

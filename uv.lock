@@ -2348,7 +2348,6 @@ geopandas = [
 ]
 geotiff = [
     { name = "async-geotiff" },
-    { name = "morecantile" },
 ]
 movingpandas = [
     { name = "movingpandas" },
@@ -2417,7 +2416,6 @@ requires-dist = [
     { name = "geoarrow-rust-core", specifier = ">=0.5.2" },
     { name = "geopandas", marker = "extra == 'geopandas'", specifier = ">=0.13" },
     { name = "ipywidgets", specifier = ">=7.6.0" },
-    { name = "morecantile", marker = "python_full_version >= '3.11' and extra == 'geotiff'", specifier = ">=7.0" },
     { name = "movingpandas", marker = "extra == 'movingpandas'", specifier = ">=0.17" },
     { name = "numpy", specifier = ">=1.14" },
     { name = "pandas", marker = "extra == 'geopandas'", specifier = ">=2" },
