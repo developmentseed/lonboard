@@ -287,7 +287,6 @@ def _global_layer(**kwargs: object):
 def test_from_xarray_state():
     layer = _global_layer()
     state = layer.get_state()
-    assert state["_tile_matrix_set"] is None
     assert state["_affine_levels"] == [
         {
             "affine": [1.0, 0.0, -180.0, 0.0, -1.0, 90.0],

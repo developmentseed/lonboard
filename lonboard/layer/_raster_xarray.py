@@ -368,7 +368,6 @@ def build_from_xarray(  # noqa: PLR0913
 
     loader = WindowLoader(use_async=da.chunks is None)
     return RasterLayer(
-        _tile_matrix_set=None,
         _affine_levels=[level],
         _crs=crs,
         _fetch_tile=make_fetch_tile([da], [level], y_dim, x_dim, loader),
