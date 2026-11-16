@@ -15,7 +15,7 @@ from pyproj import CRS
 from pyproj.transformer import Transformer
 
 from lonboard._geoarrow.ops import Bbox
-from lonboard.raster import AffineLevel
+from lonboard.raster import AffineLevel, AffineTileset
 
 if TYPE_CHECKING:
     from collections.abc import Callable, Hashable
@@ -368,8 +368,7 @@ def build_from_xarray(  # noqa: PLR0913
 
     loader = WindowLoader(use_async=da.chunks is None)
     return RasterLayer(
-        _affine_levels=[level],
-        _crs=crs,
+        _tileset=AffineTileset([level], crs),
         _fetch_tile=make_fetch_tile([da], [level], y_dim, x_dim, loader),
         _render_tile=render_tile,
         _bounds=bounds,

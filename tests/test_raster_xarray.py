@@ -287,7 +287,7 @@ def _global_layer(**kwargs: object):
 def test_from_xarray_state():
     layer = _global_layer()
     state = layer.get_state()
-    assert state["_affine_levels"] == [
+    assert state["_tileset"] == [
         {
             "affine": [1.0, 0.0, -180.0, 0.0, -1.0, 90.0],
             "arrayWidth": 360,
@@ -318,7 +318,7 @@ def test_from_xarray_fetch_tile_windows():
         render_tile=_no_render,
         tile_size=128,
     )
-    assert layer._affine_levels[0].tile_width == 128
+    assert layer._tileset.levels[0].tile_width == 128
     edge = asyncio.run(layer._fetch_tile(x=2, y=1, z=0))
     assert edge.shape == (52, 104)  # rows 128..180, cols 256..360
     assert edge["lat"].values[0] == pytest.approx(89.5 - 128)
@@ -349,13 +349,13 @@ def test_from_xarray_explicit_transform_and_crs():
         crs="EPSG:32612",
         transform=transform,
     )
-    assert layer._affine_levels[0].transform == transform
+    assert layer._tileset.levels[0].transform == transform
 
 
 def test_from_xarray_rolls_longitude():
     da = _da(np.array([0.5, -0.5]), np.arange(0.5, 360.0, 1.0))
     layer = RasterLayer.from_xarray(da, render_tile=_no_render)
-    assert layer._affine_levels[0].transform.c == -180.0
+    assert layer._tileset.levels[0].transform.c == -180.0
 
 
 def test_from_xarray_requires_xarray_dataarray():
