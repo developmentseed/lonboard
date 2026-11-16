@@ -518,7 +518,7 @@ def test_multiscale_levels_requires_multiscales():
 def test_from_xarray_tree_state():
     tree = _open_tree(_two_level_store())
     layer = RasterLayer.from_xarray(tree, render_tile=_no_render, variable="v")
-    levels = layer.get_state()["_affine_levels"]
+    levels = layer.get_state()["_tileset"]
     assert [(lvl["arrayWidth"], lvl["arrayHeight"]) for lvl in levels] == [
         (180, 90),
         (360, 180),
