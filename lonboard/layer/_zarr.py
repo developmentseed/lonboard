@@ -53,10 +53,16 @@ def _dispatch(widget: ZarrLayer, msg: Any, buffers: list[bytes]) -> None:
 
 async def _handle_get(widget: ZarrLayer, msg: dict) -> None:
     key = msg["msg"]["key"]
+    byte_range = msg["msg"].get("range")
     reply = {"id": msg["id"], "kind": f"{MSG_KIND}-response"}
     try:
-        widget.requests.append(key)
-        chunk = await widget._read_chunk(key)
+        widget.requests.append(key if byte_range is None else (key, byte_range))
+        if widget._proxy is not None:
+            chunk = await widget._read_proxy(key, byte_range)
+        else:
+            chunk = await widget._read_chunk(key)
+        if chunk is not None:
+            widget.bytes_sent += len(chunk)
         if chunk is None:
             widget.send({**reply, "response": {"type": "missing"}})
         else:
@@ -86,9 +92,12 @@ class ZarrLayer(BaseLayer):
         _levels: list[xr.DataArray],
         _metadata: dict,
         _bounds: Any,
+        _proxy: Any = None,
         **kwargs: Any,
     ) -> None:
         self._levels = _levels
+        self._proxy = _proxy
+        self.bytes_sent = 0
         self._pending: dict[str, asyncio.Task] = {}
         self._loader = WindowLoader(
             use_async=all(lvl.chunks is None for lvl in _levels)
@@ -186,5 +195,80 @@ class ZarrLayer(BaseLayer):
             _levels=levels,
             _metadata=metadata,
             _bounds=wgs84_bounds(coarsest, found_crs),
+            **kwargs,
+        )
+
+    async def _read_proxy(self, key: str, byte_range: dict | None) -> bytes | None:
+        """Forward a read by key, and optional byte range, to the real store."""
+        import obstore
+
+        path = key.strip("/")
+        try:
+            if byte_range is None:
+                result = await obstore.get_async(self._proxy, path)
+                return bytes(await result.bytes_async())
+            if "suffixLength" in byte_range:
+                meta = await obstore.head_async(self._proxy, path)
+                start = meta["size"] - byte_range["suffixLength"]
+                length = byte_range["suffixLength"]
+            else:
+                start, length = byte_range["offset"], byte_range["length"]
+            return bytes(
+                await obstore.get_range_async(
+                    self._proxy, path, start=start, length=length
+                )
+            )
+        except FileNotFoundError:
+            return None
+
+    @staticmethod
+    def from_zarr(store: Any, *, variable: str, **kwargs: Any) -> ZarrLayer:
+        """SPIKE: proxy a GeoZarr multiscales group held in an obstore store.
+
+        Python authors the root `zarr.json` it sends: each layout item points at
+        the chosen variable's array, and the CRS is sent as PROJJSON.
+        """
+        import json
+
+        import obstore
+        from pyproj import CRS
+        from pyproj.transformer import Transformer
+
+        from lonboard._geoarrow.ops import Bbox
+
+        def read_json(path: str) -> dict:
+            return json.loads(bytes(obstore.get(store, path).bytes()))
+
+        root = read_json("zarr.json")
+        attrs = root["attributes"]
+        crs = CRS.from_user_input(attrs["proj:code"])
+        metadata: dict[str, Any] = {}
+        layout = []
+        for item in attrs["multiscales"]["layout"]:
+            array_path = f"{item['asset']}/{variable}"
+            metadata[f"/{array_path}/zarr.json"] = read_json(f"{array_path}/zarr.json")
+            layout.append(
+                {
+                    "asset": array_path,
+                    "spatial:transform": item["spatial:transform"],
+                    "spatial:shape": item["spatial:shape"],
+                },
+            )
+        metadata["/zarr.json"] = {
+            "zarr_format": 3,
+            "node_type": "group",
+            "attributes": {
+                "spatial:dimensions": attrs["spatial:dimensions"],
+                "proj:projjson": crs.to_json_dict(),
+                "multiscales": {"layout": layout},
+            },
+        }
+        transformer = Transformer.from_crs(crs, "EPSG:4326", always_xy=True)
+        bounds = Bbox(*transformer.transform_bounds(*attrs["spatial:bbox"]))
+        return ZarrLayer(
+            _levels=[],
+            _metadata=metadata,
+            _bounds=bounds,
+            _proxy=store,
             **kwargs,
         )

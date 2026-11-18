@@ -42,9 +42,24 @@ export class CommStore implements zarr.AsyncReadable {
       return undefined;
     }
 
+    return this.read({ key }, opts);
+  }
+
+  async getRange(
+    key: zarr.AbsolutePath,
+    range: zarr.RangeQuery,
+    opts?: { signal?: AbortSignal },
+  ): Promise<Uint8Array | undefined> {
+    return this.read({ key, range }, opts);
+  }
+
+  private async read(
+    msg: { key: string; range?: zarr.RangeQuery },
+    opts?: { signal?: AbortSignal },
+  ): Promise<Uint8Array | undefined> {
     const [message, buffers] = await invoke<GetResponse>(
       this.model,
-      { key },
+      msg,
       MSG_KIND,
       { signal: opts?.signal },
     );
@@ -87,7 +102,11 @@ export class ZarrModel extends BaseLayerModel {
   ): Promise<TileData> => {
     const { device, sliceSpec, width, height, signal } = options;
     const chunk = await zarr.get(arr, sliceSpec, { signal });
-    const data = chunk.data as Float32Array;
+    // The pipeline samples a float texture, so other dtypes are converted.
+    const data =
+      chunk.data instanceof Float32Array
+        ? chunk.data
+        : Float32Array.from(chunk.data as ArrayLike<number>);
     const texture = device.createTexture({
       format: "r32float",
       width,
