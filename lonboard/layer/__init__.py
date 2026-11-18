@@ -22,6 +22,7 @@ from ._raster import RasterLayer
 from ._s2 import S2Layer
 from ._scatterplot import ScatterplotLayer
 from ._trips import TripsLayer
+from ._zarr import ZarrLayer
 
 __all__ = [
     "A5Layer",

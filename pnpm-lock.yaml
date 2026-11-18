@@ -76,6 +76,9 @@ importers:
       '@developmentseed/deck.gl-raster':
         specifier: ^0.10.0
         version: 0.10.0(8ec765b5e0a2b6dc1ebaeb27332e7c0d)
+      '@developmentseed/deck.gl-zarr':
+        specifier: ^0.10.0
+        version: 0.10.0(8ec765b5e0a2b6dc1ebaeb27332e7c0d)
       '@developmentseed/raster-reproject':
         specifier: ^0.10.0
         version: 0.10.0
@@ -136,6 +139,9 @@ importers:
       uuid:
         specifier: ^14.0.2
         version: 14.0.2
+      zarrita:
+        specifier: ^0.7.6
+        version: 0.7.6
       zustand:
         specifier: ^5.0.15
         version: 5.0.15(@types/react@19.3.0)(react@19.3.0)(use-sync-external-store@1.6.0(react@19.3.0))
@@ -731,6 +737,17 @@ packages:
       '@developmentseed/morecantile': ^0.10.0
       '@luma.gl/core': ^9.4.2
       '@luma.gl/shadertools': ^9.4.2
+
+  '@developmentseed/deck.gl-zarr@0.10.0':
+    resolution: {integrity: sha512-HQn4JaLfKM+dF0PEQQmN2zXjf32L4BJs6XbYavZZxrY5DPbwkIhtCHTwo02XXG255mAYuxj2Oj56orG95yJmhQ==}
+    peerDependencies:
+      '@deck.gl/core': ^9.4.1
+      '@deck.gl/geo-layers': ^9.4.1
+      '@deck.gl/layers': ^9.4.1
+      '@luma.gl/core': ^9.4.2
+
+  '@developmentseed/geozarr@0.10.0':
+    resolution: {integrity: sha512-6MQXujBO11Xr18KXTN8iZKF2KbJp5kUoINpokyqsNWIWkyVyRMPQ0Ho+8fRw8qOlvT20/e2BV1igPW0LuLeaCA==}
 
   '@developmentseed/morecantile@0.10.0':
     resolution: {integrity: sha512-OQmb3KYR0LT0I7kmiYvHV6AIev/FajAFQfClw6iLGGtXHvYoI1TUtFtbwcnX7XsuJ2qDtfcGCMe1lBChIKqqHA==}
@@ -3100,6 +3117,9 @@ packages:
   '@webgpu/types@0.1.74':
     resolution: {integrity: sha512-lgiI4hbuLcI9unnm2cL/tvCaQU45dp0xcLWJh5uB/9MBGvIA4F8XIk7nSiBeg+K4xWGYwgZKn80LmERI5CxoTA==}
 
+  '@zarrita/storage@0.2.1':
+    resolution: {integrity: sha512-IdRYg9hFUXEvZ2KFtJktOMRtzCWIT7In0UU+LFSZejoeUBH/b89Ok9FodLM7Qx9cQGt1ASD9AK9LFogaNzLGhQ==}
+
   a5-js@0.10.1:
     resolution: {integrity: sha512-UeTPtqZzXpDBLX0sm9GaUXArwHntBGQ9M1Bh7rB/wjibQEOmvaq5amgJKc4xf0A9GO9JgFhHRvlvdCeiav2+/g==}
 
@@ -3435,6 +3455,9 @@ packages:
 
   fflate@0.7.4:
     resolution: {integrity: sha512-5u2V/CDW15QM1XbbgS+0DfPxVB+jUKhWEKuuFuHncbk3tEEqzmoXL+2KyOFuKGqOnmdIy0/davWF1CkuwtibCw==}
+
+  fflate@0.8.3:
+    resolution: {integrity: sha512-tbZNuJrLwGUp3zshBtdy4W+ORxZuIh8a5ilyIEQDC5rY1f3U20JMry0Ll3WBzU58EZKsEuJFXhb5gwv8CsPvgA==}
 
   fill-range@7.1.1:
     resolution: {integrity: sha512-YsGpe3WHLK8ZYi4tWDg2Jy3ebRz2rXowDxnld4bkQB00cc/1Zw9AWnC0i9ztDJitivtQvaI9KaLyKrc+hBW0yg==}
@@ -3905,6 +3928,9 @@ packages:
     resolution: {integrity: sha512-6eZs5Ls3WtCisHWp9S2GUy8dqkpGi4BVSz3GaqiE6ezub0512ESztXUwUB6C6IKbQkY2Pnb/mD4WYojCRwcwLA==}
     engines: {node: '>=0.10.0'}
 
+  numcodecs@0.3.2:
+    resolution: {integrity: sha512-6YSPnmZgg0P87jnNhi3s+FVLOcIn3y+1CTIgUulA3IdASzK9fJM87sUFkpyA+be9GibGRaST2wCgkD+6U+fWKw==}
+
   object-assign@4.1.1:
     resolution: {integrity: sha512-rJgTQnkUnH1sFw8yT6VSU3zD3sWmu6sZhIseY8VX+GRu3P6F7Fu+JNDoXfklElbLJSnc3FUQHVe4cU5hj+BcUg==}
     engines: {node: '>=0.10.0'}
@@ -4253,6 +4279,9 @@ packages:
     resolution: {integrity: sha512-GDhwkLfywWL2s6vEjyhri+eXmfH6j1L7JE27WhqLeYzoh/A3DBaYGEj2H/HFZCn/kMfim73FXxEJTw06WtxQwg==}
     engines: {node: '>= 14.18.0'}
 
+  reference-spec-reader@0.2.0:
+    resolution: {integrity: sha512-q0mfCi5yZSSHXpCyxjgQeaORq3tvDsxDyzaadA/5+AbAUwRyRuuTh0aRQuE/vAOt/qzzxidJ5iDeu1cLHaNBlQ==}
+
   require-from-string@2.0.2:
     resolution: {integrity: sha512-Xf0nWe6RseziFMu+Ap9biiUbmplq6S9/p+7w7YXP/JBHhrUDDUhwa+vANyubuqfZWTveU//DYVGsDG7RKL/vEw==}
     engines: {node: '>=0.10.0'}
@@ -4576,6 +4605,10 @@ packages:
     resolution: {integrity: sha512-tJfXmxMeWYnczCVs7XAEvIV7ieppALdyepWMkHkwciRpZraG/xwT+s2JN8+pr1+8jCRf80FFzvr+MpQeeoF4Xg==}
     engines: {node: '>=0.10.0'}
 
+  unzipit@2.1.1:
+    resolution: {integrity: sha512-GNIM737c1VV8Z5VD2gSs3SERnqe7KS+dHAmqN9GzdXHB3k4NfXcgNv0+z0br7gJZdhJvv8+MCxBwLvRy7fOhyg==}
+    engines: {node: '>=18'}
+
   update-browserslist-db@1.3.3:
     resolution: {integrity: sha512-pJ2sYawQS0R/WI928Gj5GlPhTGzbMelq0+4INtSYNDV9ErKJcX6xjGWkoG/VnB3dpUm00zALaqkrUD77pO5TDQ==}
     hasBin: true
@@ -4775,6 +4808,12 @@ packages:
   yjs@13.6.33:
     resolution: {integrity: sha512-q/UYvr1gOk4XII+Cu1CW2dINjYqJJFifTzogEaIARznrvX7uOlHsdTEXcnOBMuIsrCGEEKdNxi74kyMLZlKVfw==}
     engines: {node: '>=16.0.0', npm: '>=8.0.0'}
+
+  zarrita@0.7.6:
+    resolution: {integrity: sha512-PuPZ/3AClcDXWt5E6zrY3BZoj4PgV+SShRm0lWvsx3qQEsAOvSpVqlpHXv68H+JHpz8MghnGU+6ydf832F2ovw==}
+
+  zod@4.6.7:
+    resolution: {integrity: sha512-g8W2D2kU6a8untc053fX1uVBKzM7yqAxW/3zwk83+6RyF2+SKOuV+c0wBDhUwzV1PaGapmZH+rmcUzPf+3CGwg==}
 
   zstd-codec@0.1.5:
     resolution: {integrity: sha512-v3fyjpK8S/dpY/X5WxqTK3IoCnp/ZOLxn144GZVlNUjtwAchzrVo03h+oMATFhCIiJ5KTr4V3vDQQYz4RU684g==}
@@ -5381,6 +5420,28 @@ snapshots:
       '@math.gl/web-mercator': 4.1.0
     transitivePeerDependencies:
       - geotiff
+
+  '@developmentseed/deck.gl-zarr@0.10.0(8ec765b5e0a2b6dc1ebaeb27332e7c0d)':
+    dependencies:
+      '@deck.gl/core': 9.4.1(@luma.gl/webgpu@9.4.2(@luma.gl/core@9.4.2)(@luma.gl/shadertools@9.4.2(@luma.gl/core@9.4.2)))
+      '@deck.gl/geo-layers': 9.4.1(bc017b99e1cf9bed5164463f1c6cc8b6)
+      '@deck.gl/layers': 9.4.1(@deck.gl/core@9.4.1(@luma.gl/webgpu@9.4.2(@luma.gl/core@9.4.2)(@luma.gl/shadertools@9.4.2(@luma.gl/core@9.4.2))))(@loaders.gl/core@4.4.5)(@luma.gl/core@9.4.2)(@luma.gl/engine@9.4.2(@luma.gl/core@9.4.2)(@luma.gl/shadertools@9.4.2(@luma.gl/core@9.4.2)))
+      '@developmentseed/affine': 0.10.0
+      '@developmentseed/deck.gl-raster': 0.10.0(8ec765b5e0a2b6dc1ebaeb27332e7c0d)
+      '@developmentseed/geozarr': 0.10.0
+      '@developmentseed/proj': 0.10.0
+      '@luma.gl/core': 9.4.2
+      zarrita: 0.7.6
+    transitivePeerDependencies:
+      - '@deck.gl/mesh-layers'
+      - '@developmentseed/morecantile'
+      - '@luma.gl/shadertools'
+      - geotiff
+
+  '@developmentseed/geozarr@0.10.0':
+    dependencies:
+      '@developmentseed/affine': 0.10.0
+      zod: 4.6.7
 
   '@developmentseed/morecantile@0.10.0':
     dependencies:
@@ -8745,6 +8806,11 @@ snapshots:
 
   '@webgpu/types@0.1.74': {}
 
+  '@zarrita/storage@0.2.1':
+    dependencies:
+      reference-spec-reader: 0.2.0
+      unzipit: 2.1.1
+
   a5-js@0.10.1: {}
 
   ajv@8.20.0:
@@ -9079,6 +9145,8 @@ snapshots:
       picomatch: 4.0.7
 
   fflate@0.7.4: {}
+
+  fflate@0.8.3: {}
 
   fill-range@7.1.1:
     dependencies:
@@ -9456,6 +9524,10 @@ snapshots:
       undefsafe: 2.0.5
 
   normalize-path@3.0.0: {}
+
+  numcodecs@0.3.2:
+    dependencies:
+      fflate: 0.8.3
 
   object-assign@4.1.1: {}
 
@@ -9879,6 +9951,8 @@ snapshots:
 
   readdirp@4.1.2: {}
 
+  reference-spec-reader@0.2.0: {}
+
   require-from-string@2.0.2: {}
 
   requires-port@1.0.0: {}
@@ -10204,6 +10278,8 @@ snapshots:
       is-extendable: 0.1.1
       set-value: 2.0.1
 
+  unzipit@2.1.1: {}
+
   update-browserslist-db@1.3.3(browserslist@4.29.1):
     dependencies:
       browserslist: 4.29.1
@@ -10323,6 +10399,13 @@ snapshots:
   yjs@13.6.33:
     dependencies:
       lib0: 0.2.118
+
+  zarrita@0.7.6:
+    dependencies:
+      '@zarrita/storage': 0.2.1
+      numcodecs: 0.3.2
+
+  zod@4.6.7: {}
 
   zstd-codec@0.1.5:
     optional: true
