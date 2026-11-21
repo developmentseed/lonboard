@@ -27,25 +27,28 @@ class FilterValueAccessor(FixedErrorTraitType):
       `filter_size` of the
       [`DataFilterExtension`][lonboard.layer_extension.DataFilterExtension] instance
       must be 1.
-    - A one-dimensional numpy `ndarray` with a numeric data type. This will be casted to
-      an array of data type [`np.float32`][numpy.float32]. Each value in the array will
-      be used as the value for the object at the same row index. The `filter_size` of
-      the [`DataFilterExtension`][lonboard.layer_extension.DataFilterExtension] instance
-      must be 1.
-    - A two-dimensional numpy `ndarray` with a numeric data type. This will be casted to
-      an array of data type [`np.float32`][numpy.float32]. Each value in the array will
-      be used as the value for the object at the same row index. The `filter_size` of
-      the [`DataFilterExtension`][lonboard.layer_extension.DataFilterExtension] instance
-      must match the size of the second dimension of the array.
-    - A pandas `Series` with a numeric data type. This will be casted to an array of
-      data type [`np.float32`][numpy.float32]. Each value in the array will be used as
-      the value for the object at the same row index. The `filter_size` of the
+    - A one-dimensional numpy `ndarray` with a numeric or boolean data type. This will
+      be casted to an array of data type [`np.float32`][numpy.float32]. Each value in
+      the array will be used as the value for the object at the same row index. The
+      `filter_size` of the
       [`DataFilterExtension`][lonboard.layer_extension.DataFilterExtension] instance
       must be 1.
-    - A pyarrow [`FloatArray`][pyarrow.FloatArray], [`DoubleArray`][pyarrow.DoubleArray]
-      or [`ChunkedArray`][pyarrow.ChunkedArray] containing either a `FloatArray` or
-      `DoubleArray`. Each value in the array will be used as the value for the object at
-      the same row index. The `filter_size` of the
+    - A two-dimensional numpy `ndarray` with a numeric or boolean data type. This will
+      be casted to an array of data type [`np.float32`][numpy.float32]. Each value in
+      the array will be used as the value for the object at the same row index. The
+      `filter_size` of the
+      [`DataFilterExtension`][lonboard.layer_extension.DataFilterExtension] instance
+      must match the size of the second dimension of the array.
+    - A pandas `Series` with a numeric or boolean data type. This will be casted to an
+      array of data type [`np.float32`][numpy.float32]. Each value in the array will be
+      used as the value for the object at the same row index. The `filter_size` of the
+      [`DataFilterExtension`][lonboard.layer_extension.DataFilterExtension] instance
+      must be 1.
+    - A pyarrow [`FloatArray`][pyarrow.FloatArray],
+      [`DoubleArray`][pyarrow.DoubleArray] or [`BooleanArray`][pyarrow.BooleanArray],
+      or a [`ChunkedArray`][pyarrow.ChunkedArray] containing one of those. Each value in
+      the array will be used as the value for the object at the same row index. The
+      `filter_size` of the
       [`DataFilterExtension`][lonboard.layer_extension.DataFilterExtension] instance
       must be 1.
 
@@ -54,13 +57,17 @@ class FilterValueAccessor(FixedErrorTraitType):
       Interface](https://arrow.apache.org/docs/format/CDataInterface/PyCapsuleInterface.html).
     - A pyarrow [`FixedSizeListArray`][pyarrow.FixedSizeListArray] or
       [`ChunkedArray`][pyarrow.ChunkedArray] containing `FixedSizeListArray`s. The child
-      array of the fixed size list must be of floating point type. The `filter_size` of
-      the [`DataFilterExtension`][lonboard.layer_extension.DataFilterExtension] instance
+      array of the fixed size list must be of floating point or boolean type. The
+      `filter_size` of the
+      [`DataFilterExtension`][lonboard.layer_extension.DataFilterExtension] instance
       must match the list size.
 
       Alternatively, you can pass any corresponding Arrow data structure from a library
       that implements the [Arrow PyCapsule
       Interface](https://arrow.apache.org/docs/format/CDataInterface/PyCapsuleInterface.html).
+
+    Boolean values are cast to [`np.float32`][numpy.float32]: `True` is `1` and `False`
+    is `0`.
     """
 
     default_value = float(0)
@@ -97,8 +104,8 @@ class FilterValueAccessor(FixedErrorTraitType):
         value: Any,
         filter_size: int,
     ) -> ChunkedArray:
-        if not np.issubdtype(value.dtype, np.number):
-            self.error(obj, value, info="numeric dtype")
+        if not (np.issubdtype(value.dtype, np.number) or value.dtype == np.bool_):
+            self.error(obj, value, info="numeric or boolean dtype")
 
         # Cast to float32
         value = value.astype(np.float32)
@@ -181,7 +188,8 @@ class FilterValueAccessor(FixedErrorTraitType):
         assert isinstance(value, ChunkedArray)
 
         # Allowed inputs are either a FixedSizeListArray or numeric array.
-        # If not a fixed size list array, check for floating and cast to float32
+        # If not a fixed size list array, check for floating or boolean and cast to
+        # float32
         if not DataType.is_fixed_size_list(value.type):
             if filter_size != 1:
                 self.error(
@@ -190,11 +198,13 @@ class FilterValueAccessor(FixedErrorTraitType):
                     info="filter_size==1 with non-FixedSizeList type arrow array",
                 )
 
-            if not DataType.is_floating(value.type):
+            if not (
+                DataType.is_floating(value.type) or DataType.is_boolean(value.type)
+            ):
                 self.error(
                     obj,
                     value,
-                    info="arrow array to be a floating point type",
+                    info="arrow array to be a floating point or boolean type",
                 )
 
             return value.cast(DataType.float32())
@@ -212,11 +222,11 @@ class FilterValueAccessor(FixedErrorTraitType):
 
         value_type = value.type.value_type
         assert value_type is not None
-        if not DataType.is_floating(value_type):
+        if not (DataType.is_floating(value_type) or DataType.is_boolean(value_type)):
             self.error(
                 obj,
                 value,
-                info="arrow array to have floating point child type",
+                info="arrow array to have floating point or boolean child type",
             )
 
         # Cast values to float32
@@ -240,22 +250,26 @@ class FilterCategoryAccessor(FixedErrorTraitType):
       `category_size` of the
       [`DataFilterExtension`][lonboard.layer_extension.DataFilterExtension] instance
       must be 1.
-    - A one-dimensional numpy `ndarray` with a numeric data type. Each value in the array will
-      be used as the value for the object at the same row index. The `category_size` of
-      the [`DataFilterExtension`][lonboard.layer_extension.DataFilterExtension] instance
-      must be 1.
-    - A two-dimensional numpy `ndarray` with a numeric data type. Each value in the array will
-      be used as the value for the object at the same row index. The `category_size` of
-      the [`DataFilterExtension`][lonboard.layer_extension.DataFilterExtension] instance
-      must match the size of the second dimension of the array.
-    - A pandas `Series` with a numeric data type. Each value in the array will be used as
-      the value for the object at the same row index. The `category_size` of the
+    - A one-dimensional numpy `ndarray` with a numeric or boolean data type. Each value
+      in the array will be used as the value for the object at the same row index. The
+      `category_size` of the
       [`DataFilterExtension`][lonboard.layer_extension.DataFilterExtension] instance
       must be 1.
-    - A pyarrow [`FloatArray`][pyarrow.FloatArray], [`DoubleArray`][pyarrow.DoubleArray]
-      or [`ChunkedArray`][pyarrow.ChunkedArray] containing either a `FloatArray` or
-      `DoubleArray`. Each value in the array will be used as the value for the object at
-      the same row index. The `category_size` of the
+    - A two-dimensional numpy `ndarray` with a numeric or boolean data type. Each value
+      in the array will be used as the value for the object at the same row index. The
+      `category_size` of the
+      [`DataFilterExtension`][lonboard.layer_extension.DataFilterExtension] instance
+      must match the size of the second dimension of the array.
+    - A pandas `Series` with a numeric or boolean data type. Each value in the array
+      will be used as the value for the object at the same row index. The
+      `category_size` of the
+      [`DataFilterExtension`][lonboard.layer_extension.DataFilterExtension] instance
+      must be 1.
+    - A pyarrow [`FloatArray`][pyarrow.FloatArray],
+      [`DoubleArray`][pyarrow.DoubleArray] or [`BooleanArray`][pyarrow.BooleanArray],
+      or a [`ChunkedArray`][pyarrow.ChunkedArray] containing one of those. Each value in
+      the array will be used as the value for the object at the same row index. The
+      `category_size` of the
       [`DataFilterExtension`][lonboard.layer_extension.DataFilterExtension] instance
       must be 1.
 
@@ -270,6 +284,9 @@ class FilterCategoryAccessor(FixedErrorTraitType):
       Alternatively, you can pass any corresponding Arrow data structure from a library
       that implements the [Arrow PyCapsule
       Interface](https://arrow.apache.org/docs/format/CDataInterface/PyCapsuleInterface.html).
+
+    Boolean values are cast to `uint8`: `True` is the category `1` and `False` is the
+    category `0`. Use `1` and `0` in `filter_categories`, not `True` and `False`.
     """
 
     default_value = None
@@ -304,6 +321,11 @@ class FilterCategoryAccessor(FixedErrorTraitType):
         value: Any,
         category_size: int,
     ) -> ChunkedArray:
+        # Cast booleans to uint8, because Arrow booleans are bit-packed and the
+        # frontend needs an array with one element per value
+        if value.dtype == np.bool_:
+            value = value.astype(np.uint8)
+
         if len(value.shape) == 1:
             if category_size != 1:
                 self.error(obj, value, info="category_size==1 with 1-D numpy array")
@@ -384,6 +406,12 @@ class FilterCategoryAccessor(FixedErrorTraitType):
                     info="category_size==1 with non-FixedSizeList type arrow array",
                 )
 
+            # Cast booleans to uint8, as for numpy input. This is a list of size 1,
+            # also as for numpy input, because the frontend doesn't render an integer
+            # array that is not in a list.
+            if DataType.is_boolean(value.type):
+                return value.cast(DataType.list(Field("", DataType.uint8()), 1))
+
             return value
 
         # We have a FixedSizeListArray
@@ -399,6 +427,11 @@ class FilterCategoryAccessor(FixedErrorTraitType):
 
         value_type = value.type.value_type
         assert value_type is not None
+        # Cast booleans to uint8, as for numpy input
+        if DataType.is_boolean(value_type):
+            value = value.cast(
+                DataType.list(Field("", DataType.uint8()), value.type.list_size),
+            )
         return value.rechunk(max_chunksize=obj._rows_per_chunk)
 
 

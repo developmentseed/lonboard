@@ -1,5 +1,9 @@
+from collections.abc import Callable
+
 import arro3
 import geopandas as gpd
+import numpy as np
+import pyarrow as pa
 import pytest
 from shapely.geometry import Point
 from traitlets import TraitError
@@ -15,6 +19,7 @@ def dfe_test_df() -> gpd.GeoDataFrame:
         "int_col": [0, 1, 2, 3, 4, 5],
         "float_col": [0.0, 1.5, 0.0, 1.5, 0.0, 1.5],
         "str_col": ["even", "odd", "even", "odd", "even", "odd"],
+        "bool_col": [True, False, True, False, True, False],
         "geometry": [
             Point(0, 0),
             Point(1, 1),
@@ -329,3 +334,112 @@ def test_dfe_wrong_get_filter_category_size2(dfe_test_df: gpd.GeoDataFrame):
             ],
             get_filter_category=dfe_test_df[["int_col", "float_col"]].values,
         )
+
+
+# The ways of passing a boolean column to an accessor
+BOOL_INPUTS = {
+    "numpy": np.asarray,
+    "pandas": lambda series: series,
+    "arrow-array": pa.array,
+    "arrow-chunked-array": lambda series: pa.chunked_array([pa.array(series)]),
+}
+
+# The ways of passing two boolean columns, as a 2D numpy array, to an accessor
+BOOL_2D_INPUTS = {
+    "numpy": lambda values: values,
+    "arrow-fixed-size-list": lambda values: pa.FixedSizeListArray.from_arrays(
+        pa.array(values.ravel()),
+        2,
+    ),
+}
+
+
+@pytest.mark.parametrize("as_input", BOOL_INPUTS.values(), ids=BOOL_INPUTS.keys())
+def test_dfe_bool_get_filter_value(dfe_test_df: gpd.GeoDataFrame, as_input: Callable):
+    ## Test DFE with boolean get_filter_value, which is cast to float32
+    layer = lonboard.ScatterplotLayer.from_geopandas(
+        dfe_test_df,
+        extensions=[
+            DataFilterExtension(filter_size=1),
+        ],
+        get_filter_value=as_input(dfe_test_df["bool_col"]),
+    )
+    filter_value = pa.chunked_array(layer.get_filter_value)
+    assert filter_value.type == pa.float32()
+    assert filter_value.to_pylist() == [1.0, 0.0, 1.0, 0.0, 1.0, 0.0]
+
+
+@pytest.mark.parametrize(
+    "as_input",
+    BOOL_2D_INPUTS.values(),
+    ids=BOOL_2D_INPUTS.keys(),
+)
+def test_dfe_bool_filter_size2_get_filter_value(
+    dfe_test_df: gpd.GeoDataFrame,
+    as_input: Callable,
+):
+    ## Test DFE with filter_size 2 and boolean get_filter_value
+    bool_col = dfe_test_df["bool_col"].to_numpy()
+    layer = lonboard.ScatterplotLayer.from_geopandas(
+        dfe_test_df,
+        extensions=[
+            DataFilterExtension(filter_size=2),
+        ],
+        get_filter_value=as_input(np.column_stack([bool_col, ~bool_col])),
+    )
+    filter_value = pa.chunked_array(layer.get_filter_value)
+    assert filter_value.type.value_type == pa.float32()
+    assert filter_value.to_pylist() == [
+        [1.0, 0.0],
+        [0.0, 1.0],
+        [1.0, 0.0],
+        [0.0, 1.0],
+        [1.0, 0.0],
+        [0.0, 1.0],
+    ]
+
+
+@pytest.mark.parametrize("as_input", BOOL_INPUTS.values(), ids=BOOL_INPUTS.keys())
+def test_dfe_bool_get_filter_cat(dfe_test_df: gpd.GeoDataFrame, as_input: Callable):
+    ## Test DFE with boolean get_filter_category, which is cast to uint8
+    layer = lonboard.ScatterplotLayer.from_geopandas(
+        dfe_test_df,
+        extensions=[
+            DataFilterExtension(filter_size=None, category_size=1),
+        ],
+        get_filter_category=as_input(dfe_test_df["bool_col"]),
+    )
+    filter_category = pa.chunked_array(layer.get_filter_category)
+    # In a fixed size list, because the frontend doesn't render a plain integer array
+    assert filter_category.type.value_type == pa.uint8()
+    assert filter_category.to_pylist() == [[1], [0], [1], [0], [1], [0]]
+
+
+@pytest.mark.parametrize(
+    "as_input",
+    BOOL_2D_INPUTS.values(),
+    ids=BOOL_2D_INPUTS.keys(),
+)
+def test_dfe_bool_cat2_get_filter_cat(
+    dfe_test_df: gpd.GeoDataFrame,
+    as_input: Callable,
+):
+    ## Test DFE with category_size=2 and boolean get_filter_category
+    bool_col = dfe_test_df["bool_col"].to_numpy()
+    layer = lonboard.ScatterplotLayer.from_geopandas(
+        dfe_test_df,
+        extensions=[
+            DataFilterExtension(filter_size=None, category_size=2),
+        ],
+        get_filter_category=as_input(np.column_stack([bool_col, ~bool_col])),
+    )
+    filter_category = pa.chunked_array(layer.get_filter_category)
+    assert filter_category.type.value_type == pa.uint8()
+    assert filter_category.to_pylist() == [
+        [1, 0],
+        [0, 1],
+        [1, 0],
+        [0, 1],
+        [1, 0],
+        [0, 1],
+    ]
