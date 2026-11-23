@@ -15,7 +15,7 @@ jobs:
     outputs:
       deployed: ${{ steps.deploy.outputs.deployed }}
     steps:
-      - uses: actions/create-github-app-token@v3.3.0
+      - uses: actions/create-github-app-token@v3.4.0
         id: app-token
         with:
           app-id: ${{ secrets.DS_RELEASE_BOT_ID }}
@@ -29,7 +29,7 @@ jobs:
           token: ${{ steps.app-token.outputs.token }}
 
       - name: Install a specific version of uv
-        uses: astral-sh/setup-uv@v10.3.3
+        uses: astral-sh/setup-uv@v10.4.0
         with:
           enable-cache: true
           version: "0.4.x"
